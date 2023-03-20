@@ -1,7 +1,15 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { getVersion } from '../../../../helpers/common';
+import { t } from '../../../../helpers/i18n/dictionary';
+import useAuth from '../../../../hooks/auth/useAuth';
+import useOutsideTrigger from '../../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
+import useDarkMode from '../../../../hooks/useDarkMode';
 import Bars from '../../Icons/Bars/Bars';
+import Ellipsis from '../../Icons/Ellipsis/Ellipsis';
+import Person from '../../Icons/Person/Person';
 import Times from '../../Icons/Times/Times';
+import { MiniDarkModeToggle } from '../DarkModeToggle/DarkModeToggle';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -58,12 +66,14 @@ const Sidenav = () => {
               {/* <NavItem icon={Grid} label={'Dashboard'} to={'/owner'} end={true} /> */}
             </div>
 
+            <MoreItems isOpen={isOpen || isHoverOpen} />
+
             <div>
               <p className={`${navItemClassName} opacity-40`}>
                 <span className={`text-center text-2xl`}>©</span>{' '}
                 <span className={`my-auto ml-3 ${!isOpen && 'hidden'}`}>
                   2023 | v.
-                  {/* {getVersion()} */}
+                  {getVersion()}
                 </span>
               </p>
             </div>
@@ -71,6 +81,55 @@ const Sidenav = () => {
         </div>
       </aside>
     </>
+  );
+};
+
+const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
+  const wrapperRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  useOutsideTrigger(wrapperRef, () => setIsOpen(false));
+  const { logout } = useAuth();
+  const { toggleDarkMode, isDarkMode } = useDarkMode();
+
+  useEffect(() => {
+    if (!isNavOpen && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isNavOpen]);
+
+  return (
+    <div className={`relative mt-auto`} ref={wrapperRef}>
+      <a
+        className={`${navItemClassName} relative cursor-pointer`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+      >
+        <Ellipsis className={iconClassName} />
+        <span className={`my-auto ml-3 overflow-hidden ${!isNavOpen && 'hidden'}`}>
+          {t('More')}
+        </span>
+      </a>
+
+      <div
+        className={`absolute bottom-[100%] left-0 overflow-auto rounded-md border-gray-200 border-opacity-80 shadow-md dark:border-gray-500 dark:shadow-slate-700 ${moreBg} ${
+          isOpen ? '' : 'hidden'
+        }`}
+        onClick={() => setIsOpen(false)}
+      >
+        <button onClick={() => logout()} className={`w-full ${navItemClassName}`}>
+          <Person className={`${iconClassName}`} />
+          <span className={`my-auto ml-3`}>Log out</span>
+        </button>
+        <hr className="border-b dark:border-slate-500" />
+        <button className={navItemClassName} onClick={() => toggleDarkMode()}>
+          <MiniDarkModeToggle className={`my-auto ${iconClassName}`} />
+          <span className={`my-auto mx-3`}>{isDarkMode ? t('Light mode') : t('Dark mode')}</span>
+        </button>
+      </div>
+    </div>
   );
 };
 

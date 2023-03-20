@@ -22,7 +22,7 @@ function App() {
   return (
     <HelmetProvider>
       <Helmet>
-        <meta name="v" content={import.meta.env.REACT_APP_VERSION} />
+        <meta name="v" content={import.meta.env.VITE_VERSION} />
       </Helmet>
       <QueryClientProvider client={queryClient}>
         <Router>

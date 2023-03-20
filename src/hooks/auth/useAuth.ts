@@ -11,9 +11,11 @@ import {
   logout as logoutYouauth,
   authenticate as authenticateYouAuth,
   decryptWithKey,
+  retrieveIdentity,
 } from '../../provider/AuthenticationProvider';
 
 export const APP_SHARED_SECRET = 'ASS';
+export const APP_AUTH_TOKEN = 'BX0900';
 
 const hasSharedSecret = () => {
   const raw = window.localStorage.getItem(APP_SHARED_SECRET);
@@ -66,8 +68,8 @@ const useAuth = () => {
     // Store sharedSecret in local storage
     window.localStorage.setItem(APP_SHARED_SECRET, uint8ArrayToBase64(sharedSecret));
 
-    // Store auth Token in cookie
-    document.cookie = `BX0900=${uint8ArrayToBase64(authToken)}; path=/;`;
+    // Store auth Token in local storage
+    window.localStorage.setItem(APP_AUTH_TOKEN, uint8ArrayToBase64(authToken));
 
     // window.location.href = returnUrl;
   };
@@ -79,11 +81,18 @@ const useAuth = () => {
 
     setAuthenticationState('anonymous');
 
-    navigate('/home');
+    navigate('/');
   };
 
   const getSharedSecret = () => {
     const raw = window.localStorage.getItem(APP_SHARED_SECRET);
+    if (raw) {
+      return base64ToUint8Array(raw);
+    }
+  };
+
+  const getAuthToken = () => {
+    const raw = window.localStorage.getItem(APP_AUTH_TOKEN);
     if (raw) {
       return base64ToUint8Array(raw);
     }
@@ -97,7 +106,7 @@ const useAuth = () => {
     return new DotYouClient({
       sharedSecret: getSharedSecret(),
       api: getApiType(),
-      root: 'samwise.digital',
+      root: retrieveIdentity(),
     });
   };
 
@@ -124,6 +133,7 @@ const useAuth = () => {
     finalizeAuthentication,
     logout,
     getDotYouClient,
+    getSharedSecret,
     isAuthenticated: authenticationState !== 'anonymous',
   };
 };

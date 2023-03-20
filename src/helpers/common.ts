@@ -22,6 +22,22 @@ export const stringify = (obj: unknown) => {
     .join('&');
 };
 
+export const getVersion = () => {
+  try {
+    const numberedVersion = parseInt(import.meta.env.VITE_VERSION ?? '');
+    if (isNaN(numberedVersion)) {
+      return import.meta.env.VITE_VERSION;
+    }
+
+    const t = new Date(1970, 0, 1); // Epoch
+    t.setSeconds(numberedVersion);
+    return `${t.toLocaleDateString()} ${t.toLocaleTimeString()}`;
+  } catch (ex) {
+    console.error(ex);
+    return import.meta.env.VITE_VERSION;
+  }
+};
+
 /// Makes a slug of a Post; When it's an article it's a readable slug, otherwise it's the content id or a new id
 export const makeSlug = (post: PostFile<PostContent>) => {
   if (post.content.type === 'Article' && post.content.caption) {

@@ -15,9 +15,7 @@ const useVerifyToken = () => {
       return false;
     }
 
-    // TODO: Do actual check with the back-end;
-    // return await hasValidYouAuthToken();
-    return true;
+    return await hasValidYouAuthToken();
   };
   return useQuery(['verifyToken'], fetchData, {
     refetchOnMount: false,
