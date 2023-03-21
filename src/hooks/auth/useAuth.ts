@@ -10,9 +10,9 @@ import useVerifyToken from './useVerifyToken';
 import {
   logout as logoutYouauth,
   authenticate as authenticateYouAuth,
-  decryptWithKey,
-  retrieveIdentity,
 } from '../../provider/AuthenticationProvider';
+import { decryptWithKey } from '../../provider/KeyProvider';
+import { retrieveIdentity } from '../../provider/IdentityProvider';
 
 export const APP_SHARED_SECRET = 'ASS';
 export const APP_AUTH_TOKEN = 'BX0900';
@@ -65,10 +65,8 @@ const useAuth = () => {
     }
     const { authToken, sharedSecret } = splitDataString(decryptedData);
 
-    // Store sharedSecret in local storage
+    // Store authToken and sharedSecret
     window.localStorage.setItem(APP_SHARED_SECRET, uint8ArrayToBase64(sharedSecret));
-
-    // Store auth Token in local storage
     window.localStorage.setItem(APP_AUTH_TOKEN, uint8ArrayToBase64(authToken));
 
     // window.location.href = returnUrl;
@@ -78,6 +76,7 @@ const useAuth = () => {
     await logoutYouauth();
 
     window.localStorage.removeItem(APP_SHARED_SECRET);
+    window.localStorage.removeItem(APP_AUTH_TOKEN);
 
     setAuthenticationState('anonymous');
 
@@ -121,6 +120,7 @@ const useAuth = () => {
         // if (window.localStorage.getItem(APP_SHARED_SECRET)) {
         //   // Auth state was presumed logged in, but not allowed.. Will attempt reload page? (Browsers may ignore, as it's not a reload on user request)
         //   window.localStorage.removeItem(APP_SHARED_SECRET);
+        //   window.localStorage.removeItem(APP_AUTH_TOKEN);
 
         //   window.location.reload();
         // }
