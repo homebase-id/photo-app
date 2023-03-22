@@ -282,7 +282,7 @@ const PhotoItem = ({
   return (
     <div className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}>
       <Link
-        to={`/owner/photos/photo/${photoDsr.fileId}`}
+        to={`/photo/${photoDsr.fileId}`}
         className="cursor-pointer"
         onClick={(e) => {
           if (isSelecting) {

@@ -69,7 +69,7 @@ const useAuth = () => {
     window.localStorage.setItem(APP_SHARED_SECRET, uint8ArrayToBase64(sharedSecret));
     window.localStorage.setItem(APP_AUTH_TOKEN, uint8ArrayToBase64(authToken));
 
-    // window.location.href = returnUrl;
+    window.location.href = returnUrl;
   };
 
   const logout = async (): Promise<void> => {
@@ -81,6 +81,7 @@ const useAuth = () => {
     setAuthenticationState('anonymous');
 
     navigate('/');
+    window.location.reload();
   };
 
   const getSharedSecret = () => {
@@ -102,10 +103,17 @@ const useAuth = () => {
   };
 
   const getDotYouClient = () => {
+    const headers: Record<string, string> = {};
+    const authToken = window.localStorage.getItem(APP_AUTH_TOKEN);
+    if (authToken) {
+      headers['bx0900'] = authToken;
+    }
+
     return new DotYouClient({
       sharedSecret: getSharedSecret(),
       api: getApiType(),
       root: retrieveIdentity(),
+      headers: headers,
     });
   };
 
@@ -116,14 +124,13 @@ const useAuth = () => {
       if (!hasValidToken) {
         setAuthenticationState('anonymous');
 
-        console.log('about to logout');
-        // if (window.localStorage.getItem(APP_SHARED_SECRET)) {
-        //   // Auth state was presumed logged in, but not allowed.. Will attempt reload page? (Browsers may ignore, as it's not a reload on user request)
-        //   window.localStorage.removeItem(APP_SHARED_SECRET);
-        //   window.localStorage.removeItem(APP_AUTH_TOKEN);
+        if (window.localStorage.getItem(APP_SHARED_SECRET)) {
+          // Auth state was presumed logged in, but not allowed.. Will attempt reload page? (Browsers may ignore, as it's not a reload on user request)
+          window.localStorage.removeItem(APP_SHARED_SECRET);
+          window.localStorage.removeItem(APP_AUTH_TOKEN);
 
-        //   window.location.reload();
-        // }
+          window.location.reload();
+        }
       }
     }
   }, [hasValidToken]);

@@ -12,7 +12,7 @@
   "dependencies": {
     "@tanstack/react-query": "^4.0.10",
     "@tanstack/react-virtual": "^3.0.0-beta.49",
-    "@youfoundation/dotyoucore-js": "0.2.133-alpha.130",
+    "@youfoundation/dotyoucore-js": "0.2.133-alpha.133",
     "exifr": "^7.1.3",
     "axios": "^1.2.0",
     "react": "^18.2.0",

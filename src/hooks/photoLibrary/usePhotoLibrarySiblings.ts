@@ -1,5 +1,6 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/dotyoucore-js';
+import usePhotoLibraryPart from './usePhotoLibraryPart';
 
 const usePhotoLibrarySiblings = ({
   targetDrive,
@@ -8,21 +9,25 @@ const usePhotoLibrarySiblings = ({
   targetDrive: TargetDrive;
   photoFileId: string;
 }) => {
-  const queryClient = useQueryClient();
-  const cachedResults = queryClient.getQueryData<
-    InfiniteData<{
-      results: DriveSearchResult[];
-      cursorState: string;
-    }>
-  >(['photo-library-parts', targetDrive.alias]);
+  const {
+    data: cachedResults,
+    hasNextPage,
+    fetchNextPage,
+  } = usePhotoLibraryPart({
+    targetDrive,
+    pageSize: 50,
+  }).fetchLibraryPart;
 
   const flatLib = cachedResults?.pages
     .flatMap((page) => page.results)
-    .sort((dsrA, dsrB) => dsrB.fileMetadata.appData.userDate - dsrA.fileMetadata.appData.userDate);
+    .sort(
+      (dsrA, dsrB) =>
+        (dsrB.fileMetadata.appData.userDate || 0) - (dsrA.fileMetadata.appData.userDate || 0)
+    );
 
-  let nextSibling: DriveSearchResult = undefined;
-  let current: DriveSearchResult = undefined;
-  let prevSibling: DriveSearchResult = undefined;
+  let nextSibling: DriveSearchResult | undefined = undefined;
+  let current: DriveSearchResult | undefined = undefined;
+  let prevSibling: DriveSearchResult | undefined = undefined;
 
   if (flatLib) {
     const index = flatLib.findIndex((dsr) => dsr.fileId === photoFileId);
@@ -33,7 +38,9 @@ const usePhotoLibrarySiblings = ({
     }
   }
 
-  // Todo add support to fetch extra pages in the library...
+  if (!nextSibling && hasNextPage) {
+    fetchNextPage();
+  }
 
   return {
     nextSibling,

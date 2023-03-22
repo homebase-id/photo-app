@@ -73,3 +73,7 @@ export const decryptWithKey = async (encrypted: string) => {
       console.error(err);
     });
 };
+
+export const throwAwayTheKey = () => {
+  localStorage.removeItem(STORAGE_KEY);
+};

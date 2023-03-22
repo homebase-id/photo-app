@@ -33,10 +33,14 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     fileId,
     size,
   }: {
-    targetDrive: TargetDrive;
-    fileId: string;
+    targetDrive?: TargetDrive;
+    fileId?: string;
     size?: ImageSize;
   }) => {
+    if (!targetDrive || !fileId) {
+      return null;
+    }
+
     const fetchDataPromise = () => {
       return getPhoto(dotYouClient, targetDrive, fileId, size, true);
     };
@@ -45,6 +49,10 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   };
 
   const uploadPhoto = async ({ newPhoto }: { newPhoto: File }) => {
+    if (!targetDrive) {
+      return null;
+    }
+
     const bytes = new Uint8Array(await newPhoto.arrayBuffer());
     // Read Exif Data for the Created date of the photo itself and not the file;
     let exifData;
@@ -68,6 +76,9 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
+    if (!targetDrive) {
+      return null;
+    }
     return await deleteFile(dotYouClient, targetDrive, photoFileId);
   };
 
@@ -121,7 +132,13 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         .filter((query) => query.state.status === 'success');
 
       if (previousKeys?.length) {
-        const existingCachedImage = queryClient.getQueryData<PhotoFile>(previousKeys[0].queryKey);
+        const bestKey = previousKeys.sort((keyA, keyB) =>
+          (keyA.queryKey[keyA.queryKey.length - 1] + '').localeCompare(
+            keyB.queryKey[keyB.queryKey.length - 1] + ''
+          )
+        )[0].queryKey;
+
+        const existingCachedImage = queryClient.getQueryData<PhotoFile>(bestKey);
         if (existingCachedImage) {
           return existingCachedImage;
         }
@@ -129,7 +146,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     },
     upload: useMutation(uploadPhoto, {
       onSuccess: () => {
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive.alias]);
+        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
@@ -137,8 +154,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     }),
     remove: useMutation(removePhoto, {
       onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photo', targetDrive.alias, _data.photoFileId]);
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive.alias]);
+        queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
+        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
@@ -148,7 +165,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onMutate: (newPhotoData) => {
         const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
           'photo-library-parts',
-          targetDrive.alias,
+          targetDrive?.alias,
         ]);
 
         if (previousParts?.pages) {
@@ -165,11 +182,13 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
                         ...photo.fileMetadata,
                         appData: {
                           ...photo.fileMetadata.appData,
-                          tags: [
-                            ...(Array.isArray(newPhotoData.metadata.tag)
-                              ? newPhotoData.metadata.tag
-                              : [newPhotoData.metadata.tag]),
-                          ],
+                          tags: newPhotoData.metadata.tag
+                            ? [
+                                ...(Array.isArray(newPhotoData.metadata.tag)
+                                  ? newPhotoData.metadata.tag
+                                  : [newPhotoData.metadata.tag]),
+                              ]
+                            : null,
                           userDate:
                             newPhotoData.metadata.userDate || photo.fileMetadata.appData.userDate,
                         },
@@ -181,7 +200,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
               };
             }),
           };
-          queryClient.setQueryData(['photo-library-parts', targetDrive.alias], newParts);
+          queryClient.setQueryData(['photo-library-parts', targetDrive?.alias], newParts);
         }
       },
       onError: (ex) => {

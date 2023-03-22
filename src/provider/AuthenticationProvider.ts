@@ -1,11 +1,22 @@
-import { ApiType, DotYouClient } from '@youfoundation/dotyoucore-js';
-import { APP_AUTH_TOKEN } from '../hooks/auth/useAuth';
+import { ApiType, base64ToUint8Array, DotYouClient } from '@youfoundation/dotyoucore-js';
+import { APP_AUTH_TOKEN, APP_SHARED_SECRET } from '../hooks/auth/useAuth';
 import { retrieveIdentity, saveIdentity } from './IdentityProvider';
-import { newPair } from './KeyProvider';
+import { newPair, throwAwayTheKey } from './KeyProvider';
+
+const getSharedSecret = () => {
+  const raw = window.localStorage.getItem(APP_SHARED_SECRET);
+  if (raw) {
+    return base64ToUint8Array(raw);
+  }
+};
 
 //checks if the authentication token (stored in a cookie) is valid
 export const hasValidToken = async (): Promise<boolean> => {
-  const dotYouClient = new DotYouClient({ api: ApiType.App, root: retrieveIdentity() });
+  const dotYouClient = new DotYouClient({
+    api: ApiType.App,
+    root: retrieveIdentity(),
+    sharedSecret: getSharedSecret(),
+  });
   const client = dotYouClient.createAxiosClient();
 
   const response = await client.get('/auth/verifytoken', {
@@ -13,7 +24,6 @@ export const hasValidToken = async (): Promise<boolean> => {
     headers: {
       BX0900: localStorage.getItem(APP_AUTH_TOKEN),
     },
-    withCredentials: false,
   });
   return response.status === 200 && response.data === true;
 };
@@ -42,8 +52,6 @@ export const authenticate = async (identity: string, returnUrl: string): Promise
   window.location.href = redirectUrl;
 };
 
-export const logout = async (): Promise<void> => {
-  const dotYouClient = new DotYouClient({ api: ApiType.YouAuth });
-  const client = dotYouClient.createAxiosClient();
-  await client.get('/auth/delete-token');
+export const logout = () => {
+  throwAwayTheKey();
 };

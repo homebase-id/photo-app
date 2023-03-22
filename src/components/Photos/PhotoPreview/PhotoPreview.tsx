@@ -33,16 +33,16 @@ const PhotoPreview = ({ fileId }: { fileId: string }) => {
   });
 
   const doClose = () => {
-    navigate('/owner/photos');
+    navigate('/');
   };
 
   // TODO: Preload siblings
   const doNext = () => {
-    navigate(`/owner/photos/photo/${nextSibling?.fileId}`);
+    navigate(`/photo/${nextSibling?.fileId}`);
   };
 
   const doPrev = () => {
-    navigate(`/owner/photos/photo/${prevSibling?.fileId}`);
+    navigate(`/photo/${prevSibling?.fileId}`);
   };
 
   useEffect(() => {
@@ -76,7 +76,7 @@ const PhotoPreview = ({ fileId }: { fileId: string }) => {
     return null;
   }
 
-  const isFavorite = current?.fileMetadata.appData.tags.some((tag) =>
+  const isFavorite = current?.fileMetadata.appData.tags?.some((tag) =>
     stringGuidsEqual(tag, PhotoConfig.FavoriteTag)
   );
 
@@ -163,6 +163,7 @@ const PhotoPreview = ({ fileId }: { fileId: string }) => {
           previewThumbnail={current?.fileMetadata.appData.previewThumbnail}
           size={{ pixelWidth: 1600, pixelHeight: 1600 }}
           fit="contain"
+          key={fileId}
         />
       </div>
     </div>
