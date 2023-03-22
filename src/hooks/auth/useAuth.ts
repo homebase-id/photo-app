@@ -14,7 +14,7 @@ import {
 import { decryptWithKey } from '../../provider/KeyProvider';
 import { retrieveIdentity } from '../../provider/IdentityProvider';
 
-export const APP_SHARED_SECRET = 'ASS';
+export const APP_SHARED_SECRET = 'APSS';
 export const APP_AUTH_TOKEN = 'BX0900';
 
 const hasSharedSecret = () => {

@@ -55,6 +55,7 @@ export const newPair = async () => {
   return pk;
 };
 
+// TODO: Clear primary key after use
 export const decryptWithKey = async (encrypted: string) => {
   const key = await retrieveKey();
 
