@@ -10,7 +10,6 @@ import {
   PhotoFile,
   getFileHeader,
   getPayloadBytes,
-  decryptKeyHeader,
 } from '@youfoundation/dotyoucore-js';
 import useAuth from '../auth/useAuth';
 
@@ -93,7 +92,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   }) => {
     const header = await getFileHeader(dotYouClient, targetDrive, fileId);
     const keyheader = header.fileMetadata.payloadIsEncrypted
-      ? await decryptKeyHeader(dotYouClient, header.sharedSecretEncryptedKeyHeader)
+      ? header.sharedSecretEncryptedKeyHeader
       : undefined;
     const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
 
