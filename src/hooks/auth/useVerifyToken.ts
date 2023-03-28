@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { hasValidToken as hasValidYouAuthToken } from '../../provider/AuthenticationProvider';
-import { APP_SHARED_SECRET } from './useAuth';
+import {
+  APP_SHARED_SECRET,
+  hasValidToken as hasValidYouAuthToken,
+} from '../../provider/AuthenticationProvider';
 
 const MINUTE_IN_MS = 60000;
 

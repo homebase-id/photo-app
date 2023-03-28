@@ -1,7 +1,14 @@
-import { ApiType, base64ToUint8Array, DotYouClient } from '@youfoundation/dotyoucore-js';
-import { APP_AUTH_TOKEN, APP_SHARED_SECRET } from '../hooks/auth/useAuth';
+import {
+  ApiType,
+  base64ToUint8Array,
+  DotYouClient,
+  uint8ArrayToBase64,
+} from '@youfoundation/dotyoucore-js';
 import { retrieveIdentity, saveIdentity } from './IdentityProvider';
-import { newPair, throwAwayTheKey } from './KeyProvider';
+import { decryptWithKey, newPair, throwAwayTheKey } from './KeyProvider';
+
+export const APP_SHARED_SECRET = 'APSS';
+export const APP_AUTH_TOKEN = 'BX0900';
 
 const getSharedSecret = () => {
   const raw = window.localStorage.getItem(APP_SHARED_SECRET);
@@ -19,12 +26,17 @@ export const hasValidToken = async (): Promise<boolean> => {
   });
   const client = dotYouClient.createAxiosClient();
 
-  const response = await client.get('/auth/verifytoken', {
-    validateStatus: () => true,
-    headers: {
-      BX0900: localStorage.getItem(APP_AUTH_TOKEN),
-    },
-  });
+  const response = await client
+    .get('/auth/verifytoken', {
+      validateStatus: () => true,
+      headers: {
+        BX0900: localStorage.getItem(APP_AUTH_TOKEN),
+      },
+    })
+    .catch((error) => {
+      console.error({ error });
+      return { status: 400, data: false };
+    });
   return response.status === 200 && response.data === true;
 };
 
@@ -52,6 +64,40 @@ export const authenticate = async (identity: string, returnUrl: string): Promise
   window.location.href = redirectUrl;
 };
 
-export const logout = () => {
+const splitDataString = (byteArray: Uint8Array) => {
+  if (byteArray.length !== 49) {
+    throw new Error("shared secret encrypted keyheader has an unexpected length, can't split");
+  }
+
+  const authToken = byteArray.slice(0, 33);
+  const sharedSecret = byteArray.slice(33);
+
+  return { authToken, sharedSecret };
+};
+
+export const finalizeAuthentication = async (
+  registrationData: string,
+  v: string
+): Promise<void> => {
+  if (v !== '1') {
+    throw new Error('Failed to decrypt data, version unsupported');
+  }
+
+  const decryptedData = await decryptWithKey(registrationData);
+  if (!decryptedData) {
+    throw new Error('Failed to decrypt data');
+  }
+  const { authToken, sharedSecret } = splitDataString(decryptedData);
+
+  // Store authToken and sharedSecret
+  window.localStorage.setItem(APP_SHARED_SECRET, uint8ArrayToBase64(sharedSecret));
+  window.localStorage.setItem(APP_AUTH_TOKEN, uint8ArrayToBase64(authToken));
+
+  // Remove key
   throwAwayTheKey();
+};
+
+export const logout = () => {
+  window.localStorage.removeItem(APP_SHARED_SECRET);
+  window.localStorage.removeItem(APP_AUTH_TOKEN);
 };

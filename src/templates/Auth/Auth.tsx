@@ -1,4 +1,4 @@
-import { useState, FormEventHandler, MouseEventHandler } from 'react';
+import { useState, FormEventHandler } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Navigate } from 'react-router-dom';
 import Input from '../../components/Form/Input';
