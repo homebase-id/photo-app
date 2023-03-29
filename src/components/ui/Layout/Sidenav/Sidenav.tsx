@@ -4,11 +4,18 @@ import { getVersion } from '../../../../helpers/common';
 import { t } from '../../../../helpers/i18n/dictionary';
 import useAuth from '../../../../hooks/auth/useAuth';
 import useOutsideTrigger from '../../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
+import useAblums from '../../../../hooks/photoLibrary/useAlbums';
 import useDarkMode from '../../../../hooks/useDarkMode';
+import { PhotoConfig } from '../../../../provider/photos/PhotoTypes';
+import Archive from '../../Icons/Archive/Archive';
+import { ArrowDown } from '../../Icons/Arrow/Arrow';
 import Bars from '../../Icons/Bars/Bars';
 import Ellipsis from '../../Icons/Ellipsis/Ellipsis';
+import { SolidHeart } from '../../Icons/Heart/Heart';
+import Image from '../../Icons/Image/Image';
 import Person from '../../Icons/Person/Person';
 import Times from '../../Icons/Times/Times';
+import Trash from '../../Icons/Trash/Trash';
 import { MiniDarkModeToggle } from '../DarkModeToggle/DarkModeToggle';
 
 const STORAGE_KEY = 'isOpen';
@@ -25,7 +32,7 @@ const Sidenav = () => {
   const isDesktop = document.documentElement.clientWidth >= 1024;
   const storedState = localStorage.getItem(STORAGE_KEY);
   const overruledOpen = storedState ? storedState === '1' : undefined;
-  const [isOpen, setIsOpen] = useState(overruledOpen ?? false);
+  const [isOpen, setIsOpen] = useState(overruledOpen ?? true);
   const [isHoverOpen, setIsHoverOpen] = useState(false);
 
   useEffect(() => {
@@ -63,7 +70,20 @@ const Sidenav = () => {
               </button>
             </div>
             <div className="py-3">
-              {/* <NavItem icon={Grid} label={'Dashboard'} to={'/owner'} end={true} /> */}
+              <NavItem icon={Image} label={'Photos'} to={`/`} end={true} />
+            </div>
+            <div className="py-3">
+              <NavItem
+                icon={SolidHeart}
+                label={'Favorites'}
+                to={`/album/${PhotoConfig.FavoriteTag}`}
+                end={true}
+              />
+              <AlbumNavItem isOpen={isOpen || isHoverOpen} />
+            </div>
+
+            <div className="py-3">
+              <NavItem icon={Trash} label={'Archive'} to={`/archive`} end={true} />
             </div>
 
             <MoreItems isOpen={isOpen || isHoverOpen} />
@@ -80,6 +100,38 @@ const Sidenav = () => {
           </div>
         </div>
       </aside>
+    </>
+  );
+};
+
+const NavItem = ({
+  icon,
+  to,
+  label,
+
+  unread,
+  end,
+}: {
+  icon?: FC<IconProps>;
+  to: string;
+  label: string;
+
+  unread?: boolean;
+  end?: boolean;
+}) => {
+  return (
+    <>
+      <NavLink
+        className={({ isActive }) =>
+          `${navItemClassName} ${isActive && navItemActiveClassname} relative`
+        }
+        to={to}
+        end={end}
+      >
+        {icon && icon({ className: iconClassName })}
+        {unread ? <span className="absolute h-2 w-2 rounded-full bg-red-500" /> : null}
+        <span className={`my-auto ml-3 overflow-hidden`}>{label}</span>
+      </NavLink>
     </>
   );
 };
@@ -130,6 +182,44 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
         </button>
       </div>
     </div>
+  );
+};
+
+const AlbumNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: albums } = useAblums().fetch;
+
+  return (
+    <>
+      <NavLink
+        className={({ isActive }) =>
+          `${navItemClassName} ${isActive && navItemActiveClassname} relative`
+        }
+        to={'/album'}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+      >
+        {Archive({ className: iconClassName })}
+        <span className={`my-auto ml-3 flex w-full flex-row items-stretch overflow-hidden`}>
+          <span>{t('Albums')} </span>
+          <button className={`${iconClassName} ml-auto opacity-80 `}>
+            <ArrowDown className={`transition-transform ${isOpen ? '-rotate-90' : ''}`} />
+          </button>
+        </span>
+      </NavLink>
+
+      {isOpen ? (
+        <div className={`ml-1 pl-1 ${isNavOpen ? 'opacity-100' : 'opacity-0'}`}>
+          {albums?.map((album, index) => (
+            <NavItem label={album.name} to={`/album/${album.tag}`} key={album.fileId ?? index} />
+          ))}
+          <NavItem label={t('New album')} to={`/album/new`} end={true} />
+        </div>
+      ) : null}
+    </>
   );
 };
 

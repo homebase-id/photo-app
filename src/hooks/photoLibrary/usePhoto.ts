@@ -4,10 +4,8 @@ import {
   uploadImage,
   SecurityGroupType,
   ImageSize,
-  getPhoto,
   ImageContentType,
   deleteFile,
-  PhotoFile,
   getFileHeader,
   getPayloadBytes,
 } from '@youfoundation/dotyoucore-js';
@@ -15,6 +13,8 @@ import useAuth from '../auth/useAuth';
 
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
+import { getPhoto } from '../../provider/photos/PhotoProvider';
+import { PhotoFile } from '../../provider/photos/PhotoTypes';
 
 interface UpdatableMeta {
   tag?: string | undefined | string[];
@@ -98,16 +98,66 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
 
     if (payload) {
       const bytes = new Uint8Array(payload.bytes);
-      console.log({
+      await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
         userDate: header.fileMetadata.appData.userDate,
         type: payload.contentType,
         ...metadata,
         fileId: fileId,
       });
+    }
+  };
+
+  const addTags = async ({
+    targetDrive,
+    fileId,
+    addTags,
+  }: {
+    targetDrive: TargetDrive;
+    fileId: string;
+    addTags: string[];
+  }) => {
+    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
+    const existingTags = header.fileMetadata.appData.tags || [];
+
+    const keyheader = header.fileMetadata.payloadIsEncrypted
+      ? header.sharedSecretEncryptedKeyHeader
+      : undefined;
+    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+
+    if (payload) {
+      const bytes = new Uint8Array(payload.bytes);
       await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
         userDate: header.fileMetadata.appData.userDate,
         type: payload.contentType,
-        ...metadata,
+        tag: Array.from(new Set([...existingTags, ...addTags])),
+        fileId: fileId,
+      });
+    }
+  };
+
+  const removeTags = async ({
+    targetDrive,
+    fileId,
+    removeTags,
+  }: {
+    targetDrive: TargetDrive;
+    fileId: string;
+    removeTags: string[];
+  }) => {
+    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
+    const existingTags = header.fileMetadata.appData.tags || [];
+
+    const keyheader = header.fileMetadata.payloadIsEncrypted
+      ? header.sharedSecretEncryptedKeyHeader
+      : undefined;
+    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+
+    if (payload) {
+      const bytes = new Uint8Array(payload.bytes);
+      await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
+        userDate: header.fileMetadata.appData.userDate,
+        type: payload.contentType,
+        tag: [...existingTags.filter((tag) => !removeTags.includes(tag))],
         fileId: fileId,
       });
     }
@@ -165,6 +215,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
           'photo-library-parts',
           targetDrive?.alias,
+          undefined,
         ]);
 
         if (previousParts?.pages) {
@@ -199,11 +250,28 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
               };
             }),
           };
-          queryClient.setQueryData(['photo-library-parts', targetDrive?.alias], newParts);
+          queryClient.setQueryData(
+            ['photo-library-parts', targetDrive?.alias, undefined],
+            newParts
+          );
         }
       },
       onError: (ex) => {
         console.error(ex);
+      },
+    }),
+    addTags: useMutation(addTags, {
+      onSettled: (data, error, variables) => {
+        variables.addTags.forEach((tag) => {
+          queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias, tag]);
+        });
+      },
+    }),
+    removeTags: useMutation(removeTags, {
+      onSettled: (data, error, variables) => {
+        variables.removeTags.forEach((tag) => {
+          queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias, tag]);
+        });
       },
     }),
   };

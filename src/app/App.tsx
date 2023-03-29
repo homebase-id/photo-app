@@ -52,16 +52,10 @@ function App() {
                 >
                   <Route path="" element={<Photos />}></Route>
                   <Route path="/album/:albumKey" element={<Photos />}></Route>
+                  <Route path="/album/:albumKey/photo/:photoKey" element={<Photos />}></Route>
                   <Route path="/photo/:photoKey" element={<Photos />}></Route>
                 </Route>
-                <Route
-                  path="*"
-                  element={
-                    <Layout>
-                      <NotFound />
-                    </Layout>
-                  }
-                />
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </Suspense>

@@ -93,7 +93,8 @@ const useAuth = () => {
         setAuthenticationState('anonymous');
         console.log('Token is invalid, logging out..');
         if (window.localStorage.getItem(APP_SHARED_SECRET)) {
-          // Auth state was presumed logged in, but not allowed.. Will attempt reload page? (Browsers may ignore, as it's not a reload on user request)
+          // Auth state was presumed logged in, but not allowed.. Will attempt reload page?
+          //  (Browsers may ignore, as it's not a reload on user request)
           logout();
         }
       }

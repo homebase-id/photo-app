@@ -1,9 +1,4 @@
-import {
-  DriveSearchResult,
-  PhotoConfig,
-  TargetDrive,
-  ThumbSize,
-} from '@youfoundation/dotyoucore-js';
+import { DriveSearchResult, TargetDrive, ThumbSize } from '@youfoundation/dotyoucore-js';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { Link } from 'react-router-dom';
@@ -12,6 +7,7 @@ import usePhotoLibraryPart from '../../../hooks/photoLibrary/usePhotoLibraryPart
 import { t } from '../../../helpers/i18n/dictionary';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoPreview';
+import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -75,10 +71,12 @@ export const buildMetaStructure = (headers: DriveSearchResult[]) => {
 };
 
 const PhotoLibrary = ({
+  albumKey,
   toggleSelection,
   isSelected,
   isSelecting,
 }: {
+  albumKey?: string;
   toggleSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
@@ -90,6 +88,7 @@ const PhotoLibrary = ({
     isFetchingNextPage,
   } = usePhotoLibraryPart({
     targetDrive: PhotoConfig.PhotoDrive,
+    album: albumKey,
     pageSize: 50,
   }).fetchLibraryPart;
 
@@ -282,7 +281,8 @@ const PhotoItem = ({
   return (
     <div className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}>
       <Link
-        to={`/photo/${photoDsr.fileId}`}
+        // relative path so we can keep the albumkey intact
+        to={`photo/${photoDsr.fileId}`}
         className="cursor-pointer"
         onClick={(e) => {
           if (isSelecting) {

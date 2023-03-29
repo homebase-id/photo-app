@@ -1,12 +1,13 @@
-import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/dotyoucore-js';
 import usePhotoLibraryPart from './usePhotoLibraryPart';
 
 const usePhotoLibrarySiblings = ({
   targetDrive,
+  album,
   photoFileId,
 }: {
   targetDrive: TargetDrive;
+  album?: string;
   photoFileId: string;
 }) => {
   const {
@@ -15,6 +16,7 @@ const usePhotoLibrarySiblings = ({
     fetchNextPage,
   } = usePhotoLibraryPart({
     targetDrive,
+    album,
     pageSize: 50,
   }).fetchLibraryPart;
 

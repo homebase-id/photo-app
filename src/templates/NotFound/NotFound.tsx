@@ -1,5 +1,3 @@
-import React from 'react';
-
 const NotFound = () => {
   return (
     <section className="flex h-full grow flex-col bg-red-400 py-5">

@@ -1,7 +1,8 @@
-import { fromBlob, PhotoConfig } from '@youfoundation/dotyoucore-js';
+import { fromBlob } from '@youfoundation/dotyoucore-js';
 import { useState, useRef, useEffect } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
+import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton, { ActionButtonState } from '../../ui/Buttons/ActionButton';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Loader from '../../ui/Icons/Loader/Loader';
@@ -51,7 +52,9 @@ const Uploader = ({
     <section className="mb-1">
       <input
         ref={inputRef}
-        onChange={(e) => addToUploadQueue(Array.from(e.target.files))}
+        onChange={(e) => {
+          if (e.target.files) addToUploadQueue(Array.from(e.target.files));
+        }}
         name="file-select"
         id="file-select"
         type="file"
@@ -120,7 +123,7 @@ const NewPhoto = ({ photoFile, remove }: { photoFile: File; remove: () => void }
     <div className={`${divClasses}`}>
       <img
         src={previewUrl}
-        onLoad={() => URL.revokeObjectURL(previewUrl)}
+        onLoad={() => previewUrl && URL.revokeObjectURL(previewUrl)}
         className={`${imgClasses} ${
           !previewUrl ? `h-[200px] w-[200px] animate-pulse bg-slate-400` : ``
         }`}

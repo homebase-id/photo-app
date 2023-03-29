@@ -2,7 +2,6 @@ import {
   base64ToUint8Array,
   EmbeddedThumb,
   ImageSize,
-  PhotoConfig,
   stringGuidsEqual,
   TargetDrive,
 } from '@youfoundation/dotyoucore-js';
@@ -11,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
 import usePhotoLibrarySiblings from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
+import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
 import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
@@ -20,7 +20,7 @@ import Times from '../../ui/Icons/Times/Times';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
-const PhotoPreview = ({ fileId }: { fileId: string }) => {
+const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
   const navigate = useNavigate();
   const {
     remove: { mutateAsync: removePhoto, status: removePhotoStatus },
@@ -30,19 +30,20 @@ const PhotoPreview = ({ fileId }: { fileId: string }) => {
   const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
     targetDrive: targetDrive,
     photoFileId: fileId,
+    album: albumKey,
   });
 
   const doClose = () => {
-    navigate('/');
+    navigate(`/${albumKey ? `album/${albumKey}` : ''}`);
   };
 
   // TODO: Preload siblings
   const doNext = () => {
-    navigate(`/photo/${nextSibling?.fileId}`);
+    navigate(`${albumKey ? `/album/${albumKey}` : ''}/photo/${nextSibling?.fileId}`);
   };
 
   const doPrev = () => {
-    navigate(`/photo/${prevSibling?.fileId}`);
+    navigate(`${albumKey ? `/album/${albumKey}` : ''}/photo/${prevSibling?.fileId}`);
   };
 
   useEffect(() => {

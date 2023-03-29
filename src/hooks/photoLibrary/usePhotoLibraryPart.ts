@@ -1,11 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import {
-  TargetDrive,
-  ApiType,
-  DotYouClient,
-  getPhotoLibrary,
-  DriveSearchResult,
-} from '@youfoundation/dotyoucore-js';
+import { TargetDrive, DriveSearchResult } from '@youfoundation/dotyoucore-js';
+import { getPhotoLibrary } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 
 export interface usePhotoLibraryPartReturn {
@@ -15,9 +10,11 @@ export interface usePhotoLibraryPartReturn {
 
 const usePhotoLibraryPart = ({
   targetDrive,
+  album,
   pageSize,
 }: {
   targetDrive: TargetDrive;
+  album?: string;
   pageSize: number;
 }) => {
   const { getDotYouClient } = useAuth();
@@ -26,18 +23,20 @@ const usePhotoLibraryPart = ({
 
   const fetchLibraryPart = async ({
     targetDrive,
+    album,
     cursorState,
   }: {
     targetDrive: TargetDrive;
+    album?: string;
     cursorState?: string;
   }): Promise<usePhotoLibraryPartReturn> => {
-    return await getPhotoLibrary(dotYouClient, targetDrive, pageSize, cursorState);
+    return await getPhotoLibrary(dotYouClient, targetDrive, album, pageSize, cursorState);
   };
 
   return {
     fetchLibraryPart: useInfiniteQuery(
-      ['photo-library-parts', targetDrive.alias],
-      ({ pageParam }) => fetchLibraryPart({ targetDrive, cursorState: pageParam }),
+      ['photo-library-parts', targetDrive.alias, album],
+      ({ pageParam }) => fetchLibraryPart({ targetDrive, album, cursorState: pageParam }),
       {
         getNextPageParam: (lastPage) =>
           (lastPage?.results?.length === pageSize && lastPage?.cursorState) ?? undefined,

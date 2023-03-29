@@ -1,17 +1,20 @@
-import { PhotoConfig } from '@youfoundation/dotyoucore-js';
 import { lazy, Suspense, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import NewAlbumDialog from '../../components/Dialog/NewAlbumDialog/NewAlbumDialog';
 import PhotoLibrary from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import Uploader from '../../components/Photos/PhotoUploader/PhotoUploader';
 import ActionButton from '../../components/ui/Buttons/ActionButton';
+import ActionButtonWithOptions from '../../components/ui/Buttons/ActionButtonWithOptions';
 import Heart from '../../components/ui/Icons/Heart/Heart';
 import Image from '../../components/ui/Icons/Image/Image';
 import Times from '../../components/ui/Icons/Times/Times';
 import Upload from '../../components/ui/Icons/Upload/Upload';
 import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
+import useAblums from '../../hooks/photoLibrary/useAlbums';
 import usePhoto from '../../hooks/photoLibrary/usePhoto';
 import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
+import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
@@ -21,8 +24,7 @@ const Photos = () => {
 
   const { toggleSelection, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
-
-  if (albumKey) console.log({ albumKey });
+  const navigate = useNavigate();
 
   return (
     <>
@@ -39,17 +41,24 @@ const Photos = () => {
         isSelecting={isSelecting}
         selection={selection}
         clearSelection={clearSelection}
+        albumKey={albumKey}
       />
       <Uploader isFileSelectorOpen={isFileSelectorOpen} setFileSelectorOpen={setFileSelectorOpen} />
       <PhotoLibrary
         toggleSelection={toggleSelection}
+        albumKey={albumKey}
         isSelected={isSelected}
         isSelecting={isSelecting}
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} />
+          <PhotoPreview fileId={photoKey} albumKey={albumKey} />
         </Suspense>
+      ) : null}
+      {albumKey === 'new' ? (
+        <>
+          <NewAlbumDialog isOpen={true} onCancel={() => navigate(-1)} />
+        </>
       ) : null}
     </>
   );
@@ -59,15 +68,21 @@ const PhotoSelection = ({
   selection,
   clearSelection,
   isSelecting,
+  albumKey,
 }: {
   selection: string[];
   clearSelection: () => void;
   isSelecting: boolean;
+  albumKey?: string;
 }) => {
   const {
     remove: { mutateAsync: removePhoto },
-    updatePhoto: { mutateAsync: updatePhoto },
+    addTags: { mutateAsync: addTagsToPhoto },
+    removeTags: { mutateAsync: removeTagsFromPhoto },
   } = usePhoto(PhotoConfig.PhotoDrive);
+  const navigate = useNavigate();
+
+  const { data: albums } = useAblums().fetch;
 
   if (!isSelecting) {
     return null;
@@ -86,13 +101,47 @@ const PhotoSelection = ({
   const favoriteSelection = async () => {
     await Promise.all(
       selection.map(async (fileId) => {
-        updatePhoto({
+        addTagsToPhoto({
           targetDrive: PhotoConfig.PhotoDrive,
           fileId: fileId,
-          metadata: { tag: [PhotoConfig.FavoriteTag] },
+          addTags: [PhotoConfig.FavoriteTag],
         });
       })
     );
+
+    clearSelection();
+  };
+
+  const addSelectionToAlbum = async (albumTag: string) => {
+    if (!albumTag) return;
+
+    await Promise.all(
+      selection.map(async (fileId) => {
+        addTagsToPhoto({
+          targetDrive: PhotoConfig.PhotoDrive,
+          fileId: fileId,
+          addTags: [albumTag],
+        });
+      })
+    );
+
+    clearSelection();
+  };
+
+  const removeSelectionFromAlbum = async (albumTag: string) => {
+    if (!albumTag) return;
+
+    await Promise.all(
+      selection.map(async (fileId) => {
+        removeTagsFromPhoto({
+          targetDrive: PhotoConfig.PhotoDrive,
+          fileId: fileId,
+          removeTags: [albumTag],
+        });
+      })
+    );
+
+    clearSelection();
   };
 
   return (
@@ -123,10 +172,27 @@ const PhotoSelection = ({
           className="p-3"
           size="square"
           type="secondary"
-          onClick={() => {
-            favoriteSelection();
-          }}
+          onClick={() => favoriteSelection()}
         />
+        {albums && !albumKey ? (
+          <ActionButtonWithOptions
+            type="secondary"
+            options={[
+              ...albums.map((album) => {
+                return { name: album.name, onClick: () => addSelectionToAlbum(album.tag) };
+              }),
+              { name: `+ ${t('new album')}`, onClick: () => navigate('/album/new') },
+            ]}
+          >
+            {t('Add to album')}
+          </ActionButtonWithOptions>
+        ) : null}
+
+        {albumKey ? (
+          <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+            {t('Remove from album')}
+          </ActionButton>
+        ) : null}
       </div>
     </div>
   );
