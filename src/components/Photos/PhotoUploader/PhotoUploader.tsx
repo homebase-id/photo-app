@@ -22,7 +22,7 @@ const Uploader = ({
   setFileSelectorOpen: (isOpen: boolean) => void;
 }) => {
   const [uploadQueue, setUploadQueue] = useState<File[]>([]);
-  const inputRef = useRef<HTMLInputElement>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const addToUploadQueue = (newFiles: File[]) => {
     setUploadQueue((prevVal) => [...prevVal, ...newFiles]);

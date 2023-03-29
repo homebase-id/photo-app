@@ -19,7 +19,7 @@ const DialogWrapper = ({
   isSidePanel?: boolean;
   isPaddingLess?: boolean;
 }) => {
-  const wrapperRef = useRef(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   useOutsideTrigger(wrapperRef, () => !keepOpenOnBlur && onClose && onClose());
 
   return (
