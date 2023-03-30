@@ -52,6 +52,7 @@ const Photos = () => {
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
+        setFileSelectorOpen={setFileSelectorOpen}
         albumKey={albumKey}
         isSelected={isSelected}
         isSelecting={isSelecting}

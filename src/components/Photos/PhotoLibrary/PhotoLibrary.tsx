@@ -9,6 +9,7 @@ import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoPreview';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
+import ActionButton from '../../ui/Buttons/ActionButton';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -76,11 +77,13 @@ const PhotoLibrary = ({
   toggleSelection,
   isSelected,
   isSelecting,
+  setFileSelectorOpen,
 }: {
   albumKey?: string;
   toggleSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
+  setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
   const {
     data: photoLibraryPart,
@@ -145,6 +148,28 @@ const PhotoLibrary = ({
 
   if (!photoLibraryPart || !photoLibrary || !monthsToShow) {
     return null;
+  }
+
+  if (!monthsToShow?.length) {
+    return (
+      <div className="flex flex-row">
+        <p className="my-auto">{t('Mmh, this looks empty... Time to add some photos?')} </p>
+        {setFileSelectorOpen && (
+          <ActionButton
+            onClick={(e) => {
+              e.preventDefault();
+              setFileSelectorOpen && setFileSelectorOpen(true);
+
+              return false;
+            }}
+            type="secondary"
+            className="ml-2"
+          >
+            {t('Add')}
+          </ActionButton>
+        )}
+      </div>
+    );
   }
 
   return (

@@ -26,7 +26,7 @@ const Auth = () => {
 
   const doAuth: FormEventHandler = (e) => {
     e.preventDefault();
-    authenticate(identity, window.location.href);
+    authenticate(identity, '/');
   };
 
   return (
