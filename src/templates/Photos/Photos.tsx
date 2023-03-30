@@ -45,7 +45,11 @@ const Photos = () => {
         clearSelection={clearSelection}
         albumKey={albumKey}
       />
-      <Uploader isFileSelectorOpen={isFileSelectorOpen} setFileSelectorOpen={setFileSelectorOpen} />
+      <Uploader
+        isFileSelectorOpen={isFileSelectorOpen}
+        setFileSelectorOpen={setFileSelectorOpen}
+        albumKey={albumKey}
+      />
       <PhotoLibrary
         toggleSelection={toggleSelection}
         albumKey={albumKey}

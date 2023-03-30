@@ -17,9 +17,11 @@ const maxVisible = 10;
 const Uploader = ({
   isFileSelectorOpen,
   setFileSelectorOpen,
+  albumKey,
 }: {
   isFileSelectorOpen: boolean;
   setFileSelectorOpen: (isOpen: boolean) => void;
+  albumKey?: string;
 }) => {
   const [uploadQueue, setUploadQueue] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +71,7 @@ const Uploader = ({
               photoFile={photo}
               key={`${photo.name}_${photo.size}`}
               remove={() => removeFromUploadQueue(photo)}
+              albumKey={albumKey}
             />
           ))}
           {uploadQueue.length > maxVisible ? (
@@ -84,7 +87,15 @@ const Uploader = ({
   );
 };
 
-const NewPhoto = ({ photoFile, remove }: { photoFile: File; remove: () => void }) => {
+const NewPhoto = ({
+  photoFile,
+  remove,
+  albumKey,
+}: {
+  photoFile: File;
+  remove: () => void;
+  albumKey?: string;
+}) => {
   const [previewUrl, setPreviewUrl] = useState<string>();
   const {
     mutateAsync: doUploadToServer,
@@ -100,7 +111,7 @@ const NewPhoto = ({ photoFile, remove }: { photoFile: File; remove: () => void }
       if (!isUploading.current) {
         isUploading.current = true;
 
-        await doUploadToServer({ newPhoto: photoFile });
+        await doUploadToServer({ newPhoto: photoFile, albumKey: albumKey });
         remove();
 
         isUploading.current = false;
@@ -151,7 +162,7 @@ const UploadStatusIcon = ({
 }) => {
   if (uploadError) console.error(uploadError);
   return (
-    <div className="absolute top-2 right-2">
+    <div className="absolute right-2 top-2">
       {uploadStatus === 'loading' ? (
         <>
           <Loader className="h-5 w-5" />

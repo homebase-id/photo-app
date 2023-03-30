@@ -47,7 +47,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     return await fetchDataPromise();
   };
 
-  const uploadPhoto = async ({ newPhoto }: { newPhoto: File }) => {
+  const uploadPhoto = async ({ newPhoto, albumKey }: { newPhoto: File; albumKey?: string }) => {
     if (!targetDrive) {
       return null;
     }
@@ -70,6 +70,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       {
         type: newPhoto.type as ImageContentType,
         userDate: DateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
+        tag: albumKey ? [albumKey] : undefined,
       }
     );
   };
