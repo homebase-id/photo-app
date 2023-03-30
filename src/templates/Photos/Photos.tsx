@@ -11,7 +11,8 @@ import Times from '../../components/ui/Icons/Times/Times';
 import Upload from '../../components/ui/Icons/Upload/Upload';
 import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
-import useAblums from '../../hooks/photoLibrary/useAlbums';
+import useAlbum from '../../hooks/photoLibrary/useAlbum';
+import useAlbums from '../../hooks/photoLibrary/useAlbums';
 import usePhoto from '../../hooks/photoLibrary/usePhoto';
 import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
@@ -21,6 +22,7 @@ const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/Pho
 const Photos = () => {
   const [isFileSelectorOpen, setFileSelectorOpen] = useState(false);
   const { photoKey, albumKey } = useParams();
+  const { data: album } = useAlbum(albumKey).fetch;
 
   const { toggleSelection, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
@@ -29,7 +31,7 @@ const Photos = () => {
   return (
     <>
       <PageMeta
-        title={t('Photos')}
+        title={album?.name || t('Photos')}
         icon={Image}
         actions={
           <ActionButton icon={Upload} type="secondary" onClick={() => setFileSelectorOpen(true)}>
@@ -82,7 +84,7 @@ const PhotoSelection = ({
   } = usePhoto(PhotoConfig.PhotoDrive);
   const navigate = useNavigate();
 
-  const { data: albums } = useAblums().fetch;
+  const { data: albums } = useAlbums().fetch;
 
   if (!isSelecting) {
     return null;

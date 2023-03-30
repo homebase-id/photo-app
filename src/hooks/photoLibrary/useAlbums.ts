@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAllAlbums } from '../../provider/photos/AlbumProvider';
 import useAuth from '../auth/useAuth';
 
-const useAblums = () => {
+const useAlbums = () => {
   const { getDotYouClient, isAuthenticated } = useAuth();
   const dotYouClient = getDotYouClient();
 
@@ -17,4 +17,4 @@ const useAblums = () => {
   };
 };
 
-export default useAblums;
+export default useAlbums;
