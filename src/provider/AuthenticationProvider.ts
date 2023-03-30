@@ -4,6 +4,7 @@ import {
   DotYouClient,
   uint8ArrayToBase64,
 } from '@youfoundation/dotyoucore-js';
+import { getBrowser, getOperatingSystem } from '../helpers/browserInfo';
 import { retrieveIdentity, saveIdentity } from './IdentityProvider';
 import { decryptWithKey, newPair, throwAwayTheKey } from './KeyProvider';
 
@@ -58,7 +59,10 @@ export const authenticate = async (identity: string, returnUrl: string): Promise
   const pk = await newPair();
 
   const currentUrl = `${window.location.origin}/auth/finalize?`;
-  const redirectUrl = `https://${identity}/owner/appreg?n=Photos&appId=32f0bdbf-017f-4fc0-8004-2d4631182d1e&fn=Browser&ui=minimal&return=${currentUrl}&d=${drivesParam}&pk=${encodeURIComponent(
+  const appName = 'Odin - Photos';
+  const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
+  const clientFriendly = `${getBrowser()} | ${getOperatingSystem()}`;
+  const redirectUrl = `https://${identity}/owner/appreg?n=${appName}&appId=${appId}&fn=${clientFriendly}&return=${currentUrl}&d=${drivesParam}&pk=${encodeURIComponent(
     pk
   )}`;
   window.location.href = redirectUrl;

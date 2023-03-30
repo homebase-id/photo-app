@@ -8,6 +8,7 @@ import { t } from '../../../helpers/i18n/dictionary';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoPreview';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
+import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -155,7 +156,7 @@ const PhotoLibrary = ({
         }}
       >
         <div
-          className="absolute top-0 left-0 w-full"
+          className="absolute left-0 top-0 w-full"
           style={{
             transform: `translateY(${items[0].start - virtualizer.options.scrollMargin}px)`,
           }}
@@ -331,6 +332,61 @@ const PhotoItem = ({
           </button>
         </div>
       </Link>
+    </div>
+  );
+};
+
+export const WireframePhotos = ({ className }: { className?: string }) => {
+  return (
+    <div className={className ?? ''}>
+      <section className="mb-5">
+        <LoadingParagraph className="mb-2 h-4 w-72" />
+        <div className={gridClasses}>
+          {Array(3)
+            .fill(0)
+            .map((val, index) => {
+              return (
+                <div className={`${divClasses} w-[250px]`} key={index}>
+                  <LoadingParagraph className={imgWrapperClasses} />
+                </div>
+              );
+            })}
+          {/* This div fills up the space of the last row */}
+          <div className="hidden flex-grow-[999] lg:block"></div>
+        </div>
+      </section>
+      <section className="mb-5">
+        <LoadingParagraph className="mb-2 h-4 w-72" />
+        <div className={gridClasses}>
+          {Array(14)
+            .fill(0)
+            .map((val, index) => {
+              return (
+                <div className={`${divClasses} w-[250px]`} key={index}>
+                  <LoadingParagraph className={imgWrapperClasses} />
+                </div>
+              );
+            })}
+          {/* This div fills up the space of the last row */}
+          <div className="hidden flex-grow-[999] lg:block"></div>
+        </div>
+      </section>
+      <section className="mb-5">
+        <LoadingParagraph className="mb-2 h-4 w-72" />
+        <div className={gridClasses}>
+          {Array(5)
+            .fill(0)
+            .map((val, index) => {
+              return (
+                <div className={`${divClasses} w-[250px]`} key={index}>
+                  <LoadingParagraph className={imgWrapperClasses} />
+                </div>
+              );
+            })}
+          {/* This div fills up the space of the last row */}
+          <div className="hidden flex-grow-[999] lg:block"></div>
+        </div>
+      </section>
     </div>
   );
 };

@@ -29,18 +29,19 @@ const useAuth = () => {
     authenticateYouAuth(strippedIdentity, returnUrl);
   };
 
-  const finalizeAuthentication = async (
-    registrationData: string | null,
-    v: string | null,
-    returnUrl: string | null
-  ) => {
-    if (!registrationData || !v || !returnUrl) {
-      return;
+  const finalizeAuthentication = async (registrationData: string | null, v: string | null) => {
+    if (!registrationData || !v) {
+      return false;
     }
 
-    await finalizeAuthenticationYouAuth(registrationData, v);
+    try {
+      await finalizeAuthenticationYouAuth(registrationData, v);
+    } catch (ex) {
+      console.error(ex);
+      return false;
+    }
 
-    window.location.href = returnUrl;
+    return true;
   };
 
   const logout = async (): Promise<void> => {
@@ -91,8 +92,8 @@ const useAuth = () => {
 
       if (!hasValidToken) {
         setAuthenticationState('anonymous');
-        console.log('Token is invalid, logging out..');
         if (window.localStorage.getItem(APP_SHARED_SECRET)) {
+          console.log('Token is invalid, logging out..');
           // Auth state was presumed logged in, but not allowed.. Will attempt reload page?
           //  (Browsers may ignore, as it's not a reload on user request)
           logout();

@@ -3,7 +3,7 @@ import { getAllAlbums } from '../../provider/photos/AlbumProvider';
 import useAuth from '../auth/useAuth';
 
 const useAblums = () => {
-  const { getDotYouClient } = useAuth();
+  const { getDotYouClient, isAuthenticated } = useAuth();
   const dotYouClient = getDotYouClient();
 
   const fetchAllAlbums = async () => {
@@ -11,7 +11,9 @@ const useAblums = () => {
   };
 
   return {
-    fetch: useQuery(['albums'], () => fetchAllAlbums()),
+    fetch: useQuery(['albums'], () => fetchAllAlbums(), {
+      enabled: isAuthenticated,
+    }),
   };
 };
 

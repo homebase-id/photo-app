@@ -12,7 +12,7 @@ interface LayoutProps {
 const SHADED_BG = 'bg-[rgb(246,_248,_250)] dark:bg-gray-900 dark:text-gray-400';
 const NOT_SHADED_BG = 'bg-white dark:bg-black';
 
-const Layout: FC<LayoutProps> = ({ children, noShadedBg }) => {
+const Layout: FC<LayoutProps> = ({ children, noShadedBg, noPadding }) => {
   const [searchParams] = useSearchParams();
   const uiSetting = searchParams.get('ui');
 
@@ -28,7 +28,9 @@ const Layout: FC<LayoutProps> = ({ children, noShadedBg }) => {
     <div className={`relative flex flex-row ${noShadedBg ? NOT_SHADED_BG : SHADED_BG}`}>
       <Sidenav />
       <div className={`flex min-h-screen w-full flex-col`}>
-        <div className="min-h-full py-4 px-2 sm:py-8 sm:px-10">{children}</div>
+        <div className={`min-h-full ${noPadding ? '' : 'px-2 py-4 sm:px-10 sm:py-8'}`}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -38,7 +40,7 @@ export const MinimalLayout: FC<LayoutProps> = ({ children, noShadedBg, noPadding
   useDarkMode();
   return (
     <div className={`relative min-h-screen ${noShadedBg ? NOT_SHADED_BG : SHADED_BG}`}>
-      <div className={`${noPadding ? '' : 'py-4 px-5 sm:py-8 sm:px-10'}`}>{children}</div>
+      <div className={`${noPadding ? '' : 'px-5 py-4 sm:px-10 sm:py-8'}`}>{children}</div>
     </div>
   );
 };

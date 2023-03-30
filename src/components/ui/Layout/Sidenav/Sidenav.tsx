@@ -32,7 +32,7 @@ const Sidenav = () => {
   const isDesktop = document.documentElement.clientWidth >= 1024;
   const storedState = localStorage.getItem(STORAGE_KEY);
   const overruledOpen = storedState ? storedState === '1' : undefined;
-  const [isOpen, setIsOpen] = useState(overruledOpen ?? true);
+  const [isOpen, setIsOpen] = useState(overruledOpen ?? isDesktop);
   const [isHoverOpen, setIsHoverOpen] = useState(false);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const Sidenav = () => {
         <Bars className={`h-4 w-4`} />
       </button>
       <aside
-        className={`body-font fixed top-0 left-0 right-0 bottom-0 z-40 h-screen flex-shrink-0 transition-transform duration-300 lg:sticky lg:transition-all ${
+        className={`body-font fixed bottom-0 left-0 right-0 top-0 z-40 h-screen flex-shrink-0 transition-transform duration-300 lg:sticky lg:transition-all ${
           isOpen
             ? 'translate-x-0 lg:min-w-[18rem]'
             : 'w-full translate-x-[-100%] lg:w-[4.3rem] lg:min-w-0 lg:translate-x-0'
@@ -63,7 +63,7 @@ const Sidenav = () => {
             isOpen ? 'overflow-y-auto lg:overflow-visible' : 'hover:sticky hover:w-[18rem]'
           } static top-0 h-full w-full transition-all lg:sticky lg:h-auto lg:whitespace-nowrap ${sidebarBg}`}
         >
-          <div className="flex h-screen flex-col overflow-auto px-3 pt-3 pb-5">
+          <div className="flex h-screen flex-col overflow-auto px-3 pb-5 pt-3">
             <div>
               <button className={navItemClassName} onClick={() => setIsOpen(!isOpen)}>
                 {isOpen ? <Times className={iconClassName} /> : <Bars className={iconClassName} />}
@@ -178,7 +178,7 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
         <hr className="border-b dark:border-slate-500" />
         <button className={navItemClassName} onClick={() => toggleDarkMode()}>
           <MiniDarkModeToggle className={`my-auto ${iconClassName}`} />
-          <span className={`my-auto mx-3`}>{isDarkMode ? t('Light mode') : t('Dark mode')}</span>
+          <span className={`mx-3 my-auto`}>{isDarkMode ? t('Light mode') : t('Dark mode')}</span>
         </button>
       </div>
     </div>
