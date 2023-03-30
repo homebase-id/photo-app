@@ -6,6 +6,7 @@ import {
   ImageSize,
   getDecryptedImageUrl,
   DriveSearchResult,
+  MediaConfig,
 } from '@youfoundation/dotyoucore-js';
 import { PhotoFile } from './PhotoTypes';
 
@@ -18,7 +19,11 @@ export const getPhotoLibrary = async (
 ) => {
   const reponse = await queryBatch(
     dotYouClient,
-    { targetDrive: targetDrive, tagsMatchAll: album ? [album] : undefined },
+    {
+      targetDrive: targetDrive,
+      tagsMatchAll: album ? [album] : undefined,
+      fileType: [MediaConfig.MediaFileType],
+    },
     { cursorState: cursorState, maxRecords: pageSize, includeMetadataHeader: false }
   );
 
