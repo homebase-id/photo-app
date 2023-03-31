@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import useAuth from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
+import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
 
 export const LoginBox = () => {
   const [params, setParams] = useState<string | null>(null);
@@ -8,9 +9,16 @@ export const LoginBox = () => {
 
   useEffect(() => {
     (async () => {
-      setParams(await getRegistrationParams('/'));
+      if (!params) setParams(await getRegistrationParams('/'));
     })();
   }, []);
+
+  if (!params)
+    return (
+      <>
+        <LoadingParagraph className="h-[16rem] w-full " />
+      </>
+    );
 
   return (
     <iframe

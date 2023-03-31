@@ -30,7 +30,9 @@ const Auth = () => {
               {t('Authorization failed, please try again')}
             </Alert>
           )}
-          <LoginBox />
+          <div className="min-w-[20rem] p-8 pt-6">
+            <LoginBox />
+          </div>
         </DialogWrapper>
       </Layout>
     </>
