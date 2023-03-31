@@ -7,6 +7,7 @@ import { ErrorBoundary } from '../components/ui/Layout/ErrorBoundary/ErrorBounda
 import Layout from '../components/ui/Layout/Layout';
 import LoadingDetailPage from '../components/ui/Layout/Loaders/LoadingDetailPage/LoadingDetailPage';
 import useAuth from '../hooks/auth/useAuth';
+import About from '../templates/About/About';
 
 const Photos = lazy(() => import('../templates/Photos/Photos'));
 const NotFound = lazy(() => import('../templates/NotFound/NotFound'));
@@ -28,6 +29,7 @@ function App() {
         <Router>
           <Suspense>
             <Routes>
+              <Route path="about" element={<About />}></Route>
               <Route path="auth" element={<Auth />}></Route>
               <Route path="auth/finalize" element={<FinalizeAuth />}></Route>
               <Route
@@ -80,7 +82,7 @@ const RootRoute = ({ children }: { children: ReactNode }) => {
       return <></>;
     }
 
-    return <Navigate to={`${AUTH_PATH}`} />;
+    return <Navigate to={`/about`} />;
   }
 
   return <>{children}</>;
