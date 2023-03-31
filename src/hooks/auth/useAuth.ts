@@ -8,6 +8,7 @@ import {
   finalizeAuthentication as finalizeAuthenticationYouAuth,
   APP_AUTH_TOKEN,
   APP_SHARED_SECRET,
+  getRegistrationParams,
 } from '../../provider/AuthenticationProvider';
 import { retrieveIdentity } from '../../provider/IdentityProvider';
 
@@ -29,13 +30,17 @@ const useAuth = () => {
     authenticateYouAuth(strippedIdentity, returnUrl);
   };
 
-  const finalizeAuthentication = async (registrationData: string | null, v: string | null) => {
+  const finalizeAuthentication = async (
+    registrationData: string | null,
+    v: string | null,
+    identity: string | null
+  ) => {
     if (!registrationData || !v) {
       return false;
     }
 
     try {
-      await finalizeAuthenticationYouAuth(registrationData, v);
+      await finalizeAuthenticationYouAuth(registrationData, v, identity);
     } catch (ex) {
       console.error(ex);
       return false;
@@ -103,6 +108,7 @@ const useAuth = () => {
   }, [hasValidToken]);
 
   return {
+    getRegistrationParams,
     authenticate,
     finalizeAuthentication,
     logout,

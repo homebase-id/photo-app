@@ -12,11 +12,12 @@ const AuthFinalize = () => {
 
   const data = decodeURIComponent(searchParams.get('d') || '');
   const v = decodeURIComponent(searchParams.get('v') || '');
+  const id = decodeURIComponent(searchParams.get('id') || '');
   const returnUrl = decodeURIComponent(searchParams.get('returnUrl') || '');
 
   useEffect(() => {
     (async () => {
-      const authState = await finalizeAuthentication(data, v);
+      const authState = await finalizeAuthentication(data, v, id);
       setState(authState ? 'success' : 'error');
     })();
   }, []);

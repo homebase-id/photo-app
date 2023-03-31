@@ -1,5 +1,5 @@
 const LOCALSTORAGE_KEY = 'prefersDark';
-const IS_DARK_CLASSNAME = 'dark';
+export const IS_DARK_CLASSNAME = 'dark';
 
 const useDarkMode = () => {
   const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
