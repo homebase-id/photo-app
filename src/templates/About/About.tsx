@@ -29,7 +29,7 @@ const About = () => {
                   className="m-auto max-w-[min(28rem,100%)] rounded-xl object-cover shadow-lg"
                 />
               </div>
-              <div className="flex">
+              <div className="flex px-5">
                 <img
                   src={image2}
                   className="m-auto mt-0 max-w-[min(20rem,100%)] rounded-xl shadow-lg"
@@ -46,18 +46,18 @@ const About = () => {
               <div className="flex px-5">
                 <img
                   src={image6}
-                  className="m-auto mb-0 max-w-[min(20rem,100%)] rounded-xl shadow-lg"
+                  className="m-auto mb-0 max-w-[min(30rem,100%)] rounded-xl shadow-lg"
                 />
               </div>
               <div className="flex">
-                <img src={image3} className="m-auto rounded-xl shadow-lg" />
+                <img src={image3} className="m-auto max-w-[min(28rem,100%)] rounded-xl shadow-lg" />
               </div>
             </div>
           </div>
         </div>
 
         <div className="relative z-10">
-          <h2 className="mb-5 text-center text-5xl">Keep your memories safe</h2>
+          <h2 className="mb-5 text-center text-5xl">{t('Keep your memories safe')}</h2>
           <div className="flex justify-center">
             <ActionLink href="/auth" className="w-auto">
               {t('Go to Odin Photos')}
