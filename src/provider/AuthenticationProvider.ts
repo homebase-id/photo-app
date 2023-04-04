@@ -62,9 +62,11 @@ export const getRegistrationParams = async (returnUrl: string) => {
   const appName = 'Odin - Photos';
   const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
   const clientFriendly = `${getBrowser()} | ${getOperatingSystem()}`;
-  return `n=${appName}&appId=${appId}&fn=${encodeURIComponent(
-    clientFriendly
-  )}&return=${encodeURIComponent(finalizeUrl)}&d=${drivesParam}&pk=${encodeURIComponent(pk)}`;
+  return `n=${appName}&o=${
+    window.location.host.split(':')[0]
+  }&appId=${appId}&fn=${encodeURIComponent(clientFriendly)}&return=${encodeURIComponent(
+    finalizeUrl
+  )}&d=${drivesParam}&pk=${encodeURIComponent(pk)}`;
 };
 
 export const authenticate = async (identity: string, returnUrl: string): Promise<void> => {
