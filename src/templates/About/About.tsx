@@ -57,7 +57,7 @@ const About = () => {
         </div>
 
         <div className="relative z-10">
-          <h2 className="mb-5 text-center text-5xl">{t('Keep your memories safe')}</h2>
+          <h2 className="mb-5 text-center text-5xl">{t('Keep your memories yours')}</h2>
           <div className="flex justify-center">
             <ActionLink href="/auth" className="w-auto">
               {t('Go to Odin Photos')}
