@@ -111,7 +111,26 @@ export const finalizeAuthentication = async (
   throwAwayTheKey();
 };
 
-export const logout = () => {
+export const logout = async () => {
+  const dotYouClient = new DotYouClient({
+    api: ApiType.App,
+    root: retrieveIdentity(),
+    sharedSecret: getSharedSecret(),
+  });
+  const client = dotYouClient.createAxiosClient();
+
+  await client
+    .post('/auth/logout', undefined, {
+      validateStatus: () => true,
+      headers: {
+        BX0900: localStorage.getItem(APP_AUTH_TOKEN),
+      },
+    })
+    .catch((error) => {
+      console.error({ error });
+      return { status: 400, data: false };
+    });
+
   window.localStorage.removeItem(APP_SHARED_SECRET);
   window.localStorage.removeItem(APP_AUTH_TOKEN);
 };
