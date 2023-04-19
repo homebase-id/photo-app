@@ -51,7 +51,7 @@ const Uploader = ({
   }, [isFileSelectorOpen]);
 
   return (
-    <section className="mb-1">
+    <section className={`${uploadQueue?.length ? 'mb-1' : ''}`}>
       <input
         ref={inputRef}
         onChange={(e) => {
@@ -62,7 +62,7 @@ const Uploader = ({
         type="file"
         multiple={true}
         accept="image/png, image/jpeg, image/tiff, image/webp, image/svg+xml"
-        className={`invisible max-w-full`}
+        className={`sr-only invisible max-w-full`}
       />
       {uploadQueue?.length ? (
         <div className={`${gridClasses}`}>

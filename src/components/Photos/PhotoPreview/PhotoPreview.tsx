@@ -24,7 +24,8 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
   const navigate = useNavigate();
   const {
     remove: { mutateAsync: removePhoto, status: removePhotoStatus },
-    updatePhoto: { mutateAsync: updatePhoto },
+    addTags: { mutateAsync: addTagsToPhoto },
+    removeTags: { mutateAsync: removeTagsFromPhoto },
   } = usePhoto(targetDrive);
 
   const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
@@ -82,11 +83,19 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
   );
 
   const doFavorite = () => {
-    updatePhoto({
-      targetDrive: targetDrive,
-      fileId: fileId,
-      metadata: { tag: isFavorite ? [] : [PhotoConfig.FavoriteTag] },
-    });
+    if (isFavorite) {
+      removeTagsFromPhoto({
+        targetDrive,
+        fileId,
+        removeTags: [PhotoConfig.FavoriteTag],
+      });
+    } else {
+      addTagsToPhoto({
+        targetDrive,
+        fileId,
+        addTags: [PhotoConfig.FavoriteTag],
+      });
+    }
   };
 
   return (

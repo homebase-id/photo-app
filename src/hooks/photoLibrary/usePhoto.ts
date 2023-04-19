@@ -8,6 +8,8 @@ import {
   deleteFile,
   getFileHeader,
   getPayloadBytes,
+  stringGuidsEqual,
+  DriveSearchResult,
 } from '@youfoundation/dotyoucore-js';
 import useAuth from '../auth/useAuth';
 
@@ -104,6 +106,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         type: payload.contentType,
         ...metadata,
         fileId: fileId,
+        versionTag: header.fileMetadata.versionTag,
       });
     }
   };
@@ -117,22 +120,27 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     fileId: string;
     addTags: string[];
   }) => {
-    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
-    const existingTags = header.fileMetadata.appData.tags || [];
+    const header = await getFileHeader(dotYouClient, targetDrive, fileId, undefined, true);
+    const existingTags =
+      header.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
 
     const keyheader = header.fileMetadata.payloadIsEncrypted
       ? header.sharedSecretEncryptedKeyHeader
       : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, undefined);
 
     if (payload) {
       const bytes = new Uint8Array(payload.bytes);
       await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
         userDate: header.fileMetadata.appData.userDate,
         type: payload.contentType,
-        tag: Array.from(new Set([...existingTags, ...addTags])),
+        tag: Array.from(
+          new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
+        ),
         fileId: fileId,
+        versionTag: header.fileMetadata.versionTag,
       });
+      console.log('done');
     }
   };
 
@@ -145,22 +153,28 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     fileId: string;
     removeTags: string[];
   }) => {
-    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
+    const header = await getFileHeader(dotYouClient, targetDrive, fileId, undefined, true);
     const existingTags = header.fileMetadata.appData.tags || [];
 
     const keyheader = header.fileMetadata.payloadIsEncrypted
       ? header.sharedSecretEncryptedKeyHeader
       : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, undefined);
 
     if (payload) {
       const bytes = new Uint8Array(payload.bytes);
       await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
         userDate: header.fileMetadata.appData.userDate,
         type: payload.contentType,
-        tag: [...existingTags.filter((tag) => !removeTags.includes(tag))],
+        tag: [
+          ...existingTags.filter(
+            (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
+          ),
+        ],
         fileId: fileId,
+        versionTag: header.fileMetadata.versionTag,
       });
+      console.log('done');
     }
   };
 
@@ -262,6 +276,55 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
     }),
     addTags: useMutation(addTags, {
+      onMutate: (newPhotoData) => {
+        let updatedDsr: DriveSearchResult | undefined;
+
+        const getUpdatedDsr = (existingDsr: DriveSearchResult) => {
+          if (updatedDsr) return updatedDsr;
+
+          updatedDsr = {
+            ...existingDsr,
+            fileMetadata: {
+              ...existingDsr.fileMetadata,
+              appData: {
+                ...existingDsr.fileMetadata.appData,
+                tags: [
+                  ...(existingDsr.fileMetadata.appData.tags || []),
+                  ...newPhotoData.addTags.map((tag) => tag.replaceAll('-', '')),
+                ],
+              },
+            },
+          };
+
+          return updatedDsr;
+        };
+
+        [...newPhotoData.addTags, undefined].forEach((tag) => {
+          const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
+            'photo-library-parts',
+            targetDrive?.alias,
+            tag,
+          ]);
+
+          if (previousParts?.pages) {
+            const newParts: InfiniteData<usePhotoLibraryPartReturn> = {
+              ...previousParts,
+              pages: previousParts.pages.map((page) => {
+                return {
+                  ...page,
+                  results: page.results.map((photoDsr) => {
+                    if (photoDsr.fileId === newPhotoData.fileId) {
+                      return getUpdatedDsr(photoDsr);
+                    }
+                    return photoDsr;
+                  }),
+                };
+              }),
+            };
+            queryClient.setQueryData(['photo-library-parts', targetDrive?.alias, tag], newParts);
+          }
+        });
+      },
       onSettled: (data, error, variables) => {
         variables.addTags.forEach((tag) => {
           queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias, tag]);
@@ -269,6 +332,59 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
     }),
     removeTags: useMutation(removeTags, {
+      onMutate: (newPhotoData) => {
+        let updatedDsr: DriveSearchResult | undefined;
+
+        const getUpdatedDsr = (existingDsr: DriveSearchResult) => {
+          if (updatedDsr) return updatedDsr;
+
+          updatedDsr = {
+            ...existingDsr,
+            fileMetadata: {
+              ...existingDsr.fileMetadata,
+              appData: {
+                ...existingDsr.fileMetadata.appData,
+                tags: [
+                  ...(existingDsr.fileMetadata.appData.tags?.filter(
+                    (tag) =>
+                      !newPhotoData.removeTags.some((toRemoveTag) =>
+                        stringGuidsEqual(toRemoveTag, tag)
+                      )
+                  ) || []),
+                ],
+              },
+            },
+          };
+
+          return updatedDsr;
+        };
+
+        [...newPhotoData.removeTags, undefined].forEach((tag) => {
+          const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
+            'photo-library-parts',
+            targetDrive?.alias,
+            tag,
+          ]);
+
+          if (previousParts?.pages) {
+            const newParts: InfiniteData<usePhotoLibraryPartReturn> = {
+              ...previousParts,
+              pages: previousParts.pages.map((page) => {
+                return {
+                  ...page,
+                  results: page.results.map((photoDsr) => {
+                    if (photoDsr.fileId === newPhotoData.fileId) {
+                      return getUpdatedDsr(photoDsr);
+                    }
+                    return photoDsr;
+                  }),
+                };
+              }),
+            };
+            queryClient.setQueryData(['photo-library-parts', targetDrive?.alias, tag], newParts);
+          }
+        });
+      },
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
           queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias, tag]);

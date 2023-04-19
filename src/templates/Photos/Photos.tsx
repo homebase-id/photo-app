@@ -16,6 +16,7 @@ import useAlbums from '../../hooks/photoLibrary/useAlbums';
 import usePhoto from '../../hooks/photoLibrary/usePhoto';
 import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
+import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
@@ -34,9 +35,12 @@ const Photos = () => {
         title={album?.name || t('Photos')}
         icon={Image}
         actions={
-          <ActionButton icon={Upload} type="secondary" onClick={() => setFileSelectorOpen(true)}>
-            {t('Upload')}
-          </ActionButton>
+          <>
+            <ActionButton icon={Upload} type="secondary" onClick={() => setFileSelectorOpen(true)}>
+              {t('Upload')}
+            </ActionButton>
+            <LoginNav />
+          </>
         }
       />
       <PhotoSelection
@@ -87,8 +91,6 @@ const PhotoSelection = ({
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
   } = usePhoto(PhotoConfig.PhotoDrive);
-  const navigate = useNavigate();
-
   const { data: albums } = useAlbums().fetch;
 
   if (!isSelecting) {
@@ -188,7 +190,6 @@ const PhotoSelection = ({
               ...albums.map((album) => {
                 return { name: album.name, onClick: () => addSelectionToAlbum(album.tag) };
               }),
-              { name: `+ ${t('new album')}`, onClick: () => navigate('/album/new') },
             ]}
           >
             {t('Add to album')}

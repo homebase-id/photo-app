@@ -114,6 +114,7 @@ const useAuth = () => {
     logout,
     getDotYouClient,
     getSharedSecret,
+    getIdentity: retrieveIdentity,
     isAuthenticated: authenticationState !== 'anonymous',
   };
 };

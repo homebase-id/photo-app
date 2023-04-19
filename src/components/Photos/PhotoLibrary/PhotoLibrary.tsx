@@ -92,7 +92,7 @@ const PhotoLibrary = ({
     isFetchingNextPage,
   } = usePhotoLibraryPart({
     targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey,
+    album: albumKey && albumKey !== 'new' ? albumKey : undefined,
     pageSize: 50,
   }).fetchLibraryPart;
 

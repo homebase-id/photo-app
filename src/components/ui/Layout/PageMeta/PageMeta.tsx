@@ -14,8 +14,8 @@ const PageMeta = ({
 }) => {
   return (
     <section
-      className="-mx-2 -mt-4 mb-10 border-b border-gray-100 bg-white py-1 px-2 dark:border-gray-800 dark:bg-black sm:-mx-10
-    sm:-mt-8 sm:px-10 lg:py-8"
+      className="-mx-2 -mt-4 mb-10 border-b border-gray-100 bg-white px-2 py-1 dark:border-gray-800 dark:bg-black sm:-mx-10
+    sm:-mt-8 sm:px-10 lg:py-2"
     >
       <div className="-m-1 flex min-h-[3rem] flex-row flex-wrap items-center sm:flex-nowrap">
         <div className="flex-col p-1">
@@ -55,7 +55,7 @@ const PageMeta = ({
         </div>
         {actions ? (
           <div className="ml-auto p-1">
-            <div className="grid grid-flow-col gap-2">{actions}</div>
+            <div className="grid grid-flow-col items-center gap-2">{actions}</div>
           </div>
         ) : null}
       </div>
