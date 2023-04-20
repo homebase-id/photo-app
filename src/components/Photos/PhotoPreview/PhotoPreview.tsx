@@ -2,6 +2,7 @@ import {
   base64ToUint8Array,
   DriveSearchResult,
   EmbeddedThumb,
+  ImageMetadata,
   ImageSize,
   stringGuidsEqual,
   TargetDrive,
@@ -18,6 +19,7 @@ import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
 import Loader from '../../ui/Icons/Loader/Loader';
 import Question from '../../ui/Icons/Question/Question';
 import Times from '../../ui/Icons/Times/Times';
+import usePhotoMetadata from '../../../hooks/photoLibrary/usePhotoMeta';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -239,6 +241,8 @@ export const PhotoInfo = ({
   current?: DriveSearchResult;
   setIsInfoOpen: (infoOpen: boolean) => void;
 }) => {
+  const { data: photoMetadata } = usePhotoMetadata(targetDrive, current?.fileId).fetchMeta;
+
   const date = useMemo(() => {
     if (current?.fileMetadata.appData.userDate)
       return new Date(current.fileMetadata.appData.userDate);
@@ -251,20 +255,51 @@ export const PhotoInfo = ({
   return (
     <div className="fixed inset-0 z-30 h-screen w-full bg-white md:static md:w-[27rem]">
       <div className="px-8 py-7">
-        <div className="mb-5 flex flex-row">
+        <div className="mb-10 flex flex-row">
           <button onClick={() => setIsInfoOpen(false)} className="mr-2">
             <Times className="h-6 w-6" />
           </button>
           <h1 className="text-xl">{t('Details')}</h1>
         </div>
-        <div>
-          <p>
-            {date?.toLocaleDateString(undefined, dateFormat)}
-            <small className="block">{date?.toLocaleTimeString(undefined, timeFormat)}</small>
-          </p>
-        </div>
+        <ul className="flex flex-col gap-7">
+          <li>
+            <p>
+              {date?.toLocaleDateString(undefined, dateFormat)}
+              <small className="block">{date?.toLocaleTimeString(undefined, timeFormat)}</small>
+            </p>
+          </li>
+          {photoMetadata ? <PhotoCaptureDetails metadata={photoMetadata} /> : null}
+        </ul>
       </div>
     </div>
+  );
+};
+
+const PhotoCaptureDetails = ({ metadata }: { metadata: ImageMetadata }) => {
+  if (!metadata) {
+    return null;
+  }
+
+  const details = metadata.captureDetails;
+  const fNumber = details.fNumber ? `f/${details.fNumber}` : null;
+  const exposureTime = details.exposureTime ? `1/${1 / parseFloat(details.exposureTime)}` : null;
+  const focalLength = details.focalLength ? `${details.focalLength}mm` : null;
+  const iso = details.iso ? `ISO${details.iso}` : null;
+
+  return (
+    <li>
+      {metadata.camera ? (
+        <p>
+          {metadata.camera.make} {metadata.camera.model}
+        </p>
+      ) : null}
+      {details ? (
+        <small className="flex w-full max-w-[12rem] flex-row justify-between">
+          <span>{fNumber}</span> <span>{exposureTime}</span> <span>{focalLength}</span>{' '}
+          <span>{iso}</span>
+        </small>
+      ) : null}
+    </li>
   );
 };
 

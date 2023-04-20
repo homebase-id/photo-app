@@ -10,6 +10,9 @@ import {
   getPayloadBytes,
   stringGuidsEqual,
   DriveSearchResult,
+  toGuidId,
+  ImageMetadata,
+  getDecryptedImageMetadata,
 } from '@youfoundation/dotyoucore-js';
 import useAuth from '../auth/useAuth';
 
@@ -58,21 +61,36 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     // Read Exif Data for the Created date of the photo itself and not the file;
     let exifData;
     try {
-      exifData = await exifr.parse(bytes, ['DateTimeOriginal']);
+      exifData = await exifr.parse(bytes);
     } catch (ex) {
       // some photos don't have exif data, which fails the parsing
     }
     const DateTimeOriginal = exifData?.DateTimeOriginal;
+    const ImageUniqueId = exifData?.ImageUniqueID;
+
+    const imageMetadata: ImageMetadata | undefined = exifData
+      ? {
+          camera: { make: exifData.Make, model: exifData.Model, lens: exifData.LensModel },
+          captureDetails: {
+            exposureTime: exifData.ExposureTime,
+            fNumber: exifData.FNumber,
+            iso: exifData.ISO,
+            focalLength: exifData.FocalLength,
+          },
+        }
+      : undefined;
 
     return await uploadImage(
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
       bytes,
+      imageMetadata,
       {
         type: newPhoto.type as ImageContentType,
         userDate: DateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
         tag: albumKey ? [albumKey] : undefined,
+        uniqueId: ImageUniqueId ? toGuidId(ImageUniqueId) : undefined,
       }
     );
   };
@@ -98,16 +116,24 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       ? header.sharedSecretEncryptedKeyHeader
       : undefined;
     const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+    const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 
     if (payload) {
       const bytes = new Uint8Array(payload.bytes);
-      await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
-        userDate: header.fileMetadata.appData.userDate,
-        type: payload.contentType,
-        ...metadata,
-        fileId: fileId,
-        versionTag: header.fileMetadata.versionTag,
-      });
+      await uploadImage(
+        dotYouClient,
+        targetDrive,
+        header.serverMetadata.accessControlList,
+        bytes,
+        imageMetadata,
+        {
+          userDate: header.fileMetadata.appData.userDate,
+          type: payload.contentType,
+          ...metadata,
+          fileId: fileId,
+          versionTag: header.fileMetadata.versionTag,
+        }
+      );
     }
   };
 
@@ -127,19 +153,27 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     const keyheader = header.fileMetadata.payloadIsEncrypted
       ? header.sharedSecretEncryptedKeyHeader
       : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, undefined);
+    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+    const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 
     if (payload) {
       const bytes = new Uint8Array(payload.bytes);
-      await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
-        userDate: header.fileMetadata.appData.userDate,
-        type: payload.contentType,
-        tag: Array.from(
-          new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
-        ),
-        fileId: fileId,
-        versionTag: header.fileMetadata.versionTag,
-      });
+      await uploadImage(
+        dotYouClient,
+        targetDrive,
+        header.serverMetadata.accessControlList,
+        bytes,
+        imageMetadata,
+        {
+          userDate: header.fileMetadata.appData.userDate,
+          type: payload.contentType,
+          tag: Array.from(
+            new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
+          ),
+          fileId: fileId,
+          versionTag: header.fileMetadata.versionTag,
+        }
+      );
       console.log('done');
     }
   };
@@ -159,21 +193,29 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     const keyheader = header.fileMetadata.payloadIsEncrypted
       ? header.sharedSecretEncryptedKeyHeader
       : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, undefined);
+    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
+    const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 
     if (payload) {
       const bytes = new Uint8Array(payload.bytes);
-      await uploadImage(dotYouClient, targetDrive, header.serverMetadata.accessControlList, bytes, {
-        userDate: header.fileMetadata.appData.userDate,
-        type: payload.contentType,
-        tag: [
-          ...existingTags.filter(
-            (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
-          ),
-        ],
-        fileId: fileId,
-        versionTag: header.fileMetadata.versionTag,
-      });
+      await uploadImage(
+        dotYouClient,
+        targetDrive,
+        header.serverMetadata.accessControlList,
+        bytes,
+        imageMetadata,
+        {
+          userDate: header.fileMetadata.appData.userDate,
+          type: payload.contentType,
+          tag: [
+            ...existingTags.filter(
+              (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
+            ),
+          ],
+          fileId: fileId,
+          versionTag: header.fileMetadata.versionTag,
+        }
+      );
       console.log('done');
     }
   };

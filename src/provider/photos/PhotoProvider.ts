@@ -7,6 +7,9 @@ import {
   getDecryptedImageUrl,
   DriveSearchResult,
   MediaConfig,
+  getFileHeader,
+  getDecryptedImageMetadata,
+  ImageMetadata,
 } from '@youfoundation/dotyoucore-js';
 import { PhotoFile } from './PhotoTypes';
 
@@ -86,4 +89,12 @@ const dsrToPhoto = async (
       isProbablyEncrypted
     ),
   };
+};
+
+export const getPhotoMetadata = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  fileId: string
+): Promise<ImageMetadata> => {
+  return await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 };
