@@ -1,5 +1,6 @@
 import {
   base64ToUint8Array,
+  DriveSearchResult,
   EmbeddedThumb,
   ImageSize,
   stringGuidsEqual,
@@ -20,19 +21,93 @@ import Times from '../../ui/Icons/Times/Times';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
+const dateFormat: Intl.DateTimeFormatOptions = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  weekday: 'short',
+};
+
+const timeFormat: Intl.DateTimeFormatOptions = {
+  hour: 'numeric',
+  minute: 'numeric',
+  weekday: 'short',
+  timeZoneName: 'short',
+};
+
 const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
+  const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
+    targetDrive: targetDrive,
+    photoFileId: fileId,
+    album: albumKey,
+  });
+
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  if (!fileId) {
+    return null;
+  }
+
+  return (
+    <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
+      <div
+        className="flex w-full flex-row items-center py-2 lg:py-0"
+        onClick={(e) => e.stopPropagation()}
+      ></div>
+      <div className="flex h-screen max-w-[100vw] flex-row justify-center">
+        <div className="relative w-full">
+          <PhotoActions
+            fileId={fileId}
+            albumKey={albumKey}
+            current={current}
+            nextSibling={nextSibling}
+            prevSibling={prevSibling}
+            setIsInfoOpen={setIsInfoOpen}
+            isInfoOpen={isInfoOpen}
+          />
+          <PhotoWithLoader
+            fileId={fileId}
+            targetDrive={targetDrive}
+            previewThumbnail={current?.fileMetadata.appData.previewThumbnail}
+            size={{ pixelWidth: 1600, pixelHeight: 1600 }}
+            fit="contain"
+            key={fileId}
+          />
+        </div>
+        {isInfoOpen ? <PhotoInfo current={current} setIsInfoOpen={setIsInfoOpen} /> : null}
+      </div>
+    </div>
+  );
+};
+
+export const PhotoActions = ({
+  fileId,
+  albumKey,
+  current,
+  nextSibling,
+  prevSibling,
+  setIsInfoOpen,
+  isInfoOpen,
+}: {
+  fileId: string;
+  albumKey?: string;
+  current?: DriveSearchResult;
+  nextSibling?: DriveSearchResult;
+  prevSibling?: DriveSearchResult;
+  setIsInfoOpen: (isOpen: boolean) => void;
+  isInfoOpen: boolean;
+}) => {
   const navigate = useNavigate();
+
   const {
     remove: { mutateAsync: removePhoto, status: removePhotoStatus },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
   } = usePhoto(targetDrive);
 
-  const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
-    targetDrive: targetDrive,
-    photoFileId: fileId,
-    album: albumKey,
-  });
+  const isFavorite = current?.fileMetadata.appData.tags?.some((tag) =>
+    stringGuidsEqual(tag, PhotoConfig.FavoriteTag)
+  );
 
   const doClose = () => {
     navigate(`/${albumKey ? `album/${albumKey}` : ''}`);
@@ -74,14 +149,6 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
     };
   }, [fileId]);
 
-  if (!fileId) {
-    return null;
-  }
-
-  const isFavorite = current?.fileMetadata.appData.tags?.some((tag) =>
-    stringGuidsEqual(tag, PhotoConfig.FavoriteTag)
-  );
-
   const doFavorite = () => {
     if (isFavorite) {
       removeTagsFromPhoto({
@@ -99,82 +166,100 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 overflow-auto bg-black bg-opacity-90 backdrop-blur-sm dark:bg-black`}
-      onClick={() => doClose()}
-    >
-      <div
-        className="flex w-full flex-row items-center py-2 lg:py-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="fixed right-3 top-3 z-10 flex w-[50%] flex-row-reverse gap-2">
-          <ActionButton
-            icon={'trash'}
-            onClick={async () => {
-              await removePhoto({ photoFileId: fileId });
-              if (nextSibling) doNext();
-              else doClose();
-            }}
-            state={removePhotoStatus}
-            className="p-3"
-            size="square"
-            type="secondary"
-            confirmOptions={{
-              title: t('Remove Photo'),
-              body: t('Are you sure you want to remove this photo?'),
-              buttonText: t('Remove'),
-            }}
-          />
-          <ActionButton
-            icon={Question}
-            onClick={doClose}
-            className="p-3"
-            size="square"
-            type="secondary"
-          />
-          <ActionButton
-            icon={isFavorite ? SolidHeart : Heart}
-            onClick={() => doFavorite()}
-            className="p-3"
-            size="square"
-            type="secondary"
-          />
-        </div>
+    <>
+      <div className="absolute right-3 top-3 z-10 flex w-[50%] flex-row-reverse gap-2">
         <ActionButton
-          icon={Times}
-          onClick={doClose}
-          className="left-3 top-3 z-10 rounded-full p-3 lg:fixed"
+          icon={'trash'}
+          onClick={async () => {
+            await removePhoto({ photoFileId: fileId });
+            if (nextSibling) doNext();
+            else doClose();
+          }}
+          state={removePhotoStatus}
+          className="p-3"
+          size="square"
+          type="secondary"
+          confirmOptions={{
+            title: t('Remove Photo'),
+            body: t('Are you sure you want to remove this photo?'),
+            buttonText: t('Remove'),
+          }}
+        />
+        <ActionButton
+          icon={Question}
+          onClick={() => setIsInfoOpen(!isInfoOpen)}
+          className="p-3"
           size="square"
           type="secondary"
         />
-        {prevSibling ? (
-          <ActionButton
-            icon={ArrowLeft}
-            onClick={() => doPrev()}
-            className="absolute left-2 top-[calc(50%-1.25rem)] z-10 rounded-full p-3"
-            size="square"
-            type="secondary"
-          />
-        ) : null}
-        {nextSibling ? (
-          <ActionButton
-            icon={Arrow}
-            onClick={() => doNext()}
-            className="absolute right-2 top-[calc(50%-1.25rem)] z-10 rounded-full p-3"
-            size="square"
-            type="secondary"
-          />
-        ) : null}
-      </div>
-      <div className="flex h-screen max-w-[100vw] flex-col justify-center">
-        <PhotoWithLoader
-          fileId={fileId}
-          targetDrive={targetDrive}
-          previewThumbnail={current?.fileMetadata.appData.previewThumbnail}
-          size={{ pixelWidth: 1600, pixelHeight: 1600 }}
-          fit="contain"
-          key={fileId}
+        <ActionButton
+          icon={isFavorite ? SolidHeart : Heart}
+          onClick={() => doFavorite()}
+          className="p-3"
+          size="square"
+          type="secondary"
         />
+      </div>
+      <ActionButton
+        icon={Times}
+        onClick={doClose}
+        className="left-3 top-3 z-10 rounded-full p-3 lg:fixed"
+        size="square"
+        type="secondary"
+      />
+      {prevSibling ? (
+        <ActionButton
+          icon={ArrowLeft}
+          onClick={() => doPrev()}
+          className="absolute left-2 top-[calc(50%-1.25rem)] z-10 rounded-full p-3"
+          size="square"
+          type="secondary"
+        />
+      ) : null}
+      {nextSibling ? (
+        <ActionButton
+          icon={Arrow}
+          onClick={() => doNext()}
+          className="absolute right-2 top-[calc(50%-1.25rem)] z-10 rounded-full p-3"
+          size="square"
+          type="secondary"
+        />
+      ) : null}
+    </>
+  );
+};
+
+export const PhotoInfo = ({
+  current,
+  setIsInfoOpen,
+}: {
+  current?: DriveSearchResult;
+  setIsInfoOpen: (infoOpen: boolean) => void;
+}) => {
+  const date = useMemo(() => {
+    if (current?.fileMetadata.appData.userDate)
+      return new Date(current.fileMetadata.appData.userDate);
+
+    if (current?.fileMetadata.created) return new Date(current.fileMetadata.created);
+
+    return null;
+  }, [current]);
+
+  return (
+    <div className="fixed inset-0 z-30 h-screen w-full bg-white md:static md:w-[27rem]">
+      <div className="px-8 py-7">
+        <div className="mb-5 flex flex-row">
+          <button onClick={() => setIsInfoOpen(false)} className="mr-2">
+            <Times className="h-6 w-6" />
+          </button>
+          <h1 className="text-xl">{t('Details')}</h1>
+        </div>
+        <div>
+          <p>
+            {date?.toLocaleDateString(undefined, dateFormat)}
+            <small className="block">{date?.toLocaleTimeString(undefined, timeFormat)}</small>
+          </p>
+        </div>
       </div>
     </div>
   );

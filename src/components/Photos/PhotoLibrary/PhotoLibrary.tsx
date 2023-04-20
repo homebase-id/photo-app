@@ -215,22 +215,20 @@ const PhotoLibrary = ({
                 <h1 className="text-2xl">
                   {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
                 </h1>
-                {days.map((day) => {
-                  return (
-                    <PhotoSection
-                      title={createDateObject(year, month, day).toLocaleDateString(
-                        undefined,
-                        dateFormat
-                      )}
-                      targetDrive={PhotoConfig.PhotoDrive}
-                      photos={photoLibrary[year][month][day]}
-                      key={`${year}-${month}-${day}`}
-                      toggleSelection={toggleSelection}
-                      isSelected={isSelected}
-                      isSelecting={isSelecting}
-                    />
-                  );
-                })}
+                {days.map((day) => (
+                  <PhotoSection
+                    title={createDateObject(year, month, day).toLocaleDateString(
+                      undefined,
+                      dateFormat
+                    )}
+                    targetDrive={PhotoConfig.PhotoDrive}
+                    photos={photoLibrary[year][month][day]}
+                    key={`${year}-${month}-${day}`}
+                    toggleSelection={toggleSelection}
+                    isSelected={isSelected}
+                    isSelecting={isSelecting}
+                  />
+                ))}
               </div>
             );
           })}
