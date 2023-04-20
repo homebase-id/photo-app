@@ -124,14 +124,17 @@ export const PhotoActions = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.key === 'ArrowLeft' && prevSibling) {
-        doPrev();
-      } else if (e.key === 'ArrowRight' && nextSibling) {
-        doNext();
-      } else if (e.key === 'Escape') {
-        doClose();
+      if (['ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === 'ArrowLeft' && prevSibling) {
+          doPrev();
+        } else if (e.key === 'ArrowRight' && nextSibling) {
+          doNext();
+        } else if (e.key === 'Escape') {
+          doClose();
+        }
       }
     };
 
