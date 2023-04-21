@@ -12,6 +12,9 @@ const useAlbums = () => {
 
   return {
     fetch: useQuery(['albums'], () => fetchAllAlbums(), {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      staleTime: 300000,
       enabled: isAuthenticated,
     }),
   };

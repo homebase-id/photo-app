@@ -50,6 +50,9 @@ export const useAlbumThumbnail = (albumKey?: string) => {
 
   return {
     fetch: useQuery(['album-thumb', albumKey], () => fetch(albumKey), {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
       enabled: !!albumKey,
     }),
   };
