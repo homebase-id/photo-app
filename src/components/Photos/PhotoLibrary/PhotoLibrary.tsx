@@ -10,6 +10,7 @@ import { PhotoWithLoader } from '../PhotoPreview/PhotoPreview';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
 import ActionButton from '../../ui/Buttons/ActionButton';
+import PhotoScroll from '../PhotoScroll/PhotoScroll';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -173,68 +174,71 @@ const PhotoLibrary = ({
   }
 
   return (
-    <div ref={parentRef}>
-      <div
-        className="relative w-full"
-        style={{
-          height: virtualizer.getTotalSize(),
-        }}
-      >
+    <>
+      <div ref={parentRef}>
         <div
-          className="absolute left-0 top-0 w-full"
+          className="relative w-full select-none"
           style={{
-            transform: `translateY(${items[0].start - virtualizer.options.scrollMargin}px)`,
+            height: virtualizer.getTotalSize(),
           }}
         >
-          {items.map((virtualRow) => {
-            const isLoaderRow = virtualRow.index > monthsToShow.length - 1;
-            if (isLoaderRow) {
-              return hasMorePhotos || isFetchingNextPage ? (
-                <div className="mt-5 animate-pulse" key={'loading'}>
-                  {t('Loading...')}
-                </div>
-              ) : (
-                <div className="mt-5 italic opacity-50" key={'no-more'}>
-                  {t('No more photos')}
+          <div
+            className="absolute left-0 top-0 w-full"
+            style={{
+              transform: `translateY(${items[0].start - virtualizer.options.scrollMargin}px)`,
+            }}
+          >
+            {items.map((virtualRow) => {
+              const isLoaderRow = virtualRow.index > monthsToShow.length - 1;
+              if (isLoaderRow) {
+                return hasMorePhotos || isFetchingNextPage ? (
+                  <div className="mt-5 animate-pulse" key={'loading'}>
+                    {t('Loading...')}
+                  </div>
+                ) : (
+                  <div className="mt-5 italic opacity-50" key={'no-more'}>
+                    {t('No more photos')}
+                  </div>
+                );
+              }
+
+              const monthMeta = monthsToShow[virtualRow.index];
+
+              const year = monthMeta.monthDate.year;
+              const month = monthMeta.monthDate.month;
+              const days = Object.keys(monthMeta.days).reverse();
+
+              return (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                >
+                  <h1 className="text-2xl">
+                    {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
+                  </h1>
+                  {days.map((day) => (
+                    <PhotoSection
+                      title={createDateObject(year, month, day).toLocaleDateString(
+                        undefined,
+                        dateFormat
+                      )}
+                      targetDrive={PhotoConfig.PhotoDrive}
+                      photos={photoLibrary[year][month][day]}
+                      key={`${year}-${month}-${day}`}
+                      toggleSelection={toggleSelection}
+                      isSelected={isSelected}
+                      isSelecting={isSelecting}
+                    />
+                  ))}
                 </div>
               );
-            }
-
-            const monthMeta = monthsToShow[virtualRow.index];
-
-            const year = monthMeta.monthDate.year;
-            const month = monthMeta.monthDate.month;
-            const days = Object.keys(monthMeta.days).reverse();
-
-            return (
-              <div
-                key={virtualRow.key}
-                data-index={virtualRow.index}
-                ref={virtualizer.measureElement}
-              >
-                <h1 className="text-2xl">
-                  {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
-                </h1>
-                {days.map((day) => (
-                  <PhotoSection
-                    title={createDateObject(year, month, day).toLocaleDateString(
-                      undefined,
-                      dateFormat
-                    )}
-                    targetDrive={PhotoConfig.PhotoDrive}
-                    photos={photoLibrary[year][month][day]}
-                    key={`${year}-${month}-${day}`}
-                    toggleSelection={toggleSelection}
-                    isSelected={isSelected}
-                    isSelecting={isSelecting}
-                  />
-                ))}
-              </div>
-            );
-          })}
+            })}
+          </div>
         </div>
       </div>
-    </div>
+      <PhotoScroll albumKey={albumKey} />
+    </>
   );
 };
 

@@ -18,7 +18,6 @@ const usePhotoLibraryPart = ({
   pageSize: number;
 }) => {
   const { getDotYouClient } = useAuth();
-
   const dotYouClient = getDotYouClient();
 
   const fetchLibraryPart = async ({
