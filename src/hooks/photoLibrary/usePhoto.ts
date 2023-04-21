@@ -1,30 +1,16 @@
 import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
-  uploadImage,
-  SecurityGroupType,
   ImageSize,
-  ImageContentType,
-  deleteFile,
   getFileHeader,
-  getPayloadBytes,
   stringGuidsEqual,
   DriveSearchResult,
-  toGuidId,
-  ImageMetadata,
-  getDecryptedImageMetadata,
 } from '@youfoundation/dotyoucore-js';
 import useAuth from '../auth/useAuth';
 
-import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
-import { getPhoto } from '../../provider/photos/PhotoProvider';
+import { getPhoto, updatePhoto, uploadPhoto } from '../../provider/photos/PhotoProvider';
 import { PhotoFile } from '../../provider/photos/PhotoTypes';
-
-interface UpdatableMeta {
-  tag?: string | undefined | string[];
-  userDate?: number;
-}
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
   const queryClient = useQueryClient();
@@ -41,100 +27,39 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     fileId?: string;
     size?: ImageSize;
   }) => {
-    if (!targetDrive || !fileId) {
-      return null;
-    }
+    if (!targetDrive || !fileId) return null;
 
-    const fetchDataPromise = () => {
-      return getPhoto(dotYouClient, targetDrive, fileId, size, true);
-    };
-
-    return await fetchDataPromise();
+    return await getPhoto(dotYouClient, targetDrive, fileId, size, true);
   };
 
-  const uploadPhoto = async ({ newPhoto, albumKey }: { newPhoto: File; albumKey?: string }) => {
-    if (!targetDrive) {
-      return null;
-    }
+  const uploadNewPhoto = async ({ newPhoto, albumKey }: { newPhoto: File; albumKey?: string }) => {
+    if (!targetDrive) return null;
 
-    const bytes = new Uint8Array(await newPhoto.arrayBuffer());
-    // Read Exif Data for the Created date of the photo itself and not the file;
-    let exifData;
-    try {
-      exifData = await exifr.parse(bytes);
-    } catch (ex) {
-      // some photos don't have exif data, which fails the parsing
-    }
-    const DateTimeOriginal = exifData?.DateTimeOriginal;
-    const ImageUniqueId = exifData?.ImageUniqueID;
-
-    const imageMetadata: ImageMetadata | undefined = exifData
-      ? {
-          camera: { make: exifData.Make, model: exifData.Model, lens: exifData.LensModel },
-          captureDetails: {
-            exposureTime: exifData.ExposureTime,
-            fNumber: exifData.FNumber,
-            iso: exifData.ISO,
-            focalLength: exifData.FocalLength,
-          },
-        }
-      : undefined;
-
-    return await uploadImage(
-      dotYouClient,
-      targetDrive,
-      { requiredSecurityGroup: SecurityGroupType.Owner },
-      bytes,
-      imageMetadata,
-      {
-        type: newPhoto.type as ImageContentType,
-        userDate: DateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
-        tag: albumKey ? [albumKey] : undefined,
-        uniqueId: ImageUniqueId ? toGuidId(ImageUniqueId) : undefined,
-      }
-    );
+    return await uploadPhoto(dotYouClient, targetDrive, newPhoto, albumKey);
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
-    if (!targetDrive) {
-      return null;
-    }
-    return await deleteFile(dotYouClient, targetDrive, photoFileId);
+    if (!targetDrive) return null;
+
+    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+      archivalStatus: 2,
+    });
   };
 
-  const updateMeta = async ({
-    targetDrive,
-    fileId,
-    metadata,
-  }: {
-    targetDrive: TargetDrive;
-    fileId: string;
-    metadata: UpdatableMeta;
-  }) => {
-    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
-    const keyheader = header.fileMetadata.payloadIsEncrypted
-      ? header.sharedSecretEncryptedKeyHeader
-      : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
-    const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
+  const archivePhoto = async ({ photoFileId }: { photoFileId: string }) => {
+    if (!targetDrive) return null;
 
-    if (payload) {
-      const bytes = new Uint8Array(payload.bytes);
-      await uploadImage(
-        dotYouClient,
-        targetDrive,
-        header.serverMetadata.accessControlList,
-        bytes,
-        imageMetadata,
-        {
-          userDate: header.fileMetadata.appData.userDate,
-          type: payload.contentType,
-          ...metadata,
-          fileId: fileId,
-          versionTag: header.fileMetadata.versionTag,
-        }
-      );
-    }
+    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+      archivalStatus: 1,
+    });
+  };
+
+  const restorePhoto = async ({ photoFileId }: { photoFileId: string }) => {
+    if (!targetDrive) return null;
+
+    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+      archivalStatus: 0,
+    });
   };
 
   const addTags = async ({
@@ -147,35 +72,16 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     addTags: string[];
   }) => {
     const header = await getFileHeader(dotYouClient, targetDrive, fileId, undefined, true);
+
     const existingTags =
       header.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
+    const newTags = Array.from(
+      new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
+    );
 
-    const keyheader = header.fileMetadata.payloadIsEncrypted
-      ? header.sharedSecretEncryptedKeyHeader
-      : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
-    const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
-
-    if (payload) {
-      const bytes = new Uint8Array(payload.bytes);
-      await uploadImage(
-        dotYouClient,
-        targetDrive,
-        header.serverMetadata.accessControlList,
-        bytes,
-        imageMetadata,
-        {
-          userDate: header.fileMetadata.appData.userDate,
-          type: payload.contentType,
-          tag: Array.from(
-            new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
-          ),
-          fileId: fileId,
-          versionTag: header.fileMetadata.versionTag,
-        }
-      );
-      console.log('done');
-    }
+    return await updatePhoto(dotYouClient, targetDrive, fileId, {
+      tag: newTags,
+    });
   };
 
   const removeTags = async ({
@@ -189,35 +95,15 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   }) => {
     const header = await getFileHeader(dotYouClient, targetDrive, fileId, undefined, true);
     const existingTags = header.fileMetadata.appData.tags || [];
+    const newTags = [
+      ...existingTags.filter(
+        (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
+      ),
+    ];
 
-    const keyheader = header.fileMetadata.payloadIsEncrypted
-      ? header.sharedSecretEncryptedKeyHeader
-      : undefined;
-    const payload = await getPayloadBytes(dotYouClient, targetDrive, fileId, keyheader);
-    const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
-
-    if (payload) {
-      const bytes = new Uint8Array(payload.bytes);
-      await uploadImage(
-        dotYouClient,
-        targetDrive,
-        header.serverMetadata.accessControlList,
-        bytes,
-        imageMetadata,
-        {
-          userDate: header.fileMetadata.appData.userDate,
-          type: payload.contentType,
-          tag: [
-            ...existingTags.filter(
-              (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
-            ),
-          ],
-          fileId: fileId,
-          versionTag: header.fileMetadata.versionTag,
-        }
-      );
-      console.log('done');
-    }
+    return await updatePhoto(dotYouClient, targetDrive, fileId, {
+      tag: newTags,
+    });
   };
 
   return {
@@ -245,12 +131,10 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         )[0].queryKey;
 
         const existingCachedImage = queryClient.getQueryData<PhotoFile>(bestKey);
-        if (existingCachedImage) {
-          return existingCachedImage;
-        }
+        if (existingCachedImage) return existingCachedImage;
       }
     },
-    upload: useMutation(uploadPhoto, {
+    upload: useMutation(uploadNewPhoto, {
       onSuccess: () => {
         queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
       },
@@ -259,6 +143,32 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
     }),
     remove: useMutation(removePhoto, {
+      onMutate: (toRemovePhotoData) => {
+        queryClient
+          .getQueryCache()
+          .findAll(['photo-library-parts', targetDrive?.alias])
+          .forEach((query) => {
+            const queryKey = query.queryKey;
+            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
+            const queryData =
+              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
+
+            if (!queryData) return;
+
+            // Remove from all other libraryTypes
+            if (libraryType !== 'bin') {
+              queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
+                ...queryData,
+                pages: queryData.pages.map((page) => ({
+                  ...page,
+                  results: page.results.filter(
+                    (photo) => photo.fileId !== toRemovePhotoData.photoFileId
+                  ),
+                })),
+              });
+            }
+          });
+      },
       onSuccess: (_param, _data) => {
         queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
         queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
@@ -267,51 +177,71 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         console.error(ex);
       },
     }),
-    updatePhoto: useMutation(updateMeta, {
-      onMutate: (newPhotoData) => {
-        const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
-          'photo-library-parts',
-          targetDrive?.alias,
-          undefined,
-        ]);
+    archive: useMutation(archivePhoto, {
+      onMutate: (toArchivePhotoData) => {
+        queryClient
+          .getQueryCache()
+          .findAll(['photo-library-parts', targetDrive?.alias])
+          .forEach((query) => {
+            const queryKey = query.queryKey;
+            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
+            const queryData =
+              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
 
-        if (previousParts?.pages) {
-          const newParts: InfiniteData<usePhotoLibraryPartReturn> = {
-            ...previousParts,
-            pages: previousParts.pages.map((page) => {
-              return {
-                ...page,
-                results: page.results.map((photo) => {
-                  if (photo.fileId === newPhotoData.fileId) {
-                    return {
-                      ...photo,
-                      fileMetadata: {
-                        ...photo.fileMetadata,
-                        appData: {
-                          ...photo.fileMetadata.appData,
-                          tags: newPhotoData.metadata.tag
-                            ? [
-                                ...(Array.isArray(newPhotoData.metadata.tag)
-                                  ? newPhotoData.metadata.tag
-                                  : [newPhotoData.metadata.tag]),
-                              ]
-                            : null,
-                          userDate:
-                            newPhotoData.metadata.userDate || photo.fileMetadata.appData.userDate,
-                        },
-                      },
-                    };
-                  }
-                  return photo;
-                }),
-              };
-            }),
-          };
-          queryClient.setQueryData(
-            ['photo-library-parts', targetDrive?.alias, undefined],
-            newParts
-          );
-        }
+            if (!queryData) return;
+
+            // Remove from all other libraryTypes
+            if (libraryType !== 'archive') {
+              queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
+                ...queryData,
+                pages: queryData.pages.map((page) => ({
+                  ...page,
+                  results: page.results.filter(
+                    (photo) => photo.fileId !== toArchivePhotoData.photoFileId
+                  ),
+                })),
+              });
+            }
+          });
+      },
+      onSuccess: (_param, _data) => {
+        queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
+        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
+      },
+      onError: (ex) => {
+        console.error(ex);
+      },
+    }),
+    restore: useMutation(restorePhoto, {
+      onMutate: (toRestorePhotoData) => {
+        queryClient
+          .getQueryCache()
+          .findAll(['photo-library-parts', targetDrive?.alias])
+          .forEach((query) => {
+            const queryKey = query.queryKey;
+            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
+            const queryData =
+              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
+
+            if (!queryData) return;
+
+            // Remove from all other libraryTypes
+            if (libraryType === 'archive' || libraryType === 'bin') {
+              queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
+                ...queryData,
+                pages: queryData.pages.map((page) => ({
+                  ...page,
+                  results: page.results.filter(
+                    (photo) => photo.fileId !== toRestorePhotoData.photoFileId
+                  ),
+                })),
+              });
+            }
+          });
+      },
+      onSuccess: (_param, _data) => {
+        queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
+        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);

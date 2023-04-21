@@ -85,7 +85,8 @@ const Sidenav = () => {
             </div>
 
             <div className="py-3">
-              <NavItem icon={Trash} label={'Archive'} to={`/archive`} end={true} />
+              <NavItem icon={Archive} label={'Archive'} to={`/archive`} end={true} />
+              <NavItem icon={Trash} label={'Bin'} to={`/bin`} end={true} />
             </div>
 
             <MoreItems isOpen={isOpen || isHoverOpen} />

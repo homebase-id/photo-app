@@ -10,8 +10,16 @@ import {
   getFileHeader,
   getDecryptedImageMetadata,
   ImageMetadata,
+  ImageContentType,
+  SecurityGroupType,
+  toGuidId,
+  uploadImage,
+  getPayloadBytes,
+  MediaUploadMeta,
 } from '@youfoundation/dotyoucore-js';
+
 import { PhotoFile } from './PhotoTypes';
+import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
@@ -20,12 +28,16 @@ export const getPhotoLibrary = async (
   pageSize: number,
   cursorState?: string
 ) => {
+  const typedAlbum = album === 'bin' || album === 'archive';
+  const archivalStatus = album === 'bin' ? 2 : album === 'archive' ? 1 : 0;
+
   const reponse = await queryBatch(
     dotYouClient,
     {
       targetDrive: targetDrive,
-      tagsMatchAll: album ? [album] : undefined,
+      tagsMatchAll: album && !typedAlbum ? [album] : undefined,
       fileType: [MediaConfig.MediaFileType],
+      archivalStatus: archivalStatus,
     },
     { cursorState: cursorState, maxRecords: pageSize, includeMetadataHeader: false }
   );
@@ -57,6 +69,85 @@ export const getPhotosFromLibrary = async (
     ),
     cursorState,
   };
+};
+
+export const uploadPhoto = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  newPhoto: File,
+  albumKey?: string
+) => {
+  const bytes = new Uint8Array(await newPhoto.arrayBuffer());
+  // Read Exif Data for the Created date of the photo itself and not the file;
+  let exifData;
+  try {
+    exifData = await exifr.parse(bytes);
+  } catch (ex) {
+    // some photos don't have exif data, which fails the parsing
+  }
+  const DateTimeOriginal = exifData?.DateTimeOriginal;
+  const ImageUniqueId = exifData?.ImageUniqueID;
+
+  const imageMetadata: ImageMetadata | undefined = exifData
+    ? {
+        camera: { make: exifData.Make, model: exifData.Model, lens: exifData.LensModel },
+        captureDetails: {
+          exposureTime: exifData.ExposureTime,
+          fNumber: exifData.FNumber,
+          iso: exifData.ISO,
+          focalLength: exifData.FocalLength,
+        },
+      }
+    : undefined;
+
+  return await uploadImage(
+    dotYouClient,
+    targetDrive,
+    { requiredSecurityGroup: SecurityGroupType.Owner },
+    bytes,
+    imageMetadata,
+    {
+      type: newPhoto.type as ImageContentType,
+      userDate: DateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
+      tag: albumKey ? [albumKey] : undefined,
+      uniqueId: ImageUniqueId ? toGuidId(ImageUniqueId) : undefined,
+    }
+  );
+};
+
+export const updatePhoto = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  photoFileId: string,
+  newMetaData: MediaUploadMeta
+) => {
+  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
+
+  const keyheader = header.fileMetadata.payloadIsEncrypted
+    ? header.sharedSecretEncryptedKeyHeader
+    : undefined;
+  const payload = await getPayloadBytes(dotYouClient, targetDrive, photoFileId, keyheader);
+  const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
+
+  if (payload) {
+    const bytes = new Uint8Array(payload.bytes);
+    await uploadImage(
+      dotYouClient,
+      targetDrive,
+      header.serverMetadata.accessControlList,
+      bytes,
+      imageMetadata || undefined,
+      {
+        userDate: header.fileMetadata.appData.userDate,
+        type: payload.contentType,
+        tag: header.fileMetadata.appData.tags || undefined,
+        fileId: header.fileId,
+        versionTag: header.fileMetadata.versionTag,
+        archivalStatus: header.fileMetadata.appData.archivalStatus,
+        ...newMetaData,
+      }
+    );
+  }
 };
 
 export const getPhoto = async (
@@ -95,7 +186,7 @@ export const getPhotoMetadata = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   fileId: string
-): Promise<ImageMetadata> => {
+): Promise<ImageMetadata | null> => {
   return await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 };
 
