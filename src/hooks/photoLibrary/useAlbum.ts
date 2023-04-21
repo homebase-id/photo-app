@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { saveAlbum } from '../../provider/photos/AlbumProvider';
-import { AlbumDefinition } from '../../provider/photos/PhotoTypes';
+import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
 import useAuth from '../auth/useAuth';
 import useAlbums from './useAlbums';
+import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
 
 const useAlbum = (albumKey?: string) => {
   const { getDotYouClient } = useAuth();
@@ -34,6 +35,22 @@ const useAlbum = (albumKey?: string) => {
       onSettled() {
         queryClient.invalidateQueries(['albums']);
       },
+    }),
+  };
+};
+
+export const useAlbumThumbnail = (albumKey?: string) => {
+  const { getDotYouClient } = useAuth();
+  const dotYouClient = getDotYouClient();
+
+  const fetch = async (albumKey?: string) => {
+    if (!albumKey) return null;
+    return getAlbumThumbnail(dotYouClient, PhotoConfig.PhotoDrive, albumKey);
+  };
+
+  return {
+    fetch: useQuery(['album-thumb', albumKey], () => fetch(albumKey), {
+      enabled: !!albumKey,
     }),
   };
 };

@@ -98,3 +98,28 @@ export const getPhotoMetadata = async (
 ): Promise<ImageMetadata> => {
   return await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 };
+
+export const getAlbumThumbnail = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  albumTag: string
+): Promise<PhotoFile | null> => {
+  const reponse = await queryBatch(
+    dotYouClient,
+    {
+      targetDrive: targetDrive,
+      tagsMatchAll: [albumTag],
+      fileType: [MediaConfig.MediaFileType],
+    },
+    { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }
+  );
+
+  if (!reponse.searchResults || reponse.searchResults.length === 0) {
+    return null;
+  }
+
+  return dsrToPhoto(dotYouClient, targetDrive, reponse.searchResults[0], {
+    pixelWidth: 50,
+    pixelHeight: 50,
+  });
+};

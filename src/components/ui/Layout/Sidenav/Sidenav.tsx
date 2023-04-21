@@ -6,7 +6,7 @@ import useAuth from '../../../../hooks/auth/useAuth';
 import useOutsideTrigger from '../../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
 import useAblums from '../../../../hooks/photoLibrary/useAlbums';
 import useDarkMode from '../../../../hooks/useDarkMode';
-import { PhotoConfig } from '../../../../provider/photos/PhotoTypes';
+import { AlbumDefinition, PhotoConfig } from '../../../../provider/photos/PhotoTypes';
 import Archive from '../../Icons/Archive/Archive';
 import { ArrowDown } from '../../Icons/Arrow/Arrow';
 import Bars from '../../Icons/Bars/Bars';
@@ -17,6 +17,8 @@ import Person from '../../Icons/Person/Person';
 import Times from '../../Icons/Times/Times';
 import Trash from '../../Icons/Trash/Trash';
 import { MiniDarkModeToggle } from '../DarkModeToggle/DarkModeToggle';
+import { useAlbumThumbnail } from '../../../../hooks/photoLibrary/useAlbum';
+import Plus from '../../Icons/Plus/Plus';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -79,7 +81,7 @@ const Sidenav = () => {
                 to={`/album/${PhotoConfig.FavoriteTag}`}
                 end={true}
               />
-              <AlbumNavItem isOpen={isOpen || isHoverOpen} />
+              <AlbumsNavItem isOpen={isOpen || isHoverOpen} />
             </div>
 
             <div className="py-3">
@@ -185,7 +187,7 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
   );
 };
 
-const AlbumNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
+const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: albums } = useAblums().fetch;
 
@@ -214,12 +216,28 @@ const AlbumNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
       {isOpen ? (
         <div className={`ml-1 pl-1 ${isNavOpen ? 'opacity-100' : 'opacity-0'}`}>
           {albums?.map((album, index) => (
-            <NavItem label={album.name} to={`/album/${album.tag}`} key={album.fileId ?? index} />
+            <AlbumNavItem album={album} key={album.fileId ?? index} />
           ))}
-          <NavItem label={t('New album')} to={`/album/new`} end={true} />
+          <NavItem label={t('New album')} icon={Plus} to={`/album/new`} end={true} />
         </div>
       ) : null}
     </>
+  );
+};
+
+const AlbumNavItem = ({ album }: { album: AlbumDefinition }) => {
+  const { data: thumb } = useAlbumThumbnail(album.tag).fetch;
+
+  return (
+    <NavLink
+      className={({ isActive }) =>
+        `${navItemClassName} ${isActive && navItemActiveClassname} relative`
+      }
+      to={`/album/${album.tag}`}
+    >
+      <img src={thumb?.url} className={`${iconClassName} object-cover`} />
+      <span className={`my-auto ml-3 overflow-hidden`}>{album.name}</span>
+    </NavLink>
   );
 };
 
