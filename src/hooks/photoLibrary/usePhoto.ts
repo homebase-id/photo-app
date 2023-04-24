@@ -138,9 +138,6 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onSuccess: () => {
         queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
       },
-      onError: (ex) => {
-        console.error(ex);
-      },
     }),
     remove: useMutation(removePhoto, {
       onMutate: (toRemovePhotoData) => {
@@ -344,12 +341,15 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
               pages: previousParts.pages.map((page) => {
                 return {
                   ...page,
-                  results: page.results.map((photoDsr) => {
-                    if (photoDsr.fileId === newPhotoData.fileId) {
-                      return getUpdatedDsr(photoDsr);
-                    }
-                    return photoDsr;
-                  }),
+                  results:
+                    tag === undefined
+                      ? page.results.map((photoDsr) => {
+                          if (photoDsr.fileId === newPhotoData.fileId) {
+                            return getUpdatedDsr(photoDsr);
+                          }
+                          return photoDsr;
+                        })
+                      : page.results.filter((photoDsr) => photoDsr.fileId !== newPhotoData.fileId),
                 };
               }),
             };

@@ -3,10 +3,10 @@ import { Navigate, useSearchParams } from 'react-router-dom';
 import { t } from '../../helpers/i18n/dictionary';
 import useAuth from '../../hooks/auth/useAuth';
 import Layout from '../../components/ui/Layout/Layout';
-import { WireframePhotos } from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import DialogWrapper from '../../components/ui/Dialog/DialogWrapper';
 import Alert from '../../components/ui/Alerts/Alert/Alert';
 import { LoginBox } from '../../components/Auth/LoginBox/LoginBox';
+import PhotoLibraryLoader from '../../components/Photos/PhotoLibraryLoader/PhotoLibraryLoader';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -23,7 +23,7 @@ const Auth = () => {
         <title>Login | Odin</title>
       </Helmet>
       <Layout noShadedBg={true} noPadding={true}>
-        <WireframePhotos className="h-screen overflow-hidden px-2 py-2 pt-4 sm:px-10 sm:pt-8" />
+        <PhotoLibraryLoader className="h-screen overflow-hidden px-2 py-2 pt-4 sm:px-10 sm:pt-8" />
         <DialogWrapper>
           {isError && (
             <Alert className="my-2" type="warning" isCompact={true}>

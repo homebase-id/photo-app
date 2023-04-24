@@ -6,6 +6,7 @@ import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton, { ActionButtonState } from '../../ui/Buttons/ActionButton';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Loader from '../../ui/Icons/Loader/Loader';
+import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -97,10 +98,10 @@ const NewPhoto = ({
   albumKey?: string;
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string>();
+  const [uploadError, setUploadError] = useState<any>();
   const {
     mutateAsync: doUploadToServer,
     status: uploadStatus,
-    error: uploadError,
     reset: resetUpload,
   } = usePhoto(PhotoConfig.PhotoDrive).upload;
 
@@ -111,8 +112,12 @@ const NewPhoto = ({
       if (!isUploading.current) {
         isUploading.current = true;
 
-        await doUploadToServer({ newPhoto: photoFile, albumKey: albumKey });
-        remove();
+        try {
+          await doUploadToServer({ newPhoto: photoFile, albumKey: albumKey });
+          remove();
+        } catch (e) {
+          setUploadError(e);
+        }
 
         isUploading.current = false;
       }
@@ -131,7 +136,7 @@ const NewPhoto = ({
   }, [photoFile]);
 
   return (
-    <div className={`${divClasses}`}>
+    <div className={`${divClasses} relative`}>
       <img
         src={previewUrl}
         onLoad={() => previewUrl && URL.revokeObjectURL(previewUrl)}
@@ -163,13 +168,14 @@ const UploadStatusIcon = ({
   if (uploadError) console.error(uploadError);
   return (
     <div className="absolute right-2 top-2">
-      {uploadStatus === 'loading' ? (
+      {uploadStatus === 'loading' && !uploadError ? (
         <>
           <Loader className="h-5 w-5" />
         </>
-      ) : uploadStatus === 'error' ? (
+      ) : uploadError ? (
         <>
           <Exclamation className="h-5 w-5" />
+          <ErrorNotification error={uploadError} />
         </>
       ) : null}
     </div>

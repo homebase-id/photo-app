@@ -24,7 +24,8 @@ const usePhotoLibrarySiblings = ({
     .flatMap((page) => page.results)
     .sort(
       (dsrA, dsrB) =>
-        (dsrB.fileMetadata.appData.userDate || 0) - (dsrA.fileMetadata.appData.userDate || 0)
+        (dsrB.fileMetadata.appData.userDate || dsrB.fileMetadata.created || 0) -
+        (dsrA.fileMetadata.appData.userDate || dsrA.fileMetadata.created || 0)
     );
 
   let nextSibling: DriveSearchResult | undefined = undefined;

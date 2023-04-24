@@ -85,8 +85,8 @@ export const uploadPhoto = async (
   } catch (ex) {
     // some photos don't have exif data, which fails the parsing
   }
-  const DateTimeOriginal = exifData?.DateTimeOriginal;
-  const ImageUniqueId = exifData?.ImageUniqueID;
+  const dateTimeOriginal = exifData?.DateTimeOriginal;
+  const imageUniqueId = exifData?.ImageUniqueID;
 
   const imageMetadata: ImageMetadata | undefined = exifData
     ? {
@@ -108,9 +108,9 @@ export const uploadPhoto = async (
     imageMetadata,
     {
       type: newPhoto.type as ImageContentType,
-      userDate: DateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
+      userDate: dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
       tag: albumKey ? [albumKey] : undefined,
-      uniqueId: ImageUniqueId ? toGuidId(ImageUniqueId) : undefined,
+      uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
     }
   );
 };
@@ -144,6 +144,7 @@ export const updatePhoto = async (
         fileId: header.fileId,
         versionTag: header.fileMetadata.versionTag,
         archivalStatus: header.fileMetadata.appData.archivalStatus,
+        uniqueId: header.fileMetadata.appData.uniqueId,
         ...newMetaData,
       }
     );

@@ -101,7 +101,7 @@ export const PhotoActions = ({
   const {
     remove: { mutateAsync: removePhoto, status: removePhotoStatus },
     archive: { mutateAsync: archivePhoto, status: archivePhotoStatus },
-    restore: { mutateAsync: restorePhoto, status: restorePhotoStatus },
+    restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
   } = usePhoto(targetDrive);
@@ -302,6 +302,9 @@ export const PhotoInfo = ({
               {date?.toLocaleDateString(undefined, dateFormat)}
               <small className="block">{date?.toLocaleTimeString(undefined, timeFormat)}</small>
             </p>
+          </li>
+          <li>
+            <p>Id: {current?.fileMetadata.appData.uniqueId}</p>
           </li>
           {photoMetadata ? <PhotoCaptureDetails metadata={photoMetadata} /> : null}
         </ul>

@@ -12,6 +12,7 @@ import About from '../templates/About/About';
 const Photos = lazy(() => import('../templates/Photos/Photos'));
 const PhotosBin = lazy(() => import('../templates/Photos/PhotosBin'));
 const PhotosArchive = lazy(() => import('../templates/Photos/PhotosArchive'));
+const PhotosFavorites = lazy(() => import('../templates/Photos/PhotosFavorites'));
 const NotFound = lazy(() => import('../templates/NotFound/NotFound'));
 const Auth = lazy(() => import('../templates/Auth/Auth'));
 const FinalizeAuth = lazy(() => import('../templates/Auth/FinalizeAuth'));
@@ -59,6 +60,8 @@ function App() {
                   <Route path="/album/:albumKey/photo/:photoKey" element={<Photos />}></Route>
                   <Route path="/photo/:photoKey" element={<Photos />}></Route>
 
+                  <Route path="/favorites" element={<PhotosFavorites />}></Route>
+                  <Route path="/favorites/photo/:photoKey" element={<PhotosFavorites />}></Route>
                   <Route path="/archive" element={<PhotosArchive />}></Route>
                   <Route path="/archive/photo/:photoKey" element={<PhotosArchive />}></Route>
                   <Route path="/bin" element={<PhotosBin />}></Route>

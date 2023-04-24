@@ -64,9 +64,11 @@ const PhotoScroll = ({ albumKey }: { albumKey?: string }) => {
     };
   });
 
+  if (yearsWithMonths.length === 1 && yearsWithMonths[0].months.length <= 2) return null;
+
   return (
     <div
-      className="fixed bottom-0 right-0 top-[3.5rem] cursor-row-resize select-none px-1 opacity-0 transition-opacity hover:opacity-100"
+      className="fixed bottom-0 right-0 top-[3.5rem] hidden cursor-row-resize select-none px-1 opacity-0 transition-opacity hover:opacity-100 sm:block"
       onMouseLeave={() => setOverlayData(undefined)}
       onMouseMove={(e) => {
         setOverlayTop(e.clientY);

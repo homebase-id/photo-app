@@ -38,11 +38,17 @@ export const PhotoSection = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
+  const sortedPhotos = photos.sort(
+    (dsrA, dsrB) =>
+      (dsrB.fileMetadata.appData.userDate || dsrB.fileMetadata.created || 0) -
+      (dsrA.fileMetadata.appData.userDate || dsrA.fileMetadata.created || 0)
+  );
+
   return (
     <section className="mb-5">
       <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
       <div className={gridClasses}>
-        {photos.map((photoDsr) => {
+        {sortedPhotos.map((photoDsr) => {
           return (
             <PhotoItem
               targetDrive={targetDrive}

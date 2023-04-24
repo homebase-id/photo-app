@@ -12,7 +12,7 @@ const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/Pho
 
 const PhotosArchive = () => {
   const { photoKey } = useParams();
-  const { toggleSelection, isSelected, selection, clearSelection, isSelecting } =
+  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
   const albumKey = 'archive';
@@ -28,6 +28,7 @@ const PhotosArchive = () => {
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
+        selectRange={selectRange}
         albumKey={albumKey}
         isSelected={isSelected}
         isSelecting={isSelecting}

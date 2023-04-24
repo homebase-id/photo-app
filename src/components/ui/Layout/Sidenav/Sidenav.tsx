@@ -75,12 +75,7 @@ const Sidenav = () => {
               <NavItem icon={Image} label={'Photos'} to={`/`} end={true} />
             </div>
             <div className="py-3">
-              <NavItem
-                icon={SolidHeart}
-                label={'Favorites'}
-                to={`/album/${PhotoConfig.FavoriteTag}`}
-                end={true}
-              />
+              <NavItem icon={SolidHeart} label={'Favorites'} to={`/favorites`} end={true} />
               <AlbumsNavItem isOpen={isOpen || isHoverOpen} />
             </div>
 

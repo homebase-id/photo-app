@@ -2,24 +2,25 @@ import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoLibrary from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
 import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
-import Image from '../../components/ui/Icons/Image/Image';
 import { t } from '../../helpers/i18n/dictionary';
 import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import { Suspense, lazy } from 'react';
 import { useParams } from 'react-router-dom';
+import { PhotoConfig } from '../../provider/photos/PhotoTypes';
+import { SolidHeart } from '../../components/ui/Icons/Heart/Heart';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
-const PhotosBin = () => {
+const PhotosFavorites = () => {
   const { photoKey } = useParams();
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
-  const albumKey = 'bin';
+  const albumKey = PhotoConfig.FavoriteTag;
 
   return (
     <>
-      <PageMeta title={t('Bin')} icon={Image} actions={<LoginNav />} />
+      <PageMeta title={t('Favorites')} icon={SolidHeart} actions={<LoginNav />} />
       <PhotoSelection
         isSelecting={isSelecting}
         selection={selection}
@@ -41,5 +42,4 @@ const PhotosBin = () => {
     </>
   );
 };
-
-export default PhotosBin;
+export default PhotosFavorites;
