@@ -20,7 +20,7 @@ const Photos = () => {
   const { photoKey, albumKey } = useParams();
   const { data: album } = useAlbum(albumKey).fetch;
 
-  const { toggleSelection, isSelected, selection, clearSelection, isSelecting } =
+  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
   const navigate = useNavigate();
 
@@ -51,6 +51,7 @@ const Photos = () => {
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
+        selectRange={selectRange}
         setFileSelectorOpen={setFileSelectorOpen}
         albumKey={albumKey}
         isSelected={isSelected}

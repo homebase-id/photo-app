@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import useAlbums from '../../../hooks/photoLibrary/useAlbums';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
@@ -27,6 +28,21 @@ const PhotoSelection = ({
     removeTags: { mutateAsync: removeTagsFromPhoto },
   } = usePhoto(PhotoConfig.PhotoDrive);
   const { data: albums } = useAlbums().fetch;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSelecting) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        clearSelection();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSelecting]); // We need new handlers to reflect the new fileId
 
   if (!isSelecting) {
     return null;

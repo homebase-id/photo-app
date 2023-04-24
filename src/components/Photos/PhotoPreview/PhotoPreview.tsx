@@ -53,10 +53,6 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
 
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
-      <div
-        className="flex w-full flex-row items-center py-2 lg:py-0"
-        onClick={(e) => e.stopPropagation()}
-      ></div>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
         <div className="relative w-full">
           <PhotoActions
@@ -175,7 +171,10 @@ export const PhotoActions = ({
 
   return (
     <>
-      <div className="absolute right-3 top-3 z-10 flex w-[50%] flex-row-reverse gap-2">
+      <div
+        className="absolute right-3 top-3 z-10 flex w-[50%] flex-row-reverse gap-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         {current?.fileMetadata.appData.archivalStatus !== 2 ? (
           <ActionButton
             icon={'trash'}

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { WireframePhotos } from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import Layout from '../../components/ui/Layout/Layout';
 import useAuth from '../../hooks/auth/useAuth';
+import PhotoLibraryLoader from '../../components/Photos/PhotoLibraryLoader/PhotoLibraryLoader';
 
 const AuthFinalize = () => {
   const [searchParams] = useSearchParams();
@@ -42,7 +42,7 @@ const AuthFinalize = () => {
       <div className="cursor-wait ">
         <div className="pointer-events-none ">
           <Layout noShadedBg={true} noPadding={true}>
-            <WireframePhotos className="h-screen overflow-hidden px-2 py-2 pt-4 sm:px-10 sm:pt-8" />
+            <PhotoLibraryLoader className="h-screen overflow-hidden px-2 py-2 pt-4 sm:px-10 sm:pt-8" />
           </Layout>
         </div>
       </div>

@@ -1,21 +1,12 @@
-import { DriveSearchResult, TargetDrive, ThumbSize } from '@youfoundation/dotyoucore-js';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { DriveSearchResult } from '@youfoundation/dotyoucore-js';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { Link } from 'react-router-dom';
-import { useIntersection } from '../../../hooks/intersection/useIntersection';
 import usePhotoLibraryPart from '../../../hooks/photoLibrary/usePhotoLibraryPart';
 import { t } from '../../../helpers/i18n/dictionary';
-import { SubtleCheck } from '../../ui/Icons/Check/Check';
-import { PhotoWithLoader } from '../PhotoPreview/PhotoPreview';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import PhotoScroll from '../PhotoScroll/PhotoScroll';
-
-// Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
-const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
-const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow overflow-hidden`;
-const imgWrapperClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-xs lg:align-bottom`;
+import { PhotoSection } from '../PhotoSection/PhotoSection';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -37,17 +28,6 @@ const createDateObject = (year: string, month: string, day?: string) => {
   if (day) newDate.setDate(parseInt(day));
 
   return newDate;
-};
-
-const getAspectRatioFromThumbnails = (thumbnails: ThumbSize[]): number => {
-  if (!thumbnails?.length) return 0;
-
-  const biggestThumb: ThumbSize = thumbnails.reduce((bigThumb, curThumb) => {
-    if (!bigThumb || bigThumb.pixelWidth < curThumb.pixelWidth) return curThumb;
-    return bigThumb;
-  });
-
-  return biggestThumb.pixelWidth / biggestThumb.pixelHeight;
 };
 
 export const buildMetaStructure = (headers: DriveSearchResult[]) => {
@@ -73,19 +53,24 @@ export const buildMetaStructure = (headers: DriveSearchResult[]) => {
   }, {} as Record<string, Record<string, Record<string, DriveSearchResult[]>>>);
 };
 
+export const sortRecents = (elements: string[]) => elements.sort((a, b) => b.localeCompare(a));
+
 const PhotoLibrary = ({
   albumKey,
   toggleSelection,
+  selectRange,
   isSelected,
   isSelecting,
   setFileSelectorOpen,
 }: {
   albumKey?: string;
   toggleSelection: (fileId: string) => void;
+  selectRange: (fileIds: string[]) => void;
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
+  const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const {
     data: photoLibraryPart,
     hasNextPage: hasMorePhotos,
@@ -100,17 +85,36 @@ const PhotoLibrary = ({
   const photoLibrary = photoLibraryPart
     ? buildMetaStructure(photoLibraryPart.pages.flatMap((page) => page.results))
     : undefined;
-  const years = photoLibrary ? Object.keys(photoLibrary).reverse() : undefined;
 
+  const years = photoLibrary ? sortRecents(Object.keys(photoLibrary)) : undefined;
   const monthsToShow = photoLibrary
     ? years?.flatMap((year) =>
-        Object.keys(photoLibrary[year])
-          .map((month) => {
-            return { monthDate: { year, month }, days: photoLibrary[year][month] };
-          })
-          .reverse()
+        sortRecents(Object.keys(photoLibrary[year])).map((month) => {
+          return { monthDate: { year, month }, days: photoLibrary[year][month] };
+        })
       )
     : undefined;
+  const flatPhotos = monthsToShow?.flatMap((month) =>
+    sortRecents(Object.keys(month.days)).flatMap((day) => month.days[day])
+  );
+
+  const doToggleSelection = (fileId: string) => {
+    if (!isSelected(fileId)) setSelectionRangeFrom(fileId);
+    toggleSelection(fileId);
+  };
+
+  const doRangeSelection = (selectionRangeTo: string) => {
+    if (!selectionRangeFrom || !flatPhotos) {
+      doToggleSelection(selectionRangeTo);
+      return;
+    }
+
+    const fromIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeFrom);
+    const toIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeTo);
+
+    const toSelect = flatPhotos.slice(fromIndex, toIndex + 1).map((photo) => photo.fileId);
+    selectRange(toSelect);
+  };
 
   /// Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
@@ -206,7 +210,7 @@ const PhotoLibrary = ({
 
               const year = monthMeta.monthDate.year;
               const month = monthMeta.monthDate.month;
-              const days = Object.keys(monthMeta.days).reverse();
+              const days = sortRecents(Object.keys(monthMeta.days));
 
               return (
                 <div
@@ -226,7 +230,8 @@ const PhotoLibrary = ({
                       targetDrive={PhotoConfig.PhotoDrive}
                       photos={photoLibrary[year][month][day]}
                       key={`${year}-${month}-${day}`}
-                      toggleSelection={toggleSelection}
+                      toggleSelection={doToggleSelection}
+                      rangeSelection={doRangeSelection}
                       isSelected={isSelected}
                       isSelecting={isSelecting}
                     />
@@ -239,182 +244,6 @@ const PhotoLibrary = ({
       </div>
       <PhotoScroll albumKey={albumKey} />
     </>
-  );
-};
-
-const PhotoSection = ({
-  title,
-  targetDrive,
-  photos,
-  toggleSelection,
-  isSelected,
-  isSelecting,
-}: {
-  title: string;
-  targetDrive: TargetDrive;
-  photos: DriveSearchResult[];
-  toggleSelection: (fileId: string) => void;
-  isSelected: (fileId: string) => boolean;
-  isSelecting?: boolean;
-}) => {
-  return (
-    <section className="mb-5">
-      <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
-      <div className={gridClasses}>
-        {photos.map((photoDsr) => {
-          return (
-            <PhotoItem
-              targetDrive={targetDrive}
-              photoDsr={photoDsr}
-              key={photoDsr.fileId}
-              toggleSelection={toggleSelection}
-              isSelected={isSelected}
-              isSelecting={isSelecting}
-            />
-          );
-        })}
-        {/* This div fills up the space of the last row */}
-        <div className="hidden flex-grow-[999] lg:block"></div>
-      </div>
-    </section>
-  );
-};
-
-const PhotoItem = ({
-  targetDrive,
-  photoDsr,
-  toggleSelection,
-  isSelected,
-  isSelecting,
-}: {
-  targetDrive: TargetDrive;
-  photoDsr: DriveSearchResult;
-  toggleSelection: (fileId: string) => void;
-  isSelected: (fileId: string) => boolean;
-  isSelecting?: boolean;
-}) => {
-  const [isInView, setIsInView] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  useIntersection(wrapperRef, () => {
-    setIsInView(true);
-  });
-
-  if (!photoDsr || !photoDsr.fileMetadata.appData.additionalThumbnails) {
-    return null;
-  }
-
-  const aspect = getAspectRatioFromThumbnails(photoDsr.fileMetadata.appData.additionalThumbnails);
-  const isChecked = photoDsr?.fileId && isSelected(photoDsr?.fileId);
-
-  return (
-    <div className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}>
-      <Link
-        // relative path so we can keep the albumkey intact
-        to={`photo/${photoDsr.fileId}`}
-        className="cursor-pointer"
-        onClick={(e) => {
-          if (isSelecting) {
-            e.preventDefault();
-            toggleSelection(photoDsr.fileId);
-          }
-        }}
-      >
-        <div
-          className={`${imgWrapperClasses} transition-transform ${
-            isChecked ? 'scale-90' : 'scale-100'
-          }`}
-          style={{ height: '200px', width: `${Math.round(aspect * 200)}px` }}
-          ref={wrapperRef}
-        >
-          {isInView ? (
-            <PhotoWithLoader
-              fileId={photoDsr.fileId}
-              targetDrive={targetDrive}
-              previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
-              size={{ pixelWidth: 200, pixelHeight: 200 }}
-              fit="cover"
-            />
-          ) : null}
-        </div>
-        <div className="group absolute inset-0 hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080]">
-          <button
-            className={`pl-2 pt-2 group-hover:block ${isChecked ? 'block' : 'hidden'}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              toggleSelection(photoDsr.fileId);
-            }}
-          >
-            <div
-              className={`rounded-full border ${
-                isChecked ? 'border-black bg-black' : 'border-white border-opacity-20'
-              } p-1`}
-            >
-              <SubtleCheck
-                className={`h-5 w-5 text-white opacity-0 transition-opacity ${
-                  isChecked ? 'opacity-100' : 'group-hover:opacity-100'
-                }`}
-              />
-            </div>
-          </button>
-        </div>
-      </Link>
-    </div>
-  );
-};
-
-export const WireframePhotos = ({ className }: { className?: string }) => {
-  return (
-    <div className={className ?? ''}>
-      <section className="mb-5">
-        <LoadingParagraph className="mb-2 h-4 w-72" />
-        <div className={gridClasses}>
-          {Array(3)
-            .fill(0)
-            .map((val, index) => {
-              return (
-                <div className={`${divClasses} w-[250px]`} key={index}>
-                  <LoadingParagraph className={imgWrapperClasses} />
-                </div>
-              );
-            })}
-          {/* This div fills up the space of the last row */}
-          <div className="hidden flex-grow-[999] lg:block"></div>
-        </div>
-      </section>
-      <section className="mb-5">
-        <LoadingParagraph className="mb-2 h-4 w-72" />
-        <div className={gridClasses}>
-          {Array(14)
-            .fill(0)
-            .map((val, index) => {
-              return (
-                <div className={`${divClasses} w-[250px]`} key={index}>
-                  <LoadingParagraph className={imgWrapperClasses} />
-                </div>
-              );
-            })}
-          {/* This div fills up the space of the last row */}
-          <div className="hidden flex-grow-[999] lg:block"></div>
-        </div>
-      </section>
-      <section className="mb-5">
-        <LoadingParagraph className="mb-2 h-4 w-72" />
-        <div className={gridClasses}>
-          {Array(5)
-            .fill(0)
-            .map((val, index) => {
-              return (
-                <div className={`${divClasses} w-[250px]`} key={index}>
-                  <LoadingParagraph className={imgWrapperClasses} />
-                </div>
-              );
-            })}
-          {/* This div fills up the space of the last row */}
-          <div className="hidden flex-grow-[999] lg:block"></div>
-        </div>
-      </section>
-    </div>
   );
 };
 

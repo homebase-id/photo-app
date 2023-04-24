@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import { buildMetaStructure } from '../PhotoLibrary/PhotoLibrary';
+import { buildMetaStructure, sortRecents } from '../PhotoLibrary/PhotoLibrary';
 
 const createDateObject = (year: string, month: string, day?: string) => {
   const newDate = new Date();
@@ -46,12 +46,12 @@ const PhotoScroll = ({ albumKey }: { albumKey?: string }) => {
   const totalPhotos = library.length;
   const photoWeight = 100 / totalPhotos;
 
-  const years = Object.keys(libStruc).reverse();
+  const years = sortRecents(Object.keys(libStruc));
   const yearsWithMonths = years.map((year) => {
     const months = Object.keys(libStruc[year]);
     return {
       year: year,
-      months: months.reverse().map((month) => {
+      months: sortRecents(months).map((month) => {
         const days = Object.keys(libStruc[year][month]);
 
         return {
@@ -114,7 +114,7 @@ const MonthItem = ({
 }: {
   year: string;
   month: string;
-  photos: any[];
+  photos: unknown[];
   photoWeight: number;
   setOverlayData: (year: string, month: string) => void;
 }) => {
