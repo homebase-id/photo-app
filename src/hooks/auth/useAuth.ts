@@ -1,4 +1,4 @@
-import { ApiType, base64ToUint8Array, DotYouClient } from '@youfoundation/dotyoucore-js';
+import { ApiType, base64ToUint8Array, DotYouClient } from '@youfoundation/js-lib';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useVerifyToken from './useVerifyToken';

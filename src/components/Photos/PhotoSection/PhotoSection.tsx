@@ -1,4 +1,4 @@
-import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/dotyoucore-js';
+import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';

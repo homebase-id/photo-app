@@ -3,7 +3,7 @@ import {
   base64ToUint8Array,
   DotYouClient,
   uint8ArrayToBase64,
-} from '@youfoundation/dotyoucore-js';
+} from '@youfoundation/js-lib';
 import { getBrowser, getOperatingSystem } from '../helpers/browserInfo';
 import { retrieveIdentity, saveIdentity } from './IdentityProvider';
 import { decryptWithKey, newPair, throwAwayTheKey } from './KeyProvider';

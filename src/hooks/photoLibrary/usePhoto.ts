@@ -5,7 +5,7 @@ import {
   getFileHeader,
   stringGuidsEqual,
   DriveSearchResult,
-} from '@youfoundation/dotyoucore-js';
+} from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';

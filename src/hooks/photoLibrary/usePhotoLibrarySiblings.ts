@@ -1,4 +1,4 @@
-import { DriveSearchResult, TargetDrive } from '@youfoundation/dotyoucore-js';
+import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
 import usePhotoLibraryPart from './usePhotoLibraryPart';
 
 const usePhotoLibrarySiblings = ({

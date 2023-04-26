@@ -9,7 +9,7 @@ import {
   uploadFile,
   UploadFileMetadata,
   UploadInstructionSet,
-} from '@youfoundation/dotyoucore-js';
+} from '@youfoundation/js-lib';
 import { AlbumDefinition, PhotoConfig } from './PhotoTypes';
 
 const encryptAlbums = true;

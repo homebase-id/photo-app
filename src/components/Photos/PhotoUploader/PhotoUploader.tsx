@@ -1,4 +1,4 @@
-import { fromBlob } from '@youfoundation/dotyoucore-js';
+import { fromBlob } from '@youfoundation/js-lib';
 import { useState, useRef, useEffect } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';

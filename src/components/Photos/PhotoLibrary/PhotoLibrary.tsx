@@ -1,4 +1,4 @@
-import { DriveSearchResult } from '@youfoundation/dotyoucore-js';
+import { DriveSearchResult } from '@youfoundation/js-lib';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import usePhotoLibraryPart from '../../../hooks/photoLibrary/usePhotoLibraryPart';

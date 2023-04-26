@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { TargetDrive, DriveSearchResult } from '@youfoundation/dotyoucore-js';
+import { TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
 import { getPhotoLibrary } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 

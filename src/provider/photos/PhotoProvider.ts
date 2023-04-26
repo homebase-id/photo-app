@@ -16,7 +16,7 @@ import {
   uploadImage,
   getPayloadBytes,
   MediaUploadMeta,
-} from '@youfoundation/dotyoucore-js';
+} from '@youfoundation/js-lib';
 
 import { PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules

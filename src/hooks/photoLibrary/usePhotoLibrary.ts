@@ -1,4 +1,4 @@
-import { TargetDrive } from '@youfoundation/dotyoucore-js';
+import { TargetDrive } from '@youfoundation/js-lib';
 import { getPhotoLibrary } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useQuery } from '@tanstack/react-query';

@@ -1,4 +1,4 @@
-import { toGuidId, TargetDrive } from '@youfoundation/dotyoucore-js';
+import { toGuidId, TargetDrive } from '@youfoundation/js-lib';
 
 export class PhotoConfig {
   static readonly DriveType: string = toGuidId('photos_drive');

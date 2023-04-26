@@ -1,4 +1,4 @@
-import { uint8ArrayToBase64, base64ToUint8Array } from '@youfoundation/dotyoucore-js';
+import { uint8ArrayToBase64, base64ToUint8Array } from '@youfoundation/js-lib';
 
 const STORAGE_KEY = 'pk';
 const createPair = async () => {

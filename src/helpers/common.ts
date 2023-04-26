@@ -5,7 +5,7 @@ import {
   MinimalProfileFields,
   PostContent,
   PostFile,
-} from '@youfoundation/dotyoucore-js';
+} from '@youfoundation/js-lib';
 
 export const convertTextToSlug = (text: string) => {
   return text

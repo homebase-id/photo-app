@@ -6,7 +6,7 @@ import {
   ImageSize,
   stringGuidsEqual,
   TargetDrive,
-} from '@youfoundation/dotyoucore-js';
+} from '@youfoundation/js-lib';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, ImageSize } from '@youfoundation/dotyoucore-js';
+import { TargetDrive, ImageSize } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import { getPhotoMetadata } from '../../provider/photos/PhotoProvider';
