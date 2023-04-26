@@ -151,6 +151,41 @@ export const updatePhoto = async (
   }
 };
 
+export const updatePhotoMetadata = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  photoFileId: string,
+  newImageMetadata: ImageMetadata
+) => {
+  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
+
+  const keyheader = header.fileMetadata.payloadIsEncrypted
+    ? header.sharedSecretEncryptedKeyHeader
+    : undefined;
+  const payload = await getPayloadBytes(dotYouClient, targetDrive, photoFileId, keyheader);
+  const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
+
+  if (payload) {
+    const bytes = new Uint8Array(payload.bytes);
+    await uploadImage(
+      dotYouClient,
+      targetDrive,
+      header.serverMetadata.accessControlList,
+      bytes,
+      { ...imageMetadata, ...newImageMetadata },
+      {
+        userDate: header.fileMetadata.appData.userDate,
+        type: payload.contentType,
+        tag: header.fileMetadata.appData.tags || undefined,
+        fileId: header.fileId,
+        versionTag: header.fileMetadata.versionTag,
+        archivalStatus: header.fileMetadata.appData.archivalStatus,
+        uniqueId: header.fileMetadata.appData.uniqueId,
+      }
+    );
+  }
+};
+
 export const getPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,

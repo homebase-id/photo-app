@@ -5,11 +5,17 @@ import {
   getFileHeader,
   stringGuidsEqual,
   DriveSearchResult,
+  ImageMetadata,
 } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
-import { getPhoto, updatePhoto, uploadPhoto } from '../../provider/photos/PhotoProvider';
+import {
+  getPhoto,
+  updatePhoto,
+  updatePhotoMetadata,
+  uploadPhoto,
+} from '../../provider/photos/PhotoProvider';
 import { PhotoFile } from '../../provider/photos/PhotoTypes';
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
