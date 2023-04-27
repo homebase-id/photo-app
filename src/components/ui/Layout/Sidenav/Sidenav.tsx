@@ -6,7 +6,7 @@ import useAuth from '../../../../hooks/auth/useAuth';
 import useOutsideTrigger from '../../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
 import useAblums from '../../../../hooks/photoLibrary/useAlbums';
 import useDarkMode from '../../../../hooks/useDarkMode';
-import { AlbumDefinition, PhotoConfig } from '../../../../provider/photos/PhotoTypes';
+import { AlbumDefinition } from '../../../../provider/photos/PhotoTypes';
 import Archive from '../../Icons/Archive/Archive';
 import { ArrowDown } from '../../Icons/Arrow/Arrow';
 import Bars from '../../Icons/Bars/Bars';
@@ -231,7 +231,11 @@ const AlbumNavItem = ({ album }: { album: AlbumDefinition }) => {
       }
       to={`/album/${album.tag}`}
     >
-      <img src={thumb?.url} className={`${iconClassName} object-cover`} />
+      {thumb?.url ? (
+        <img src={thumb?.url} className={`${iconClassName} object-cover`} />
+      ) : (
+        <Image className={`${iconClassName} opacity-50`} />
+      )}
       <span className={`my-auto ml-3 overflow-hidden`}>{album.name}</span>
     </NavLink>
   );

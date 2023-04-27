@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import NewAlbumDialog from '../../components/Dialog/NewAlbumDialog/NewAlbumDialog';
 import PhotoLibrary from '../../components/Photos/PhotoLibrary/PhotoLibrary';
@@ -12,17 +12,27 @@ import useAlbum from '../../hooks/photoLibrary/useAlbum';
 import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
+import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/ErrorNotification';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
 const Photos = () => {
   const [isFileSelectorOpen, setFileSelectorOpen] = useState(false);
   const { photoKey, albumKey } = useParams();
-  const { data: album } = useAlbum(albumKey).fetch;
+  const {
+    fetch: { data: album },
+    remove: { mutate: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
+  } = useAlbum(albumKey);
 
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (removeAlbumStatus === 'success') {
+      navigate(-1);
+    }
+  }, [removeAlbumStatus]);
 
   return (
     <>
@@ -31,6 +41,18 @@ const Photos = () => {
         icon={Image}
         actions={
           <>
+            {album ? (
+              <ActionButton
+                icon={'trash'}
+                type="secondary"
+                confirmOptions={{
+                  title: `${t('Delete')} ${album.name}?`,
+                  body: t('Are you sure you want to delete this album?'),
+                  buttonText: t('Delete'),
+                }}
+                onClick={() => removeAlbum(album)}
+              />
+            ) : null}
             <ActionButton icon={Upload} type="secondary" onClick={() => setFileSelectorOpen(true)}>
               {t('Upload')}
             </ActionButton>
@@ -67,6 +89,7 @@ const Photos = () => {
           <NewAlbumDialog isOpen={true} onCancel={() => navigate(-1)} />
         </>
       ) : null}
+      <ErrorNotification error={removeAlbumError} />
     </>
   );
 };

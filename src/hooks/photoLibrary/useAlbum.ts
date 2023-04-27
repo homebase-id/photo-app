@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { saveAlbum } from '../../provider/photos/AlbumProvider';
+import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
 import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
 import useAuth from '../auth/useAuth';
 import useAlbums from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
+import { stringGuidsEqual } from '@youfoundation/js-lib';
 
 const useAlbum = (albumKey?: string) => {
   const { getDotYouClient } = useAuth();
@@ -19,8 +20,14 @@ const useAlbum = (albumKey?: string) => {
     return albums?.find((album) => album.tag === albumKey) || null;
   };
 
-  const save = async (albume: AlbumDefinition) => {
-    return await saveAlbum(dotYouClient, albume);
+  const save = async (album: AlbumDefinition) => {
+    return await saveAlbum(dotYouClient, album);
+  };
+
+  const remove = async (album: AlbumDefinition) => {
+    if (!album) return;
+
+    await removeAlbumDefintion(dotYouClient, album);
   };
 
   return {
@@ -33,7 +40,21 @@ const useAlbum = (albumKey?: string) => {
         queryClient.setQueryData(['albums'], [...(prevAlbums || []), newAlbum]);
       },
       onSettled() {
-        queryClient.invalidateQueries(['albums']);
+        setTimeout(() => {
+          queryClient.invalidateQueries(['albums']);
+        }, 100);
+      },
+    }),
+    remove: useMutation(remove, {
+      onMutate(toRemoveAlbum) {
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
+        queryClient.setQueryData(
+          ['albums'],
+          [
+            ...(prevAlbums?.filter((album) => !stringGuidsEqual(album.tag, toRemoveAlbum.tag)) ||
+              []),
+          ]
+        );
       },
     }),
   };

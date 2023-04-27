@@ -1,4 +1,5 @@
 import {
+  deleteFile,
   DotYouClient,
   DriveSearchResult,
   getPayload,
@@ -66,4 +67,12 @@ export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition
   };
 
   uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptAlbums);
+};
+
+export const removeAlbumDefintion = async (
+  dotYouClient: DotYouClient,
+  albumDef: AlbumDefinition
+) => {
+  if (albumDef.fileId)
+    return await deleteFile(dotYouClient, PhotoConfig.PhotoDrive, albumDef.fileId, encryptAlbums);
 };
