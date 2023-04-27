@@ -33,7 +33,16 @@ const dsrToAlbumDefinition = async (
   dotYouClient: DotYouClient,
   dsr: DriveSearchResult
 ): Promise<AlbumDefinition> => {
-  return getPayload<AlbumDefinition>(dotYouClient, PhotoConfig.PhotoDrive, dsr, true);
+  const payload = await getPayload<AlbumDefinition>(
+    dotYouClient,
+    PhotoConfig.PhotoDrive,
+    dsr,
+    true
+  );
+  return {
+    ...payload,
+    fileId: dsr.fileId,
+  };
 };
 
 export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition) => {
