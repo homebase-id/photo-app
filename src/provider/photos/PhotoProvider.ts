@@ -16,13 +16,13 @@ import {
   uploadImage,
   MediaUploadMeta,
   ArchivalStatus,
-  uploadFile,
   UploadInstructionSet,
   getRandom16ByteArray,
   UploadFileMetadata,
   jsonStringify64,
   VideoContentType,
   uploadVideo,
+  uploadHeader,
 } from '@youfoundation/js-lib';
 
 import { PhotoFile } from './PhotoTypes';
@@ -211,13 +211,11 @@ export const updatePhoto = async (
       },
     };
 
-    await uploadFile(
+    await uploadHeader(
       dotYouClient,
+      header.sharedSecretEncryptedKeyHeader,
       instructionSet,
-      metadata,
-      undefined,
-      undefined,
-      header.fileMetadata.payloadIsEncrypted
+      metadata
     );
   }
 };
@@ -253,13 +251,11 @@ export const updatePhotoMetadata = async (
 
     console.log({ oldHeader: header, newHeader: metadata });
 
-    return await uploadFile(
+    return await uploadHeader(
       dotYouClient,
+      header.sharedSecretEncryptedKeyHeader,
       instructionSet,
-      metadata,
-      undefined,
-      undefined,
-      header.fileMetadata.payloadIsEncrypted
+      metadata
     );
   }
 };
