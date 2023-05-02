@@ -10,7 +10,7 @@ import useAuth from '../auth/useAuth';
 
 import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
-import { PhotoFile } from '../../provider/photos/PhotoTypes';
+import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
   const queryClient = useQueryClient();
@@ -201,9 +201,16 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
             }
           });
       },
-      onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
+      onSettled: (_param, _error, data) => {
+        queryClient.invalidateQueries([
+          'photo',
+          (targetDrive || PhotoConfig.PhotoDrive)?.alias,
+          data.photoFileId,
+        ]);
+        queryClient.invalidateQueries([
+          'photo-library-parts',
+          (targetDrive || PhotoConfig.PhotoDrive)?.alias,
+        ]);
       },
       onError: (ex) => {
         console.error(ex);

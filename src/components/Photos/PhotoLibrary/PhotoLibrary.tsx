@@ -53,7 +53,8 @@ export const buildMetaStructure = (headers: DriveSearchResult[]) => {
   }, {} as Record<string, Record<string, Record<string, DriveSearchResult[]>>>);
 };
 
-export const sortRecents = (elements: string[]) => elements.sort((a, b) => b.localeCompare(a));
+export const sortRecents = (elements: string[]) =>
+  elements.sort((a, b) => parseInt(b) - parseInt(a));
 
 const PhotoLibrary = ({
   albumKey,
@@ -100,6 +101,8 @@ const PhotoLibrary = ({
         })
       )
     : undefined;
+
+  console.log(monthsToShow);
   const flatPhotos = monthsToShow?.flatMap((month) =>
     sortRecents(Object.keys(month.days)).flatMap((day) => month.days[day])
   );

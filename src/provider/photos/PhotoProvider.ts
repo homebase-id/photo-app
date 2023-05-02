@@ -152,6 +152,7 @@ const uploadNewVideo = async (
       {
         type: newVideo.type as VideoContentType,
         tag: albumKey ? [albumKey] : undefined,
+        userDate: newVideo.lastModified || new Date().getTime(),
       }
     );
 
@@ -168,6 +169,7 @@ const uploadNewVideo = async (
     {
       type: newVideo.type as VideoContentType,
       tag: albumKey ? [albumKey] : undefined,
+      userDate: newVideo.lastModified || new Date().getTime(),
     }
   );
 };
@@ -213,7 +215,7 @@ export const updatePhoto = async (
         ...newMetaData,
         tags: newMetaData?.tag
           ? [...(Array.isArray(newMetaData.tag) ? newMetaData.tag : [newMetaData.tag])]
-          : [],
+          : header.fileMetadata.appData.tags,
       },
     };
 
