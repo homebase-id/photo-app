@@ -191,6 +191,8 @@ export const updatePhoto = async (
   newMetaData: MediaUploadMeta
 ) => {
   const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
+  const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
+
   if (header) {
     const instructionSet: UploadInstructionSet = {
       transferIv: getRandom16ByteArray(),
@@ -207,9 +209,15 @@ export const updatePhoto = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
+        jsonContent: jsonStringify64({ ...imageMetadata }),
         ...newMetaData,
+        tags: newMetaData?.tag
+          ? [...(Array.isArray(newMetaData.tag) ? newMetaData.tag : [newMetaData.tag])]
+          : [],
       },
     };
+
+    console.log({ oldHeader: header, newHeader: metadata });
 
     await uploadHeader(
       dotYouClient,
