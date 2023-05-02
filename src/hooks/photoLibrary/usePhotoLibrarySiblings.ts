@@ -17,7 +17,6 @@ const usePhotoLibrarySiblings = ({
   } = usePhotoLibraryPart({
     targetDrive,
     album,
-    pageSize: 50,
   }).fetchLibraryPart;
 
   const flatLib = cachedResults?.pages

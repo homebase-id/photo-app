@@ -8,14 +8,14 @@ export interface usePhotoLibraryPartReturn {
   cursorState: string;
 }
 
+const PAGE_SIZE = 50;
+
 const usePhotoLibraryPart = ({
   targetDrive,
   album,
-  pageSize,
 }: {
   targetDrive: TargetDrive;
   album?: string;
-  pageSize: number;
 }) => {
   const { getDotYouClient } = useAuth();
   const dotYouClient = getDotYouClient();
@@ -29,7 +29,7 @@ const usePhotoLibraryPart = ({
     album?: string;
     cursorState?: string;
   }): Promise<usePhotoLibraryPartReturn> => {
-    return await getPhotoLibrary(dotYouClient, targetDrive, album, pageSize, cursorState);
+    return await getPhotoLibrary(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
   };
 
   return {
@@ -38,7 +38,7 @@ const usePhotoLibraryPart = ({
       ({ pageParam }) => fetchLibraryPart({ targetDrive, album, cursorState: pageParam }),
       {
         getNextPageParam: (lastPage) =>
-          (lastPage?.results?.length === pageSize && lastPage?.cursorState) ?? undefined,
+          (lastPage?.results?.length === PAGE_SIZE && lastPage?.cursorState) ?? undefined,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         staleTime: Infinity,

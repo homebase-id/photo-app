@@ -79,12 +79,18 @@ const PhotoLibrary = ({
   } = usePhotoLibraryPart({
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey && albumKey !== 'new' ? albumKey : undefined,
-    pageSize: 50,
   }).fetchLibraryPart;
 
   const photoLibrary = photoLibraryPart
     ? buildMetaStructure(photoLibraryPart.pages.flatMap((page) => page.results))
     : undefined;
+
+  useEffect(() => {
+    console.debug(
+      'fetched more photos, total count: ',
+      photoLibraryPart?.pages.flatMap((page) => page.results)?.length
+    );
+  }, [photoLibraryPart]);
 
   const years = photoLibrary ? sortRecents(Object.keys(photoLibrary)) : undefined;
   const monthsToShow = photoLibrary
@@ -126,7 +132,7 @@ const PhotoLibrary = ({
 
   const virtualizer = useWindowVirtualizer({
     count: (monthsToShow?.length || 0) + 1, // Add 1 so we have an index for the 'loaderRow'
-    estimateSize: () => 300, // Rough size of a photoSection
+    estimateSize: () => 1000, // Rough size of a photoSection
     scrollMargin: parentOffsetRef.current,
     overscan: 1, // Amount of items to load before and after (improved performance especially with images)
   });

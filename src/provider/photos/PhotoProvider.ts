@@ -47,7 +47,13 @@ export const getPhotoLibrary = async (
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
-    { cursorState: cursorState, maxRecords: pageSize, includeMetadataHeader: false }
+    {
+      cursorState: cursorState,
+      maxRecords: pageSize,
+      includeMetadataHeader: false,
+      sorting: 'userDate',
+      ordering: 'newestFirst',
+    }
   );
 
   return {
@@ -113,13 +119,6 @@ const uploadNewPhoto = async (
 ) => {
   const bytes = new Uint8Array(await newPhoto.arrayBuffer());
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
-
-  console.log('uploadNewPhoto', {
-    type: newPhoto?.type as ImageContentType,
-    userDate: dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
-    tag: albumKey ? [albumKey] : undefined,
-    uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
-  });
 
   return await uploadImage(
     dotYouClient,
