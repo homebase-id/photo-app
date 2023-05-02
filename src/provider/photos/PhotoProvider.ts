@@ -14,8 +14,13 @@ import {
   SecurityGroupType,
   toGuidId,
   uploadImage,
-  getPayloadBytes,
   MediaUploadMeta,
+  ArchivalStatus,
+  uploadFile,
+  UploadInstructionSet,
+  getRandom16ByteArray,
+  UploadFileMetadata,
+  jsonStringify64,
 } from '@youfoundation/js-lib';
 
 import { PhotoFile } from './PhotoTypes';
@@ -29,7 +34,8 @@ export const getPhotoLibrary = async (
   cursorState?: string
 ) => {
   const typedAlbum = album === 'bin' || album === 'archive';
-  const archivalStatus = album === 'bin' ? 2 : album === 'archive' ? 1 : 0;
+  const archivalStatus: ArchivalStatus[] =
+    album === 'bin' ? [2] : album === 'archive' ? [1] : album ? [0, 1] : [0];
 
   const reponse = await queryBatch(
     dotYouClient,
@@ -122,31 +128,33 @@ export const updatePhoto = async (
   newMetaData: MediaUploadMeta
 ) => {
   const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
+  if (header) {
+    const instructionSet: UploadInstructionSet = {
+      transferIv: getRandom16ByteArray(),
+      storageOptions: {
+        overwriteFileId: photoFileId ?? null,
+        drive: targetDrive,
+        storageIntent: 'metadataOnly',
+      },
+      transitOptions: null,
+    };
 
-  const keyheader = header.fileMetadata.payloadIsEncrypted
-    ? header.sharedSecretEncryptedKeyHeader
-    : undefined;
-  const payload = await getPayloadBytes(dotYouClient, targetDrive, photoFileId, keyheader);
-  const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
-
-  if (payload) {
-    const bytes = new Uint8Array(payload.bytes);
-    await uploadImage(
-      dotYouClient,
-      targetDrive,
-      header.serverMetadata.accessControlList,
-      bytes,
-      imageMetadata || undefined,
-      {
-        userDate: header.fileMetadata.appData.userDate,
-        type: payload.contentType,
-        tag: header.fileMetadata.appData.tags || undefined,
-        fileId: header.fileId,
-        versionTag: header.fileMetadata.versionTag,
-        archivalStatus: header.fileMetadata.appData.archivalStatus,
-        uniqueId: header.fileMetadata.appData.uniqueId,
+    const metadata: UploadFileMetadata = {
+      allowDistribution: false,
+      ...header.fileMetadata,
+      appData: {
+        ...header.fileMetadata.appData,
         ...newMetaData,
-      }
+      },
+    };
+
+    await uploadFile(
+      dotYouClient,
+      instructionSet,
+      metadata,
+      undefined,
+      undefined,
+      header.fileMetadata.payloadIsEncrypted
     );
   }
 };
@@ -158,30 +166,37 @@ export const updatePhotoMetadata = async (
   newImageMetadata: ImageMetadata
 ) => {
   const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
-
-  const keyheader = header.fileMetadata.payloadIsEncrypted
-    ? header.sharedSecretEncryptedKeyHeader
-    : undefined;
-  const payload = await getPayloadBytes(dotYouClient, targetDrive, photoFileId, keyheader);
   const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
 
-  if (payload) {
-    const bytes = new Uint8Array(payload.bytes);
-    await uploadImage(
+  if (header) {
+    const instructionSet: UploadInstructionSet = {
+      transferIv: getRandom16ByteArray(),
+      storageOptions: {
+        overwriteFileId: photoFileId ?? null,
+        drive: targetDrive,
+        storageIntent: 'metadataOnly',
+      },
+      transitOptions: null,
+    };
+
+    const metadata: UploadFileMetadata = {
+      allowDistribution: false,
+      ...header.fileMetadata,
+      appData: {
+        ...header.fileMetadata.appData,
+        jsonContent: jsonStringify64({ ...imageMetadata, ...newImageMetadata }),
+      },
+    };
+
+    console.log({ oldHeader: header, newHeader: metadata });
+
+    return await uploadFile(
       dotYouClient,
-      targetDrive,
-      header.serverMetadata.accessControlList,
-      bytes,
-      { ...imageMetadata, ...newImageMetadata },
-      {
-        userDate: header.fileMetadata.appData.userDate,
-        type: payload.contentType,
-        tag: header.fileMetadata.appData.tags || undefined,
-        fileId: header.fileId,
-        versionTag: header.fileMetadata.versionTag,
-        archivalStatus: header.fileMetadata.appData.archivalStatus,
-        uniqueId: header.fileMetadata.appData.uniqueId,
-      }
+      instructionSet,
+      metadata,
+      undefined,
+      undefined,
+      header.fileMetadata.payloadIsEncrypted
     );
   }
 };
