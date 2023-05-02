@@ -3,7 +3,9 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
-import { PhotoWithLoader } from '../PhotoPreview/PhotoPreview';
+import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
+import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
+import Triangle from '../../ui/Icons/Triangle/Triangle';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -89,11 +91,14 @@ export const PhotoItem = ({
     setIsInView(true);
   });
 
-  if (!photoDsr || !photoDsr.fileMetadata.appData.additionalThumbnails) {
+  if (!photoDsr) {
     return null;
   }
 
-  const aspect = getAspectRatioFromThumbnails(photoDsr.fileMetadata.appData.additionalThumbnails);
+  // Always square previews for video's
+  const aspect = photoDsr.fileMetadata.appData.additionalThumbnails
+    ? getAspectRatioFromThumbnails(photoDsr.fileMetadata.appData.additionalThumbnails)
+    : 1;
   const isChecked = photoDsr?.fileId && isSelected(photoDsr?.fileId);
 
   const doSelection = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement, MouseEvent>) => {
@@ -121,13 +126,27 @@ export const PhotoItem = ({
           ref={wrapperRef}
         >
           {isInView ? (
-            <PhotoWithLoader
-              fileId={photoDsr.fileId}
-              targetDrive={targetDrive}
-              previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
-              size={{ pixelWidth: 200, pixelHeight: 200 }}
-              fit="cover"
-            />
+            photoDsr.fileMetadata.contentType.startsWith('video/') ? (
+              <>
+                <VideoWithLoader
+                  fileId={photoDsr.fileId}
+                  targetDrive={targetDrive}
+                  fit="cover"
+                  hideControls={true}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Triangle className="h-8 w-8 text-white " />
+                </div>
+              </>
+            ) : (
+              <PhotoWithLoader
+                fileId={photoDsr.fileId}
+                targetDrive={targetDrive}
+                previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
+                size={{ pixelWidth: 200, pixelHeight: 200 }}
+                fit="cover"
+              />
+            )
           ) : null}
         </div>
         <div className="group absolute inset-0 hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080]">

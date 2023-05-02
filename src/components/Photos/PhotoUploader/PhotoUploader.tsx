@@ -1,5 +1,5 @@
 import { fromBlob } from '@youfoundation/js-lib';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
@@ -62,19 +62,30 @@ const Uploader = ({
         id="file-select"
         type="file"
         multiple={true}
-        accept="image/png, image/jpeg, image/tiff, image/webp, image/svg+xml"
+        accept="image/png, image/jpeg, image/tiff, image/webp, image/svg+xml, video/mp4"
         className={`sr-only invisible max-w-full`}
       />
       {uploadQueue?.length ? (
         <div className={`${gridClasses}`}>
-          {uploadQueue.slice(0, maxVisible).map((photo) => (
-            <NewPhoto
-              photoFile={photo}
-              key={`${photo.name}_${photo.size}`}
-              remove={() => removeFromUploadQueue(photo)}
-              albumKey={albumKey}
-            />
-          ))}
+          {uploadQueue
+            .slice(0, maxVisible)
+            .map((photo) =>
+              photo.type === 'video/mp4' ? (
+                <NewVideo
+                  videoFile={photo}
+                  key={`${photo.name}_${photo.size}`}
+                  remove={() => removeFromUploadQueue(photo)}
+                  albumKey={albumKey}
+                />
+              ) : (
+                <NewPhoto
+                  photoFile={photo}
+                  key={`${photo.name}_${photo.size}`}
+                  remove={() => removeFromUploadQueue(photo)}
+                  albumKey={albumKey}
+                />
+              )
+            )}
           {uploadQueue.length > maxVisible ? (
             <div className="flex h-[200px] w-[200px] animate-pulse flex-col justify-center bg-black bg-opacity-20 text-6xl font-light text-white">
               <span className="block text-center">+{uploadQueue.length - maxVisible}</span>
@@ -98,7 +109,7 @@ const NewPhoto = ({
   albumKey?: string;
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string>();
-  const [uploadError, setUploadError] = useState<any>();
+  const [uploadError, setUploadError] = useState<unknown>();
   const {
     mutateAsync: doUploadToServer,
     status: uploadStatus,
@@ -143,6 +154,66 @@ const NewPhoto = ({
         className={`${imgClasses} ${
           !previewUrl ? `h-[200px] w-[200px] animate-pulse bg-slate-400` : ``
         }`}
+      />
+      <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />
+      {uploadStatus === 'idle' || uploadStatus === 'success' ? (
+        <ActionButton
+          className="absolute bottom-3 right-3"
+          icon="times"
+          type="secondary"
+          size="square"
+          onClick={() => remove()}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+const NewVideo = ({
+  videoFile,
+  remove,
+  albumKey,
+}: {
+  videoFile: File;
+  remove: () => void;
+  albumKey?: string;
+}) => {
+  const [uploadError, setUploadError] = useState<unknown>();
+  const {
+    mutateAsync: doUploadToServer,
+    status: uploadStatus,
+    reset: resetUpload,
+  } = usePhoto(PhotoConfig.PhotoDrive).upload;
+
+  const isUploading = useRef<boolean>(false);
+
+  useEffect(() => {
+    (async () => {
+      if (!isUploading.current) {
+        isUploading.current = true;
+        try {
+          await doUploadToServer({ newPhoto: videoFile, albumKey: albumKey });
+          remove();
+        } catch (e) {
+          setUploadError(e);
+        }
+        isUploading.current = false;
+      }
+    })();
+
+    return () => {
+      resetUpload();
+    };
+  }, [videoFile]);
+
+  const url = useMemo(() => window.URL.createObjectURL(videoFile), [videoFile]);
+
+  return (
+    <div className={`${divClasses} relative`}>
+      <video
+        src={url}
+        onCanPlay={() => url && URL.revokeObjectURL(url)}
+        className={`${imgClasses} ${!url ? `h-[200px] w-[200px] animate-pulse bg-slate-400` : ``}`}
       />
       <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />
       {uploadStatus === 'idle' || uploadStatus === 'success' ? (

@@ -58,7 +58,7 @@ export const PhotoInfo = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-30 h-screen w-full bg-white md:static md:w-[27rem]">
+      <div className="fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black md:static md:w-[27rem]">
         <div className="px-8 py-7">
           <div className="mb-10 flex flex-row">
             <button onClick={() => setIsInfoOpen(false)} className="mr-2">
@@ -70,7 +70,7 @@ export const PhotoInfo = ({
             <textarea
               defaultValue={photoMetadata?.description}
               placeholder={t('Add a description')}
-              className="w-full border-b-2 py-2 focus:border-b-indigo-500 focus:outline-0"
+              className="w-full border-b-2 py-2 focus:border-b-indigo-500 focus:outline-0 dark:bg-black"
               onChange={debouncedChangeDesc}
               onKeyDown={(e) => e.stopPropagation()}
             />

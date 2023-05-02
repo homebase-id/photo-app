@@ -5,17 +5,11 @@ import {
   getFileHeader,
   stringGuidsEqual,
   DriveSearchResult,
-  ImageMetadata,
 } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
-import {
-  getPhoto,
-  updatePhoto,
-  updatePhotoMetadata,
-  uploadPhoto,
-} from '../../provider/photos/PhotoProvider';
+import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
 import { PhotoFile } from '../../provider/photos/PhotoTypes';
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
@@ -38,10 +32,10 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     return await getPhoto(dotYouClient, targetDrive, fileId, size, true);
   };
 
-  const uploadNewPhoto = async ({ newPhoto, albumKey }: { newPhoto: File; albumKey?: string }) => {
+  const uploadNewMedia = async ({ newPhoto, albumKey }: { newPhoto: File; albumKey?: string }) => {
     if (!targetDrive) return null;
 
-    return await uploadPhoto(dotYouClient, targetDrive, newPhoto, albumKey);
+    return await uploadNew(dotYouClient, targetDrive, newPhoto, albumKey);
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -140,7 +134,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         if (existingCachedImage) return existingCachedImage;
       }
     },
-    upload: useMutation(uploadNewPhoto, {
+    upload: useMutation(uploadNewMedia, {
       onSuccess: () => {
         queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
       },

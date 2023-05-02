@@ -21,6 +21,8 @@ import {
   getRandom16ByteArray,
   UploadFileMetadata,
   jsonStringify64,
+  VideoContentType,
+  uploadVideo,
 } from '@youfoundation/js-lib';
 
 import { PhotoFile } from './PhotoTypes';
@@ -77,13 +79,7 @@ export const getPhotosFromLibrary = async (
   };
 };
 
-export const uploadPhoto = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  newPhoto: File,
-  albumKey?: string
-) => {
-  const bytes = new Uint8Array(await newPhoto.arrayBuffer());
+const getPhotoExifMeta = async (bytes: Uint8Array) => {
   // Read Exif Data for the Created date of the photo itself and not the file;
   let exifData;
   try {
@@ -106,6 +102,25 @@ export const uploadPhoto = async (
       }
     : undefined;
 
+  return { imageMetadata, imageUniqueId, dateTimeOriginal };
+};
+
+const uploadNewPhoto = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  newPhoto: File,
+  albumKey?: string
+) => {
+  const bytes = new Uint8Array(await newPhoto.arrayBuffer());
+  const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
+
+  console.log('uploadNewPhoto', {
+    type: newPhoto?.type as ImageContentType,
+    userDate: dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
+    tag: albumKey ? [albumKey] : undefined,
+    uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
+  });
+
   return await uploadImage(
     dotYouClient,
     targetDrive,
@@ -113,12 +128,61 @@ export const uploadPhoto = async (
     bytes,
     imageMetadata,
     {
-      type: newPhoto.type as ImageContentType,
+      type: newPhoto?.type as ImageContentType,
       userDate: dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
       tag: albumKey ? [albumKey] : undefined,
       uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
     }
   );
+};
+
+const uploadNewVideo = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  newVideo: File,
+  albumKey?: string
+) => {
+  // if video is tiny enough (less than 10MB), don't segment just upload
+  if (newVideo.size < 10000000)
+    return await uploadVideo(
+      dotYouClient,
+      targetDrive,
+      { requiredSecurityGroup: SecurityGroupType.Owner },
+      newVideo,
+      { isSegmented: false, mimeType: newVideo.type, fileSize: newVideo.size },
+      {
+        type: newVideo.type as VideoContentType,
+        tag: albumKey ? [albumKey] : undefined,
+      }
+    );
+
+  // Segment video file
+  const segmentVideoFile = (await import('@youfoundation/js-lib')).segmentVideoFile;
+  const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
+
+  return await uploadVideo(
+    dotYouClient,
+    targetDrive,
+    { requiredSecurityGroup: SecurityGroupType.Owner },
+    processedBytes,
+    metadata,
+    {
+      type: newVideo.type as VideoContentType,
+      tag: albumKey ? [albumKey] : undefined,
+    }
+  );
+};
+
+export const uploadNew = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  newFile: File,
+  albumKey?: string
+) => {
+  if (newFile.type === 'video/mp4')
+    return uploadNewVideo(dotYouClient, targetDrive, newFile, albumKey);
+
+  return uploadNewPhoto(dotYouClient, targetDrive, newFile, albumKey);
 };
 
 export const updatePhoto = async (
