@@ -102,7 +102,6 @@ const PhotoLibrary = ({
       )
     : undefined;
 
-  console.log(monthsToShow);
   const flatPhotos = monthsToShow?.flatMap((month) =>
     sortRecents(Object.keys(month.days)).flatMap((day) => month.days[day])
   );
