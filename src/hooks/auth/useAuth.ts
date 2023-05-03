@@ -65,17 +65,6 @@ const useAuth = () => {
     }
   };
 
-  // const getAuthToken = () => {
-  //   const raw = window.localStorage.getItem(APP_AUTH_TOKEN);
-  //   if (raw) {
-  //     return base64ToUint8Array(raw);
-  //   }
-  // };
-
-  const getApiType = () => {
-    return ApiType.App;
-  };
-
   const getDotYouClient = () => {
     const headers: Record<string, string> = {};
     const authToken = window.localStorage.getItem(APP_AUTH_TOKEN);
@@ -85,7 +74,7 @@ const useAuth = () => {
 
     return new DotYouClient({
       sharedSecret: getSharedSecret(),
-      api: getApiType(),
+      api: ApiType.App,
       root: retrieveIdentity(),
       headers: headers,
     });
