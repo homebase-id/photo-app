@@ -1,7 +1,10 @@
 import { DriveSearchResult } from '@youfoundation/js-lib';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import usePhotoLibraryPart from '../../../hooks/photoLibrary/usePhotoLibraryPart';
+import usePhotoLibraryPart, {
+  sortRecents,
+  usePhotoLibraryHigherLevel,
+} from '../../../hooks/photoLibrary/usePhotoLibraryPart';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
@@ -30,32 +33,6 @@ const createDateObject = (year: string, month: string, day?: string) => {
   return newDate;
 };
 
-export const buildMetaStructure = (headers: DriveSearchResult[]) => {
-  return headers.reduce((curVal, head) => {
-    const currDate = new Date(head.fileMetadata.appData.userDate || head.fileMetadata.created);
-    const year = currDate.getFullYear();
-    const month = currDate.getMonth() + 1;
-    const day = currDate.getDate();
-
-    const returnObj = { ...curVal };
-    returnObj[year] = {
-      ...returnObj[year],
-    };
-    returnObj[year][month] = {
-      ...returnObj[year][month],
-    };
-
-    returnObj[year][month][day] = returnObj[year][month][day]
-      ? [...returnObj[year][month][day], head]
-      : [head];
-
-    return returnObj;
-  }, {} as Record<string, Record<string, Record<string, DriveSearchResult[]>>>);
-};
-
-export const sortRecents = (elements: string[]) =>
-  elements.sort((a, b) => parseInt(b) - parseInt(a));
-
 const PhotoLibrary = ({
   albumKey,
   toggleSelection,
@@ -73,38 +50,22 @@ const PhotoLibrary = ({
 }) => {
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const {
-    data: photoLibraryPart,
-    hasNextPage: hasMorePhotos,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = usePhotoLibraryPart({
-    targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey && albumKey !== 'new' ? albumKey : undefined,
-  }).fetchLibraryPart;
+    photoLibrary,
+    monthsToShow,
+    flatPhotos,
 
-  const photoLibrary = photoLibraryPart
-    ? buildMetaStructure(photoLibraryPart.pages.flatMap((page) => page.results))
-    : undefined;
+    hasMorePhotos,
+    fetchNextPage,
+    fetchDirectPage,
+    isFetchingNextPage,
+  } = usePhotoLibraryHigherLevel({
+    targetDrive: PhotoConfig.PhotoDrive,
+    album: albumKey,
+  });
 
   useEffect(() => {
-    console.debug(
-      'fetched more photos, total count: ',
-      photoLibraryPart?.pages.flatMap((page) => page.results)?.length
-    );
-  }, [photoLibraryPart]);
-
-  const years = photoLibrary ? sortRecents(Object.keys(photoLibrary)) : undefined;
-  const monthsToShow = photoLibrary
-    ? years?.flatMap((year) =>
-        sortRecents(Object.keys(photoLibrary[year])).map((month) => {
-          return { monthDate: { year, month }, days: photoLibrary[year][month] };
-        })
-      )
-    : undefined;
-
-  const flatPhotos = monthsToShow?.flatMap((month) =>
-    sortRecents(Object.keys(month.days)).flatMap((day) => month.days[day])
-  );
+    console.log('fetched more photos, total count: ', flatPhotos?.length);
+  }, [flatPhotos]);
 
   const doToggleSelection = (fileId: string) => {
     if (!isSelected(fileId)) setSelectionRangeFrom(fileId);
@@ -159,7 +120,7 @@ const PhotoLibrary = ({
 
   const items = virtualizer.getVirtualItems();
 
-  if (!photoLibraryPart || !photoLibrary || !monthsToShow) {
+  if (!monthsToShow || !photoLibrary) {
     return null;
   }
 
@@ -250,7 +211,10 @@ const PhotoLibrary = ({
           </div>
         </div>
       </div>
-      <PhotoScroll albumKey={albumKey} />
+      <PhotoScroll
+        albumKey={albumKey}
+        onJumpInTime={(cursorState) => fetchDirectPage({ pageParam: cursorState })}
+      />
     </>
   );
 };

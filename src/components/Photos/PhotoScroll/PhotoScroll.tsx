@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import { buildMetaStructure, sortRecents } from '../PhotoLibrary/PhotoLibrary';
+import { mergeByteArrays, uint8ArrayToBase64 } from '@youfoundation/js-lib';
+import { buildMetaStructure, sortRecents } from '../../../hooks/photoLibrary/usePhotoLibraryPart';
 
 const createDateObject = (year: string, month: string, day?: string) => {
   const newDate = new Date();
@@ -13,12 +14,86 @@ const createDateObject = (year: string, month: string, day?: string) => {
   return newDate;
 };
 
+const convertTimeToGuid = (time: number) => {
+  //Convert time number to guid string
+
+  // One year is 3600*24*365.25*1000 = 31,557,600,000 milliseconds (35 bits)
+  // Use 9 bits for the years, for a total of 44 bits (5½ bytes)
+  // Thus able to hold 557 years since 1970-01-01
+  // The counter is 12 bits, for a total of 4096, which gets us to ~1/4ns per guid before clash / wait()
+  // Total bit usage of millisecond time+counter is thus 44+12=56 bits aka 7 bytes
+
+  // Create 56 bits (7 bytes) {milliseconds (44 bits), _counter(12 bits)}
+  // The counter is naught, since we're constructing this from the UNIX timestamp
+  //
+  const millisecondsCtr = (BigInt(time) << BigInt(12)) | BigInt(0);
+
+  // I wonder if there is a neat way to not have to both create this and the GUID.
+  const byte16 = new Uint8Array(16);
+  byte16.fill(0);
+  byte16[0] = Number((millisecondsCtr >> BigInt(48)) & BigInt(0xff));
+  byte16[1] = Number((millisecondsCtr >> BigInt(40)) & BigInt(0xff));
+  byte16[2] = Number((millisecondsCtr >> BigInt(32)) & BigInt(0xff));
+  byte16[3] = Number((millisecondsCtr >> BigInt(24)) & BigInt(0xff));
+  byte16[4] = Number((millisecondsCtr >> BigInt(16)) & BigInt(0xff));
+  byte16[5] = Number((millisecondsCtr >> BigInt(8)) & BigInt(0xff));
+  byte16[6] = Number((millisecondsCtr >> BigInt(0)) & BigInt(0xff));
+
+  return byte16;
+};
+
+const int64ToBytes = (value: number) => {
+  const byte8 = new Uint8Array(8);
+  const bigValue = BigInt(value);
+
+  byte8[0] = Number((bigValue >> BigInt(56)) & BigInt(0xff));
+  byte8[1] = Number((bigValue >> BigInt(48)) & BigInt(0xff));
+  byte8[2] = Number((bigValue >> BigInt(40)) & BigInt(0xff));
+  byte8[3] = Number((bigValue >> BigInt(32)) & BigInt(0xff));
+  byte8[4] = Number((bigValue >> BigInt(24)) & BigInt(0xff));
+  byte8[5] = Number((bigValue >> BigInt(16)) & BigInt(0xff));
+  byte8[6] = Number((bigValue >> BigInt(8)) & BigInt(0xff));
+  byte8[7] = Number(bigValue & BigInt(0xff));
+
+  return byte8;
+};
+
+const buildCursor = (unixTimeInMs: number) => {
+  let bytes = mergeByteArrays([
+    convertTimeToGuid(unixTimeInMs),
+    new Uint8Array(new Array(16)),
+    new Uint8Array(new Array(16)),
+  ]);
+
+  const nullBytes = mergeByteArrays([
+    new Uint8Array([1]),
+    new Uint8Array([0]),
+    new Uint8Array([0]),
+  ]);
+
+  const bytes2 = mergeByteArrays([
+    int64ToBytes(unixTimeInMs),
+    new Uint8Array(new Array(8)),
+    new Uint8Array(new Array(8)),
+  ]);
+
+  bytes = mergeByteArrays([bytes, nullBytes, bytes2]);
+
+  return uint8ArrayToBase64(bytes);
+};
+
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
   year: 'numeric',
 };
 
-const PhotoScroll = ({ albumKey }: { albumKey?: string }) => {
+const PhotoScroll = ({
+  albumKey,
+  onJumpInTime,
+}: {
+  albumKey?: string;
+  onJumpInTime: (cursor: string) => void;
+}) => {
   const [overlayData, setOverlayData] = useState<{ year: string; month: string } | undefined>(
     undefined
   );
@@ -34,37 +109,24 @@ const PhotoScroll = ({ albumKey }: { albumKey?: string }) => {
 
   const [mouseDown, setMouseDown] = useState(false);
 
-  const { data: library } = usePhotoLibrary({
+  const { data: photoLib } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey && albumKey !== 'new' ? albumKey : undefined,
   }).fetchLibrary;
 
-  if (!library) return null;
-  const libStruc = buildMetaStructure(library);
-  if (!libStruc) return null;
+  if (!photoLib) return null;
+  const { yearsWithMonths, photoWeight } = photoLib;
 
-  const totalPhotos = library.length;
-  const photoWeight = 100 / totalPhotos;
+  const intoThePast = (time?: { year: string; month: string }) => {
+    if (!time) return;
 
-  const years = sortRecents(Object.keys(libStruc));
-  const yearsWithMonths = years.map((year) => {
-    const months = Object.keys(libStruc[year]);
-    return {
-      year: year,
-      months: sortRecents(months).map((month) => {
-        const days = Object.keys(libStruc[year][month]);
+    const dateObject = createDateObject(time.year, time.month);
+    const cursor = buildCursor(dateObject.getTime());
+    console.log('jump to', { dateObject, cursor });
+    onJumpInTime(cursor);
+  };
 
-        return {
-          month,
-          photos: days.flatMap((day) => {
-            return libStruc[year][month][day];
-          }),
-        };
-      }),
-    };
-  });
-
-  if (yearsWithMonths.length === 1 && yearsWithMonths[0].months.length <= 2) return null;
+  // if (yearsWithMonths.length === 1 && yearsWithMonths[0].months.length <= 2) return null;
 
   return (
     <div
@@ -75,8 +137,8 @@ const PhotoScroll = ({ albumKey }: { albumKey?: string }) => {
       }}
       onMouseDown={() => setMouseDown(true)}
       onMouseUp={() => setMouseDown(false)}
-      onMouseOver={() => mouseDown && console.log(overlayData)}
-      onClick={() => console.log(overlayData)}
+      onMouseOver={() => mouseDown && intoThePast(overlayData)}
+      onClick={() => intoThePast(overlayData)}
     >
       <ol className="flex h-[calc(100vh-3.5rem)] flex-col items-center justify-between">
         {yearsWithMonths.map((year) => (
@@ -116,7 +178,7 @@ const MonthItem = ({
 }: {
   year: string;
   month: string;
-  photos: unknown[];
+  photos: number;
   photoWeight: number;
   setOverlayData: (year: string, month: string) => void;
 }) => {
@@ -124,7 +186,7 @@ const MonthItem = ({
     <li
       className="flex w-full flex-col-reverse items-end pr-2"
       key={month}
-      style={{ flexBasis: `${photos.length * photoWeight}vh` }}
+      style={{ flexBasis: `${photos * photoWeight}vh` }}
       data-month={month}
       onMouseEnter={() => setOverlayData(year, month)}
     >
