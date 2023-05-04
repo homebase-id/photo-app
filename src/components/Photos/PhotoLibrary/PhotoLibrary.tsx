@@ -1,36 +1,16 @@
-import { DriveSearchResult } from '@youfoundation/js-lib';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import usePhotoLibraryPart, {
-  sortRecents,
-  usePhotoLibraryHigherLevel,
-} from '../../../hooks/photoLibrary/usePhotoLibraryPart';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import PhotoScroll from '../PhotoScroll/PhotoScroll';
 import { PhotoSection } from '../PhotoSection/PhotoSection';
+import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
+import { createDateObject } from '../../../provider/photos/PhotoProvider';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
   year: 'numeric',
-};
-
-const dateFormat: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  weekday: 'short',
-};
-
-const createDateObject = (year: string, month: string, day?: string) => {
-  const newDate = new Date();
-  newDate.setFullYear(parseInt(year));
-  newDate.setMonth(parseInt(month) - 1);
-
-  if (day) newDate.setDate(parseInt(day));
-
-  return newDate;
 };
 
 const PhotoLibrary = ({
@@ -49,23 +29,10 @@ const PhotoLibrary = ({
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
-  const {
-    photoLibrary,
-    monthsToShow,
-    flatPhotos,
-
-    hasMorePhotos,
-    fetchNextPage,
-    fetchDirectPage,
-    isFetchingNextPage,
-  } = usePhotoLibraryHigherLevel({
+  const { data: photoLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
-  });
-
-  useEffect(() => {
-    console.log('fetched more photos, total count: ', flatPhotos?.length);
-  }, [flatPhotos]);
+  }).fetchLibrary;
 
   const doToggleSelection = (fileId: string) => {
     if (!isSelected(fileId)) setSelectionRangeFrom(fileId);
@@ -73,17 +40,19 @@ const PhotoLibrary = ({
   };
 
   const doRangeSelection = (selectionRangeTo: string) => {
-    if (!selectionRangeFrom || !flatPhotos) {
-      doToggleSelection(selectionRangeTo);
-      return;
-    }
-
-    const fromIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeFrom);
-    const toIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeTo);
-
-    const toSelect = flatPhotos.slice(fromIndex, toIndex + 1).map((photo) => photo.fileId);
-    selectRange(toSelect);
+    // if (!selectionRangeFrom || !flatPhotos) {
+    //   doToggleSelection(selectionRangeTo);
+    //   return;
+    // }
+    // const fromIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeFrom);
+    // const toIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeTo);
+    // const toSelect = flatPhotos.slice(fromIndex, toIndex + 1).map((photo) => photo.fileId);
+    // selectRange(toSelect);
   };
+
+  const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
+    year.months.map((month) => ({ year: year.year, ...month }))
+  );
 
   /// Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
@@ -94,29 +63,11 @@ const PhotoLibrary = ({
   }, []);
 
   const virtualizer = useWindowVirtualizer({
-    count: (monthsToShow?.length || 0) + 1, // Add 1 so we have an index for the 'loaderRow'
+    count: (monthsToShow?.length || 0) + 1, // Add 1 so we have an index for the 'no more photos row'
     estimateSize: () => 1000, // Rough size of a photoSection
     scrollMargin: parentOffsetRef.current,
     overscan: 1, // Amount of items to load before and after (improved performance especially with images)
   });
-
-  useEffect(() => {
-    const [lastItem] = [...virtualizer.getVirtualItems()].reverse();
-
-    if (!lastItem || !monthsToShow?.length) {
-      return;
-    }
-
-    if (lastItem.index >= monthsToShow?.length - 1 && hasMorePhotos && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [
-    hasMorePhotos,
-    fetchNextPage,
-    monthsToShow?.length,
-    isFetchingNextPage,
-    virtualizer.getVirtualItems(),
-  ]);
 
   const items = virtualizer.getVirtualItems();
 
@@ -162,24 +113,16 @@ const PhotoLibrary = ({
             }}
           >
             {items.map((virtualRow) => {
-              const isLoaderRow = virtualRow.index > monthsToShow.length - 1;
-              if (isLoaderRow) {
-                return hasMorePhotos || isFetchingNextPage ? (
-                  <div className="mt-5 animate-pulse" key={'loading'}>
-                    {t('Loading...')}
-                  </div>
-                ) : (
+              const isFinalRow = virtualRow.index > monthsToShow.length - 1;
+              if (isFinalRow)
+                return (
                   <div className="mt-5 italic opacity-50" key={'no-more'}>
                     {t('No more photos')}
                   </div>
                 );
-              }
 
               const monthMeta = monthsToShow[virtualRow.index];
-
-              const year = monthMeta.monthDate.year;
-              const month = monthMeta.monthDate.month;
-              const days = sortRecents(Object.keys(monthMeta.days));
+              const { year, month, days } = monthMeta;
 
               return (
                 <div
@@ -192,13 +135,11 @@ const PhotoLibrary = ({
                   </h1>
                   {days.map((day) => (
                     <PhotoSection
-                      title={createDateObject(year, month, day).toLocaleDateString(
-                        undefined,
-                        dateFormat
-                      )}
+                      date={createDateObject(year, month, day.day)}
+                      albumKey={albumKey}
                       targetDrive={PhotoConfig.PhotoDrive}
-                      photos={photoLibrary[year][month][day]}
-                      key={`${year}-${month}-${day}`}
+                      photosCount={day.photosThisDay}
+                      key={`${year}-${month}-${day.day}`}
                       toggleSelection={doToggleSelection}
                       rangeSelection={doRangeSelection}
                       isSelected={isSelected}
@@ -213,7 +154,12 @@ const PhotoLibrary = ({
       </div>
       <PhotoScroll
         albumKey={albumKey}
-        onJumpInTime={(cursorState) => fetchDirectPage({ pageParam: cursorState })}
+        onJumpInTime={(time) => {
+          const target = monthsToShow.findIndex((month) => {
+            return month.year === time.year && month.month === time.month;
+          });
+          virtualizer.scrollToIndex(target, { align: 'start' });
+        }}
       />
     </>
   );

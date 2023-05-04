@@ -1,86 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import { mergeByteArrays, uint8ArrayToBase64 } from '@youfoundation/js-lib';
-import { buildMetaStructure, sortRecents } from '../../../hooks/photoLibrary/usePhotoLibraryPart';
-
-const createDateObject = (year: string, month: string, day?: string) => {
-  const newDate = new Date();
-  newDate.setFullYear(parseInt(year));
-  newDate.setMonth(parseInt(month) - 1);
-
-  if (day) newDate.setDate(parseInt(day));
-
-  return newDate;
-};
-
-const convertTimeToGuid = (time: number) => {
-  //Convert time number to guid string
-
-  // One year is 3600*24*365.25*1000 = 31,557,600,000 milliseconds (35 bits)
-  // Use 9 bits for the years, for a total of 44 bits (5½ bytes)
-  // Thus able to hold 557 years since 1970-01-01
-  // The counter is 12 bits, for a total of 4096, which gets us to ~1/4ns per guid before clash / wait()
-  // Total bit usage of millisecond time+counter is thus 44+12=56 bits aka 7 bytes
-
-  // Create 56 bits (7 bytes) {milliseconds (44 bits), _counter(12 bits)}
-  // The counter is naught, since we're constructing this from the UNIX timestamp
-  //
-  const millisecondsCtr = (BigInt(time) << BigInt(12)) | BigInt(0);
-
-  // I wonder if there is a neat way to not have to both create this and the GUID.
-  const byte16 = new Uint8Array(16);
-  byte16.fill(0);
-  byte16[0] = Number((millisecondsCtr >> BigInt(48)) & BigInt(0xff));
-  byte16[1] = Number((millisecondsCtr >> BigInt(40)) & BigInt(0xff));
-  byte16[2] = Number((millisecondsCtr >> BigInt(32)) & BigInt(0xff));
-  byte16[3] = Number((millisecondsCtr >> BigInt(24)) & BigInt(0xff));
-  byte16[4] = Number((millisecondsCtr >> BigInt(16)) & BigInt(0xff));
-  byte16[5] = Number((millisecondsCtr >> BigInt(8)) & BigInt(0xff));
-  byte16[6] = Number((millisecondsCtr >> BigInt(0)) & BigInt(0xff));
-
-  return byte16;
-};
-
-const int64ToBytes = (value: number) => {
-  const byte8 = new Uint8Array(8);
-  const bigValue = BigInt(value);
-
-  byte8[0] = Number((bigValue >> BigInt(56)) & BigInt(0xff));
-  byte8[1] = Number((bigValue >> BigInt(48)) & BigInt(0xff));
-  byte8[2] = Number((bigValue >> BigInt(40)) & BigInt(0xff));
-  byte8[3] = Number((bigValue >> BigInt(32)) & BigInt(0xff));
-  byte8[4] = Number((bigValue >> BigInt(24)) & BigInt(0xff));
-  byte8[5] = Number((bigValue >> BigInt(16)) & BigInt(0xff));
-  byte8[6] = Number((bigValue >> BigInt(8)) & BigInt(0xff));
-  byte8[7] = Number(bigValue & BigInt(0xff));
-
-  return byte8;
-};
-
-const buildCursor = (unixTimeInMs: number) => {
-  let bytes = mergeByteArrays([
-    convertTimeToGuid(unixTimeInMs),
-    new Uint8Array(new Array(16)),
-    new Uint8Array(new Array(16)),
-  ]);
-
-  const nullBytes = mergeByteArrays([
-    new Uint8Array([1]),
-    new Uint8Array([0]),
-    new Uint8Array([0]),
-  ]);
-
-  const bytes2 = mergeByteArrays([
-    int64ToBytes(unixTimeInMs),
-    new Uint8Array(new Array(8)),
-    new Uint8Array(new Array(8)),
-  ]);
-
-  bytes = mergeByteArrays([bytes, nullBytes, bytes2]);
-
-  return uint8ArrayToBase64(bytes);
-};
+import { createDateObject } from '../../../provider/photos/PhotoProvider';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -92,9 +13,9 @@ const PhotoScroll = ({
   onJumpInTime,
 }: {
   albumKey?: string;
-  onJumpInTime: (cursor: string) => void;
+  onJumpInTime: (time: { year: number; month: number }) => void;
 }) => {
-  const [overlayData, setOverlayData] = useState<{ year: string; month: string } | undefined>(
+  const [overlayData, setOverlayData] = useState<{ year: number; month: number } | undefined>(
     undefined
   );
   const overlayText = useMemo(() => {
@@ -117,13 +38,10 @@ const PhotoScroll = ({
   if (!photoLib) return null;
   const { yearsWithMonths, photoWeight } = photoLib;
 
-  const intoThePast = (time?: { year: string; month: string }) => {
+  const intoThePast = (time?: { year: number; month: number }) => {
     if (!time) return;
 
-    const dateObject = createDateObject(time.year, time.month);
-    const cursor = buildCursor(dateObject.getTime());
-    console.log('jump to', { dateObject, cursor });
-    onJumpInTime(cursor);
+    onJumpInTime(time);
   };
 
   // if (yearsWithMonths.length === 1 && yearsWithMonths[0].months.length <= 2) return null;
@@ -147,7 +65,7 @@ const PhotoScroll = ({
               <MonthItem
                 year={year.year}
                 month={month.month}
-                photos={month.photos}
+                photos={month.photosThisMonth}
                 photoWeight={photoWeight}
                 key={`${year.year}+${month.month}`}
                 setOverlayData={(year, month) => setOverlayData({ year, month })}
@@ -176,11 +94,11 @@ const MonthItem = ({
   photoWeight,
   setOverlayData,
 }: {
-  year: string;
-  month: string;
+  year: number;
+  month: number;
   photos: number;
   photoWeight: number;
-  setOverlayData: (year: string, month: string) => void;
+  setOverlayData: (year: number, month: number) => void;
 }) => {
   return (
     <li

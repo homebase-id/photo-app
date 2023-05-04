@@ -1,11 +1,13 @@
 import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
+import { usePhotos } from '../../../hooks/photoLibrary/usePhotos';
+import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -23,46 +25,80 @@ const getAspectRatioFromThumbnails = (thumbnails: ThumbSize[]): number => {
   return biggestThumb.pixelWidth / biggestThumb.pixelHeight;
 };
 
+const dateFormat: Intl.DateTimeFormatOptions = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  weekday: 'short',
+};
+
 export const PhotoSection = ({
-  title,
+  date,
   targetDrive,
-  photos,
+  albumKey,
+  photosCount,
   toggleSelection,
   rangeSelection,
   isSelected,
   isSelecting,
 }: {
-  title: string;
+  date: Date;
   targetDrive: TargetDrive;
-  photos: DriveSearchResult[];
+  albumKey?: string;
+  photosCount: number;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
-  const sortedPhotos = photos.sort(
-    (dsrA, dsrB) =>
-      (dsrB.fileMetadata.appData.userDate || dsrB.fileMetadata.created || 0) -
-      (dsrA.fileMetadata.appData.userDate || dsrA.fileMetadata.created || 0)
-  );
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+  useIntersection(wrapperRef, () => setIsInView(true));
+
+  const { data: photos, isFetchedAfterMount } = usePhotos({
+    targetDrive: isInView ? PhotoConfig.PhotoDrive : undefined,
+    album: albumKey,
+    date,
+  }).fetchPhotos;
+
+  const photoLoaders = useMemo(() => {
+    const aspect = 1;
+
+    return new Array(photosCount).fill(0).map((_, index) => (
+      <div className={`${divClasses} relative`} key={index}>
+        <div
+          className={`${imgWrapperClasses} bg-white dark:bg-slate-700`}
+          style={{ height: '200px', width: `${Math.round(aspect * 200)}px` }}
+        ></div>
+      </div>
+    ));
+  }, [photosCount]);
+
+  const title = date.toLocaleDateString(undefined, dateFormat);
 
   return (
-    <section className="mb-5">
+    <section className="mb-5" ref={wrapperRef}>
       <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
       <div className={gridClasses}>
-        {sortedPhotos.map((photoDsr) => {
-          return (
-            <PhotoItem
-              targetDrive={targetDrive}
-              photoDsr={photoDsr}
-              key={photoDsr.fileId}
-              toggleSelection={toggleSelection}
-              rangeSelection={rangeSelection}
-              isSelected={isSelected}
-              isSelecting={isSelecting}
-            />
-          );
-        })}
+        {!isFetchedAfterMount ? (
+          photoLoaders
+        ) : (
+          <>
+            {photos?.map((photoDsr) => {
+              return (
+                <PhotoItem
+                  targetDrive={targetDrive}
+                  photoDsr={photoDsr}
+                  key={photoDsr.fileId}
+                  toggleSelection={toggleSelection}
+                  rangeSelection={rangeSelection}
+                  isSelected={isSelected}
+                  isSelecting={isSelecting}
+                />
+              );
+            })}
+          </>
+        )}
         {/* This div fills up the space of the last row */}
         <div className="hidden flex-grow-[999] lg:block"></div>
       </div>
@@ -106,8 +142,16 @@ export const PhotoItem = ({
     else toggleSelection(photoDsr.fileId);
   };
 
+  const photoDate = new Date(
+    photoDsr.fileMetadata.appData.userDate || photoDsr.fileMetadata.created
+  );
+
   return (
-    <div className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}>
+    <div
+      className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}
+      data-date={`${photoDate.getFullYear()}-${photoDate.getMonth() + 1}-${photoDate.getDate()}`}
+      data-unix={photoDate.getTime()}
+    >
       <Link
         // relative path so we can keep the albumkey intact
         to={`photo/${photoDsr.fileId}`}

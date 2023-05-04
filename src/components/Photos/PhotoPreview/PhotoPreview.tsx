@@ -43,18 +43,20 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
             setIsInfoOpen={setIsInfoOpen}
             isInfoOpen={isInfoOpen}
           />
-          {current?.fileMetadata.contentType.startsWith('video/') ? (
-            <VideoWithLoader fileId={fileId} targetDrive={targetDrive} fit="contain" />
-          ) : (
-            <PhotoWithLoader
-              fileId={fileId}
-              targetDrive={targetDrive}
-              previewThumbnail={current?.fileMetadata.appData.previewThumbnail}
-              size={{ pixelWidth: 1600, pixelHeight: 1600 }}
-              fit="contain"
-              key={fileId}
-            />
-          )}
+          <>
+            {current?.fileMetadata.contentType.startsWith('video/') ? (
+              <VideoWithLoader fileId={fileId} targetDrive={targetDrive} fit="contain" />
+            ) : (
+              <PhotoWithLoader
+                fileId={fileId}
+                targetDrive={targetDrive}
+                previewThumbnail={current?.fileMetadata.appData.previewThumbnail}
+                size={{ pixelWidth: 1600, pixelHeight: 1600 }}
+                fit="contain"
+                key={fileId}
+              />
+            )}
+          </>
         </div>
         {isInfoOpen ? (
           <PhotoInfo current={current} setIsInfoOpen={setIsInfoOpen} key={fileId} />
@@ -127,7 +129,7 @@ export const PhotoActions = ({
     window.addEventListener('keydown', handleKeyDown);
 
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fileId]); // We need new handlers to reflect the new fileId
+  }, [fileId, prevSibling, nextSibling]); // We need new handlers to reflect the new fileId
 
   useEffect(() => {
     if (fileId) {
