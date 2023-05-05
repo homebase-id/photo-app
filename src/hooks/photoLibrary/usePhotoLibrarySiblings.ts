@@ -1,6 +1,11 @@
-import { TargetDrive, getFileHeader, stringGuidsEqual } from '@youfoundation/js-lib';
+import {
+  DriveSearchResult,
+  TargetDrive,
+  getFileHeader,
+  stringGuidsEqual,
+} from '@youfoundation/js-lib';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { usePhotos, usePhotosReturn } from './usePhotos';
+import { fetchPhotos, usePhotos, usePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 import { createDateObject } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
@@ -10,7 +15,7 @@ const useFileHeader = ({
   photoFileId,
 }: {
   targetDrive: TargetDrive;
-  photoFileId: string;
+  photoFileId?: string;
 }) => {
   const queryClient = useQueryClient();
   const { getDotYouClient } = useAuth();
@@ -34,8 +39,10 @@ const useFileHeader = ({
     return await getFileHeader(dotYouClient, targetDrive, photoFileId);
   };
 
-  return useQuery(['photo-header', targetDrive?.alias, photoFileId], () =>
-    fetchCurrent(targetDrive, photoFileId)
+  return useQuery(
+    ['photo-header', targetDrive?.alias, photoFileId],
+    () => fetchCurrent(targetDrive, photoFileId as string),
+    { enabled: !!photoFileId }
   );
 };
 
@@ -46,21 +53,26 @@ const useCurrentPhoto = ({
 }: {
   targetDrive: TargetDrive;
   album?: string;
-  photoFileId: string;
+  photoFileId?: string;
 }) => {
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId });
+
   const date = fileHeader
     ? new Date(fileHeader.fileMetadata.appData.userDate || fileHeader.fileMetadata.created)
     : undefined;
   const { data: photos } = usePhotos({ targetDrive, album, date }).fetchPhotos;
 
+  if (!photoFileId)
+    return { dataForDay: undefined, currentDate: undefined, currentIndex: undefined };
+
   return {
     dataForDay: photos,
+    currentDate: date,
     currentIndex: photos?.findIndex((dsr) => stringGuidsEqual(dsr.fileId, photoFileId)),
   };
 };
 
-const useFlatDaysFromMeta = ({
+export const useFlatDaysFromMeta = ({
   targetDrive,
   album,
 }: {
@@ -83,7 +95,7 @@ const useFlatDaysFromMeta = ({
   return useQuery(['flat-photos', targetDrive?.alias, album], fetch, { enabled: !!photoLibrary });
 };
 
-const usePhotoLibrarySiblings = ({
+export const usePhotoLibrarySiblings = ({
   targetDrive,
   album,
   photoFileId,
@@ -133,4 +145,98 @@ const usePhotoLibrarySiblings = ({
   };
 };
 
-export default usePhotoLibrarySiblings;
+export const useSiblingsRange = ({
+  targetDrive,
+  album,
+  fromFileId,
+  toFileId,
+}: {
+  targetDrive: TargetDrive;
+  album?: string;
+  fromFileId?: string;
+  toFileId?: string;
+}) => {
+  const dotYouClient = useAuth().getDotYouClient();
+  const { data: flatDays } = useFlatDaysFromMeta({
+    targetDrive,
+    album,
+  });
+
+  const fromCurrentData = useCurrentPhoto({ targetDrive, album, photoFileId: fromFileId });
+  const toCurrentData = useCurrentPhoto({ targetDrive, album, photoFileId: toFileId });
+
+  const getRange = async () => {
+    if (
+      !flatDays ||
+      !fromCurrentData ||
+      fromCurrentData.currentIndex === undefined ||
+      !fromCurrentData.dataForDay?.length ||
+      !toCurrentData ||
+      toCurrentData.currentIndex === undefined ||
+      !toCurrentData.dataForDay?.length
+    )
+      return [];
+
+    // If within same day, just return in between, EASY
+    if (
+      fromCurrentData.currentDate?.getFullYear() === toCurrentData.currentDate?.getFullYear() &&
+      fromCurrentData.currentDate?.getMonth() === toCurrentData.currentDate?.getMonth() &&
+      fromCurrentData.currentDate?.getDate() === toCurrentData.currentDate?.getDate()
+    ) {
+      const fromIndex = fromCurrentData.currentIndex;
+      const toIndex = toCurrentData.currentIndex;
+      const dataForDay = fromCurrentData.dataForDay;
+      if (dataForDay) {
+        return dataForDay.slice(fromIndex, toIndex + 1);
+      }
+    }
+
+    // If not, get the data with the index of those photos in the days...
+    const returnRange: DriveSearchResult[] = [];
+    returnRange.push(...fromCurrentData.dataForDay.slice(fromCurrentData.currentIndex));
+    returnRange.push(...toCurrentData.dataForDay.slice(0, toCurrentData.currentIndex + 1));
+
+    // ... and find days in between the two
+    const fromDay = flatDays.findIndex(
+      (flatDay) =>
+        flatDay.year === fromCurrentData.currentDate?.getFullYear() &&
+        flatDay.month === fromCurrentData.currentDate?.getMonth() + 1 &&
+        flatDay.day === fromCurrentData.currentDate?.getDate()
+    );
+
+    const toDay = flatDays.findIndex(
+      (flatDay) =>
+        flatDay.year === toCurrentData.currentDate?.getFullYear() &&
+        flatDay.month === toCurrentData.currentDate?.getMonth() + 1 &&
+        flatDay.day === toCurrentData.currentDate?.getDate()
+    );
+
+    const daysInBetween = flatDays.slice(fromDay + 1, toDay);
+    const dataFromInBetween = await Promise.all(
+      daysInBetween.map(
+        async (day) =>
+          await fetchPhotos({
+            dotYouClient,
+            targetDrive,
+            album,
+            date: createDateObject(day.year, day.month, day.day),
+          })
+      )
+    );
+    returnRange.push(...dataFromInBetween.flat());
+
+    return returnRange;
+  };
+
+  return useQuery(
+    ['siblings-range', targetDrive?.alias, album, fromFileId, toFileId],
+    () => getRange(),
+    {
+      enabled:
+        !!flatDays &&
+        fromCurrentData?.currentIndex !== undefined &&
+        toCurrentData?.currentIndex !== undefined,
+      select: (data) => data.map((dsr) => dsr.fileId),
+    }
+  );
+};

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
@@ -7,6 +7,7 @@ import PhotoScroll from '../PhotoScroll/PhotoScroll';
 import { PhotoSection } from '../PhotoSection/PhotoSection';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { createDateObject } from '../../../provider/photos/PhotoProvider';
+import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -29,26 +30,44 @@ const PhotoLibrary = ({
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
+  const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
   const { data: photoLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
   }).fetchLibrary;
+
+  const { data: selection } = useSiblingsRange({
+    targetDrive: PhotoConfig.PhotoDrive,
+    album: albumKey,
+    fromFileId: selectionRangeFrom,
+    toFileId: selectionRangeTo,
+  });
 
   const doToggleSelection = (fileId: string) => {
     if (!isSelected(fileId)) setSelectionRangeFrom(fileId);
     toggleSelection(fileId);
   };
 
-  const doRangeSelection = (selectionRangeTo: string) => {
-    // if (!selectionRangeFrom || !flatPhotos) {
-    //   doToggleSelection(selectionRangeTo);
-    //   return;
-    // }
-    // const fromIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeFrom);
-    // const toIndex = flatPhotos.findIndex((photo) => photo.fileId === selectionRangeTo);
-    // const toSelect = flatPhotos.slice(fromIndex, toIndex + 1).map((photo) => photo.fileId);
-    // selectRange(toSelect);
+  const doRangeSelection = (fileId: string) => {
+    toggleSelection(fileId);
+    if (selectionRangeFrom) setSelectionRangeTo(fileId);
   };
+
+  useEffect(() => {
+    if (selection && selectionRangeFrom && selectionRangeTo) {
+      selectRange(selection);
+
+      setSelectionRangeFrom(undefined);
+      setSelectionRangeTo(undefined);
+    }
+  }, [selection]);
+
+  useEffect(() => {
+    if (!isSelecting) {
+      setSelectionRangeFrom(undefined);
+      setSelectionRangeTo(undefined);
+    }
+  }, [isSelecting]);
 
   const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
     year.months.map((month) => ({ year: year.year, ...month }))

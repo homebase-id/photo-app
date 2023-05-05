@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import usePhotoLibrarySiblings from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
+import { usePhotoLibrarySiblings } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
