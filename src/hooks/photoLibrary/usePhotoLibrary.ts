@@ -78,7 +78,7 @@ const usePhotoLibrary = ({ targetDrive, album }: { targetDrive: TargetDrive; alb
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      enabled: !!targetDrive,
+      enabled: !!targetDrive && album !== 'new',
       onError: (err) => console.error(err),
     }),
   };
