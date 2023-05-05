@@ -7,6 +7,12 @@ export type usePhotosReturn = DriveSearchResult[];
 
 const PAGE_SIZE = 100;
 
+export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
+  const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
+  const bDate = b.fileMetadata.appData.userDate || b.fileMetadata.created;
+  return bDate - aDate;
+};
+
 export const fetchPhotos = async ({
   dotYouClient,
   targetDrive,
@@ -33,11 +39,7 @@ export const fetchPhotos = async ({
     else return false;
   });
 
-  filteredResults.sort((a, b) => {
-    const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
-    const bDate = b.fileMetadata.appData.userDate || b.fileMetadata.created;
-    return bDate - aDate;
-  });
+  filteredResults.sort(sortDsrFunction);
 
   return filteredResults;
 };

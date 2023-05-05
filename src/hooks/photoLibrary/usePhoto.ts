@@ -1,16 +1,10 @@
-import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  TargetDrive,
-  ImageSize,
-  getFileHeader,
-  stringGuidsEqual,
-  DriveSearchResult,
-} from '@youfoundation/js-lib';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { TargetDrive, ImageSize, getFileHeader, stringGuidsEqual } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
-import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
-import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
+import { PhotoFile } from '../../provider/photos/PhotoTypes';
+import { usePhotosReturn } from './usePhotos';
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
   const queryClient = useQueryClient();
@@ -136,39 +130,33 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     },
     upload: useMutation(uploadNewMedia, {
       onSuccess: () => {
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
       },
     }),
     remove: useMutation(removePhoto, {
       onMutate: (toRemovePhotoData) => {
         queryClient
           .getQueryCache()
-          .findAll(['photo-library-parts', targetDrive?.alias])
+          .findAll(['photos', targetDrive?.alias])
           .forEach((query) => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
-            const queryData =
-              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
+            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
 
             if (!queryData) return;
 
             // Remove from all other libraryTypes
             if (libraryType !== 'bin') {
-              queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
-                ...queryData,
-                pages: queryData.pages.map((page) => ({
-                  ...page,
-                  results: page.results.filter(
-                    (photo) => photo.fileId !== toRemovePhotoData.photoFileId
-                  ),
-                })),
-              });
+              queryClient.setQueryData<usePhotosReturn>(
+                queryKey,
+                queryData.filter((photo) => photo.fileId !== toRemovePhotoData.photoFileId)
+              );
             }
           });
       },
       onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photos', targetDrive?.alias, 'bin']);
       },
       onError: (ex) => {
         console.error(ex);
@@ -178,39 +166,26 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onMutate: (toArchivePhotoData) => {
         queryClient
           .getQueryCache()
-          .findAll(['photo-library-parts', targetDrive?.alias])
+          .findAll(['photos', targetDrive?.alias])
           .forEach((query) => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
-            const queryData =
-              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
+            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
 
             if (!queryData) return;
 
             // Remove from all other libraryTypes
             if (libraryType !== 'archive') {
-              queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
-                ...queryData,
-                pages: queryData.pages.map((page) => ({
-                  ...page,
-                  results: page.results.filter(
-                    (photo) => photo.fileId !== toArchivePhotoData.photoFileId
-                  ),
-                })),
-              });
+              queryClient.setQueryData<usePhotosReturn>(
+                queryKey,
+                queryData.filter((photo) => photo.fileId !== toArchivePhotoData.photoFileId)
+              );
             }
           });
       },
       onSettled: (_param, _error, data) => {
-        queryClient.invalidateQueries([
-          'photo',
-          (targetDrive || PhotoConfig.PhotoDrive)?.alias,
-          data.photoFileId,
-        ]);
-        queryClient.invalidateQueries([
-          'photo-library-parts',
-          (targetDrive || PhotoConfig.PhotoDrive)?.alias,
-        ]);
+        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photos', targetDrive?.alias, 'archive']);
       },
       onError: (ex) => {
         console.error(ex);
@@ -220,153 +195,42 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onMutate: (toRestorePhotoData) => {
         queryClient
           .getQueryCache()
-          .findAll(['photo-library-parts', targetDrive?.alias])
+          .findAll(['photos', targetDrive?.alias])
           .forEach((query) => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
-            const queryData =
-              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
+            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
 
             if (!queryData) return;
 
-            // Remove from all other libraryTypes
+            // Remove from all bin and archive
             if (libraryType === 'archive' || libraryType === 'bin') {
-              queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
-                ...queryData,
-                pages: queryData.pages.map((page) => ({
-                  ...page,
-                  results: page.results.filter(
-                    (photo) => photo.fileId !== toRestorePhotoData.photoFileId
-                  ),
-                })),
-              });
+              queryClient.setQueryData<usePhotosReturn>(
+                queryKey,
+                queryData.filter((photo) => photo.fileId !== toRestorePhotoData.photoFileId)
+              );
             }
           });
       },
       onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photo', targetDrive?.alias, _data.photoFileId]);
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photos', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
       },
     }),
     addTags: useMutation(addTags, {
-      onMutate: (newPhotoData) => {
-        let updatedDsr: DriveSearchResult | undefined;
-
-        const getUpdatedDsr = (existingDsr: DriveSearchResult) => {
-          if (updatedDsr) return updatedDsr;
-
-          updatedDsr = {
-            ...existingDsr,
-            fileMetadata: {
-              ...existingDsr.fileMetadata,
-              appData: {
-                ...existingDsr.fileMetadata.appData,
-                tags: [
-                  ...(existingDsr.fileMetadata.appData.tags || []),
-                  ...newPhotoData.addTags.map((tag) => tag.replaceAll('-', '')),
-                ],
-              },
-            },
-          };
-
-          return updatedDsr;
-        };
-
-        [...newPhotoData.addTags, undefined].forEach((tag) => {
-          const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
-            'photo-library-parts',
-            targetDrive?.alias,
-            tag,
-          ]);
-
-          if (previousParts?.pages) {
-            const newParts: InfiniteData<usePhotoLibraryPartReturn> = {
-              ...previousParts,
-              pages: previousParts.pages.map((page) => {
-                return {
-                  ...page,
-                  results: page.results.map((photoDsr) => {
-                    if (photoDsr.fileId === newPhotoData.fileId) {
-                      return getUpdatedDsr(photoDsr);
-                    }
-                    return photoDsr;
-                  }),
-                };
-              }),
-            };
-            queryClient.setQueryData(['photo-library-parts', targetDrive?.alias, tag], newParts);
-          }
-        });
-      },
       onSettled: (data, error, variables) => {
         variables.addTags.forEach((tag) => {
-          queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias, tag]);
+          queryClient.invalidateQueries(['photo-library', targetDrive?.alias, tag]);
         });
       },
     }),
     removeTags: useMutation(removeTags, {
-      onMutate: (newPhotoData) => {
-        let updatedDsr: DriveSearchResult | undefined;
-
-        const getUpdatedDsr = (existingDsr: DriveSearchResult) => {
-          if (updatedDsr) return updatedDsr;
-
-          updatedDsr = {
-            ...existingDsr,
-            fileMetadata: {
-              ...existingDsr.fileMetadata,
-              appData: {
-                ...existingDsr.fileMetadata.appData,
-                tags: [
-                  ...(existingDsr.fileMetadata.appData.tags?.filter(
-                    (tag) =>
-                      !newPhotoData.removeTags.some((toRemoveTag) =>
-                        stringGuidsEqual(toRemoveTag, tag)
-                      )
-                  ) || []),
-                ],
-              },
-            },
-          };
-
-          return updatedDsr;
-        };
-
-        [...newPhotoData.removeTags, undefined].forEach((tag) => {
-          const previousParts = queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>([
-            'photo-library-parts',
-            targetDrive?.alias,
-            tag,
-          ]);
-
-          if (previousParts?.pages) {
-            const newParts: InfiniteData<usePhotoLibraryPartReturn> = {
-              ...previousParts,
-              pages: previousParts.pages.map((page) => {
-                return {
-                  ...page,
-                  results:
-                    tag === undefined
-                      ? page.results.map((photoDsr) => {
-                          if (photoDsr.fileId === newPhotoData.fileId) {
-                            return getUpdatedDsr(photoDsr);
-                          }
-                          return photoDsr;
-                        })
-                      : page.results.filter((photoDsr) => photoDsr.fileId !== newPhotoData.fileId),
-                };
-              }),
-            };
-            queryClient.setQueryData(['photo-library-parts', targetDrive?.alias, tag], newParts);
-          }
-        });
-      },
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
-          queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias, tag]);
+          queryClient.invalidateQueries(['photo-library', targetDrive?.alias, tag]);
         });
       },
     }),

@@ -1,5 +1,10 @@
-import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, ImageMetadata, DriveSearchResult } from '@youfoundation/js-lib';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  TargetDrive,
+  ImageMetadata,
+  DriveSearchResult,
+  stringGuidsEqual,
+} from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import {
@@ -7,7 +12,7 @@ import {
   updatePhoto,
   updatePhotoMetadata,
 } from '../../provider/photos/PhotoProvider';
-import { usePhotoLibraryPartReturn } from './usePhotoLibraryPart';
+import { usePhotosReturn } from './usePhotos';
 
 const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   const { getDotYouClient } = useAuth();
@@ -75,49 +80,51 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
     }),
     updateDate: useMutation(updatePhotoDate, {
       onMutate: (_newData) => {
-        let updatedDsr: DriveSearchResult | undefined;
+        // Remove from existing day
+        queryClient
+          .getQueryCache()
+          .findAll(['photos', targetDrive?.alias])
+          .forEach((query) => {
+            const queryKey = query.queryKey;
+            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
 
-        const getUpdatedDsr = (existingDsr: DriveSearchResult) => {
-          if (updatedDsr) return updatedDsr;
+            if (!queryData) return;
 
-          updatedDsr = {
-            ...existingDsr,
+            const newQueryData = queryData.filter(
+              (dsr) => !stringGuidsEqual(dsr.fileId, _newData.photoFileId)
+            );
+
+            queryClient.setQueryData<usePhotosReturn>(queryKey, newQueryData);
+          });
+
+        const queryData = queryClient.getQueryData<DriveSearchResult>([
+          'photo-header',
+          targetDrive?.alias,
+          _newData.photoFileId,
+        ]);
+        if (queryData) {
+          const newQueryData: DriveSearchResult = {
+            ...queryData,
             fileMetadata: {
-              ...existingDsr.fileMetadata,
+              ...queryData.fileMetadata,
               appData: {
-                ...existingDsr.fileMetadata.appData,
+                ...queryData.fileMetadata.appData,
                 userDate: _newData.newDate,
               },
             },
           };
 
-          return updatedDsr;
-        };
-
-        queryClient
-          .getQueryCache()
-          .findAll(['photo-library-parts', targetDrive?.alias])
-          .forEach((query) => {
-            const queryKey = query.queryKey;
-            const queryData =
-              queryClient.getQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey);
-
-            if (!queryData) return;
-
-            // Remove from all other libraryTypes
-            queryClient.setQueryData<InfiniteData<usePhotoLibraryPartReturn>>(queryKey, {
-              ...queryData,
-              pages: queryData.pages.map((page) => ({
-                ...page,
-                results: page.results.map((result) =>
-                  result.fileId === _newData.photoFileId ? getUpdatedDsr(result) : result
-                ),
-              })),
-            });
-          });
+          queryClient.setQueryData(
+            ['photo-header', targetDrive?.alias, _newData.photoFileId],
+            newQueryData
+          );
+          console.log('Updated photo header', newQueryData);
+        }
       },
-      onSettled: (_param, _data) => {
-        queryClient.invalidateQueries(['photo-library-parts', targetDrive?.alias]);
+      onSettled: (_param, error, _data) => {
+        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+        // queryClient.invalidateQueries(['photo-header', targetDrive?.alias, _data.photoFileId]);
+        // Update of the header is too slow on the server side
       },
     }),
   };

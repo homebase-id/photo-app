@@ -63,12 +63,18 @@ const useCurrentPhoto = ({
   const { data: photos } = usePhotos({ targetDrive, album, date }).fetchPhotos;
 
   if (!photoFileId)
-    return { dataForDay: undefined, currentDate: undefined, currentIndex: undefined };
+    return {
+      dataForDay: undefined,
+      currentDate: undefined,
+      currentIndex: undefined,
+      current: undefined,
+    };
 
   return {
     dataForDay: photos,
     currentDate: date,
     currentIndex: photos?.findIndex((dsr) => stringGuidsEqual(dsr.fileId, photoFileId)),
+    current: fileHeader,
   };
 };
 
@@ -104,10 +110,13 @@ export const usePhotoLibrarySiblings = ({
   album?: string;
   photoFileId: string;
 }) => {
-  const { currentIndex, dataForDay } = useCurrentPhoto({ targetDrive, album, photoFileId });
+  const { currentIndex, dataForDay, current } = useCurrentPhoto({
+    targetDrive,
+    album,
+    photoFileId,
+  });
   const { data: flatDays } = useFlatDaysFromMeta({ targetDrive, album });
 
-  const current = currentIndex !== undefined && dataForDay ? dataForDay[currentIndex] : undefined;
   const prevInSameDay = dataForDay && currentIndex !== undefined && dataForDay[currentIndex - 1];
   const nextInSameDay = dataForDay && currentIndex !== undefined && dataForDay[currentIndex + 1];
 

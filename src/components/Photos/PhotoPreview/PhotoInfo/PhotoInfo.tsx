@@ -44,7 +44,7 @@ export const PhotoInfo = ({
     if (current?.fileMetadata.created) return new Date(current.fileMetadata.created);
 
     return null;
-  }, [current]);
+  }, [current, current?.fileMetadata.appData.userDate, current?.fileMetadata.created]);
 
   const onChange = useRef((e: { target: { name: string; value: string } }) => {
     current &&

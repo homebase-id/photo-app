@@ -225,8 +225,6 @@ export const updatePhoto = async (
       },
     };
 
-    console.log({ oldHeader: header, newHeader: metadata });
-
     await uploadHeader(
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
