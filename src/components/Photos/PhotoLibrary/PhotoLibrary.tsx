@@ -179,6 +179,9 @@ const PhotoLibrary = ({
           });
           virtualizer.scrollToIndex(target, { align: 'start' });
         }}
+        onScroll={(scrollPercentage) => {
+          virtualizer.scrollToOffset(scrollPercentage * virtualizer.getTotalSize());
+        }}
       />
     </>
   );

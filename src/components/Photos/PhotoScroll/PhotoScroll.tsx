@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { createDateObject } from '../../../provider/photos/PhotoProvider';
@@ -11,10 +11,14 @@ const monthFormat: Intl.DateTimeFormatOptions = {
 const PhotoScroll = ({
   albumKey,
   onJumpInTime,
+  onScroll,
 }: {
   albumKey?: string;
   onJumpInTime: (time: { year: number; month: number }) => void;
+  onScroll?: (scrollPercentage: number) => void;
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollBarSize, setScrollBarSize] = useState(0);
   const [overlayData, setOverlayData] = useState<{ year: number; month: number } | undefined>(
     undefined
   );
@@ -38,25 +42,38 @@ const PhotoScroll = ({
   if (!photoLib) return null;
   const { yearsWithMonths, photoWeight } = photoLib;
 
-  const intoThePast = (time?: { year: number; month: number }) => {
+  const jumpIntoThePast = (time?: { year: number; month: number }) => {
     if (!time) return;
 
     onJumpInTime(time);
   };
 
-  // if (yearsWithMonths.length === 1 && yearsWithMonths[0].months.length <= 2) return null;
+  const doScrollThroughTime = (scrollPercentage: number) => {
+    onScroll && onScroll(scrollPercentage);
+  };
+
+  useEffect(() => {
+    setScrollBarSize(scrollRef?.current?.clientHeight || 0);
+  }, [scrollRef?.current]);
 
   return (
     <div
       className="fixed bottom-0 right-0 top-[3.5rem] hidden cursor-row-resize select-none px-1 opacity-0 transition-opacity hover:opacity-100 sm:block"
-      onMouseLeave={() => setOverlayData(undefined)}
+      onMouseLeave={() => {
+        setOverlayData(undefined);
+        setMouseDown(false);
+      }}
       onMouseMove={(e) => {
         setOverlayTop(e.clientY);
+        if (mouseDown) {
+          doScrollThroughTime(e.clientY / scrollBarSize);
+        }
       }}
       onMouseDown={() => setMouseDown(true)}
       onMouseUp={() => setMouseDown(false)}
-      onMouseOver={() => mouseDown && intoThePast(overlayData)}
-      onClick={() => intoThePast(overlayData)}
+      onMouseOver={() => mouseDown && jumpIntoThePast(overlayData)}
+      onClick={() => jumpIntoThePast(overlayData)}
+      ref={scrollRef}
     >
       <ol className="flex h-[calc(100vh-3.5rem)] flex-col items-center justify-between">
         {yearsWithMonths.map((year) => (
