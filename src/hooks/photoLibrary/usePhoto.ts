@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, ImageSize, getFileHeader, stringGuidsEqual } from '@youfoundation/js-lib';
+import {
+  TargetDrive,
+  ImageSize,
+  getFileHeader,
+  stringGuidsEqual,
+  DriveSearchResult,
+} from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
@@ -221,6 +227,31 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
     }),
     addTags: useMutation(addTags, {
+      onMutate: (toAddData) => {
+        const queryData = queryClient.getQueryData<DriveSearchResult>([
+          'photo-header',
+          toAddData.targetDrive.alias,
+          toAddData.fileId,
+        ]);
+
+        if (queryData) {
+          const newQueryData: DriveSearchResult = {
+            ...queryData,
+            fileMetadata: {
+              ...queryData.fileMetadata,
+              appData: {
+                ...queryData.fileMetadata.appData,
+                tags: [...(queryData.fileMetadata.appData.tags || []), ...toAddData.addTags],
+              },
+            },
+          };
+
+          queryClient.setQueryData<DriveSearchResult>(
+            ['photo-header', toAddData.targetDrive.alias, toAddData.fileId],
+            newQueryData
+          );
+        }
+      },
       onSettled: (data, error, variables) => {
         variables.addTags.forEach((tag) => {
           queryClient.invalidateQueries(['photo-library', targetDrive?.alias, tag]);
@@ -228,6 +259,34 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
     }),
     removeTags: useMutation(removeTags, {
+      onMutate: (toRemoveData) => {
+        const queryData = queryClient.getQueryData<DriveSearchResult>([
+          'photo-header',
+          toRemoveData.targetDrive.alias,
+          toRemoveData.fileId,
+        ]);
+
+        if (queryData) {
+          const newQueryData: DriveSearchResult = {
+            ...queryData,
+            fileMetadata: {
+              ...queryData.fileMetadata,
+              appData: {
+                ...queryData.fileMetadata.appData,
+                tags:
+                  queryData.fileMetadata.appData.tags?.filter(
+                    (tag) => !toRemoveData.removeTags.includes(tag)
+                  ) || [],
+              },
+            },
+          };
+
+          queryClient.setQueryData<DriveSearchResult>(
+            ['photo-header', toRemoveData.targetDrive.alias, toRemoveData.fileId],
+            newQueryData
+          );
+        }
+      },
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
           queryClient.invalidateQueries(['photo-library', targetDrive?.alias, tag]);

@@ -194,6 +194,7 @@ const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
           `${navItemClassName} ${isActive && navItemActiveClassname} relative`
         }
         to={'/album'}
+        end={true}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -210,11 +211,13 @@ const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
       </NavLink>
 
       {isOpen ? (
-        <div className={`ml-1 pl-1 ${isNavOpen ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={``}>
           {albums?.map((album, index) => (
             <AlbumNavItem album={album} key={album.fileId ?? index} />
           ))}
-          <NavItem label={t('New album')} icon={Plus} to={`/album/new`} end={true} />
+          <span className={isNavOpen ? 'opacity-100' : 'opacity-0'}>
+            <NavItem label={t('New album')} icon={Plus} to={`/album/new`} end={true} />
+          </span>
         </div>
       ) : null}
     </>
