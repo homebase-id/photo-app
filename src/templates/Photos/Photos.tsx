@@ -81,7 +81,11 @@ const Photos = () => {
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} />
+          <PhotoPreview
+            fileId={photoKey}
+            albumKey={albumKey}
+            urlPrefix={albumKey ? `/album/${albumKey}` : ''}
+          />
         </Suspense>
       ) : null}
       {albumKey === 'new' ? (

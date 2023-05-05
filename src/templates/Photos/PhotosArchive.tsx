@@ -35,7 +35,7 @@ const PhotosArchive = () => {
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} />
+          <PhotoPreview fileId={photoKey} albumKey={albumKey} urlPrefix={'/archive'} />
         </Suspense>
       ) : null}
     </>

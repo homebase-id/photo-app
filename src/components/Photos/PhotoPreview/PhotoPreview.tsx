@@ -17,7 +17,15 @@ import { VideoWithLoader } from './VideoWithLoader';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
-const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
+const PhotoPreview = ({
+  fileId,
+  albumKey,
+  urlPrefix,
+}: {
+  fileId: string;
+  albumKey?: string;
+  urlPrefix?: string;
+}) => {
   const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
     targetDrive: targetDrive,
     photoFileId: fileId,
@@ -36,12 +44,12 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
         <div className="relative w-full">
           <PhotoActions
             fileId={fileId}
-            albumKey={albumKey}
             current={current}
             nextSibling={nextSibling}
             prevSibling={prevSibling}
             setIsInfoOpen={setIsInfoOpen}
             isInfoOpen={isInfoOpen}
+            urlPrefix={urlPrefix}
           />
           <>
             {current?.fileMetadata.contentType.startsWith('video/') ? (
@@ -68,20 +76,20 @@ const PhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string 
 
 export const PhotoActions = ({
   fileId,
-  albumKey,
   current,
   nextSibling,
   prevSibling,
   setIsInfoOpen,
   isInfoOpen,
+  urlPrefix,
 }: {
   fileId: string;
-  albumKey?: string;
   current?: DriveSearchResult;
   nextSibling?: DriveSearchResult;
   prevSibling?: DriveSearchResult;
   setIsInfoOpen: (isOpen: boolean) => void;
   isInfoOpen: boolean;
+  urlPrefix?: string;
 }) => {
   const navigate = useNavigate();
 
@@ -98,16 +106,16 @@ export const PhotoActions = ({
   );
 
   const doClose = () => {
-    navigate(`/${albumKey ? `album/${albumKey}` : ''}`);
+    navigate(urlPrefix || '/');
   };
 
   // TODO: Preload siblings
   const doNext = () => {
-    navigate(`${albumKey ? `/album/${albumKey}` : ''}/photo/${nextSibling?.fileId}`);
+    navigate(`${urlPrefix ? urlPrefix : ''}/photo/${nextSibling?.fileId}`);
   };
 
   const doPrev = () => {
-    navigate(`${albumKey ? `/album/${albumKey}` : ''}/photo/${prevSibling?.fileId}`);
+    navigate(`${urlPrefix ? urlPrefix : ''}/photo/${prevSibling?.fileId}`);
   };
 
   useEffect(() => {

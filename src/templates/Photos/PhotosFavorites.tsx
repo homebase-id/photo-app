@@ -36,7 +36,7 @@ const PhotosFavorites = () => {
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} />
+          <PhotoPreview fileId={photoKey} albumKey={albumKey} urlPrefix={'/favorites'} />
         </Suspense>
       ) : null}
     </>
