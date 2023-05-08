@@ -15,6 +15,11 @@ const imgClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max
 
 const maxVisible = 10;
 
+interface DirectUploadData {
+  dataUrl: string;
+  note?: string;
+}
+
 const Uploader = ({
   isFileSelectorOpen,
   setFileSelectorOpen,
@@ -25,6 +30,7 @@ const Uploader = ({
   albumKey?: string;
 }) => {
   const [uploadQueue, setUploadQueue] = useState<File[]>([]);
+  const [directUpload, setDirectUpload] = useState<DirectUploadData>();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addToUploadQueue = (newFiles: File[]) => {
@@ -51,8 +57,30 @@ const Uploader = ({
     }
   }, [isFileSelectorOpen]);
 
+  useEffect(() => {
+    const messageListener = (e: MessageEvent) => {
+      if (e?.data?.source?.startsWith('react-devtools-')) return;
+
+      console.log('incoming message', e);
+
+      if (
+        e.data.action === 'odin-upload' &&
+        'dataUrl' in e.data &&
+        typeof e.data.dataUrl === 'string'
+      ) {
+        setDirectUpload({ dataUrl: e.data.dataUrl, note: e.data.note });
+      }
+    };
+
+    window.addEventListener('message', messageListener);
+
+    return () => window.removeEventListener('message', messageListener);
+  }, []);
+
+  const hasFiles = uploadQueue?.length || directUpload;
+
   return (
-    <section className={`${uploadQueue?.length ? 'mb-1' : ''}`}>
+    <section className={`${hasFiles ? 'mb-1' : ''}`}>
       <input
         ref={inputRef}
         onChange={(e) => {
@@ -65,8 +93,12 @@ const Uploader = ({
         accept="image/png, image/jpeg, image/tiff, image/webp, image/svg+xml, video/mp4"
         className={`sr-only invisible max-w-full`}
       />
-      {uploadQueue?.length ? (
+
+      {hasFiles ? (
         <div className={`${gridClasses}`}>
+          {directUpload ? (
+            <DirectPhoto directUpload={directUpload} remove={() => setDirectUpload(undefined)} />
+          ) : null}
           {uploadQueue
             .slice(0, maxVisible)
             .map((photo) =>
@@ -96,6 +128,43 @@ const Uploader = ({
         </div>
       ) : null}
     </section>
+  );
+};
+
+const DirectPhoto = ({
+  directUpload,
+  remove,
+}: {
+  directUpload: DirectUploadData;
+  remove: () => void;
+}) => {
+  const {
+    mutateAsync: doUploadToServer,
+    status: uploadStatus,
+    reset: resetUpload,
+  } = usePhoto(PhotoConfig.PhotoDrive).upload;
+  const [uploadError, setUploadError] = useState<unknown>();
+
+  const directUploadImg = useMemo(() => {
+    return <img src={directUpload.dataUrl} className={`${imgClasses}`} />;
+  }, [directUpload]);
+
+  // upload { dataUrl, note } to server
+
+  return (
+    <div className={`${divClasses} relative`}>
+      {directUploadImg}
+      <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />
+      {uploadStatus === 'idle' || uploadStatus === 'success' ? (
+        <ActionButton
+          className="absolute bottom-3 right-3"
+          icon="times"
+          type="secondary"
+          size="square"
+          onClick={() => remove()}
+        />
+      ) : null}
+    </div>
   );
 };
 
