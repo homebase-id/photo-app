@@ -1,4 +1,4 @@
-import { fromBlob } from '@youfoundation/js-lib';
+import { ImageContentType, fromBlob } from '@youfoundation/js-lib';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
@@ -18,6 +18,7 @@ const maxVisible = 10;
 interface DirectUploadData {
   dataUrl: string;
   note?: string;
+  type?: ImageContentType;
 }
 
 const Uploader = ({
@@ -68,7 +69,7 @@ const Uploader = ({
         'dataUrl' in e.data &&
         typeof e.data.dataUrl === 'string'
       ) {
-        setDirectUpload({ dataUrl: e.data.dataUrl, note: e.data.note });
+        setDirectUpload({ dataUrl: e.data.dataUrl, type: e.data.type, note: e.data.note });
       }
     };
 
