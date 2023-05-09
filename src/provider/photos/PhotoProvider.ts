@@ -179,6 +179,7 @@ const uploadNewVideo = async (
       type: newVideo.type as VideoContentType,
       tag: albumKey ? [albumKey] : undefined,
       userDate: newVideo.lastModified || new Date().getTime(),
+      thumb: thumb,
     }
   );
 };
