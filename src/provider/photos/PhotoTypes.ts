@@ -7,7 +7,9 @@ export class PhotoConfig {
     type: PhotoConfig.DriveType,
   };
   static readonly FavoriteTag: string = toGuidId('favorite');
+  static readonly MainTag: string = toGuidId('main-lib');
   static readonly AlbumDefinitionFileType: number = 400;
+  static readonly PhotoLibraryMetadataFileType: number = 900;
 }
 
 export interface PhotoFile {
@@ -20,4 +22,22 @@ export interface AlbumDefinition {
   name: string;
   description?: string;
   tag: string;
+}
+
+export interface PhotoLibraryMetadata {
+  fileId?: string;
+  versionTag?: string;
+
+  yearsWithMonths: {
+    year: number;
+    months: {
+      month: number;
+      days: {
+        day: number;
+        photosThisDay: number;
+      }[];
+      photosThisMonth: number;
+    }[];
+  }[];
+  totalNumberOfPhotos: number;
 }

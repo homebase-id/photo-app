@@ -1,5 +1,5 @@
 import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
@@ -8,6 +8,7 @@ import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
 import { usePhotos } from '../../../hooks/photoLibrary/usePhotos';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
+import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -61,6 +62,12 @@ export const PhotoSection = ({
     date,
   }).fetchPhotos;
 
+  const { mutateAsync: fixCountInPhotoLibrary } = usePhotoLibrary({
+    targetDrive: PhotoConfig.PhotoDrive,
+    album: albumKey,
+    disabled: true,
+  }).updateCount;
+
   const photoLoaders = useMemo(() => {
     const aspect = 1;
 
@@ -74,7 +81,21 @@ export const PhotoSection = ({
     ));
   }, [photosCount]);
 
+  useEffect(() => {
+    if (photos?.length && photos?.length !== photosCount) {
+      console.warn(`Photo count mismatch for ${albumKey} on ${date.toLocaleDateString()}`);
+      // TODO: Update photoLibrary Metadata
+      fixCountInPhotoLibrary({
+        date,
+        album: albumKey,
+        newCount: photos?.length || 0,
+      });
+    }
+  }, [photos]);
+
   const title = date.toLocaleDateString(undefined, dateFormat);
+
+  if (photosCount === 0 || photos?.length === 0) return null;
 
   return (
     <section className="mb-5" ref={wrapperRef}>

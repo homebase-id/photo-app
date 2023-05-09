@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { TargetDrive, DriveSearchResult, DotYouClient } from '@youfoundation/js-lib';
-import { buildCursor, getPhotoLibrary } from '../../provider/photos/PhotoProvider';
+import { buildCursor, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 
 export type usePhotosReturn = DriveSearchResult[];
@@ -26,7 +26,7 @@ export const fetchPhotos = async ({
 }): Promise<usePhotosReturn> => {
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
   const cursorState = buildCursor(endOfMonth.getTime());
-  const results = await getPhotoLibrary(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
+  const results = await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
 
   const filteredResults = results.results.filter((result) => {
     const userDate = new Date(result.fileMetadata.appData.userDate || result.fileMetadata.created);

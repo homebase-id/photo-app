@@ -2,7 +2,6 @@ import {
   DotYouClient,
   TargetDrive,
   queryBatch,
-  ThumbSize,
   ImageSize,
   getDecryptedImageUrl,
   DriveSearchResult,
@@ -31,7 +30,7 @@ import {
 import { PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 
-export const getPhotoLibrary = async (
+export const getPhotos = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   album: string | undefined,
@@ -62,29 +61,6 @@ export const getPhotoLibrary = async (
   return {
     results: reponse.searchResults,
     cursorState: reponse.cursorState,
-  };
-};
-
-export const getPhotosFromLibrary = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  pageSize: number,
-  cursorState?: string,
-  size?: ThumbSize
-) => {
-  const reponse = await queryBatch(
-    dotYouClient,
-    { targetDrive: targetDrive },
-    { cursorState: cursorState, maxRecords: pageSize, includeMetadataHeader: false }
-  );
-
-  return {
-    results: await Promise.all(
-      reponse.searchResults.map(
-        async (dsr) => await dsrToPhoto(dotYouClient, targetDrive, dsr, size)
-      )
-    ),
-    cursorState,
   };
 };
 
@@ -122,24 +98,28 @@ const uploadNewPhoto = async (
 ) => {
   const bytes = new Uint8Array(await newPhoto.arrayBuffer());
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
+  const userDate = dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime();
 
-  return await uploadImage(
-    dotYouClient,
-    targetDrive,
-    { requiredSecurityGroup: SecurityGroupType.Owner },
-    bytes,
-    imageMetadata,
-    {
-      type: newPhoto?.type as ImageContentType,
-      userDate: dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime(),
-      tag: albumKey ? [albumKey] : undefined,
-      uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
-    },
-    [
-      { quality: 100, width: 500, height: 500 },
-      { quality: 100, width: 2000, height: 2000 },
-    ]
-  );
+  return {
+    ...(await uploadImage(
+      dotYouClient,
+      targetDrive,
+      { requiredSecurityGroup: SecurityGroupType.Owner },
+      bytes,
+      imageMetadata,
+      {
+        type: newPhoto?.type as ImageContentType,
+        userDate,
+        tag: albumKey ? [albumKey] : undefined,
+        uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
+      },
+      [
+        { quality: 100, width: 500, height: 500 },
+        { quality: 100, width: 2000, height: 2000 },
+      ]
+    )),
+    userDate: new Date(userDate),
+  };
 };
 
 const uploadNewVideo = async (
@@ -149,39 +129,47 @@ const uploadNewVideo = async (
   newVideo: File,
   thumb?: ThumbnailFile
 ) => {
+  const userDate = newVideo.lastModified || new Date().getTime();
+
   // if video is tiny enough (less than 10MB), don't segment just upload
   if (newVideo.size < 10000000)
-    return await uploadVideo(
-      dotYouClient,
-      targetDrive,
-      { requiredSecurityGroup: SecurityGroupType.Owner },
-      newVideo,
-      { isSegmented: false, mimeType: newVideo.type, fileSize: newVideo.size },
-      {
-        type: newVideo.type as VideoContentType,
-        tag: albumKey ? [albumKey] : undefined,
-        userDate: newVideo.lastModified || new Date().getTime(),
-        thumb: thumb,
-      }
-    );
+    return {
+      ...(await uploadVideo(
+        dotYouClient,
+        targetDrive,
+        { requiredSecurityGroup: SecurityGroupType.Owner },
+        newVideo,
+        { isSegmented: false, mimeType: newVideo.type, fileSize: newVideo.size },
+        {
+          type: newVideo.type as VideoContentType,
+          tag: albumKey ? [albumKey] : undefined,
+          userDate,
+          thumb: thumb,
+        }
+      )),
+      userDate: new Date(userDate),
+    };
 
   // Segment video file
   const segmentVideoFile = (await import('@youfoundation/js-lib')).segmentVideoFile;
   const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
 
-  return await uploadVideo(
-    dotYouClient,
-    targetDrive,
-    { requiredSecurityGroup: SecurityGroupType.Owner },
-    processedBytes,
-    metadata,
-    {
-      type: newVideo.type as VideoContentType,
-      tag: albumKey ? [albumKey] : undefined,
-      userDate: newVideo.lastModified || new Date().getTime(),
-      thumb: thumb,
-    }
-  );
+  return {
+    ...(await uploadVideo(
+      dotYouClient,
+      targetDrive,
+      { requiredSecurityGroup: SecurityGroupType.Owner },
+      processedBytes,
+      metadata,
+      {
+        type: newVideo.type as VideoContentType,
+        tag: albumKey ? [albumKey] : undefined,
+        userDate,
+        thumb: thumb,
+      }
+    )),
+    userDate: new Date(userDate),
+  };
 };
 
 export const uploadNew = async (
@@ -190,11 +178,10 @@ export const uploadNew = async (
   albumKey: string | undefined,
   newFile: File,
   thumb?: ThumbnailFile
-) => {
-  if (newFile.type === 'video/mp4')
-    return uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb);
-
-  return uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile);
+): Promise<{ fileId: string; userDate: Date }> => {
+  return newFile.type === 'video/mp4'
+    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb)
+    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile);
 };
 
 export const updatePhoto = async (

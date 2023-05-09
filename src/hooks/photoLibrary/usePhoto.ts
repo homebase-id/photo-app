@@ -10,12 +10,18 @@ import {
 import useAuth from '../auth/useAuth';
 
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
-import { PhotoFile } from '../../provider/photos/PhotoTypes';
+import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { usePhotosReturn } from './usePhotos';
+import usePhotoLibrary from './usePhotoLibrary';
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
   const queryClient = useQueryClient();
   const { getDotYouClient } = useAuth();
+
+  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+    targetDrive: PhotoConfig.PhotoDrive,
+    disabled: true,
+  }).addDay;
 
   const dotYouClient = getDotYouClient();
 
@@ -43,7 +49,11 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     thumb?: ThumbnailFile;
   }) => {
     if (!targetDrive) return null;
-    return await uploadNew(dotYouClient, targetDrive, albumKey, newPhoto, thumb);
+    const uploadResult = await uploadNew(dotYouClient, targetDrive, albumKey, newPhoto, thumb);
+
+    if (uploadResult?.userDate) {
+      addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
+    }
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {

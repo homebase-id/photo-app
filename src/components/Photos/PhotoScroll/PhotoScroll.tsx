@@ -40,7 +40,8 @@ const PhotoScroll = ({
   }).fetchLibrary;
 
   if (!photoLib) return null;
-  const { yearsWithMonths, photoWeight } = photoLib;
+  const { yearsWithMonths, totalNumberOfPhotos } = photoLib;
+  const photoWeight = 100 / totalNumberOfPhotos;
 
   const jumpIntoThePast = (time?: { year: number; month: number }) => {
     if (!time) return;
