@@ -1,4 +1,4 @@
-import { ImageContentType, fromBlob } from '@youfoundation/js-lib';
+import { ImageContentType, ThumbnailFile, fromBlob } from '@youfoundation/js-lib';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
@@ -248,6 +248,7 @@ const NewVideo = ({
   remove: () => void;
   albumKey?: string;
 }) => {
+  const [thumb, setThumb] = useState<ThumbnailFile>();
   const [uploadError, setUploadError] = useState<unknown>();
   const {
     mutateAsync: doUploadToServer,
@@ -259,10 +260,13 @@ const NewVideo = ({
 
   useEffect(() => {
     (async () => {
+      if (!thumb) return;
+
       if (!isUploading.current) {
         isUploading.current = true;
         try {
-          await doUploadToServer({ newPhoto: videoFile, albumKey: albumKey });
+          console.log('uploading video', thumb);
+          await doUploadToServer({ newPhoto: videoFile, albumKey: albumKey, thumb: thumb });
           remove();
         } catch (e) {
           setUploadError(e);
@@ -274,15 +278,38 @@ const NewVideo = ({
     return () => {
       resetUpload();
     };
-  }, [videoFile]);
+  }, [videoFile, thumb]);
 
   const url = useMemo(() => window.URL.createObjectURL(videoFile), [videoFile]);
+
+  const grabThumb = async (video: HTMLVideoElement) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      // create object url from blob
+      const url = window.URL.createObjectURL(blob);
+      console.log(url);
+      setThumb({
+        payload: await blob.arrayBuffer().then((buffer) => new Uint8Array(buffer)),
+        contentType: blob.type as ImageContentType,
+        pixelHeight: video.videoHeight,
+        pixelWidth: video.videoWidth,
+      });
+    }, 'image/png');
+  };
 
   return (
     <div className={`${divClasses} relative`}>
       <video
         src={url}
         onCanPlay={() => url && URL.revokeObjectURL(url)}
+        onLoadedMetadata={(e) => (e.currentTarget.currentTime = 1)}
+        onSeeked={(e) => grabThumb(e.currentTarget)}
         className={`${imgClasses} ${!url ? `h-[200px] w-[200px] animate-pulse bg-slate-400` : ``}`}
       />
       <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />

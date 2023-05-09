@@ -25,6 +25,7 @@ import {
   uploadHeader,
   mergeByteArrays,
   uint8ArrayToBase64,
+  ThumbnailFile,
 } from '@youfoundation/js-lib';
 
 import { PhotoFile } from './PhotoTypes';
@@ -116,8 +117,8 @@ const getPhotoExifMeta = async (bytes: Uint8Array) => {
 const uploadNewPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  newPhoto: File,
-  albumKey?: string
+  albumKey: string | undefined,
+  newPhoto: File
 ) => {
   const bytes = new Uint8Array(await newPhoto.arrayBuffer());
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
@@ -144,8 +145,9 @@ const uploadNewPhoto = async (
 const uploadNewVideo = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
+  albumKey: string | undefined,
   newVideo: File,
-  albumKey?: string
+  thumb?: ThumbnailFile
 ) => {
   // if video is tiny enough (less than 10MB), don't segment just upload
   if (newVideo.size < 10000000)
@@ -159,6 +161,7 @@ const uploadNewVideo = async (
         type: newVideo.type as VideoContentType,
         tag: albumKey ? [albumKey] : undefined,
         userDate: newVideo.lastModified || new Date().getTime(),
+        thumb: thumb,
       }
     );
 
@@ -183,13 +186,14 @@ const uploadNewVideo = async (
 export const uploadNew = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
+  albumKey: string | undefined,
   newFile: File,
-  albumKey?: string
+  thumb?: ThumbnailFile
 ) => {
   if (newFile.type === 'video/mp4')
-    return uploadNewVideo(dotYouClient, targetDrive, newFile, albumKey);
+    return uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb);
 
-  return uploadNewPhoto(dotYouClient, targetDrive, newFile, albumKey);
+  return uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile);
 };
 
 export const updatePhoto = async (

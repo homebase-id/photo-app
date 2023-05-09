@@ -5,6 +5,7 @@ import {
   getFileHeader,
   stringGuidsEqual,
   DriveSearchResult,
+  ThumbnailFile,
 } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
@@ -32,10 +33,17 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     return await getPhoto(dotYouClient, targetDrive, fileId, size, true);
   };
 
-  const uploadNewMedia = async ({ newPhoto, albumKey }: { newPhoto: File; albumKey?: string }) => {
+  const uploadNewMedia = async ({
+    newPhoto,
+    albumKey,
+    thumb,
+  }: {
+    newPhoto: File;
+    albumKey?: string;
+    thumb?: ThumbnailFile;
+  }) => {
     if (!targetDrive) return null;
-
-    return await uploadNew(dotYouClient, targetDrive, newPhoto, albumKey);
+    return await uploadNew(dotYouClient, targetDrive, albumKey, newPhoto, thumb);
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {

@@ -176,7 +176,7 @@ export const PhotoItem = ({
                   fileId={photoDsr.fileId}
                   targetDrive={targetDrive}
                   fit="cover"
-                  hideControls={true}
+                  preview={true}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Triangle className="h-8 w-8 text-white " />
