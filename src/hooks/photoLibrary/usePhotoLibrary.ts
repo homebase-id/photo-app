@@ -1,11 +1,13 @@
-import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
+import { DotYouClient, DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
 import {
+  addDay,
   getPhotoLibrary,
   savePhotoLibraryMetadata,
+  updateCount,
 } from '../../provider/photos/PhotoLibraryMetaProvider';
 
 const sortRecents = (elements: string[]) => elements.sort((a, b) => parseInt(b) - parseInt(a));
@@ -62,6 +64,26 @@ const buildMetaStructure = (headers: DriveSearchResult[]): PhotoLibraryMetadata 
   return { yearsWithMonths, totalNumberOfPhotos: headers.length };
 };
 
+const rebuildLibrary = async ({
+  dotYouClient,
+  targetDrive,
+  album,
+}: {
+  dotYouClient: DotYouClient;
+  targetDrive: TargetDrive;
+  album?: string;
+}) => {
+  const allPhotos = (await getPhotos(dotYouClient, targetDrive, album, 1200, undefined)).results;
+  const metaStruc = buildMetaStructure(allPhotos);
+
+  console.log('Rebuilding library', album);
+
+  // Store meta file on server (No need to await, it doesn't need to be on the server already to be used)
+  savePhotoLibraryMetadata(dotYouClient, metaStruc, album);
+
+  return metaStruc;
+};
+
 const usePhotoLibrary = ({
   targetDrive,
   album,
@@ -84,15 +106,8 @@ const usePhotoLibrary = ({
       return photoLibOnServer;
     }
 
-    console.log('No meta file found on server, fetching all photos :-(');
     // Else fetch all photos and build one
-    const allPhotos = (await getPhotos(dotYouClient, targetDrive, album, 1200, undefined)).results;
-    const metaStruc = buildMetaStructure(allPhotos);
-
-    // Store meta file on server (No need to await, it doesn't need to be on the server already to be used)
-    savePhotoLibraryMetadata(dotYouClient, metaStruc, album);
-
-    return metaStruc;
+    return rebuildLibrary({ dotYouClient, targetDrive, album });
   };
 
   const saveNewCount = async ({
@@ -110,39 +125,24 @@ const usePhotoLibrary = ({
       album,
     ]);
     if (!currentLib) return;
+    console.log('fetched lib from cache', currentLib);
 
-    const newYear = currentLib.yearsWithMonths.find((y) => y.year === date.getFullYear());
-    const newMonth = newYear?.months.find((m) => m.month === date.getMonth() + 1);
-    const newDay = newMonth?.days.find((d) => d.day === date.getDate());
+    const updatedLib = updateCount(currentLib, date, newCount);
+    if (!updatedLib) return;
 
-    if (!newYear || !newMonth || !newDay) return null;
-
-    const newDays = [
-      ...newMonth.days.filter((d) => d.day !== date.getDate()),
-      { ...newDay, photosThisDay: newCount },
-    ];
-    const newPhotosInMonth = newDays.reduce((currVal, day) => currVal + day.photosThisDay, 0);
-
-    const updatedLib: PhotoLibraryMetadata = {
-      ...currentLib,
-      yearsWithMonths: [
-        ...currentLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
-        {
-          ...newYear,
-          months: [
-            ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
-            {
-              ...newMonth,
-              photosThisMonth: newPhotosInMonth,
-              days: newDays,
-            },
-          ],
-        },
-      ],
-    };
+    queryClient.setQueryData<PhotoLibraryMetadata>(
+      ['photo-library', targetDrive.alias, album],
+      updatedLib
+    );
 
     return await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
   };
+
+  // const debouncedSaveOfLib = useDebounce(() => {
+  //   // send request to the backend
+  //   // access to latest state here
+  //   console.log(value);
+  // });
 
   const saveNewDay = async ({ album, date }: { album?: string; date: Date }) => {
     const currentLib = queryClient.getQueryData<PhotoLibraryMetadata>([
@@ -152,41 +152,13 @@ const usePhotoLibrary = ({
     ]);
     if (!currentLib) return;
 
-    const newYear = currentLib.yearsWithMonths.find((y) => y.year === date.getFullYear()) || {
-      year: date.getFullYear(),
-      months: [],
-    };
-    const newMonth = newYear?.months?.find((m) => m.month === date.getMonth() + 1) || {
-      month: date.getMonth() + 1,
-      days: [],
-      photosThisMonth: 1,
-    };
-    const newDay = newMonth?.days.find((d) => d.day === date.getDate()) || {
-      day: date.getDate(),
-      photosThisDay: 1,
-    };
+    const updatedLib = addDay(currentLib, date);
+    if (!updatedLib) return;
 
-    const updatedLib: PhotoLibraryMetadata = {
-      ...currentLib,
-      yearsWithMonths: [
-        ...currentLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
-        {
-          ...newYear,
-          months: [
-            ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
-            {
-              ...newMonth,
-              days: [
-                ...newMonth.days.filter((d) => d.day !== date.getDate()),
-                {
-                  ...newDay,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
+    queryClient.setQueryData<PhotoLibraryMetadata>(
+      ['photo-library', targetDrive.alias, album],
+      updatedLib
+    );
 
     return await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
   };
@@ -204,6 +176,10 @@ const usePhotoLibrary = ({
     }),
     addDay: useMutation(saveNewDay, {
       onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive.alias, album]),
+      onError: (err, variables) => {
+        console.error(err);
+        rebuildLibrary({ dotYouClient, targetDrive, album: variables.album });
+      },
     }),
   };
 };

@@ -99,3 +99,81 @@ export const savePhotoLibraryMetadata = async (
 
   uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptPhotoLibrary);
 };
+
+export const updateCount = (
+  currLib: PhotoLibraryMetadata,
+  date: Date,
+  newCount: number
+): PhotoLibraryMetadata | null => {
+  const newYear = currLib.yearsWithMonths.find((y) => y.year === date.getFullYear());
+  const newMonth = newYear?.months.find((m) => m.month === date.getMonth() + 1);
+  const newDay = newMonth?.days.find((d) => d.day === date.getDate());
+
+  if (!newYear || !newMonth || !newDay) return null;
+
+  const newDays = [
+    ...newMonth.days.filter((d) => d.day !== date.getDate()),
+    { ...newDay, photosThisDay: newCount },
+  ];
+  const newPhotosInMonth = newDays.reduce((currVal, day) => currVal + day.photosThisDay, 0);
+
+  const updatedLib: PhotoLibraryMetadata = {
+    ...currLib,
+    yearsWithMonths: [
+      ...currLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
+      {
+        ...newYear,
+        months: [
+          ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
+          {
+            ...newMonth,
+            photosThisMonth: newPhotosInMonth,
+            days: newDays,
+          },
+        ],
+      },
+    ],
+  };
+
+  return updatedLib;
+};
+
+export const addDay = (currentLib: PhotoLibraryMetadata, date: Date): PhotoLibraryMetadata => {
+  const newYear = currentLib.yearsWithMonths.find((y) => y.year === date.getFullYear()) || {
+    year: date.getFullYear(),
+    months: [],
+  };
+  const newMonth = newYear?.months?.find((m) => m.month === date.getMonth() + 1) || {
+    month: date.getMonth() + 1,
+    days: [],
+    photosThisMonth: 1,
+  };
+  const newDay = newMonth?.days.find((d) => d.day === date.getDate()) || {
+    day: date.getDate(),
+    photosThisDay: 1,
+  };
+
+  const updatedLib: PhotoLibraryMetadata = {
+    ...currentLib,
+    yearsWithMonths: [
+      ...currentLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
+      {
+        ...newYear,
+        months: [
+          ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
+          {
+            ...newMonth,
+            days: [
+              ...newMonth.days.filter((d) => d.day !== date.getDate()),
+              {
+                ...newDay,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  return updatedLib;
+};

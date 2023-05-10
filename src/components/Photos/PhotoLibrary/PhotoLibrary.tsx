@@ -69,9 +69,9 @@ const PhotoLibrary = ({
     }
   }, [isSelecting]);
 
-  const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
-    year.months.map((month) => ({ year: year.year, ...month }))
-  );
+  const monthsToShow = photoLibrary?.yearsWithMonths
+    ?.flatMap((year) => year.months.map((month) => ({ year: year.year, ...month })))
+    .filter((month) => month.photosThisMonth >= 1);
 
   /// Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
@@ -90,9 +90,7 @@ const PhotoLibrary = ({
 
   const items = virtualizer.getVirtualItems();
 
-  if (!monthsToShow || !photoLibrary) {
-    return null;
-  }
+  if (!monthsToShow || !photoLibrary) return null;
 
   if (!monthsToShow?.length) {
     return (

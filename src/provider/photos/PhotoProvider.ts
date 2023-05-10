@@ -178,7 +178,7 @@ export const uploadNew = async (
   albumKey: string | undefined,
   newFile: File,
   thumb?: ThumbnailFile
-): Promise<{ fileId: string; userDate: Date }> => {
+): Promise<{ fileId?: string; userDate: Date }> => {
   return newFile.type === 'video/mp4'
     ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb)
     : uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile);
@@ -217,12 +217,20 @@ export const updatePhoto = async (
       },
     };
 
-    await uploadHeader(
+    const uploadResult = await uploadHeader(
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
       metadata
     );
+
+    return {
+      fileId: uploadResult.file.fileId,
+      date: new Date(
+        newMetaData.userDate || header.fileMetadata.appData.userDate || header.fileMetadata.created
+      ),
+      tags: header.fileMetadata.appData.tags,
+    };
   }
 };
 
