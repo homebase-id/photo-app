@@ -69,9 +69,10 @@ const PhotoLibrary = ({
     }
   }, [isSelecting]);
 
-  const monthsToShow = photoLibrary?.yearsWithMonths
-    ?.flatMap((year) => year.months.map((month) => ({ year: year.year, ...month })))
-    .filter((month) => month.photosThisMonth >= 1);
+  const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
+    year.months.map((month) => ({ year: year.year, ...month }))
+  );
+  // .filter((month) => month.photosThisMonth >= 1);
 
   /// Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
@@ -147,9 +148,11 @@ const PhotoLibrary = ({
                   data-index={virtualRow.index}
                   ref={virtualizer.measureElement}
                 >
-                  <h1 className="text-2xl">
-                    {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
-                  </h1>
+                  {monthMeta.photosThisMonth >= 1 ? (
+                    <h1 className="text-2xl">
+                      {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
+                    </h1>
+                  ) : null}
                   {days.map((day) => (
                     <PhotoSection
                       date={createDateObject(year, month, day.day)}

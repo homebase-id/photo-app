@@ -10,6 +10,7 @@ import {
   savePhotoLibraryMetadata,
   updateCount,
 } from '../../provider/photos/PhotoLibraryMetaProvider';
+import useDebounce from '../debounce/useDebounce';
 
 const rebuildLibrary = async ({
   dotYouClient,
@@ -49,7 +50,7 @@ const usePhotoLibrary = ({
     // if exists return that
     const photoLibOnServer = await getPhotoLibrary(dotYouClient, album);
     if (photoLibOnServer) {
-      console.debug('fetched lib from server', photoLibOnServer);
+      console.log('fetched lib from server', photoLibOnServer, { album });
       return photoLibOnServer;
     }
 
@@ -85,18 +86,34 @@ const usePhotoLibrary = ({
     return await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
   };
 
-  // const debouncedSaveOfLib = useDebounce(() => {
-  //   // send request to the backend
-  //   // access to latest state here
-  //   console.log(value);
-  // });
+  const debouncedSaveOfLibs = useDebounce(async () => {
+    const libQueries = queryClient
+      .getQueryCache()
+      .findAll(['photo-library', targetDrive.alias], { exact: false })
+      .filter((query) => query.state.status === 'success');
+
+    await Promise.all(
+      libQueries.map(async (query) => {
+        const albumKey = query.queryKey[2] as string;
+        const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
+        if (!libToSave || !albumKey) return;
+
+        await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey);
+      })
+    );
+
+    // send request to the backend
+    // access to latest state here
+    console.log(
+      'saved all libs to server',
+      libQueries.map((q) => q.queryKey)
+    );
+  });
 
   const saveNewDay = async ({ album, date }: { album?: string; date: Date }) => {
-    const currentLib = queryClient.getQueryData<PhotoLibraryMetadata>([
-      'photo-library',
-      targetDrive.alias,
-      album,
-    ]);
+    const currentLib =
+      queryClient.getQueryData<PhotoLibraryMetadata>(['photo-library', targetDrive.alias, album]) ||
+      (await getPhotoLibrary(dotYouClient, album));
     if (!currentLib) return;
 
     const updatedLib = addDay(currentLib, date);
@@ -107,7 +124,7 @@ const usePhotoLibrary = ({
       updatedLib
     );
 
-    return await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
+    debouncedSaveOfLibs();
   };
 
   return {

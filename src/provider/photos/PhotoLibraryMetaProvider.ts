@@ -61,12 +61,8 @@ export const savePhotoLibraryMetadata = async (
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)
     def.fileId = existingPhotoLib.fileId;
 
-  if (existingPhotoLib && existingPhotoLib.versionTag !== def.versionTag) {
-    console.error(
-      'broken state, photo library metadata file found with different version tag, we might be overwriting a newer version'
-    );
+  if (existingPhotoLib && existingPhotoLib.versionTag !== def.versionTag)
     def.versionTag = existingPhotoLib.versionTag;
-  }
 
   const payloadJson: string = jsonStringify64({
     ...def,
@@ -169,24 +165,31 @@ export const updateCount = (
     ...newMonth.days.filter((d) => d.day !== date.getDate()),
     { ...newDay, photosThisDay: newCount },
   ];
+  newDays.sort((dayA, dayB) => dayB.day - dayA.day);
+
   const newPhotosInMonth = newDays.reduce((currVal, day) => currVal + day.photosThisDay, 0);
+  const newMonths = [
+    ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
+    {
+      ...newMonth,
+      photosThisMonth: newPhotosInMonth,
+      days: newDays,
+    },
+  ];
+  newMonths.sort((monthA, monthB) => monthB.month - monthA.month);
+
+  const newYears = [
+    ...currLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
+    {
+      ...newYear,
+      months: newMonths,
+    },
+  ];
+  newYears.sort((yearA, yearB) => yearB.year - yearA.year);
 
   const updatedLib: PhotoLibraryMetadata = {
     ...currLib,
-    yearsWithMonths: [
-      ...currLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
-      {
-        ...newYear,
-        months: [
-          ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
-          {
-            ...newMonth,
-            photosThisMonth: newPhotosInMonth,
-            days: newDays,
-          },
-        ],
-      },
-    ],
+    yearsWithMonths: newYears,
   };
 
   return updatedLib;
@@ -207,26 +210,37 @@ export const addDay = (currentLib: PhotoLibraryMetadata, date: Date): PhotoLibra
     photosThisDay: 1,
   };
 
+  const newDays = [
+    ...newMonth.days.filter((d) => d.day !== date.getDate()),
+    {
+      ...newDay,
+      photosThisDay: newDay.photosThisDay ? newDay.photosThisDay + 1 : 1,
+    },
+  ];
+  newDays.sort((dayA, dayB) => dayB.day - dayA.day);
+
+  const newMonths = [
+    ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
+    {
+      ...newMonth,
+      photosThisMonth: newMonth.photosThisMonth ? newMonth.photosThisMonth + 1 : 1,
+      days: newDays,
+    },
+  ];
+  newMonths.sort((monthA, monthB) => monthB.month - monthA.month);
+
+  const newYears = [
+    ...currentLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
+    {
+      ...newYear,
+      months: newMonths,
+    },
+  ];
+  newYears.sort((yearA, yearB) => yearB.year - yearA.year);
+
   const updatedLib: PhotoLibraryMetadata = {
     ...currentLib,
-    yearsWithMonths: [
-      ...currentLib.yearsWithMonths.filter((y) => y.year !== date.getFullYear()),
-      {
-        ...newYear,
-        months: [
-          ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
-          {
-            ...newMonth,
-            days: [
-              ...newMonth.days.filter((d) => d.day !== date.getDate()),
-              {
-                ...newDay,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    yearsWithMonths: newYears,
   };
 
   return updatedLib;

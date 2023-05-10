@@ -75,9 +75,15 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   const restorePhoto = async ({ photoFileId }: { photoFileId: string }) => {
     if (!targetDrive) return null;
 
-    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+    const result = await updatePhoto(dotYouClient, targetDrive, photoFileId, {
       archivalStatus: 0,
     });
+
+    if (result?.date) {
+      [...(result.tags || []), undefined].forEach((tag) => {
+        addDayToLibrary({ album: tag, date: result.date });
+      });
+    }
   };
 
   const addTags = async ({
@@ -97,9 +103,15 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
     );
 
-    return await updatePhoto(dotYouClient, targetDrive, fileId, {
+    const result = await updatePhoto(dotYouClient, targetDrive, fileId, {
       tag: newTags,
     });
+
+    if (result?.date) {
+      addTags.forEach((tag) => {
+        addDayToLibrary({ album: tag, date: result.date });
+      });
+    }
   };
 
   const removeTags = async ({

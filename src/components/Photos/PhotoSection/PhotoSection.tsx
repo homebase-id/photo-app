@@ -95,7 +95,7 @@ export const PhotoSection = ({
 
   const title = date.toLocaleDateString(undefined, dateFormat);
 
-  if (photosCount === 0 || photos?.length === 0) return null;
+  if ((photosCount === 0 && !photos?.length) || photos?.length === 0) return null;
 
   return (
     <section className="mb-5" ref={wrapperRef}>
