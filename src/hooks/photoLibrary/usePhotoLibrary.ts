@@ -1,68 +1,15 @@
-import { DotYouClient, DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
+import { DotYouClient, TargetDrive } from '@youfoundation/js-lib';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
 import {
   addDay,
+  buildMetaStructure,
   getPhotoLibrary,
   savePhotoLibraryMetadata,
   updateCount,
 } from '../../provider/photos/PhotoLibraryMetaProvider';
-
-const sortRecents = (elements: string[]) => elements.sort((a, b) => parseInt(b) - parseInt(a));
-const buildMetaStructure = (headers: DriveSearchResult[]): PhotoLibraryMetadata => {
-  // Filter duplicates (Shouldn't happen anymore):
-  headers = headers.reduce((curVal, head) => {
-    if (!curVal.find((h) => h.fileId === head.fileId)) return [...curVal, head];
-    else return curVal;
-  }, [] as DriveSearchResult[]);
-
-  // Build easier to use structure
-  const arrayStruc = headers.reduce((curVal, head) => {
-    const currDate = new Date(head.fileMetadata.appData.userDate || head.fileMetadata.created);
-    const year = currDate.getFullYear();
-    const month = currDate.getMonth() + 1;
-    const day = currDate.getDate();
-
-    const returnObj = { ...curVal };
-    returnObj[year] = {
-      ...returnObj[year],
-    };
-    returnObj[year][month] = {
-      ...returnObj[year][month],
-    };
-
-    returnObj[year][month][day] = returnObj[year][month][day] ? returnObj[year][month][day] + 1 : 1;
-
-    return returnObj;
-  }, {} as Record<string, Record<string, Record<string, number>>>);
-
-  // Convert struc into complex meta object
-  const years = sortRecents(Object.keys(arrayStruc));
-  const yearsWithMonths = years.map((year) => {
-    const months = Object.keys(arrayStruc[year]);
-    return {
-      year: parseInt(year),
-      months: sortRecents(months).map((month) => {
-        const days = Object.keys(arrayStruc[year][month]);
-
-        return {
-          month: parseInt(month),
-          days: sortRecents(days).map((day) => ({
-            day: parseInt(day),
-            photosThisDay: arrayStruc[year][month][day],
-          })),
-          photosThisMonth: days.flatMap((day) => {
-            return arrayStruc[year][month][day];
-          }).length,
-        };
-      }),
-    };
-  });
-
-  return { yearsWithMonths, totalNumberOfPhotos: headers.length };
-};
 
 const rebuildLibrary = async ({
   dotYouClient,
