@@ -9,6 +9,7 @@ import {
   UploadFileMetadata,
   SecurityGroupType,
   uploadFile,
+  ArchivalStatus,
 } from '@youfoundation/js-lib';
 import { PhotoLibraryMetadata, PhotoConfig } from './PhotoTypes';
 
@@ -18,12 +19,17 @@ export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
   albumTag?: string
 ): Promise<PhotoLibraryMetadata | null> => {
+  const typedAlbum = albumTag === 'bin' || albumTag === 'archive';
+  const archivalStatus: ArchivalStatus[] =
+    albumTag === 'bin' ? [2] : albumTag === 'archive' ? [1] : albumTag ? [0, 1] : [0];
+
   const batch = await queryBatch(
     dotYouClient,
     {
       targetDrive: PhotoConfig.PhotoDrive,
       fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-      tagsMatchAtLeastOne: albumTag ? [albumTag] : [PhotoConfig.MainTag],
+      tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
+      archivalStatus,
     },
     { maxRecords: 2, includeMetadataHeader: true }
   );
@@ -57,6 +63,9 @@ export const savePhotoLibraryMetadata = async (
   def: PhotoLibraryMetadata,
   albumTag?: string
 ) => {
+  const typedAlbum = albumTag === 'bin' || albumTag === 'archive';
+  const archivalStatus: ArchivalStatus = albumTag === 'bin' ? 2 : albumTag === 'archive' ? 1 : 0;
+
   const existingPhotoLib = await getPhotoLibrary(dotYouClient, albumTag);
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)
     def.fileId = existingPhotoLib.fileId;
@@ -84,10 +93,11 @@ export const savePhotoLibraryMetadata = async (
     contentType: 'application/json',
     versionTag: def.versionTag,
     appData: {
-      tags: albumTag ? [albumTag] : [PhotoConfig.MainTag],
+      tags: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
       fileType: PhotoConfig.PhotoLibraryMetadataFileType,
       contentIsComplete: true,
       jsonContent: payloadJson,
+      archivalStatus,
     },
     payloadIsEncrypted: encryptPhotoLibrary,
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
