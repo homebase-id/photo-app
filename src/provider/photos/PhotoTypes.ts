@@ -1,4 +1,4 @@
-import { toGuidId, TargetDrive } from '@youfoundation/js-lib';
+import { toGuidId, TargetDrive, ImageContentType, VideoContentType } from '@youfoundation/js-lib';
 
 export class PhotoConfig {
   static readonly DriveType: string = toGuidId('photos_drive');
@@ -8,8 +8,17 @@ export class PhotoConfig {
   };
   static readonly FavoriteTag: string = toGuidId('favorite');
   static readonly MainTag: string = toGuidId('main-lib');
+  static readonly PinTag: string = toGuidId('pinned-from-apps');
   static readonly AlbumDefinitionFileType: number = 400;
   static readonly PhotoLibraryMetadataFileType: number = 900;
+}
+
+export interface FileLike {
+  name: string;
+  bytes: Uint8Array;
+  size: number;
+  type: ImageContentType | VideoContentType;
+  lastModified?: number;
 }
 
 export interface PhotoFile {

@@ -27,7 +27,7 @@ import {
   ThumbnailFile,
 } from '@youfoundation/js-lib';
 
-import { PhotoFile } from './PhotoTypes';
+import { FileLike, PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 
 export const getPhotos = async (
@@ -94,9 +94,10 @@ const uploadNewPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newPhoto: File
+  newPhoto: File | FileLike,
+  meta?: MediaUploadMeta
 ) => {
-  const bytes = new Uint8Array(await newPhoto.arrayBuffer());
+  const bytes = 'bytes' in newPhoto ? newPhoto.bytes : new Uint8Array(await newPhoto.arrayBuffer());
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
   const userDate = dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime();
 
@@ -108,6 +109,7 @@ const uploadNewPhoto = async (
       bytes,
       imageMetadata,
       {
+        ...meta,
         type: newPhoto?.type as ImageContentType,
         userDate,
         tag: albumKey ? [albumKey] : undefined,
@@ -126,21 +128,23 @@ const uploadNewVideo = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newVideo: File,
-  thumb?: ThumbnailFile
+  newVideo: File | FileLike,
+  thumb?: ThumbnailFile,
+  meta?: MediaUploadMeta
 ) => {
   const userDate = newVideo.lastModified || new Date().getTime();
 
   // if video is tiny enough (less than 10MB), don't segment just upload
-  if (newVideo.size < 10000000)
+  if (newVideo.size < 10000000 || 'bytes' in newVideo)
     return {
       ...(await uploadVideo(
         dotYouClient,
         targetDrive,
         { requiredSecurityGroup: SecurityGroupType.Owner },
-        newVideo,
+        'bytes' in newVideo ? newVideo.bytes : newVideo,
         { isSegmented: false, mimeType: newVideo.type, fileSize: newVideo.size },
         {
+          ...meta,
           type: newVideo.type as VideoContentType,
           tag: albumKey ? [albumKey] : undefined,
           userDate,
@@ -176,12 +180,13 @@ export const uploadNew = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newFile: File,
-  thumb?: ThumbnailFile
+  newFile: File | FileLike,
+  thumb?: ThumbnailFile,
+  meta?: MediaUploadMeta
 ): Promise<{ fileId?: string; userDate: Date }> => {
   return newFile.type === 'video/mp4'
-    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb)
-    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile);
+    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb, meta)
+    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile, meta);
 };
 
 export const updatePhoto = async (

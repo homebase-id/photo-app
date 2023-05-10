@@ -6,11 +6,12 @@ import {
   stringGuidsEqual,
   DriveSearchResult,
   ThumbnailFile,
+  MediaUploadMeta,
 } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
-import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
+import { FileLike, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { usePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 
@@ -43,13 +44,22 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     newPhoto,
     albumKey,
     thumb,
+    meta,
   }: {
-    newPhoto: File;
+    newPhoto: File | FileLike;
     albumKey?: string;
     thumb?: ThumbnailFile;
+    meta?: MediaUploadMeta;
   }) => {
     if (!targetDrive) return null;
-    const uploadResult = await uploadNew(dotYouClient, targetDrive, albumKey, newPhoto, thumb);
+    const uploadResult = await uploadNew(
+      dotYouClient,
+      targetDrive,
+      albumKey,
+      newPhoto,
+      thumb,
+      meta
+    );
 
     if (uploadResult?.userDate) {
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });

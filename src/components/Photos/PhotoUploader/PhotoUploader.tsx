@@ -1,12 +1,18 @@
-import { ImageContentType, ThumbnailFile, fromBlob } from '@youfoundation/js-lib';
+import {
+  ImageContentType,
+  ThumbnailFile,
+  base64ToUint8Array,
+  fromBlob,
+} from '@youfoundation/js-lib';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
+import { FileLike, PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton, { ActionButtonState } from '../../ui/Buttons/ActionButton';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Loader from '../../ui/Icons/Loader/Loader';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
+import useAlbum from '../../../hooks/photoLibrary/useAlbum';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -16,9 +22,9 @@ const imgClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max
 const maxVisible = 10;
 
 interface DirectUploadData {
-  dataUrl: string;
-  note?: string;
+  bytes: Uint8Array;
   type?: ImageContentType;
+  note?: string;
 }
 
 const Uploader = ({
@@ -69,7 +75,11 @@ const Uploader = ({
         'dataUrl' in e.data &&
         typeof e.data.dataUrl === 'string'
       ) {
-        setDirectUpload({ dataUrl: e.data.dataUrl, type: e.data.type, note: e.data.note });
+        const base64 = (e.data.dataUrl as string).split(',').pop();
+        if (!base64) return;
+
+        const bytes = base64ToUint8Array(base64);
+        setDirectUpload({ bytes: bytes, type: e.data.type, note: e.data.note });
       }
     };
 
@@ -146,11 +156,60 @@ const DirectPhoto = ({
   } = usePhoto(PhotoConfig.PhotoDrive).upload;
   const [uploadError, setUploadError] = useState<unknown>();
 
+  const {
+    fetch: { data: album, isFetched: albumFetched },
+    save: { mutateAsync: saveAlbum },
+  } = useAlbum(PhotoConfig.PinTag);
+
+  const isUploading = useRef<boolean>(false);
+
   const directUploadImg = useMemo(() => {
-    return <img src={directUpload.dataUrl} className={`${imgClasses}`} />;
+    const url = window.URL.createObjectURL(
+      new Blob([directUpload.bytes], { type: directUpload.type })
+    );
+
+    return <img src={url} className={`${imgClasses}`} />;
   }, [directUpload]);
 
   // upload { dataUrl, note } to server
+  useEffect(() => {
+    (async () => {
+      // Wait till it is fetched otherwise we would upload to a potential non-existing album
+      if (!albumFetched) return;
+
+      if (albumFetched && !album) {
+        await saveAlbum({ name: 'Apps', description: 'Photos from apps', tag: PhotoConfig.PinTag });
+        console.log('album created');
+      }
+
+      if (!isUploading.current) {
+        isUploading.current = true;
+
+        try {
+          const fileLile: FileLike = {
+            bytes: directUpload.bytes,
+            name: directUpload.note || 'new',
+            type: directUpload.type || 'image/png',
+            size: directUpload.bytes.length,
+          };
+          await doUploadToServer({
+            newPhoto: fileLile,
+            albumKey: PhotoConfig.PinTag,
+            meta: { archivalStatus: 1 },
+          });
+          remove();
+        } catch (e) {
+          setUploadError(e);
+        }
+
+        isUploading.current = false;
+      }
+    })();
+
+    return () => {
+      resetUpload();
+    };
+  }, [albumFetched, directUpload]);
 
   return (
     <div className={`${divClasses} relative`}>
