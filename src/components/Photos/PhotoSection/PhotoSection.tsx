@@ -6,7 +6,7 @@ import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
-import { usePhotos } from '../../../hooks/photoLibrary/usePhotos';
+import { usePhotosByDate } from '../../../hooks/photoLibrary/usePhotos';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 
@@ -56,7 +56,7 @@ export const PhotoSection = ({
   const [isInView, setIsInView] = useState(false);
   useIntersection(wrapperRef, () => setIsInView(true));
 
-  const { data: photos, isFetchedAfterMount } = usePhotos({
+  const { data: photos, isFetchedAfterMount } = usePhotosByDate({
     targetDrive: isInView ? PhotoConfig.PhotoDrive : undefined,
     album: albumKey,
     date,

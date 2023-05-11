@@ -14,29 +14,69 @@ import Archive from '../../ui/Icons/Archive/Archive';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
 import { PhotoWithLoader } from './PhotoWithLoader';
 import { VideoWithLoader } from './VideoWithLoader';
+import { usePhotoLibrarySiblingsInfinite } from '../../../hooks/photoLibrary/usePhotoLibrarySiblingsInfinte';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
-const PhotoPreview = ({
-  fileId,
-  albumKey,
-  urlPrefix,
-}: {
-  fileId: string;
-  albumKey?: string;
-  urlPrefix?: string;
-}) => {
+const PhotoPreview = (props: { fileId: string; albumKey?: string }) => {
+  return props.albumKey && ![PhotoConfig.FavoriteTag, 'bin', 'archive'].includes(props.albumKey) ? (
+    <AlbumPhotoPreview {...props} />
+  ) : (
+    <LibPhotoPreview {...props} />
+  );
+};
+
+const LibPhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
   const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
     targetDrive: targetDrive,
     photoFileId: fileId,
     album: albumKey,
   });
 
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  return (
+    <InnerPhotoPreview
+      fileId={fileId}
+      current={current}
+      nextSibling={nextSibling}
+      prevSibling={prevSibling}
+    />
+  );
+};
 
-  if (!fileId) {
-    return null;
-  }
+const AlbumPhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
+  const urlPrefix = albumKey ? `/album/${albumKey}` : '';
+
+  const { current, nextSibling, prevSibling } = usePhotoLibrarySiblingsInfinite({
+    targetDrive: targetDrive,
+    photoFileId: fileId,
+    album: albumKey,
+  });
+
+  return (
+    <InnerPhotoPreview
+      fileId={fileId}
+      current={current}
+      nextSibling={nextSibling}
+      prevSibling={prevSibling}
+      urlPrefix={urlPrefix}
+    />
+  );
+};
+
+const InnerPhotoPreview = ({
+  fileId,
+  current,
+  nextSibling,
+  prevSibling,
+  urlPrefix,
+}: {
+  fileId: string;
+  current: DriveSearchResult | undefined;
+  nextSibling: DriveSearchResult | undefined;
+  prevSibling: DriveSearchResult | undefined;
+  urlPrefix?: string;
+}) => {
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>

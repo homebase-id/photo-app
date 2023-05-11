@@ -1,5 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { TargetDrive, DriveSearchResult, DotYouClient } from '@youfoundation/js-lib';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  TargetDrive,
+  DriveSearchResult,
+  DotYouClient,
+  CursoredResult,
+} from '@youfoundation/js-lib';
 import { buildCursor, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 
@@ -13,7 +18,7 @@ export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
   return bDate - aDate;
 };
 
-export const fetchPhotos = async ({
+export const fetchPhotosByDate = async ({
   dotYouClient,
   targetDrive,
   album,
@@ -44,7 +49,21 @@ export const fetchPhotos = async ({
   return filteredResults;
 };
 
-export const usePhotos = ({
+export const fetchPhotosByCursor = async ({
+  dotYouClient,
+  targetDrive,
+  album,
+  cursorState,
+}: {
+  dotYouClient: DotYouClient;
+  targetDrive: TargetDrive;
+  album?: string;
+  cursorState?: string;
+}): Promise<CursoredResult<usePhotosReturn>> => {
+  return await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
+};
+
+export const usePhotosByDate = ({
   targetDrive,
   album,
   date,
@@ -65,7 +84,7 @@ export const usePhotos = ({
         date && `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`,
       ],
       () =>
-        fetchPhotos({
+        fetchPhotosByDate({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
           album,
@@ -75,6 +94,38 @@ export const usePhotos = ({
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         enabled: !!targetDrive && !!date,
+        onError: (err) => console.error(err),
+      }
+    ),
+  };
+};
+
+export const usePhotosInfinte = ({
+  targetDrive,
+  album,
+}: {
+  targetDrive?: TargetDrive;
+  album?: string;
+}) => {
+  const { getDotYouClient } = useAuth();
+  const dotYouClient = getDotYouClient();
+
+  return {
+    fetchPhotos: useInfiniteQuery(
+      ['photos-infinite', targetDrive?.alias, album],
+      ({ pageParam }) =>
+        fetchPhotosByCursor({
+          dotYouClient,
+          targetDrive: targetDrive as TargetDrive,
+          album,
+          cursorState: pageParam,
+        }),
+      {
+        getNextPageParam: (lastPage) =>
+          (lastPage?.results?.length === PAGE_SIZE && lastPage?.cursorState) ?? undefined,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        enabled: !!targetDrive,
         onError: (err) => console.error(err),
       }
     ),

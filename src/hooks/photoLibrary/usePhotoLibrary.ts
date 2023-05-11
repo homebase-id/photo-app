@@ -2,7 +2,7 @@ import { DotYouClient, TargetDrive } from '@youfoundation/js-lib';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
+import { PhotoConfig, PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
 import {
   addDay,
   buildMetaStructure,
@@ -45,7 +45,10 @@ const usePhotoLibrary = ({
   const dotYouClient = getDotYouClient();
   const queryClient = useQueryClient();
 
-  const fetch = async (album?: string): Promise<PhotoLibraryMetadata> => {
+  const fetch = async (album?: string): Promise<PhotoLibraryMetadata | null> => {
+    // We don't manage meta files for normal albums
+    if (album && ![PhotoConfig.FavoriteTag, 'bin', 'archive'].includes(album)) return null;
+
     // Check meta file on server
     // if exists return that
     const photoLibOnServer = await getPhotoLibrary(dotYouClient, album);

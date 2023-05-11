@@ -36,7 +36,6 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     size?: ImageSize;
   }) => {
     if (!targetDrive || !fileId) return null;
-
     return await getPhoto(dotYouClient, targetDrive, fileId, size, true);
   };
 
@@ -61,9 +60,11 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       meta
     );
 
-    if (uploadResult?.userDate) {
+    if (
+      uploadResult?.userDate &&
+      (!albumKey || ['bin', 'archive', PhotoConfig.FavoriteTag].includes(albumKey))
+    )
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
-    }
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -89,11 +90,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       archivalStatus: 0,
     });
 
-    if (result?.date) {
-      [...(result.tags || []), undefined].forEach((tag) => {
-        addDayToLibrary({ album: tag, date: result.date });
-      });
-    }
+    if (result?.date) addDayToLibrary({ album: undefined, date: result.date });
   };
 
   const addTags = async ({
@@ -113,15 +110,9 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
     );
 
-    const result = await updatePhoto(dotYouClient, targetDrive, fileId, {
+    return await updatePhoto(dotYouClient, targetDrive, fileId, {
       tag: newTags,
     });
-
-    if (result?.date) {
-      addTags.forEach((tag) => {
-        addDayToLibrary({ album: tag, date: result.date });
-      });
-    }
   };
 
   const removeTags = async ({

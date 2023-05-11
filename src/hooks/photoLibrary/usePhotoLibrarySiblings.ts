@@ -5,7 +5,7 @@ import {
   stringGuidsEqual,
 } from '@youfoundation/js-lib';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchPhotos, usePhotos, usePhotosReturn } from './usePhotos';
+import { fetchPhotosByDate, usePhotosByDate, usePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 import { createDateObject } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
@@ -60,7 +60,7 @@ const useCurrentPhoto = ({
   const date = fileHeader
     ? new Date(fileHeader.fileMetadata.appData.userDate || fileHeader.fileMetadata.created)
     : undefined;
-  const { data: photos } = usePhotos({ targetDrive, album, date }).fetchPhotos;
+  const { data: photos } = usePhotosByDate({ targetDrive, album, date }).fetchPhotos;
 
   if (!photoFileId)
     return {
@@ -133,12 +133,12 @@ export const usePhotoLibrarySiblings = ({
   const prevDay = flatDays && flatIndex !== undefined ? flatDays[flatIndex - 1] : undefined;
   const nextDay = flatDays && flatIndex !== undefined ? flatDays[flatIndex + 1] : undefined;
 
-  const { data: prevData } = usePhotos({
+  const { data: prevData } = usePhotosByDate({
     targetDrive,
     album,
     date: prevDay ? createDateObject(prevDay.year, prevDay.month, prevDay.day) : undefined,
   }).fetchPhotos;
-  const { data: nextData } = usePhotos({
+  const { data: nextData } = usePhotosByDate({
     targetDrive,
     album,
     date: nextDay ? createDateObject(nextDay.year, nextDay.month, nextDay.day) : undefined,
@@ -224,7 +224,7 @@ export const useSiblingsRange = ({
     const dataFromInBetween = await Promise.all(
       daysInBetween.map(
         async (day) =>
-          await fetchPhotos({
+          await fetchPhotosByDate({
             dotYouClient,
             targetDrive,
             album,
@@ -237,15 +237,11 @@ export const useSiblingsRange = ({
     return returnRange;
   };
 
-  return useQuery(
-    ['siblings-range', targetDrive?.alias, album, fromFileId, toFileId],
-    () => getRange(),
-    {
-      enabled:
-        !!flatDays &&
-        fromCurrentData?.currentIndex !== undefined &&
-        toCurrentData?.currentIndex !== undefined,
-      select: (data) => data.map((dsr) => dsr.fileId),
-    }
-  );
+  return useQuery(['siblings-range', targetDrive?.alias, album, fromFileId, toFileId], getRange, {
+    enabled:
+      !!flatDays &&
+      fromCurrentData?.currentIndex !== undefined &&
+      toCurrentData?.currentIndex !== undefined,
+    select: (data) => data.map((dsr) => dsr.fileId),
+  });
 };

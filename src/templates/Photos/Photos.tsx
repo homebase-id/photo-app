@@ -13,6 +13,7 @@ import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
 import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/ErrorNotification';
+import PhotoAlbum from '../../components/Photos/PhotoAlbum/PhotoAlbum';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
@@ -71,21 +72,28 @@ const Photos = () => {
         setFileSelectorOpen={setFileSelectorOpen}
         albumKey={albumKey}
       />
-      <PhotoLibrary
-        toggleSelection={toggleSelection}
-        selectRange={selectRange}
-        setFileSelectorOpen={setFileSelectorOpen}
-        albumKey={albumKey}
-        isSelected={isSelected}
-        isSelecting={isSelecting}
-      />
+      {albumKey ? (
+        <PhotoAlbum
+          toggleSelection={toggleSelection}
+          selectRange={selectRange}
+          setFileSelectorOpen={setFileSelectorOpen}
+          albumKey={albumKey}
+          isSelected={isSelected}
+          isSelecting={isSelecting}
+        />
+      ) : (
+        <PhotoLibrary
+          toggleSelection={toggleSelection}
+          selectRange={selectRange}
+          setFileSelectorOpen={setFileSelectorOpen}
+          albumKey={albumKey}
+          isSelected={isSelected}
+          isSelecting={isSelecting}
+        />
+      )}
       {photoKey ? (
         <Suspense>
-          <PhotoPreview
-            fileId={photoKey}
-            albumKey={albumKey}
-            urlPrefix={albumKey ? `/album/${albumKey}` : ''}
-          />
+          <PhotoPreview fileId={photoKey} albumKey={albumKey} />
         </Suspense>
       ) : null}
       {albumKey === 'new' ? (
