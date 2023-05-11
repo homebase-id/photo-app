@@ -63,8 +63,10 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     if (
       uploadResult?.userDate &&
       (!albumKey || ['bin', 'archive', PhotoConfig.FavoriteTag].includes(albumKey))
-    )
+    ) {
+      console.log('adding', uploadResult.userDate, albumKey);
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
+    }
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {

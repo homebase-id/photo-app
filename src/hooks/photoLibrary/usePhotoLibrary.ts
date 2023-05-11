@@ -24,7 +24,7 @@ const rebuildLibrary = async ({
   const allPhotos = (await getPhotos(dotYouClient, targetDrive, album, 1200, undefined)).results;
   const metaStruc = buildMetaStructure(allPhotos);
 
-  console.log('Rebuilding library', album);
+  console.log('Rebuilding library', { album });
 
   // Store meta file on server (No need to await, it doesn't need to be on the server already to be used)
   savePhotoLibraryMetadata(dotYouClient, metaStruc, album);
@@ -54,7 +54,7 @@ const usePhotoLibrary = ({
     const photoLibOnServer = await getPhotoLibrary(dotYouClient, album);
     if (photoLibOnServer) {
       console.log('fetched lib from server', photoLibOnServer, { album });
-      return photoLibOnServer;
+      // return photoLibOnServer;
     }
 
     // Else fetch all photos and build one
@@ -127,7 +127,11 @@ const usePhotoLibrary = ({
       updatedLib
     );
 
-    debouncedSaveOfLibs();
+    await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
+
+    // Disabled for now as it is not working properly;
+    // The cache is overwritten with a fetch that is fired directly after this...
+    // debouncedSaveOfLibs();
   };
 
   return {
