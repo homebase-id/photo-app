@@ -1,31 +1,13 @@
-import {
-  ImageContentType,
-  ThumbnailFile,
-  base64ToUint8Array,
-  fromBlob,
-} from '@youfoundation/js-lib';
+import { ImageContentType, ThumbnailFile, base64ToUint8Array } from '@youfoundation/js-lib';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
 import { FileLike, PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import ActionButton, { ActionButtonState } from '../../ui/Buttons/ActionButton';
-import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
-import Loader from '../../ui/Icons/Loader/Loader';
+import ActionButton from '../../ui/Buttons/ActionButton';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 import useAlbum from '../../../hooks/photoLibrary/useAlbum';
-
-// Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
-const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
-const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow`;
-const imgClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-full lg:align-bottom`;
-
-const maxVisible = 10;
-
-interface DirectUploadData {
-  bytes: Uint8Array;
-  type?: ImageContentType;
-  note?: string;
-}
+import { t } from '../../../helpers/i18n/dictionary';
+import Times from '../../ui/Icons/Times/Times';
 
 const Uploader = ({
   isFileSelectorOpen,
@@ -36,17 +18,37 @@ const Uploader = ({
   setFileSelectorOpen: (isOpen: boolean) => void;
   albumKey?: string;
 }) => {
-  const [uploadQueue, setUploadQueue] = useState<File[]>([]);
-  const [directUpload, setDirectUpload] = useState<DirectUploadData>();
+  const [failedFiles, setFailedFiles] = useState<(File | FileLike)[]>([]);
+  const [uploadQueue, setUploadQueue] = useState<(File | FileLike)[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentVideoThumb, setCurrentVideoThumb] = useState<ThumbnailFile | undefined>();
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const addToUploadQueue = (newFiles: File[]) => {
+  const doCancelQueue = () => {
+    setUploadQueue([]);
+    setFailedFiles([]);
+    setCurrentIndex(0);
+    setCurrentVideoThumb(undefined);
+  };
+
+  const doNext = () => {
+    resetUpload();
+    setCurrentVideoThumb(undefined);
+
+    setCurrentIndex(currentIndex + 1);
+  };
+
+  const addToUploadQueue = (newFiles: (File | FileLike)[]) => {
     setUploadQueue((prevVal) => [...prevVal, ...newFiles]);
   };
 
-  const removeFromUploadQueue = (toRemoveFile: File) => {
-    setUploadQueue((prevVal) => [...prevVal.filter((newPhoto) => newPhoto !== toRemoveFile)]);
-  };
+  const {
+    mutate: doUploadToServer,
+    status: uploadStatus,
+    reset: resetUpload,
+    error: uploadError,
+  } = usePhoto(PhotoConfig.PhotoDrive).upload;
 
   // Window level paste handler
   useEffect(() => {
@@ -64,6 +66,11 @@ const Uploader = ({
     }
   }, [isFileSelectorOpen]);
 
+  const {
+    fetch: { data: album, isFetched: albumFetched },
+    save: { mutateAsync: saveAlbum },
+  } = useAlbum(PhotoConfig.PinTag);
+
   useEffect(() => {
     const messageListener = (e: MessageEvent) => {
       if (e?.data?.source?.startsWith('react-devtools-')) return;
@@ -79,7 +86,19 @@ const Uploader = ({
         if (!base64) return;
 
         const bytes = base64ToUint8Array(base64);
-        setDirectUpload({ bytes: bytes, type: e.data.type, note: e.data.note });
+
+        if (!album && albumFetched) {
+          saveAlbum({ name: 'Apps', description: 'Photos from apps', tag: PhotoConfig.PinTag });
+        }
+
+        addToUploadQueue([
+          {
+            bytes: bytes,
+            name: e.data.note || 'new',
+            type: e.data.type || 'image/png',
+            size: bytes.length,
+          },
+        ]);
       }
     };
 
@@ -88,7 +107,53 @@ const Uploader = ({
     return () => window.removeEventListener('message', messageListener);
   }, []);
 
-  const hasFiles = uploadQueue?.length || directUpload;
+  const hasFiles = uploadQueue?.length;
+  const currentFile = uploadQueue[currentIndex];
+
+  useEffect(() => {
+    if (!currentFile) return;
+
+    const isPin = 'bytes' in currentFile;
+    if (currentFile.type === 'video/mp4') {
+      // We need a thumb, so we wait till it's grabbed
+      if (!currentVideoThumb) return;
+      // Ok to upload video
+      console.log('uploading', {
+        newPhoto: currentFile,
+        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
+        meta: { archivalStatus: 1 },
+        thumb: currentVideoThumb,
+      });
+      doUploadToServer({
+        newPhoto: currentFile,
+        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
+        meta: { archivalStatus: 1 },
+        thumb: currentVideoThumb,
+      });
+    } else {
+      console.log('uploading', {
+        newPhoto: currentFile,
+        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
+        meta: { archivalStatus: 1 },
+      });
+      doUploadToServer({
+        newPhoto: currentFile,
+        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
+        meta: { archivalStatus: 1 },
+      });
+    }
+  }, [currentFile, currentVideoThumb]);
+
+  useEffect(() => {
+    if (uploadStatus === 'success') {
+      doNext();
+    } else if (uploadStatus === 'error') {
+      setFailedFiles((oldFiles) => [...oldFiles, currentFile]);
+      doNext();
+    }
+  }, [uploadStatus]);
+
+  const isFinished = currentIndex >= uploadQueue.length;
 
   return (
     <section className={`${hasFiles ? 'mb-1' : ''}`}>
@@ -106,240 +171,61 @@ const Uploader = ({
       />
 
       {hasFiles ? (
-        <div className={`${gridClasses}`}>
-          {directUpload ? (
-            <DirectPhoto directUpload={directUpload} remove={() => setDirectUpload(undefined)} />
-          ) : null}
-          {uploadQueue
-            .slice(0, maxVisible)
-            .map((photo) =>
-              photo.type === 'video/mp4' ? (
-                <NewVideo
-                  videoFile={photo}
-                  key={`${photo.name}_${photo.size}`}
-                  remove={() => removeFromUploadQueue(photo)}
-                  albumKey={albumKey}
+        <div className="fixed bottom-8 right-8 z-50 w-full max-w-sm bg-white shadow-md">
+          <div className="flex flex-row">
+            {currentFile ? (
+              <div className="relative w-1/2">
+                <div className="absolute inset-0 animate-pulse bg-slate-200"></div>
+                <CurrentFile
+                  file={currentFile}
+                  setThumb={(thumb: ThumbnailFile) => setCurrentVideoThumb(thumb)}
                 />
+              </div>
+            ) : null}
+            <div className="w-1/2 py-4 pl-8 pr-4">
+              <div className="absolute right-2 top-2 flex flex-row-reverse">
+                <ActionButton icon={Times} size="square" type="mute" onClick={doCancelQueue} />
+              </div>
+              {isFinished ? (
+                <>
+                  <h2 className="mb-5 text-lg">{t('Done')}</h2>
+                  {t('Uploaded')} {uploadQueue.length} {t('files')}
+                  {failedFiles.length ? (
+                    <>
+                      {failedFiles.length} {t('files failed to upload')}
+                    </>
+                  ) : null}
+                </>
               ) : (
-                <NewPhoto
-                  photoFile={photo}
-                  key={`${photo.name}_${photo.size}`}
-                  remove={() => removeFromUploadQueue(photo)}
-                  albumKey={albumKey}
-                />
-              )
-            )}
-          {uploadQueue.length > maxVisible ? (
-            <div className="flex h-[200px] w-[200px] animate-pulse flex-col justify-center bg-black bg-opacity-20 text-6xl font-light text-white">
-              <span className="block text-center">+{uploadQueue.length - maxVisible}</span>
+                <>
+                  <h2 className="mb-5 text-lg">{t('Uploading')}</h2>
+                  {currentIndex + 1} {t('of')} {uploadQueue.length}
+                </>
+              )}
             </div>
-          ) : null}
-          {/* This div fills up the space of the last row */}
-          <div className="hidden flex-grow-[999] lg:block"></div>
+          </div>
         </div>
       ) : null}
+      <ErrorNotification error={uploadError} />
     </section>
   );
 };
 
-const DirectPhoto = ({
-  directUpload,
-  remove,
+const CurrentFile = ({
+  file,
+  setThumb,
 }: {
-  directUpload: DirectUploadData;
-  remove: () => void;
+  file: File | FileLike;
+  setThumb: (thumb: ThumbnailFile) => void;
 }) => {
-  const {
-    mutateAsync: doUploadToServer,
-    status: uploadStatus,
-    reset: resetUpload,
-  } = usePhoto(PhotoConfig.PhotoDrive).upload;
-  const [uploadError, setUploadError] = useState<unknown>();
-
-  const {
-    fetch: { data: album, isFetched: albumFetched },
-    save: { mutateAsync: saveAlbum },
-  } = useAlbum(PhotoConfig.PinTag);
-
-  const isUploading = useRef<boolean>(false);
-
-  const directUploadImg = useMemo(() => {
-    const url = window.URL.createObjectURL(
-      new Blob([directUpload.bytes], { type: directUpload.type })
-    );
-
-    return <img src={url} className={`${imgClasses}`} />;
-  }, [directUpload]);
-
-  // upload { dataUrl, note } to server
-  useEffect(() => {
-    (async () => {
-      // Wait till it is fetched otherwise we would upload to a potential non-existing album
-      if (!albumFetched) return;
-
-      if (albumFetched && !album) {
-        await saveAlbum({ name: 'Apps', description: 'Photos from apps', tag: PhotoConfig.PinTag });
-        console.log('album created');
-      }
-
-      if (!isUploading.current) {
-        isUploading.current = true;
-
-        try {
-          const fileLile: FileLike = {
-            bytes: directUpload.bytes,
-            name: directUpload.note || 'new',
-            type: directUpload.type || 'image/png',
-            size: directUpload.bytes.length,
-          };
-          await doUploadToServer({
-            newPhoto: fileLile,
-            albumKey: PhotoConfig.PinTag,
-            meta: { archivalStatus: 1 },
-          });
-          remove();
-        } catch (e) {
-          setUploadError(e);
-        }
-
-        isUploading.current = false;
-      }
-    })();
-
-    return () => {
-      resetUpload();
-    };
-  }, [albumFetched, directUpload]);
-
-  return (
-    <div className={`${divClasses} relative`}>
-      {directUploadImg}
-      <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />
-      {uploadStatus === 'idle' || uploadStatus === 'success' ? (
-        <ActionButton
-          className="absolute bottom-3 right-3"
-          icon="times"
-          type="secondary"
-          size="square"
-          onClick={() => remove()}
-        />
-      ) : null}
-    </div>
+  const isVideo = file.type === 'video/mp4';
+  const url = useMemo(
+    () =>
+      window.URL.createObjectURL(
+        'bytes' in file ? new Blob([file.bytes], { type: file.type }) : file
+      ),
+    [file]
   );
-};
-
-const NewPhoto = ({
-  photoFile,
-  remove,
-  albumKey,
-}: {
-  photoFile: File;
-  remove: () => void;
-  albumKey?: string;
-}) => {
-  const [previewUrl, setPreviewUrl] = useState<string>();
-  const [uploadError, setUploadError] = useState<unknown>();
-  const {
-    mutateAsync: doUploadToServer,
-    status: uploadStatus,
-    reset: resetUpload,
-  } = usePhoto(PhotoConfig.PhotoDrive).upload;
-
-  const isUploading = useRef<boolean>(false);
-
-  useEffect(() => {
-    (async () => {
-      if (!isUploading.current) {
-        isUploading.current = true;
-
-        try {
-          await doUploadToServer({ newPhoto: photoFile, albumKey: albumKey });
-          remove();
-        } catch (e) {
-          setUploadError(e);
-        }
-
-        isUploading.current = false;
-      }
-    })();
-
-    return () => {
-      resetUpload();
-    };
-  }, [photoFile]);
-
-  useEffect(() => {
-    (async () => {
-      const { blob } = await fromBlob(photoFile, 100, 400, 200, 'webp');
-      setPreviewUrl(window.URL.createObjectURL(blob));
-    })();
-  }, [photoFile]);
-
-  return (
-    <div className={`${divClasses} relative`}>
-      <img
-        src={previewUrl}
-        onLoad={() => previewUrl && URL.revokeObjectURL(previewUrl)}
-        className={`${imgClasses} ${
-          !previewUrl ? `h-[200px] w-[200px] animate-pulse bg-slate-400` : ``
-        }`}
-      />
-      <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />
-      {uploadStatus === 'idle' || uploadStatus === 'success' ? (
-        <ActionButton
-          className="absolute bottom-3 right-3"
-          icon="times"
-          type="secondary"
-          size="square"
-          onClick={() => remove()}
-        />
-      ) : null}
-    </div>
-  );
-};
-
-const NewVideo = ({
-  videoFile,
-  remove,
-  albumKey,
-}: {
-  videoFile: File;
-  remove: () => void;
-  albumKey?: string;
-}) => {
-  const [thumb, setThumb] = useState<ThumbnailFile>();
-  const [uploadError, setUploadError] = useState<unknown>();
-  const {
-    mutateAsync: doUploadToServer,
-    status: uploadStatus,
-    reset: resetUpload,
-  } = usePhoto(PhotoConfig.PhotoDrive).upload;
-
-  const isUploading = useRef<boolean>(false);
-
-  useEffect(() => {
-    (async () => {
-      if (!thumb) return;
-
-      if (!isUploading.current) {
-        isUploading.current = true;
-        try {
-          console.log('uploading video', thumb);
-          await doUploadToServer({ newPhoto: videoFile, albumKey: albumKey, thumb: thumb });
-          remove();
-        } catch (e) {
-          setUploadError(e);
-        }
-        isUploading.current = false;
-      }
-    })();
-
-    return () => {
-      resetUpload();
-    };
-  }, [videoFile, thumb]);
-
-  const url = useMemo(() => window.URL.createObjectURL(videoFile), [videoFile]);
 
   const grabThumb = async (video: HTMLVideoElement) => {
     const canvas = document.createElement('canvas');
@@ -362,50 +248,16 @@ const NewVideo = ({
     }, 'image/png');
   };
 
-  return (
-    <div className={`${divClasses} relative`}>
-      <video
-        src={url}
-        onCanPlay={() => url && URL.revokeObjectURL(url)}
-        onLoadedMetadata={(e) => (e.currentTarget.currentTime = 1)}
-        onSeeked={(e) => grabThumb(e.currentTarget)}
-        className={`${imgClasses} ${!url ? `h-[200px] w-[200px] animate-pulse bg-slate-400` : ``}`}
-      />
-      <UploadStatusIcon uploadStatus={uploadStatus} uploadError={uploadError} />
-      {uploadStatus === 'idle' || uploadStatus === 'success' ? (
-        <ActionButton
-          className="absolute bottom-3 right-3"
-          icon="times"
-          type="secondary"
-          size="square"
-          onClick={() => remove()}
-        />
-      ) : null}
-    </div>
-  );
-};
-
-const UploadStatusIcon = ({
-  uploadStatus,
-  uploadError,
-}: {
-  uploadStatus: ActionButtonState;
-  uploadError: unknown;
-}) => {
-  if (uploadError) console.error(uploadError);
-  return (
-    <div className="absolute right-2 top-2">
-      {uploadStatus === 'loading' && !uploadError ? (
-        <>
-          <Loader className="h-5 w-5" />
-        </>
-      ) : uploadError ? (
-        <>
-          <Exclamation className="h-5 w-5" />
-          <ErrorNotification error={uploadError} />
-        </>
-      ) : null}
-    </div>
+  return !isVideo ? (
+    <img src={url} className={`relative aspect-square h-full w-full object-cover`} />
+  ) : (
+    <video
+      src={url}
+      onCanPlay={() => url && URL.revokeObjectURL(url)}
+      onLoadedMetadata={(e) => (e.currentTarget.currentTime = 1)}
+      onSeeked={(e) => grabThumb(e.currentTarget)}
+      className={`relative aspect-square h-full w-full object-cover`}
+    />
   );
 };
 
