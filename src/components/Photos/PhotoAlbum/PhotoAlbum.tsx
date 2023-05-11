@@ -6,8 +6,9 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoSection/PhotoSection';
 import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibrarySiblingsInfinte';
+import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
 
-const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6`;
+const gridClasses = `flex flex-row gap-1`;
 
 const PhotoAlbum = ({
   albumKey,
@@ -70,6 +71,19 @@ const PhotoAlbum = ({
     }
   }, [isSelecting]);
 
+  const rowSize = document.documentElement.clientWidth >= 768 ? 6 : 4; // items per chunk
+  const chunkedPhotos = flatPhotos.reduce((resultArray, item, index) => {
+    const chunkIndex = Math.floor(index / rowSize);
+
+    if (!resultArray[chunkIndex]) {
+      resultArray[chunkIndex] = []; // start a new chunk
+    }
+
+    resultArray[chunkIndex].push(item);
+
+    return resultArray;
+  }, [] as DriveSearchResult[][]);
+
   /// Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
   const parentOffsetRef = useRef(0);
@@ -79,37 +93,36 @@ const PhotoAlbum = ({
   }, []);
 
   const virtualizer = useWindowVirtualizer({
-    count: (flatPhotos?.length || 0) + 1, // Add 1 so we have an index for the 'loaderRow'
-    estimateSize: () => 350, // Rough size of a photoSection
+    count: (chunkedPhotos?.length || 0) + 1, // Add 1 so we have an index for the 'loaderRow'
+    estimateSize: () => 200, // Rough size of a photoSection
     scrollMargin: parentOffsetRef.current,
     overscan: 6, // Amount of items to load before and after (improved performance especially with images)
-    lanes: 10,
   });
 
   useEffect(() => {
     const [lastItem] = [...virtualizer.getVirtualItems()].reverse();
 
-    if (!lastItem || !flatPhotos?.length) {
+    if (!lastItem || !chunkedPhotos?.length) {
       return;
     }
 
-    if (lastItem.index >= flatPhotos?.length - 1 && hasMorePhotos && !isFetchingNextPage) {
+    if (lastItem.index >= chunkedPhotos?.length - 1 && hasMorePhotos && !isFetchingNextPage) {
       console.log('fetchNextPage');
       fetchNextPage();
     }
   }, [
     hasMorePhotos,
     fetchNextPage,
-    flatPhotos?.length,
+    chunkedPhotos?.length,
     isFetchingNextPage,
     virtualizer.getVirtualItems(),
   ]);
 
   const items = virtualizer.getVirtualItems();
 
-  if (!flatPhotos) return null;
+  if (!chunkedPhotos) return null;
 
-  if (!flatPhotos?.length) {
+  if (!chunkedPhotos?.length) {
     return (
       <div className="flex flex-row">
         <p className="my-auto">{t('Mmh, this looks empty... Time to add some photos?')} </p>
@@ -146,7 +159,7 @@ const PhotoAlbum = ({
               transform: `translateY(${items[0].start - virtualizer.options.scrollMargin}px)`,
             }}
           >
-            <div className={gridClasses}>
+            <div className="flex flex-col gap-1">
               {items.map((virtualRow) => {
                 const isLoaderRow = virtualRow.index > flatPhotos.length - 1;
                 if (isLoaderRow) {
@@ -157,17 +170,18 @@ const PhotoAlbum = ({
                   ) : null;
                 }
 
-                const photoDsr = flatPhotos[virtualRow.index];
+                const photos = chunkedPhotos[virtualRow.index];
 
                 return (
-                  <PhotoItem
+                  <PhotoGroup
+                    photos={photos}
                     targetDrive={PhotoConfig.PhotoDrive}
-                    photoDsr={photoDsr}
-                    key={photoDsr.fileId}
                     toggleSelection={doToggleSelection}
                     rangeSelection={doRangeSelection}
                     isSelected={isSelected}
                     isSelecting={isSelecting}
+                    key={virtualRow.index}
+                    rowSize={rowSize}
                   />
                 );
               })}
@@ -176,6 +190,42 @@ const PhotoAlbum = ({
         </div>
       </div>
     </>
+  );
+};
+
+const PhotoGroup = ({
+  photos,
+  targetDrive,
+  toggleSelection,
+  rangeSelection,
+  isSelected,
+  isSelecting,
+  rowSize,
+}: {
+  photos: DriveSearchResult[];
+  targetDrive: TargetDrive;
+  toggleSelection: (fileId: string) => void;
+  rangeSelection: (fileId: string) => void;
+  isSelected: (fileId: string) => boolean;
+  isSelecting?: boolean;
+  rowSize: number;
+}) => {
+  return (
+    <div className={gridClasses}>
+      {photos?.map((photoDsr) => (
+        <PhotoItem
+          targetDrive={targetDrive}
+          photoDsr={photoDsr}
+          key={photoDsr.fileId}
+          toggleSelection={toggleSelection}
+          rangeSelection={rangeSelection}
+          isSelected={isSelected}
+          isSelecting={isSelecting}
+        />
+      ))}
+      {/* This div fills up the space of the last row */}
+      {photos?.length < rowSize ? <div className="hidden flex-grow-[999] lg:block"></div> : null}
+    </div>
   );
 };
 
