@@ -83,7 +83,10 @@ export const PhotoSection = ({
 
   useEffect(() => {
     if (photos?.length !== undefined && photos?.length !== photosCount) {
-      console.warn(`Photo count mismatch for ${albumKey} on ${date.toLocaleDateString()}`);
+      console.warn(`Photo count mismatch for ${albumKey} on ${date.toLocaleDateString()}`, {
+        photos: photos?.length,
+        photosCount,
+      });
       // TODO: Update photoLibrary Metadata
       fixCountInPhotoLibrary({
         date,

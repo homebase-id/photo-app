@@ -7,6 +7,7 @@ import {
   addDay,
   buildMetaStructure,
   getPhotoLibrary,
+  mergeLibrary,
   savePhotoLibraryMetadata,
   updateCount,
 } from '../../provider/photos/PhotoLibraryMetaProvider';
@@ -37,7 +38,7 @@ const usePhotoLibrary = ({
   album,
   disabled,
 }: {
-  targetDrive: TargetDrive;
+  targetDrive?: TargetDrive;
   album?: string;
   disabled?: boolean;
 }) => {
@@ -46,60 +47,54 @@ const usePhotoLibrary = ({
   const queryClient = useQueryClient();
 
   const fetch = async (album?: string): Promise<PhotoLibraryMetadata | null> => {
+    if (!dotYouClient || !targetDrive) return null;
+
     // We don't manage meta files for normal albums
     if (album && ![PhotoConfig.FavoriteTag, 'bin', 'archive'].includes(album)) return null;
 
-    // Check meta file on server
-    // if exists return that
-    const photoLibOnServer = await getPhotoLibrary(dotYouClient, album);
-    if (photoLibOnServer) {
-      console.log('fetched lib from server', photoLibOnServer, { album });
-      // return photoLibOnServer;
-    }
-
-    // Else fetch all photos and build one
-    return rebuildLibrary({ dotYouClient, targetDrive, album });
-  };
-
-  const saveNewCount = async ({
-    album,
-    date,
-    newCount,
-  }: {
-    album?: string;
-    date: Date;
-    newCount: number;
-  }) => {
-    const currentLib = queryClient.getQueryData<PhotoLibraryMetadata>([
+    // Get meta file from client
+    const photoLibOnClient = queryClient.getQueryData<PhotoLibraryMetadata>([
       'photo-library',
       targetDrive.alias,
       album,
     ]);
-    if (!currentLib) return;
-    console.log('fetched lib from cache', currentLib);
 
-    const updatedLib = updateCount(currentLib, date, newCount);
-    if (!updatedLib) return;
+    // Get meta file from server
+    const photoLibOnServer = await getPhotoLibrary(dotYouClient, album);
+    if (photoLibOnServer) {
+      // Merge with local cache
+      if (photoLibOnClient) {
+        const mergedLib = mergeLibrary(photoLibOnServer, photoLibOnClient);
+        console.log('merged lib', mergedLib, { album });
+        return mergedLib;
+      }
 
-    queryClient.setQueryData<PhotoLibraryMetadata>(
-      ['photo-library', targetDrive.alias, album],
-      updatedLib
-    );
+      console.log('fetched lib from server', photoLibOnServer, { album });
+      return photoLibOnServer;
+    }
 
-    return await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
+    if (photoLibOnClient) {
+      console.error(
+        'You are late... The meta is not on the server yet, and it is fetched already...'
+      );
+      return photoLibOnClient;
+    }
+
+    // No local cache and no server version... => rebuild
+    return rebuildLibrary({ dotYouClient, targetDrive, album });
   };
 
   const debouncedSaveOfLibs = useDebounce(async () => {
     const libQueries = queryClient
       .getQueryCache()
-      .findAll(['photo-library', targetDrive.alias], { exact: false })
+      .findAll(['photo-library', targetDrive?.alias], { exact: false })
       .filter((query) => query.state.status === 'success');
 
     await Promise.all(
       libQueries.map(async (query) => {
-        const albumKey = query.queryKey[2] as string;
+        const albumKey = query.queryKey[2] as string | undefined; // Can be undefined if it's the root library
         const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
-        if (!libToSave || !albumKey) return;
+        if (!libToSave) return;
 
         await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey);
       })
@@ -113,29 +108,60 @@ const usePhotoLibrary = ({
     );
   });
 
-  const saveNewDay = async ({ album, date }: { album?: string; date: Date }) => {
-    const currentLib =
-      queryClient.getQueryData<PhotoLibraryMetadata>(['photo-library', targetDrive.alias, album]) ||
-      (await getPhotoLibrary(dotYouClient, album));
-    if (!currentLib) return;
+  const saveNewCount = async ({
+    album,
+    date,
+    newCount,
+  }: {
+    album?: string;
+    date: Date;
+    newCount: number;
+  }) => {
+    if (!targetDrive) return;
 
-    const updatedLib = addDay(currentLib, date);
+    const currentLib = queryClient.getQueryData<PhotoLibraryMetadata>([
+      'photo-library',
+      targetDrive.alias,
+      album,
+    ]);
+    if (!currentLib) return;
+    console.log('fetched lib from cache', currentLib);
+
+    const updatedLib = updateCount(currentLib, date, newCount);
     if (!updatedLib) return;
+
+    console.log('updated lib from cache', updatedLib);
 
     queryClient.setQueryData<PhotoLibraryMetadata>(
       ['photo-library', targetDrive.alias, album],
       updatedLib
     );
 
-    await savePhotoLibraryMetadata(dotYouClient, updatedLib, album);
+    debouncedSaveOfLibs();
+  };
 
-    // Disabled for now as it is not working properly;
-    // The cache is overwritten with a fetch that is fired directly after this...
-    // debouncedSaveOfLibs();
+  const saveNewDay = async ({ album, date }: { album?: string; date: Date }) => {
+    const photoLibOnClient =
+      queryClient.getQueryData<PhotoLibraryMetadata>([
+        'photo-library',
+        targetDrive?.alias,
+        album,
+      ]) || (await getPhotoLibrary(dotYouClient, album));
+    if (!photoLibOnClient) return;
+
+    const updatedLib = addDay(photoLibOnClient, date);
+    if (!updatedLib) return;
+
+    queryClient.setQueryData<PhotoLibraryMetadata>(
+      ['photo-library', targetDrive?.alias, album],
+      updatedLib
+    );
+
+    debouncedSaveOfLibs();
   };
 
   return {
-    fetchLibrary: useQuery(['photo-library', targetDrive.alias, album], () => fetch(album), {
+    fetchLibrary: useQuery(['photo-library', targetDrive?.alias, album], () => fetch(album), {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
@@ -143,12 +169,13 @@ const usePhotoLibrary = ({
       onError: (err) => console.error(err),
     }),
     updateCount: useMutation(saveNewCount, {
-      onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive.alias, album]),
+      onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive?.alias, album]),
     }),
     addDay: useMutation(saveNewDay, {
-      onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive.alias, album]),
+      onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive?.alias, album]),
       onError: (err, variables) => {
         console.error(err);
+        if (!targetDrive) return;
         rebuildLibrary({ dotYouClient, targetDrive, album: variables.album });
       },
     }),

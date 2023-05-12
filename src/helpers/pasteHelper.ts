@@ -1,8 +1,8 @@
-export const getImagesFromPasteEvent = (e: React.ClipboardEvent<HTMLElement>) => {
+export const getImagesFromPasteEvent = (e: React.ClipboardEvent<HTMLElement> | ClipboardEvent) => {
   // Doesn't work for multi file pastes in FF (https://bugzilla.mozilla.org/show_bug.cgi?id=906420)
-  const clipboardItems = e.clipboardData.items;
+  const clipboardItems = e.clipboardData?.items;
   const itemArray = [];
-  for (let i = 0; i < clipboardItems.length; i++) {
+  for (let i = 0; clipboardItems && i < clipboardItems.length; i++) {
     itemArray.push(clipboardItems[i]);
   }
 

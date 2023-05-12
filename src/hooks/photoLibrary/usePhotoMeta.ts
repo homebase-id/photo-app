@@ -13,12 +13,18 @@ import {
   updatePhotoMetadata,
 } from '../../provider/photos/PhotoProvider';
 import { usePhotosReturn } from './usePhotos';
+import usePhotoLibrary from './usePhotoLibrary';
 
 const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   const { getDotYouClient } = useAuth();
 
   const dotYouClient = getDotYouClient();
   const queryClient = useQueryClient();
+
+  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+    targetDrive: targetDrive,
+    disabled: true,
+  }).addDay;
 
   const fetchPhotoMeta = async ({
     targetDrive,
@@ -59,6 +65,7 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   }) => {
     if (!targetDrive) return null;
 
+    addDayToLibrary({ album: undefined, date: new Date(newDate) });
     return await updatePhoto(dotYouClient, targetDrive, photoFileId, { userDate: newDate });
   };
 

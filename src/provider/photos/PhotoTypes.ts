@@ -33,20 +33,27 @@ export interface AlbumDefinition {
   tag: string;
 }
 
+export interface PhotoMetaYear {
+  year: number;
+  months: PhotoMetaMonth[];
+}
+
+interface PhotoMetaMonth {
+  month: number;
+  days: PhotoMetaDay[];
+  photosThisMonth: number;
+}
+
+interface PhotoMetaDay {
+  day: number;
+  photosThisDay: number;
+}
+
 export interface PhotoLibraryMetadata {
   fileId?: string;
   versionTag?: string;
+  lastUpdated?: number;
 
-  yearsWithMonths: {
-    year: number;
-    months: {
-      month: number;
-      days: {
-        day: number;
-        photosThisDay: number;
-      }[];
-      photosThisMonth: number;
-    }[];
-  }[];
+  yearsWithMonths: PhotoMetaYear[];
   totalNumberOfPhotos: number;
 }

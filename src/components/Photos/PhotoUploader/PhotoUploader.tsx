@@ -52,9 +52,8 @@ const Uploader = ({
 
   // Window level paste handler
   useEffect(() => {
-    const handler = (e: unknown) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      addToUploadQueue(getImagesFromPasteEvent(e as any));
+    const handler = (e: ClipboardEvent) => addToUploadQueue(getImagesFromPasteEvent(e));
+
     window.addEventListener('paste', handler);
     return () => window.removeEventListener('paste', handler);
   }, []);
@@ -88,7 +87,11 @@ const Uploader = ({
         const bytes = base64ToUint8Array(base64);
 
         if (!album && albumFetched) {
-          saveAlbum({ name: 'Apps', description: 'Photos from apps', tag: PhotoConfig.PinTag });
+          saveAlbum({
+            name: t('Apps'),
+            description: t('Photos from apps'),
+            tag: PhotoConfig.PinTag,
+          });
         }
 
         addToUploadQueue([
@@ -117,13 +120,7 @@ const Uploader = ({
     if (currentFile.type === 'video/mp4') {
       // We need a thumb, so we wait till it's grabbed
       if (!currentVideoThumb) return;
-      // Ok to upload video
-      console.log('uploading', {
-        newPhoto: currentFile,
-        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
-        meta: { archivalStatus: 1 },
-        thumb: currentVideoThumb,
-      });
+
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: isPin ? PhotoConfig.PinTag : albumKey,
@@ -131,11 +128,6 @@ const Uploader = ({
         thumb: currentVideoThumb,
       });
     } else {
-      console.log('uploading', {
-        newPhoto: currentFile,
-        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
-        meta: { archivalStatus: 1 },
-      });
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: isPin ? PhotoConfig.PinTag : albumKey,

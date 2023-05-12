@@ -169,7 +169,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     },
     upload: useMutation(uploadNewMedia, {
       onSuccess: () => {
-        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+        // queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
       },
     }),
     remove: useMutation(removePhoto, {

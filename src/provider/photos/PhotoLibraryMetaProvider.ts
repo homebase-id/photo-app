@@ -11,7 +11,7 @@ import {
   uploadFile,
   ArchivalStatus,
 } from '@youfoundation/js-lib';
-import { PhotoLibraryMetadata, PhotoConfig } from './PhotoTypes';
+import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
 
 const encryptPhotoLibrary = true;
 
@@ -44,17 +44,20 @@ export const getPhotoLibrary = async (
 const dsrToPhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   dsr: DriveSearchResult
-): Promise<PhotoLibraryMetadata> => {
+): Promise<PhotoLibraryMetadata | null> => {
   const payload = await getPayload<PhotoLibraryMetadata>(
     dotYouClient,
     PhotoConfig.PhotoDrive,
     dsr,
     true
   );
+  if (!payload) return null;
+
   return {
     ...payload,
     fileId: dsr.fileId,
     versionTag: dsr.fileMetadata.versionTag,
+    lastUpdated: dsr.fileMetadata.updated,
   };
 };
 
@@ -200,6 +203,7 @@ export const updateCount = (
   const updatedLib: PhotoLibraryMetadata = {
     ...currLib,
     yearsWithMonths: newYears,
+    lastUpdated: new Date().getTime(),
   };
 
   return updatedLib;
@@ -251,7 +255,74 @@ export const addDay = (currentLib: PhotoLibraryMetadata, date: Date): PhotoLibra
   const updatedLib: PhotoLibraryMetadata = {
     ...currentLib,
     yearsWithMonths: newYears,
+    lastUpdated: new Date().getTime(),
   };
 
   return updatedLib;
+};
+
+export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetadata) => {
+  const libALastUpdated = libA.lastUpdated || 0;
+  const libBLastUpdated = libB.lastUpdated || 0;
+
+  const mergedYears = [...libA.yearsWithMonths, ...libB.yearsWithMonths].reduce((curVal, year) => {
+    const yearIndex = curVal.findIndex((y) => y.year === year.year);
+    if (yearIndex === -1) return [...curVal, year];
+
+    const yearToMerge = curVal[yearIndex];
+    const yearToMergeIsNewer =
+      (yearIndex < libA.yearsWithMonths.length && libALastUpdated > libBLastUpdated) ||
+      (yearIndex >= libA.yearsWithMonths.length && libBLastUpdated > libALastUpdated);
+
+    const mergedMonths = [...yearToMerge.months, ...year.months].reduce((curVal, month) => {
+      const monthIndex = curVal.findIndex((m) => m.month === month.month);
+      if (monthIndex === -1) return [...curVal, month];
+
+      const monthToMerge = curVal[monthIndex];
+      const monthToMergeIsNewer = monthIndex < yearToMerge.months.length && yearToMergeIsNewer;
+      const mergedDays = [...monthToMerge.days, ...month.days].reduce((curVal, day) => {
+        const dayIndex = curVal.findIndex((d) => d.day === day.day);
+        if (dayIndex === -1) return [...curVal, day];
+
+        const dayToMerge = curVal[dayIndex];
+        const dayToMergeIsNewer = dayIndex < monthToMerge.days.length && monthToMergeIsNewer;
+        return [
+          ...curVal.slice(0, dayIndex),
+          {
+            ...dayToMerge,
+            photosThisDay: dayToMergeIsNewer ? dayToMerge.photosThisDay : day.photosThisDay,
+          },
+          ...curVal.slice(dayIndex + 1),
+        ];
+      }, monthToMerge.days);
+
+      return [
+        ...curVal.slice(0, monthIndex),
+        {
+          ...monthToMerge,
+          days: mergedDays,
+          photosThisMonth: monthToMergeIsNewer
+            ? monthToMerge.photosThisMonth
+            : month.photosThisMonth,
+        },
+        ...curVal.slice(monthIndex + 1),
+      ];
+    }, yearToMerge.months);
+
+    return [
+      ...curVal.slice(0, yearIndex),
+      {
+        ...yearToMerge,
+        months: mergedMonths,
+      },
+      ...curVal.slice(yearIndex + 1),
+    ];
+  }, [] as PhotoMetaYear[]);
+
+  const libC: PhotoLibraryMetadata = {
+    yearsWithMonths: mergedYears,
+    totalNumberOfPhotos: Math.max(libA.totalNumberOfPhotos, libB.totalNumberOfPhotos),
+  };
+
+  return libC;
 };
