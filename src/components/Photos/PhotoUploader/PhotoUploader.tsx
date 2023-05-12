@@ -40,7 +40,10 @@ const Uploader = ({
   };
 
   const addToUploadQueue = (newFiles: (File | FileLike)[]) => {
-    setUploadQueue((prevVal) => [...prevVal, ...newFiles]);
+    setUploadQueue((prevVal) => [
+      ...prevVal,
+      ...newFiles.filter((f) => !prevVal.find((val) => val.name === f.name)),
+    ]);
   };
 
   const {
@@ -98,7 +101,7 @@ const Uploader = ({
         addToUploadQueue([
           {
             bytes: bytes,
-            name: e.data.note || 'new',
+            name: e.data.uniqueId,
             type: e.data.type || 'image/png',
             size: bytes.length,
           },
