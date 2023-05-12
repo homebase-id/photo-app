@@ -52,7 +52,8 @@ const Uploader = ({
 
   // Window level paste handler
   useEffect(() => {
-    const handler = (e: ClipboardEvent) => addToUploadQueue(getImagesFromPasteEvent(e));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = (e: any) => addToUploadQueue(getImagesFromPasteEvent(e));
 
     window.addEventListener('paste', handler);
     return () => window.removeEventListener('paste', handler);

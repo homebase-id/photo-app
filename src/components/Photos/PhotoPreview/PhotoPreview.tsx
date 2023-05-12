@@ -18,7 +18,7 @@ import { usePhotoLibrarySiblingsInfinite } from '../../../hooks/photoLibrary/use
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
-const PhotoPreview = (props: { fileId: string; albumKey?: string }) => {
+const PhotoPreview = (props: { fileId: string; albumKey?: string; urlPrefix?: string }) => {
   return props.albumKey && ![PhotoConfig.FavoriteTag, 'bin', 'archive'].includes(props.albumKey) ? (
     <AlbumPhotoPreview {...props} />
   ) : (
@@ -26,7 +26,15 @@ const PhotoPreview = (props: { fileId: string; albumKey?: string }) => {
   );
 };
 
-const LibPhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
+const LibPhotoPreview = ({
+  fileId,
+  albumKey,
+  urlPrefix,
+}: {
+  fileId: string;
+  albumKey?: string;
+  urlPrefix?: string;
+}) => {
   const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
     targetDrive: targetDrive,
     photoFileId: fileId,
@@ -39,6 +47,7 @@ const LibPhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: stri
       current={current}
       nextSibling={nextSibling}
       prevSibling={prevSibling}
+      urlPrefix={urlPrefix}
     />
   );
 };

@@ -22,23 +22,26 @@ export const getAllAlbums = async (dotYouClient: DotYouClient): Promise<AlbumDef
     { maxRecords: 1000, includeMetadataHeader: true }
   );
 
-  return await Promise.all(
-    batch.searchResults.map(async (dsr) => {
-      return await dsrToAlbumDefinition(dotYouClient, dsr);
-    })
-  );
+  return (
+    await Promise.all(
+      batch.searchResults.map(async (dsr) => {
+        return await dsrToAlbumDefinition(dotYouClient, dsr);
+      })
+    )
+  ).filter(Boolean) as AlbumDefinition[];
 };
 
 const dsrToAlbumDefinition = async (
   dotYouClient: DotYouClient,
   dsr: DriveSearchResult
-): Promise<AlbumDefinition> => {
+): Promise<AlbumDefinition | null> => {
   const payload = await getPayload<AlbumDefinition>(
     dotYouClient,
     PhotoConfig.PhotoDrive,
     dsr,
     true
   );
+  if (!payload) return null;
   return {
     ...payload,
     fileId: dsr.fileId,
