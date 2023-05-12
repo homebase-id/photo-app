@@ -124,14 +124,14 @@ const Uploader = ({
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: isPin ? PhotoConfig.PinTag : albumKey,
-        meta: { archivalStatus: 1 },
+        meta: { archivalStatus: isPin ? 1 : 0 },
         thumb: currentVideoThumb,
       });
     } else {
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: isPin ? PhotoConfig.PinTag : albumKey,
-        meta: { archivalStatus: 1 },
+        meta: { archivalStatus: isPin ? 1 : 0 },
       });
     }
   }, [currentFile, currentVideoThumb]);

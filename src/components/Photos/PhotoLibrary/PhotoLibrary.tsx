@@ -72,7 +72,6 @@ const PhotoLibrary = ({
   const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
     year.months.map((month) => ({ year: year.year, ...month }))
   );
-  // .filter((month) => month.photosThisMonth >= 1);
 
   /// Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);

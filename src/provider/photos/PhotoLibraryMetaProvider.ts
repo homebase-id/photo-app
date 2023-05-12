@@ -267,7 +267,7 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
 
   const mergedYears = [...libA.yearsWithMonths, ...libB.yearsWithMonths].reduce((curVal, year) => {
     const yearIndex = curVal.findIndex((y) => y.year === year.year);
-    if (yearIndex === -1) return [...curVal, year];
+    if (yearIndex === -1) return [...curVal, year].sort((yearA, yearB) => yearB.year - yearA.year);
 
     const yearToMerge = curVal[yearIndex];
     const yearToMergeIsNewer =
@@ -276,13 +276,14 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
 
     const mergedMonths = [...yearToMerge.months, ...year.months].reduce((curVal, month) => {
       const monthIndex = curVal.findIndex((m) => m.month === month.month);
-      if (monthIndex === -1) return [...curVal, month];
+      if (monthIndex === -1)
+        return [...curVal, month].sort((monthA, monthB) => monthB.month - monthA.month);
 
       const monthToMerge = curVal[monthIndex];
       const monthToMergeIsNewer = monthIndex < yearToMerge.months.length && yearToMergeIsNewer;
       const mergedDays = [...monthToMerge.days, ...month.days].reduce((curVal, day) => {
         const dayIndex = curVal.findIndex((d) => d.day === day.day);
-        if (dayIndex === -1) return [...curVal, day];
+        if (dayIndex === -1) return [...curVal, day].sort((dayA, dayB) => dayB.day - dayA.day);
 
         const dayToMerge = curVal[dayIndex];
         const dayToMergeIsNewer = dayIndex < monthToMerge.days.length && monthToMergeIsNewer;
@@ -293,7 +294,7 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
             photosThisDay: dayToMergeIsNewer ? dayToMerge.photosThisDay : day.photosThisDay,
           },
           ...curVal.slice(dayIndex + 1),
-        ];
+        ].sort((dayA, dayB) => dayB.day - dayA.day);
       }, monthToMerge.days);
 
       return [
@@ -306,7 +307,7 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
             : month.photosThisMonth,
         },
         ...curVal.slice(monthIndex + 1),
-      ];
+      ].sort((monthA, monthB) => monthB.month - monthA.month);
     }, yearToMerge.months);
 
     return [
@@ -316,7 +317,7 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
         months: mergedMonths,
       },
       ...curVal.slice(yearIndex + 1),
-    ];
+    ].sort((yearA, yearB) => yearB.year - yearA.year);
   }, [] as PhotoMetaYear[]);
 
   const libC: PhotoLibraryMetadata = {

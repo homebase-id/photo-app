@@ -65,11 +65,11 @@ const usePhotoLibrary = ({
       // Merge with local cache
       if (photoLibOnClient) {
         const mergedLib = mergeLibrary(photoLibOnServer, photoLibOnClient);
-        console.log('merged lib', mergedLib, { album });
+        console.log('get merged lib', mergedLib, { album });
         return mergedLib;
       }
 
-      console.log('fetched lib from server', photoLibOnServer, { album });
+      console.log('get fetched lib from server', photoLibOnServer, { album });
       return photoLibOnServer;
     }
 
