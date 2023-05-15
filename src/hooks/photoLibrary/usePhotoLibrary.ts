@@ -96,7 +96,19 @@ const usePhotoLibrary = ({
         const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
         if (!libToSave) return;
 
-        await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey);
+        try {
+          await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey);
+        } catch (err) {
+          // Something went wrong while saving.. Probably version conflict...
+          console.warn(err);
+          // Call the fetch (fetches and merges with local copy again)
+          const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>([
+            'photo-library',
+            targetDrive?.alias,
+            albumKey,
+          ]);
+          await savePhotoLibraryMetadata(dotYouClient, newlyMergedLib, albumKey);
+        }
       })
     );
 
@@ -173,11 +185,6 @@ const usePhotoLibrary = ({
     }),
     addDay: useMutation(saveNewDay, {
       onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive?.alias, album]),
-      onError: (err, variables) => {
-        console.error(err);
-        if (!targetDrive) return;
-        rebuildLibrary({ dotYouClient, targetDrive, album: variables.album });
-      },
     }),
   };
 };

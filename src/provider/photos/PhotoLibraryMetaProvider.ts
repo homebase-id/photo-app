@@ -73,8 +73,7 @@ export const savePhotoLibraryMetadata = async (
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)
     def.fileId = existingPhotoLib.fileId;
 
-  if (existingPhotoLib && existingPhotoLib.versionTag !== def.versionTag)
-    def.versionTag = existingPhotoLib.versionTag;
+  if (existingPhotoLib && !def.versionTag) def.versionTag = existingPhotoLib.versionTag;
 
   const payloadJson: string = jsonStringify64({
     ...def,
@@ -106,7 +105,14 @@ export const savePhotoLibraryMetadata = async (
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
   };
 
-  uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptPhotoLibrary);
+  return await uploadFile(
+    dotYouClient,
+    instruct,
+    metadata,
+    undefined,
+    undefined,
+    encryptPhotoLibrary
+  );
 };
 
 const sortRecents = (elements: string[]) => elements.sort((a, b) => parseInt(b) - parseInt(a));
