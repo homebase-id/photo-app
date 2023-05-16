@@ -72,17 +72,21 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
     if (!targetDrive) return null;
 
-    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+    const result = await updatePhoto(dotYouClient, targetDrive, photoFileId, {
       archivalStatus: 2,
     });
+
+    if (result?.date) addDayToLibrary({ album: 'bin', date: result.date });
   };
 
   const archivePhoto = async ({ photoFileId }: { photoFileId: string }) => {
     if (!targetDrive) return null;
 
-    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+    const result = await updatePhoto(dotYouClient, targetDrive, photoFileId, {
       archivalStatus: 1,
     });
+
+    if (result?.date) addDayToLibrary({ album: 'archive', date: result.date });
   };
 
   const restorePhoto = async ({ photoFileId }: { photoFileId: string }) => {
