@@ -96,18 +96,23 @@ const usePhotoLibrary = ({
         const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
         if (!libToSave) return;
 
-        try {
-          await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey);
-        } catch (err) {
-          // Something went wrong while saving.. Probably version conflict...
-          console.warn(err);
-          // Call the fetch (fetches and merges with local copy again)
+        const fetchAndMergeAgain = async () => {
           const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>([
             'photo-library',
             targetDrive?.alias,
             albumKey,
           ]);
-          await savePhotoLibraryMetadata(dotYouClient, newlyMergedLib, albumKey);
+
+          // TODO Should we avoid endless loops here? (Shouldn't happen, but...)
+          await savePhotoLibraryMetadata(dotYouClient, newlyMergedLib, albumKey, () =>
+            setTimeout(fetchAndMergeAgain, 1000)
+          );
+        };
+
+        try {
+          await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey, fetchAndMergeAgain);
+        } catch (err) {
+          console.warn(err);
         }
       })
     );

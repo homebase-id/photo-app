@@ -64,7 +64,8 @@ const dsrToPhotoLibraryMetadata = async (
 export const savePhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   def: PhotoLibraryMetadata,
-  albumTag?: string
+  albumTag?: string,
+  onVersionConflict?: () => void
 ) => {
   const typedAlbum = albumTag === 'bin' || albumTag === 'archive';
   const archivalStatus: ArchivalStatus = albumTag === 'bin' ? 2 : albumTag === 'archive' ? 1 : 0;
@@ -111,7 +112,8 @@ export const savePhotoLibraryMetadata = async (
     metadata,
     undefined,
     undefined,
-    encryptPhotoLibrary
+    encryptPhotoLibrary,
+    onVersionConflict
   );
 };
 
