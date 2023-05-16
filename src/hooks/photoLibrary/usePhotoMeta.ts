@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
   ImageMetadata,
@@ -12,7 +12,7 @@ import {
   updatePhoto,
   updatePhotoMetadata,
 } from '../../provider/photos/PhotoProvider';
-import { usePhotosReturn } from './usePhotos';
+import { useInfintePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 
 const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
@@ -93,15 +93,24 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
           .findAll(['photos', targetDrive?.alias])
           .forEach((query) => {
             const queryKey = query.queryKey;
-            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
+            const queryData =
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
             if (!queryData) return;
 
-            const newQueryData = queryData.filter(
-              (dsr) => !stringGuidsEqual(dsr.fileId, _newData.photoFileId)
-            );
+            const newQueryData: InfiniteData<useInfintePhotosReturn> = {
+              ...queryData,
+              pages: queryData.pages.map((page) => {
+                return {
+                  ...page,
+                  results: page.results.filter(
+                    (dsr) => !stringGuidsEqual(dsr.fileId, _newData.photoFileId)
+                  ),
+                };
+              }),
+            };
 
-            queryClient.setQueryData<usePhotosReturn>(queryKey, newQueryData);
+            queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, newQueryData);
           });
 
         const queryData = queryClient.getQueryData<DriveSearchResult>([

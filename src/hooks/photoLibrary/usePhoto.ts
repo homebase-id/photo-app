@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
   ImageSize,
@@ -12,7 +12,7 @@ import useAuth from '../auth/useAuth';
 
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
 import { FileLike, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
-import { usePhotosReturn } from './usePhotos';
+import { useInfintePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 
 const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
@@ -184,16 +184,22 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           .forEach((query) => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
-            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
+            const queryData =
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
             if (!queryData) return;
 
             // Remove from all other libraryTypes
             if (libraryType !== 'bin') {
-              queryClient.setQueryData<usePhotosReturn>(
-                queryKey,
-                queryData.filter((photo) => photo.fileId !== toRemovePhotoData.photoFileId)
-              );
+              queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, {
+                ...queryData,
+                pages: queryData.pages.map((page) => ({
+                  ...page,
+                  results: page.results.filter(
+                    (photo) => photo.fileId !== toRemovePhotoData.photoFileId
+                  ),
+                })),
+              });
             }
           });
       },
@@ -213,16 +219,22 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           .forEach((query) => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
-            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
+            const queryData =
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
             if (!queryData) return;
 
             // Remove from all other libraryTypes
             if (libraryType !== 'archive') {
-              queryClient.setQueryData<usePhotosReturn>(
-                queryKey,
-                queryData.filter((photo) => photo.fileId !== toArchivePhotoData.photoFileId)
-              );
+              queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, {
+                ...queryData,
+                pages: queryData.pages.map((page) => ({
+                  ...page,
+                  results: page.results.filter(
+                    (photo) => photo.fileId !== toArchivePhotoData.photoFileId
+                  ),
+                })),
+              });
             }
           });
       },
@@ -242,16 +254,22 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           .forEach((query) => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
-            const queryData = queryClient.getQueryData<usePhotosReturn>(queryKey);
+            const queryData =
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
             if (!queryData) return;
 
             // Remove from all bin and archive
             if (libraryType === 'archive' || libraryType === 'bin') {
-              queryClient.setQueryData<usePhotosReturn>(
-                queryKey,
-                queryData.filter((photo) => photo.fileId !== toRestorePhotoData.photoFileId)
-              );
+              queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, {
+                ...queryData,
+                pages: queryData.pages.map((page) => ({
+                  ...page,
+                  results: page.results.filter(
+                    (photo) => !stringGuidsEqual(photo.fileId, toRestorePhotoData.photoFileId)
+                  ),
+                })),
+              });
             }
           });
       },

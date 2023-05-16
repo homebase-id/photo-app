@@ -40,11 +40,11 @@ export interface PhotoMetaYear {
 
 interface PhotoMetaMonth {
   month: number;
-  days: PhotoMetaDay[];
+  // days: PhotoMetaDay[];
   photosThisMonth: number;
 }
 
-interface PhotoMetaDay {
+export interface PhotoMetaDay {
   day: number;
   photosThisDay: number;
 }

@@ -388,22 +388,22 @@ const int64ToBytes = (value: number) => {
   return byte8;
 };
 
-export const buildCursor = (unixTimeInMs: number) => {
+export const buildCursor = (fromUnixTimeInMs: number, toUnixTimeInMs?: number) => {
   let bytes = mergeByteArrays([
-    convertTimeToGuid(unixTimeInMs),
-    new Uint8Array(new Array(16)),
+    convertTimeToGuid(fromUnixTimeInMs),
+    toUnixTimeInMs ? convertTimeToGuid(toUnixTimeInMs) : new Uint8Array(new Array(16)),
     new Uint8Array(new Array(16)),
   ]);
 
   const nullBytes = mergeByteArrays([
     new Uint8Array([1]),
-    new Uint8Array([0]),
+    toUnixTimeInMs ? new Uint8Array([1]) : new Uint8Array([0]),
     new Uint8Array([0]),
   ]);
 
   const bytes2 = mergeByteArrays([
-    int64ToBytes(unixTimeInMs),
-    new Uint8Array(new Array(8)),
+    int64ToBytes(fromUnixTimeInMs),
+    toUnixTimeInMs ? int64ToBytes(toUnixTimeInMs) : new Uint8Array(new Array(8)),
     new Uint8Array(new Array(8)),
   ]);
 

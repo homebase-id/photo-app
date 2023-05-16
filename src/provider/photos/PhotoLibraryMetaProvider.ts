@@ -156,10 +156,6 @@ export const buildMetaStructure = (headers: DriveSearchResult[]): PhotoLibraryMe
 
         return {
           month: parseInt(month),
-          days: sortRecents(days).map((day) => ({
-            day: parseInt(day),
-            photosThisDay: arrayStruc[year][month][day],
-          })),
           photosThisMonth: days.flatMap((day) => {
             return arrayStruc[year][month][day];
           }).length,
@@ -178,23 +174,14 @@ export const updateCount = (
 ): PhotoLibraryMetadata | null => {
   const newYear = currLib.yearsWithMonths.find((y) => y.year === date.getFullYear());
   const newMonth = newYear?.months.find((m) => m.month === date.getMonth() + 1);
-  const newDay = newMonth?.days.find((d) => d.day === date.getDate());
 
-  if (!newYear || !newMonth || !newDay) return null;
+  if (!newYear || !newMonth) return null;
 
-  const newDays = [
-    ...newMonth.days.filter((d) => d.day !== date.getDate()),
-    { ...newDay, photosThisDay: newCount },
-  ];
-  newDays.sort((dayA, dayB) => dayB.day - dayA.day);
-
-  const newPhotosInMonth = newDays.reduce((currVal, day) => currVal + day.photosThisDay, 0);
   const newMonths = [
     ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
     {
       ...newMonth,
-      photosThisMonth: newPhotosInMonth,
-      days: newDays,
+      photosThisMonth: newCount,
     },
   ];
   newMonths.sort((monthA, monthB) => monthB.month - monthA.month);
@@ -224,29 +211,14 @@ export const addDay = (currentLib: PhotoLibraryMetadata, date: Date): PhotoLibra
   };
   const newMonth = newYear?.months?.find((m) => m.month === date.getMonth() + 1) || {
     month: date.getMonth() + 1,
-    days: [],
     photosThisMonth: 1,
   };
-  const newDay = newMonth?.days.find((d) => d.day === date.getDate()) || {
-    day: date.getDate(),
-    photosThisDay: 1,
-  };
-
-  const newDays = [
-    ...newMonth.days.filter((d) => d.day !== date.getDate()),
-    {
-      ...newDay,
-      photosThisDay: newDay.photosThisDay ? newDay.photosThisDay + 1 : 1,
-    },
-  ];
-  newDays.sort((dayA, dayB) => dayB.day - dayA.day);
 
   const newMonths = [
     ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
     {
       ...newMonth,
       photosThisMonth: newMonth.photosThisMonth ? newMonth.photosThisMonth + 1 : 1,
-      days: newDays,
     },
   ];
   newMonths.sort((monthA, monthB) => monthB.month - monthA.month);
@@ -289,27 +261,11 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
 
       const monthToMerge = curVal[monthIndex];
       const monthToMergeIsNewer = monthIndex < yearToMerge.months.length && yearToMergeIsNewer;
-      const mergedDays = [...monthToMerge.days, ...month.days].reduce((curVal, day) => {
-        const dayIndex = curVal.findIndex((d) => d.day === day.day);
-        if (dayIndex === -1) return [...curVal, day].sort((dayA, dayB) => dayB.day - dayA.day);
-
-        const dayToMerge = curVal[dayIndex];
-        const dayToMergeIsNewer = dayIndex < monthToMerge.days.length && monthToMergeIsNewer;
-        return [
-          ...curVal.slice(0, dayIndex),
-          {
-            ...dayToMerge,
-            photosThisDay: dayToMergeIsNewer ? dayToMerge.photosThisDay : day.photosThisDay,
-          },
-          ...curVal.slice(dayIndex + 1),
-        ].sort((dayA, dayB) => dayB.day - dayA.day);
-      }, monthToMerge.days);
 
       return [
         ...curVal.slice(0, monthIndex),
         {
           ...monthToMerge,
-          days: mergedDays,
           photosThisMonth: monthToMergeIsNewer
             ? monthToMerge.photosThisMonth
             : month.photosThisMonth,

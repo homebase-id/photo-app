@@ -1,14 +1,11 @@
 import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
-import { usePhotosByDate } from '../../../hooks/photoLibrary/usePhotos';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -33,40 +30,33 @@ const dateFormat: Intl.DateTimeFormatOptions = {
   weekday: 'short',
 };
 
-export const PhotoSection = ({
+export const PhotoDay = ({
   date,
-  targetDrive,
-  albumKey,
   photosCount,
+  photos,
+  setIsInView,
+
+  targetDrive,
   toggleSelection,
   rangeSelection,
   isSelected,
   isSelecting,
 }: {
   date: Date;
+  photosCount?: number;
+  photos?: DriveSearchResult[];
+  setIsInView?: () => void;
+
   targetDrive: TargetDrive;
-  albumKey?: string;
-  photosCount: number;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-  useIntersection(wrapperRef, () => setIsInView(true));
+  useIntersection(wrapperRef, () => setIsInView && setIsInView());
 
-  const { data: photos, isFetchedAfterMount } = usePhotosByDate({
-    targetDrive: isInView ? PhotoConfig.PhotoDrive : undefined,
-    album: albumKey,
-    date,
-  }).fetchPhotos;
-
-  const { mutateAsync: fixCountInPhotoLibrary } = usePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey,
-    disabled: true,
-  }).updateCount;
+  const title = date.toLocaleDateString(undefined, dateFormat);
 
   const photoLoaders = useMemo(() => {
     const aspect = 1;
@@ -81,30 +71,11 @@ export const PhotoSection = ({
     ));
   }, [photosCount]);
 
-  useEffect(() => {
-    if (photos?.length !== undefined && photos?.length !== photosCount) {
-      console.warn(`Photo count mismatch for ${albumKey} on ${date.toLocaleDateString()}`, {
-        photos: photos?.length,
-        photosCount,
-      });
-      // TODO: Update photoLibrary Metadata
-      fixCountInPhotoLibrary({
-        date,
-        album: albumKey,
-        newCount: photos?.length || 0,
-      });
-    }
-  }, [photos]);
-
-  const title = date.toLocaleDateString(undefined, dateFormat);
-
-  if ((photosCount === 0 && !photos?.length) || photos?.length === 0) return null;
-
   return (
     <section className="mb-5" ref={wrapperRef}>
       <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
       <div className={gridClasses}>
-        {!isFetchedAfterMount ? (
+        {!photos && photosCount ? (
           photoLoaders
         ) : (
           <>

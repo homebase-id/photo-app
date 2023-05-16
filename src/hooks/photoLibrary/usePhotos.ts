@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import {
   TargetDrive,
   DriveSearchResult,
@@ -8,7 +8,7 @@ import {
 import { buildCursor, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 
-export type usePhotosReturn = DriveSearchResult[];
+export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
 const PAGE_SIZE = 100;
 
@@ -18,35 +18,41 @@ export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
   return bDate - aDate;
 };
 
-export const fetchPhotosByDate = async ({
+export const fetchPhotosByMonth = async ({
   dotYouClient,
   targetDrive,
   album,
   date,
+  cursorState,
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   album?: string;
   date: Date;
-}): Promise<usePhotosReturn> => {
+  cursorState?: string;
+}): Promise<useInfintePhotosReturn> => {
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  const cursorState = buildCursor(endOfMonth.getTime());
-  const results = await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
+  const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+
+  const dateCursor = buildCursor(endOfMonth.getTime());
+  const results = await getPhotos(
+    dotYouClient,
+    targetDrive,
+    album,
+    PAGE_SIZE,
+    cursorState || dateCursor
+  );
 
   const filteredResults = results.results.filter((result) => {
     const userDate = new Date(result.fileMetadata.appData.userDate || result.fileMetadata.created);
-    if (
-      userDate.getFullYear() === date.getFullYear() &&
-      userDate.getMonth() === date.getMonth() &&
-      userDate.getDate() === date.getDate()
-    )
+    if (userDate.getFullYear() === date.getFullYear() && userDate.getMonth() === date.getMonth())
       return true;
     else return false;
   });
 
   filteredResults.sort(sortDsrFunction);
 
-  return filteredResults;
+  return { results: filteredResults, cursorState: results.cursorState };
 };
 
 export const fetchPhotosByCursor = async ({
@@ -59,11 +65,11 @@ export const fetchPhotosByCursor = async ({
   targetDrive: TargetDrive;
   album?: string;
   cursorState?: string;
-}): Promise<CursoredResult<usePhotosReturn>> => {
+}): Promise<CursoredResult<DriveSearchResult[]>> => {
   return await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
 };
 
-export const usePhotosByDate = ({
+export const usePhotosByMonth = ({
   targetDrive,
   album,
   date,
@@ -76,21 +82,19 @@ export const usePhotosByDate = ({
   const dotYouClient = getDotYouClient();
 
   return {
-    fetchPhotos: useQuery(
-      [
-        'photos',
-        targetDrive?.alias,
-        album,
-        date && `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`,
-      ],
-      () =>
-        fetchPhotosByDate({
+    fetchPhotos: useInfiniteQuery(
+      ['photos', targetDrive?.alias, album, date && `${date.getFullYear()}-${date.getMonth()}}`],
+      ({ pageParam }) =>
+        fetchPhotosByMonth({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
           album,
           date: date as Date,
+          cursorState: pageParam,
         }),
       {
+        getNextPageParam: (lastPage) =>
+          (lastPage?.results?.length >= PAGE_SIZE && lastPage?.cursorState) ?? undefined,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         enabled: !!targetDrive && !!date,

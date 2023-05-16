@@ -1,13 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { t } from '../../../helpers/i18n/dictionary';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
+import { PhotoConfig, PhotoMetaDay } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import PhotoScroll from '../PhotoScroll/PhotoScroll';
-import { PhotoSection } from '../PhotoSection/PhotoSection';
+import { PhotoDay } from '../PhotoSection/PhotoSection';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { createDateObject } from '../../../provider/photos/PhotoProvider';
 import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
+import { usePhotosByMonth } from '../../../hooks/photoLibrary/usePhotos';
+import { useIntersection } from '../../../hooks/intersection/useIntersection';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -138,33 +140,20 @@ const PhotoLibrary = ({
                   </div>
                 );
 
-              const monthMeta = monthsToShow[virtualRow.index];
-              const { year, month, days } = monthMeta;
-
               return (
                 <div
                   key={virtualRow.key}
                   data-index={virtualRow.index}
                   ref={virtualizer.measureElement}
                 >
-                  {monthMeta.photosThisMonth >= 1 ? (
-                    <h1 className="text-2xl">
-                      {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
-                    </h1>
-                  ) : null}
-                  {days.map((day) => (
-                    <PhotoSection
-                      date={createDateObject(year, month, day.day)}
-                      albumKey={albumKey}
-                      targetDrive={PhotoConfig.PhotoDrive}
-                      photosCount={day.photosThisDay}
-                      key={`${year}-${month}-${day.day}`}
-                      toggleSelection={doToggleSelection}
-                      rangeSelection={doRangeSelection}
-                      isSelected={isSelected}
-                      isSelecting={isSelecting}
-                    />
-                  ))}
+                  <PhotoMonth
+                    monthMeta={monthsToShow[virtualRow.index]}
+                    albumKey={albumKey}
+                    toggleSelection={doToggleSelection}
+                    rangeSelection={doRangeSelection}
+                    isSelected={isSelected}
+                    isSelecting={isSelecting}
+                  />
                 </div>
               );
             })}
@@ -184,6 +173,137 @@ const PhotoLibrary = ({
         }}
       />
     </>
+  );
+};
+
+export const PhotoMonth = ({
+  monthMeta,
+  albumKey,
+  toggleSelection,
+  rangeSelection,
+  isSelected,
+  isSelecting,
+}: {
+  monthMeta: {
+    month: number;
+    photosThisMonth: number;
+    year: number;
+  };
+  albumKey?: string;
+  toggleSelection: (fileId: string) => void;
+  rangeSelection: (fileId: string) => void;
+  isSelected: (fileId: string) => boolean;
+  isSelecting?: boolean;
+}) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+  useIntersection(wrapperRef, () => setIsInView(true));
+  const { year, month } = monthMeta;
+
+  const monthInDateObj = createDateObject(year, month, 1);
+
+  const {
+    data: photosInfinte,
+    isFetched: photosFetched,
+    hasNextPage,
+    fetchNextPage,
+  } = usePhotosByMonth({
+    targetDrive: PhotoConfig.PhotoDrive,
+    album: albumKey,
+    date: isInView ? monthInDateObj : undefined,
+  }).fetchPhotos;
+
+  const photos = photosInfinte?.pages?.flatMap((page) => page.results);
+
+  // Build daily meta from photos for this month
+  const days: PhotoMetaDay[] = useMemo(
+    () =>
+      photos?.reduce((days, photo) => {
+        const dateNumber = new Date(
+          photo.fileMetadata.appData.userDate || photo.fileMetadata.created
+        ).getDate();
+
+        const dayIndex = days.findIndex((metaDay) => metaDay.day === dateNumber);
+        if (dayIndex === -1) {
+          days.push({
+            day: dateNumber,
+            photosThisDay: 1,
+          });
+        } else {
+          days[dayIndex].photosThisDay++;
+        }
+
+        return days;
+      }, [] as PhotoMetaDay[]) || [],
+    [photos]
+  );
+
+  return (
+    <div ref={wrapperRef}>
+      {monthMeta.photosThisMonth >= 1 ? (
+        <h1 className="text-2xl">
+          {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
+        </h1>
+      ) : null}
+
+      {photosFetched ? (
+        days.map((day, index) => {
+          const lastDay = index === days.length - 1;
+          const dayInDateObj = createDateObject(year, month, day.day);
+
+          return (
+            <PhotoDay
+              date={dayInDateObj}
+              photos={
+                photos?.filter((photo) => {
+                  const photoDate = new Date(
+                    photo.fileMetadata.appData.userDate || photo.fileMetadata.created
+                  );
+
+                  return photoDate.getDate() === day.day;
+                }) || []
+              }
+              targetDrive={PhotoConfig.PhotoDrive}
+              key={`${year}-${month}-${day.day}`}
+              toggleSelection={toggleSelection}
+              rangeSelection={rangeSelection}
+              isSelected={isSelected}
+              isSelecting={isSelecting}
+              setIsInView={lastDay && hasNextPage ? () => fetchNextPage() : undefined}
+            />
+          );
+        })
+      ) : (
+        <PhotoMonthLoading photosCount={monthMeta.photosThisMonth} />
+      )}
+    </div>
+  );
+};
+
+const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
+const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow overflow-hidden`;
+const imgWrapperClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-xs lg:align-bottom`;
+
+const PhotoMonthLoading = ({ photosCount }: { photosCount: number }) => {
+  const photoLoaders = useMemo(() => {
+    const aspect = 1;
+
+    return new Array(photosCount).fill(0).map((_, index) => (
+      <div className={`${divClasses} relative`} key={index}>
+        <div
+          className={`${imgWrapperClasses} bg-white dark:bg-slate-700`}
+          style={{ height: '200px', width: `${Math.round(aspect * 200)}px` }}
+        ></div>
+      </div>
+    ));
+  }, [photosCount]);
+
+  return (
+    <div className={gridClasses}>
+      {photoLoaders}
+      {/* This div fills up the space of the last row */}
+      <div className="hidden flex-grow-[999] lg:block"></div>
+    </div>
   );
 };
 

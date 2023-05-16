@@ -75,6 +75,16 @@ const Uploader = ({
   } = useAlbum(PhotoConfig.PinTag);
 
   useEffect(() => {
+    if (!album && albumFetched) {
+      saveAlbum({
+        name: t('Apps'),
+        description: t('Photos from apps'),
+        tag: PhotoConfig.PinTag,
+      });
+    }
+  }, [album, albumFetched]);
+
+  useEffect(() => {
     const messageListener = (e: MessageEvent) => {
       if (e?.data?.source?.startsWith('react-devtools-')) return;
 
@@ -89,14 +99,6 @@ const Uploader = ({
         if (!base64) return;
 
         const bytes = base64ToUint8Array(base64);
-
-        if (!album && albumFetched) {
-          saveAlbum({
-            name: t('Apps'),
-            description: t('Photos from apps'),
-            tag: PhotoConfig.PinTag,
-          });
-        }
 
         addToUploadQueue([
           {
