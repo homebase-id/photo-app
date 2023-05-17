@@ -213,7 +213,27 @@ export const PhotoMonth = ({
     date: isInView ? monthInDateObj : undefined,
   }).fetchPhotos;
 
+  const { mutate: updateCount } = usePhotoLibrary({
+    targetDrive: PhotoConfig.PhotoDrive,
+    album: albumKey,
+    disabled: true,
+  }).updateCount;
+
   const photos = photosInfinte?.pages?.flatMap((page) => page.results);
+
+  useEffect(() => {
+    if (!hasNextPage && photosFetched) {
+      // All photos fetched
+      if (photos?.length !== monthMeta.photosThisMonth) {
+        console.warn('Photo count mismatch, updating count', monthInDateObj);
+        updateCount({
+          album: albumKey,
+          date: monthInDateObj,
+          newCount: photos?.length || 0,
+        });
+      }
+    }
+  }, [photos]);
 
   // Build daily meta from photos for this month
   const days: PhotoMetaDay[] = useMemo(

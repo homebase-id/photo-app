@@ -69,7 +69,7 @@ const usePhotoLibrary = ({
         return mergedLib;
       }
 
-      console.log('get fetched lib from server', photoLibOnServer, { album });
+      console.log('get lib from server', photoLibOnServer, { album });
       return photoLibOnServer;
     }
 
