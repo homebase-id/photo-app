@@ -34,7 +34,7 @@ export const fetchPhotosByMonth = async ({
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
-  const dateCursor = buildCursor(endOfMonth.getTime());
+  const dateCursor = buildCursor(endOfMonth.getTime(), beginOfMonth.getTime());
   const results = await getPhotos(
     dotYouClient,
     targetDrive,
