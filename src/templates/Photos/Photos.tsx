@@ -54,8 +54,13 @@ const Photos = () => {
                 onClick={() => removeAlbum(album)}
               />
             ) : null}
-            <ActionButton icon={Upload} type="secondary" onClick={() => setFileSelectorOpen(true)}>
-              {t('Upload')}
+            <ActionButton
+              icon={Upload}
+              type="secondary"
+              size="square"
+              onClick={() => setFileSelectorOpen(true)}
+            >
+              <span className="hidden md:inline">{t('Upload')}</span>
             </ActionButton>
             <LoginNav />
           </>

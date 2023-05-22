@@ -16,6 +16,10 @@ const monthFormat: Intl.DateTimeFormatOptions = {
   year: 'numeric',
 };
 
+const thisYearMonthFormat: Intl.DateTimeFormatOptions = {
+  month: 'long',
+};
+
 const PhotoLibrary = ({
   albumKey,
   toggleSelection,
@@ -258,13 +262,15 @@ export const PhotoMonth = ({
     [photos]
   );
 
+  const title = useMemo(() => {
+    return year === new Date().getFullYear()
+      ? createDateObject(year, month).toLocaleDateString(undefined, thisYearMonthFormat)
+      : createDateObject(year, month).toLocaleDateString(undefined, monthFormat);
+  }, [monthMeta]);
+
   return (
     <div ref={wrapperRef}>
-      {monthMeta.photosThisMonth >= 1 ? (
-        <h1 className="text-2xl">
-          {createDateObject(year, month).toLocaleDateString(undefined, monthFormat)}
-        </h1>
-      ) : null}
+      {monthMeta.photosThisMonth >= 1 ? <h1 className="text-2xl">{title}</h1> : null}
 
       {photosFetched ? (
         days.map((day, index) => {

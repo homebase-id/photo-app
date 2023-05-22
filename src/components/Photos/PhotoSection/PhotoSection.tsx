@@ -6,6 +6,7 @@ import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
+import { useLongPress } from '../../../hooks/longPress/useLongPress';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-[0.1rem] md:gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -24,6 +25,13 @@ const getAspectRatioFromThumbnails = (thumbnails: ThumbSize[]): number => {
 };
 
 const dateFormat: Intl.DateTimeFormatOptions = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  weekday: 'short',
+};
+
+const mobileDateFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
   day: 'numeric',
   year: 'numeric',
@@ -56,7 +64,10 @@ export const PhotoDay = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   useIntersection(wrapperRef, () => setIsInView && setIsInView());
 
-  const title = date.toLocaleDateString(undefined, dateFormat);
+  const title = useMemo(() => {
+    const isDesktop = document.documentElement.clientWidth >= 1024;
+    return date.toLocaleDateString(undefined, isDesktop ? dateFormat : mobileDateFormat);
+  }, [date]);
 
   const photoLoaders = useMemo(() => {
     const aspect = 1;
@@ -134,13 +145,28 @@ export const PhotoItem = ({
     : 1;
   const isChecked = photoDsr?.fileId && isSelected(photoDsr?.fileId);
 
-  const doSelection = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement, MouseEvent>) => {
+  const doSelection = (
+    e: React.MouseEvent<HTMLElement, MouseEvent> | React.TouchEvent<HTMLElement>
+  ) => {
     if (e.shiftKey) rangeSelection(photoDsr.fileId);
     else toggleSelection(photoDsr.fileId);
   };
 
   const photoDate = new Date(
     photoDsr.fileMetadata.appData.userDate || photoDsr.fileMetadata.created
+  );
+
+  const longPress = useLongPress(
+    (e) => {
+      if (!e) return;
+      doSelection(e);
+    },
+    (e) => {
+      console.log(isSelecting, e);
+      if (!isSelecting || !e) return;
+      e.preventDefault();
+      doSelection(e);
+    }
   );
 
   return (
@@ -153,11 +179,7 @@ export const PhotoItem = ({
         // relative path so we can keep the albumkey intact
         to={`photo/${photoDsr.fileId}`}
         className="cursor-pointer"
-        onClick={(e) => {
-          if (!isSelecting) return;
-          e.preventDefault();
-          doSelection(e);
-        }}
+        {...longPress}
       >
         <div
           className={`${imgWrapperClasses} transition-transform ${
@@ -190,28 +212,30 @@ export const PhotoItem = ({
             )
           ) : null}
         </div>
-        <div className="group absolute inset-0 hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080]">
-          <button
-            className={`pl-2 pt-2 group-hover:block ${isChecked ? 'block' : 'hidden'}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              doSelection(e);
-            }}
-          >
-            <div
-              className={`rounded-full border ${
-                isChecked ? 'border-black bg-black' : 'border-white border-opacity-20'
-              } p-1`}
+        {isDesktop ? (
+          <div className="group absolute inset-0 hidden hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080] md:block">
+            <button
+              className={`pl-2 pt-2 group-hover:block ${isChecked ? 'block' : 'hidden'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                doSelection(e);
+              }}
             >
-              <SubtleCheck
-                className={`h-2 w-2 text-white opacity-0 transition-opacity md:h-5 md:w-5 ${
-                  isChecked ? 'opacity-100' : 'group-hover:opacity-100'
-                }`}
-              />
-            </div>
-          </button>
-        </div>
+              <div
+                className={`rounded-full border ${
+                  isChecked ? 'border-black bg-black' : 'border-white border-opacity-20'
+                } p-1`}
+              >
+                <SubtleCheck
+                  className={`h-2 w-2 text-white opacity-0 transition-opacity md:h-5 md:w-5 ${
+                    isChecked ? 'opacity-100' : 'group-hover:opacity-100'
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+        ) : null}
       </Link>
     </div>
   );
