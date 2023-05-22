@@ -300,7 +300,7 @@ export const PhotoMonth = ({
   );
 };
 
-const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
+const gridClasses = `grid grid-cols-4 gap-[0.1rem] md:gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
 const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow overflow-hidden`;
 const imgWrapperClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-xs lg:align-bottom`;
 

@@ -8,7 +8,7 @@ import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
-const gridClasses = `grid grid-cols-4 gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
+const gridClasses = `grid grid-cols-4 gap-[0.1rem] md:gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
 const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow overflow-hidden`;
 const imgWrapperClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-xs lg:align-bottom`;
 
@@ -122,6 +122,8 @@ export const PhotoItem = ({
     setIsInView(true);
   });
 
+  const isDesktop = document.documentElement.clientWidth >= 1024;
+
   if (!photoDsr) {
     return null;
   }
@@ -161,7 +163,7 @@ export const PhotoItem = ({
           className={`${imgWrapperClasses} transition-transform ${
             isChecked ? 'scale-90' : 'scale-100'
           }`}
-          style={{ height: '200px', width: `${Math.round(aspect * 200)}px` }}
+          style={isDesktop ? { height: `${200}px`, width: `${Math.round(aspect * 200)}px` } : {}}
           ref={wrapperRef}
         >
           {isInView ? (
@@ -203,7 +205,7 @@ export const PhotoItem = ({
               } p-1`}
             >
               <SubtleCheck
-                className={`h-5 w-5 text-white opacity-0 transition-opacity ${
+                className={`h-2 w-2 text-white opacity-0 transition-opacity md:h-5 md:w-5 ${
                   isChecked ? 'opacity-100' : 'group-hover:opacity-100'
                 }`}
               />

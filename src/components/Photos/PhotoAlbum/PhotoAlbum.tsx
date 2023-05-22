@@ -8,7 +8,7 @@ import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibrarySiblingsInfinte';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
 
-const gridClasses = `flex flex-row gap-1`;
+const gridClasses = `flex flex-row gap-[0.1rem] md:gap-1 `;
 
 const PhotoAlbum = ({
   albumKey,

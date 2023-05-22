@@ -8,6 +8,8 @@ import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotificati
 import useAlbum from '../../../hooks/photoLibrary/useAlbum';
 import { t } from '../../../helpers/i18n/dictionary';
 import Times from '../../ui/Icons/Times/Times';
+import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
+import Check from '../../ui/Icons/Check/Check';
 
 const Uploader = ({
   isFileSelectorOpen,
@@ -180,18 +182,26 @@ const Uploader = ({
                 />
               </div>
             ) : null}
-            <div className="w-1/2 py-4 pl-8 pr-4">
+            <div className={`${currentFile ? 'w-1/2' : ''} py-4 pl-8 pr-4`}>
               <div className="absolute right-2 top-2 flex flex-row-reverse">
                 <ActionButton icon={Times} size="square" type="mute" onClick={doCancelQueue} />
               </div>
               {isFinished ? (
                 <>
                   <h2 className="mb-5 text-lg">{t('Done')}</h2>
-                  {t('Uploaded')} {uploadQueue.length} {t('files')}
+                  <div className="flex flex-row items-center gap-2">
+                    <Check className="h-5 w-5 shrink-0" />
+                    <span className="block">
+                      {t('Uploaded')} {uploadQueue.length} {t('files')}
+                    </span>
+                  </div>
                   {failedFiles.length ? (
-                    <>
-                      {failedFiles.length} {t('files failed to upload')}
-                    </>
+                    <div className="mt-2 flex flex-row items-center gap-2 border-t pt-2">
+                      <Exclamation className="h-5 w-5 shrink-0" />
+                      <span className="block">
+                        {failedFiles.length} {t('files failed to upload')}
+                      </span>
+                    </div>
                   ) : null}
                 </>
               ) : (

@@ -72,7 +72,7 @@ export const PhotoWithLoader = ({
         } transition-opacity ${isFinal ? 'opacity-100' : 'opacity-0'}`}
         onClick={(e) => e.stopPropagation()}
         onLoad={() => setIsFinal(true)}
-        {...naturalSize}
+        // {...naturalSize}
       />
     </div>
   );
