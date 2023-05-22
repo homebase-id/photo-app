@@ -166,7 +166,8 @@ export const PhotoItem = ({
       if (!isSelecting || !e) return;
       e.preventDefault();
       doSelection(e);
-    }
+    },
+    { shouldPreventDefault: false, delay: 300 }
   );
 
   return (
