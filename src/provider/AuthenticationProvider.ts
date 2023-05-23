@@ -22,7 +22,7 @@ const getSharedSecret = () => {
 export const hasValidToken = async (): Promise<boolean> => {
   const dotYouClient = new DotYouClient({
     api: ApiType.App,
-    root: retrieveIdentity(),
+    identity: retrieveIdentity(),
     sharedSecret: getSharedSecret(),
   });
   const client = dotYouClient.createAxiosClient();
@@ -114,7 +114,7 @@ export const finalizeAuthentication = async (
 export const logout = async () => {
   const dotYouClient = new DotYouClient({
     api: ApiType.App,
-    root: retrieveIdentity(),
+    identity: retrieveIdentity(),
     sharedSecret: getSharedSecret(),
   });
   const client = dotYouClient.createAxiosClient();

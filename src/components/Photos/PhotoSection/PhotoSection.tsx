@@ -1,6 +1,6 @@
 import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
 import { useState, useRef, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
 import { SubtleCheck } from '../../ui/Icons/Check/Check';
 import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
@@ -127,6 +127,7 @@ export const PhotoItem = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
+  const navigate = useNavigate();
   const [isInView, setIsInView] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   useIntersection(wrapperRef, () => {
@@ -160,14 +161,23 @@ export const PhotoItem = ({
     (e) => {
       if (!e) return;
       doSelection(e);
+
+      e.stopPropagation();
+      return false;
     },
     (e) => {
-      console.log(isSelecting, e);
-      if (!isSelecting || !e) return;
-      e.preventDefault();
+      if (!e) return;
+      if (!isSelecting) {
+        navigate(`photo/${photoDsr.fileId}`);
+        return;
+      }
+
       doSelection(e);
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
     },
-    { shouldPreventDefault: false, delay: 300 }
+    { shouldPreventDefault: true, delay: 300 }
   );
 
   return (
@@ -181,6 +191,10 @@ export const PhotoItem = ({
         to={`photo/${photoDsr.fileId}`}
         className="cursor-pointer"
         {...longPress}
+        onClick={(e) => {
+          e.preventDefault();
+          return false;
+        }}
       >
         <div
           className={`${imgWrapperClasses} transition-transform ${
@@ -222,6 +236,9 @@ export const PhotoItem = ({
                 e.preventDefault();
                 doSelection(e);
               }}
+              onMouseUp={(e) => e.stopPropagation()}
+              onMouseLeave={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
             >
               <div
                 className={`rounded-full border ${

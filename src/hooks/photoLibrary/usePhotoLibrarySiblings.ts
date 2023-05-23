@@ -10,7 +10,7 @@ import usePhotoLibrary from './usePhotoLibrary';
 import { createDateObject } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 
-const useFileHeader = ({
+export const useFileHeader = ({
   targetDrive,
   photoFileId,
 }: {

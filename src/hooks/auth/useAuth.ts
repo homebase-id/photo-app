@@ -75,7 +75,7 @@ const useAuth = () => {
     return new DotYouClient({
       sharedSecret: getSharedSecret(),
       api: ApiType.App,
-      root: retrieveIdentity(),
+      identity: retrieveIdentity(),
       headers: headers,
     });
   };

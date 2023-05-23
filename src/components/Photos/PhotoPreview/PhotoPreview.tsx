@@ -1,9 +1,9 @@
 import { DriveSearchResult, stringGuidsEqual } from '@youfoundation/js-lib';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { usePhotoLibrarySiblings } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
+import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
@@ -14,19 +14,11 @@ import Archive from '../../ui/Icons/Archive/Archive';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
 import { PhotoWithLoader } from './PhotoWithLoader';
 import { VideoWithLoader } from './VideoWithLoader';
-import { usePhotoLibrarySiblingsInfinite } from '../../../hooks/photoLibrary/usePhotoLibrarySiblingsInfinte';
+import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 const targetDrive = PhotoConfig.PhotoDrive;
-
-const PhotoPreview = (props: { fileId: string; albumKey?: string; urlPrefix?: string }) => {
-  return props.albumKey && ![PhotoConfig.FavoriteTag, 'bin', 'archive'].includes(props.albumKey) ? (
-    <AlbumPhotoPreview {...props} />
-  ) : (
-    <LibPhotoPreview {...props} />
-  );
-};
-
-const LibPhotoPreview = ({
+const PhotoPreview = ({
   fileId,
   albumKey,
   urlPrefix,
@@ -35,57 +27,80 @@ const LibPhotoPreview = ({
   albumKey?: string;
   urlPrefix?: string;
 }) => {
-  const { current, nextSibling, prevSibling } = usePhotoLibrarySiblings({
-    targetDrive: targetDrive,
-    photoFileId: fileId,
-    album: albumKey,
-  });
+  urlPrefix = urlPrefix || albumKey ? `/album/${albumKey}` : '';
 
-  return (
-    <InnerPhotoPreview
-      fileId={fileId}
-      current={current}
-      nextSibling={nextSibling}
-      prevSibling={prevSibling}
-      urlPrefix={urlPrefix}
-    />
-  );
-};
+  const scrollContainer = useRef<HTMLDivElement>(null);
+  const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
+  const slideWidth = window.innerWidth; // Not clientWidth as the scrollbar is removed be disabled scrolling on the body
+  const [didSetOffset, setDidSetOffset] = useState(false);
 
-const AlbumPhotoPreview = ({ fileId, albumKey }: { fileId: string; albumKey?: string }) => {
-  const urlPrefix = albumKey ? `/album/${albumKey}` : '';
+  const {
+    data: photos,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePhotosInfinte({ targetDrive, album: albumKey }).fetchPhotos;
 
-  const { current, nextSibling, prevSibling } = usePhotoLibrarySiblingsInfinite({
-    targetDrive: targetDrive,
-    photoFileId: fileId,
-    album: albumKey,
-  });
-
-  return (
-    <InnerPhotoPreview
-      fileId={fileId}
-      current={current}
-      nextSibling={nextSibling}
-      prevSibling={prevSibling}
-      urlPrefix={urlPrefix}
-    />
-  );
-};
-
-const InnerPhotoPreview = ({
-  fileId,
-  current,
-  nextSibling,
-  prevSibling,
-  urlPrefix,
-}: {
-  fileId: string;
-  current: DriveSearchResult | undefined;
-  nextSibling: DriveSearchResult | undefined;
-  prevSibling: DriveSearchResult | undefined;
-  urlPrefix?: string;
-}) => {
+  const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  useEffect(() => {
+    const scrollListener = () => {
+      const currentIndex = Math.round((scrollContainer.current?.scrollLeft ?? 0) / slideWidth);
+
+      // Update the url with the current fileId when scrolling
+      if (!flatPhotos || flatPhotos[currentIndex]?.fileId === fileId) return;
+      window.history.replaceState(
+        null,
+        '',
+        `${urlPrefix ? urlPrefix : ''}/photo/${flatPhotos?.[currentIndex]?.fileId}`
+      );
+    };
+
+    // TODO: debounce listener
+    scrollContainer.current?.addEventListener('scroll', scrollListener, { passive: true });
+    return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
+  }, [flatPhotos]);
+
+  // Virtual scrolling
+  const colVirtualizer = useVirtualizer({
+    horizontal: true,
+    count: hasNextPage ? flatPhotos.length + 1 : flatPhotos.length,
+    getScrollElement: () => scrollContainer.current,
+    estimateSize: () => slideWidth,
+    overscan: 2,
+    initialOffset: flatPhotos.findIndex((photo) => photo.fileId === fileId) * slideWidth,
+  });
+
+  useEffect(() => {
+    if (didSetOffset) return;
+    const index = flatPhotos.findIndex((photo) => photo.fileId === fileId);
+    if (index === -1) return;
+
+    // SetTimeout to let the element render and have the width
+    setTimeout(() => {
+      colVirtualizer.scrollToIndex(index);
+      setDidSetOffset(true);
+    });
+  }, [flatPhotos]);
+
+  // Fetch next page when scrolling to the end
+  useEffect(() => {
+    const [lastItem] = [...colVirtualizer.getVirtualItems()].reverse();
+
+    if (!lastItem) return;
+
+    if (lastItem.index >= flatPhotos.length - 1 && hasNextPage && !isFetchingNextPage)
+      fetchNextPage();
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    flatPhotos.length,
+    isFetchingNextPage,
+    colVirtualizer.getVirtualItems(),
+  ]);
+
+  const items = colVirtualizer.getVirtualItems();
 
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
@@ -93,33 +108,74 @@ const InnerPhotoPreview = ({
         <div className="relative w-full">
           <PhotoActions
             fileId={fileId}
-            current={current}
-            nextSibling={nextSibling}
-            prevSibling={prevSibling}
+            current={fileHeader}
             setIsInfoOpen={setIsInfoOpen}
             isInfoOpen={isInfoOpen}
             urlPrefix={urlPrefix}
           />
-          <>
-            {current?.fileMetadata.contentType.startsWith('video/') ? (
-              <VideoWithLoader fileId={fileId} targetDrive={targetDrive} fit="contain" />
-            ) : (
-              <PhotoWithLoader
-                fileId={fileId}
-                targetDrive={targetDrive}
-                previewThumbnail={current?.fileMetadata.appData.previewThumbnail}
-                size={{ pixelWidth: 1600, pixelHeight: 1600 }}
-                fit="contain"
-                key={fileId}
-              />
-            )}
-          </>
+          <div
+            className="no-scrollbar h-full snap-x snap-mandatory overflow-x-scroll"
+            ref={scrollContainer}
+          >
+            <div
+              style={{
+                width: `${colVirtualizer.getTotalSize()}px`,
+                height: '100%',
+                position: 'relative',
+              }}
+            >
+              {items?.map((virtualCol) => {
+                const isLoaderRow = virtualCol.index > flatPhotos.length - 1;
+
+                if (isLoaderRow) {
+                  return hasNextPage || isFetchingNextPage ? (
+                    <div className="mt-5 animate-pulse" key={'loading'}>
+                      {t('Loading...')}
+                    </div>
+                  ) : null;
+                }
+
+                const photo = flatPhotos[virtualCol.index];
+                return (
+                  <div
+                    className="absolute inset-0 h-full"
+                    style={{
+                      width: `${virtualCol.size}px`,
+                      transform: `translateX(${virtualCol.start}px)`,
+                      display: 'inline-block',
+                    }}
+                    key={photo.fileId}
+                  >
+                    <MediaWithLoader media={photo} fileId={photo.fileId} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
         {isInfoOpen ? (
-          <PhotoInfo current={current} setIsInfoOpen={setIsInfoOpen} key={fileId} />
+          <PhotoInfo current={fileHeader} setIsInfoOpen={setIsInfoOpen} key={fileId} />
         ) : null}
       </div>
     </div>
+  );
+};
+
+const MediaWithLoader = ({ media, fileId }: { media?: DriveSearchResult; fileId?: string }) => {
+  if (!media || !fileId) return <div className="relative h-full w-[100vw]"></div>;
+
+  return media?.fileMetadata.contentType.startsWith('video/') ? (
+    <VideoWithLoader fileId={fileId} targetDrive={targetDrive} fit="contain" />
+  ) : (
+    <PhotoWithLoader
+      fileId={fileId}
+      targetDrive={targetDrive}
+      previewThumbnail={media?.fileMetadata.appData.previewThumbnail}
+      size={{ pixelWidth: 1600, pixelHeight: 1600 }}
+      fit="contain"
+      key={fileId}
+      className="relative h-full w-[100vw] flex-shrink-0 snap-start"
+    />
   );
 };
 
@@ -186,7 +242,7 @@ export const PhotoActions = ({
     window.addEventListener('keydown', handleKeyDown);
 
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fileId, prevSibling, nextSibling]); // We need new handlers to reflect the new fileId
+  }, [fileId, prevSibling, nextSibling]); // We need new handlers to reflect the new fileId and navigate to the respective siblings
 
   useEffect(() => {
     if (fileId) {
@@ -284,13 +340,15 @@ export const PhotoActions = ({
           </ActionButton>
         ) : null}
       </div>
-      <ActionButton
-        icon={Times}
-        onClick={doClose}
-        className="left-3 top-3 z-10 rounded-full p-3 lg:fixed"
-        size="square"
-        type="secondary"
-      />
+      <div className="absolute left-3 top-3 z-10 flex w-[50%] flex-row gap-2">
+        <ActionButton
+          icon={Times}
+          onClick={doClose}
+          className="rounded-full p-3 lg:fixed"
+          size="square"
+          type="secondary"
+        />
+      </div>
       {prevSibling ? (
         <ActionButton
           icon={ArrowLeft}

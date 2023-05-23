@@ -35,7 +35,8 @@ export const getPhotos = async (
   targetDrive: TargetDrive,
   album: string | undefined,
   pageSize: number,
-  cursorState?: string
+  cursorState?: string,
+  ordering?: 'older' | 'newer'
 ) => {
   const typedAlbum = album === 'bin' || album === 'archive';
   const archivalStatus: ArchivalStatus[] =
@@ -54,7 +55,7 @@ export const getPhotos = async (
       maxRecords: pageSize,
       includeMetadataHeader: false,
       sorting: 'userDate',
-      ordering: 'newestFirst',
+      ordering: ordering === 'newer' ? 'oldestFirst' : 'newestFirst',
     }
   );
 

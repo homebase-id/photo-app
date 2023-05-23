@@ -173,16 +173,17 @@ const PhotoAlbum = ({
                 const photos = chunkedPhotos[virtualRow.index];
 
                 return (
-                  <PhotoGroup
-                    photos={photos}
-                    targetDrive={PhotoConfig.PhotoDrive}
-                    toggleSelection={doToggleSelection}
-                    rangeSelection={doRangeSelection}
-                    isSelected={isSelected}
-                    isSelecting={isSelecting}
-                    key={virtualRow.index}
-                    rowSize={rowSize}
-                  />
+                  <div ref={virtualizer.measureElement} key={virtualRow.index}>
+                    <PhotoGroup
+                      photos={photos}
+                      targetDrive={PhotoConfig.PhotoDrive}
+                      toggleSelection={doToggleSelection}
+                      rangeSelection={doRangeSelection}
+                      isSelected={isSelected}
+                      isSelecting={isSelecting}
+                      rowSize={rowSize}
+                    />
+                  </div>
                 );
               })}
             </div>

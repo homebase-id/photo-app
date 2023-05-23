@@ -55,18 +55,20 @@ export const fetchPhotosByMonth = async ({
   return { results: filteredResults, cursorState: results.cursorState };
 };
 
-export const fetchPhotosByCursor = async ({
+const fetchPhotosByCursor = async ({
   dotYouClient,
   targetDrive,
   album,
   cursorState,
+  direction,
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   album?: string;
   cursorState?: string;
+  direction?: 'older' | 'newer';
 }): Promise<CursoredResult<DriveSearchResult[]>> => {
-  return await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState);
+  return await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState, direction);
 };
 
 export const usePhotosByMonth = ({
@@ -107,22 +109,29 @@ export const usePhotosByMonth = ({
 export const usePhotosInfinte = ({
   targetDrive,
   album,
+  startFromDate,
+  direction,
 }: {
   targetDrive?: TargetDrive;
   album?: string;
+  startFromDate?: Date;
+  direction?: 'older' | 'newer';
 }) => {
   const { getDotYouClient } = useAuth();
   const dotYouClient = getDotYouClient();
 
+  const startFromDateCursor = startFromDate ? buildCursor(startFromDate.getTime()) : undefined;
+
   return {
     fetchPhotos: useInfiniteQuery(
-      ['photos-infinite', targetDrive?.alias, album],
+      ['photos-infinite', targetDrive?.alias, album, startFromDate?.getTime()],
       ({ pageParam }) =>
         fetchPhotosByCursor({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
           album,
-          cursorState: pageParam,
+          cursorState: pageParam || startFromDateCursor,
+          direction: direction,
         }),
       {
         getNextPageParam: (lastPage) =>

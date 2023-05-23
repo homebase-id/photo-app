@@ -10,12 +10,14 @@ export const PhotoWithLoader = ({
   previewThumbnail,
   size,
   fit = 'cover',
+  className,
 }: {
   fileId: string;
   targetDrive: TargetDrive;
   previewThumbnail?: EmbeddedThumb;
   size?: ImageSize;
   fit?: 'cover' | 'contain';
+  className?: string;
 }) => {
   const [isTinyLoaded, setIsTinyLoaded] = useState(false);
   const [isFinal, setIsFinal] = useState(false);
@@ -45,7 +47,7 @@ export const PhotoWithLoader = ({
   };
 
   return (
-    <div className="relative h-full w-full">
+    <div className={className || 'relative h-full w-full'} data-file={fileId}>
       <img
         src={previewUrl}
         className={`absolute inset-0 h-full w-full ${
