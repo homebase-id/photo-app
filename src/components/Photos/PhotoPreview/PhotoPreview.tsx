@@ -21,13 +21,13 @@ const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = ({
   fileId,
   albumKey,
-  urlPrefix,
+  urlPrefix: urlPrefixProp,
 }: {
   fileId: string;
   albumKey?: string;
   urlPrefix?: string;
 }) => {
-  urlPrefix = urlPrefix || albumKey ? `/album/${albumKey}` : '';
+  const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
@@ -109,6 +109,11 @@ const InnerSlider = ({
 
       // Update the url with the current fileId when scrolling
       if (!flatPhotos || flatPhotos[currentIndex]?.fileId === fileId) return;
+
+      const paths = window.location.pathname.split('/');
+      if (paths[paths.length - 1] === flatPhotos?.[currentIndex]?.fileId) return; // Already on the correct url
+      if (paths[paths.length - 2] !== 'photo') return; // No longer on preview
+
       window.history.replaceState(
         null,
         '',
@@ -157,8 +162,6 @@ const InnerSlider = ({
 
     const targetPos = colVirtualizer.getOffsetForIndex(fileIndex)[0];
     if (targetPos === initialOffset) return;
-
-    console.log('force scrolling to', targetPos);
 
     scrollContainer.current.scrollTo({
       left: targetPos,
