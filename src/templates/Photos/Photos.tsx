@@ -35,6 +35,9 @@ const Photos = () => {
     }
   }, [removeAlbumStatus]);
 
+  // Clear the selection when navigating
+  useEffect(() => clearSelection(), [albumKey]);
+
   return (
     <>
       <PageMeta

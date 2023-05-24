@@ -32,6 +32,19 @@ const PhotoPreview = ({
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
 
+  const {
+    data: photos,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePhotosInfinte({ targetDrive, album: albumKey }).fetchPhotos;
+
+  const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
+
+  const currentIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
+  const nextSibling = flatPhotos[currentIndex + 1];
+  const prevSibling = flatPhotos[currentIndex - 1];
+
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
@@ -42,8 +55,19 @@ const PhotoPreview = ({
             setIsInfoOpen={setIsInfoOpen}
             isInfoOpen={isInfoOpen}
             urlPrefix={urlPrefix}
+            nextSibling={nextSibling}
+            prevSibling={prevSibling}
           />
-          <InnerSlider fileId={fileId} albumKey={albumKey} urlPrefix={urlPrefix} />
+          {flatPhotos?.length ? (
+            <InnerSlider
+              fileId={fileId}
+              urlPrefix={urlPrefix}
+              fetchNextPage={fetchNextPage}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              flatPhotos={flatPhotos}
+            />
+          ) : null}
         </div>
         {isInfoOpen ? (
           <PhotoInfo current={fileHeader} setIsInfoOpen={setIsInfoOpen} key={fileId} />
@@ -55,25 +79,29 @@ const PhotoPreview = ({
 
 const InnerSlider = ({
   fileId,
-  albumKey,
+
   urlPrefix,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  flatPhotos,
 }: {
   fileId: string;
-  albumKey?: string;
+
   urlPrefix?: string;
+  fetchNextPage: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage: boolean;
+  flatPhotos: DriveSearchResult[];
 }) => {
+  // I know this is strange, as this will break hooks consistentcy,
+  // but if there's no photos the virtual scrolling will initialize with no width, and the intialOffset will be 0
+  if (!flatPhotos?.length) return null;
+
+  const fileIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
   const scrollContainer = useRef<HTMLDivElement>(null);
   const slideWidth = window.innerWidth; // Not clientWidth as the scrollbar is removed be disabled scrolling on the body
-  const [didSetOffset, setDidSetOffset] = useState(false);
-
-  const {
-    data: photos,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = usePhotosInfinte({ targetDrive, album: albumKey }).fetchPhotos;
-
-  const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
+  const [initialOffset] = useState(fileIndex * slideWidth);
 
   const scrollListener = useDebounce(
     () => {
@@ -98,22 +126,6 @@ const InnerSlider = ({
     return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
   }, [flatPhotos, scrollListener, scrollListener]);
 
-  useEffect(() => {
-    if (didSetOffset) return;
-    const index = flatPhotos.findIndex((photo) => photo.fileId === fileId);
-    if (index === -1) return;
-
-    // SetTimeout to let the element render and have the width
-    setTimeout(() => {
-      colVirtualizer.scrollToIndex(index);
-      setDidSetOffset(true);
-    });
-  }, [flatPhotos]);
-
-  useEffect(() => {
-    console.log('navigate to fileId?', fileId);
-  }, [fileId]);
-
   // Virtual scrolling
   const colVirtualizer = useVirtualizer({
     horizontal: true,
@@ -121,7 +133,8 @@ const InnerSlider = ({
     getScrollElement: () => scrollContainer.current,
     estimateSize: () => slideWidth,
     overscan: 2,
-    initialOffset: flatPhotos.findIndex((photo) => photo.fileId === fileId) * slideWidth,
+
+    initialOffset: initialOffset,
   });
 
   // Fetch next page when scrolling to the end
@@ -139,6 +152,20 @@ const InnerSlider = ({
     colVirtualizer.getVirtualItems(),
   ]);
 
+  useEffect(() => {
+    if (fileIndex === -1 || !scrollContainer.current) return;
+
+    const targetPos = colVirtualizer.getOffsetForIndex(fileIndex)[0];
+    if (targetPos === initialOffset) return;
+
+    console.log('force scrolling to', targetPos);
+
+    scrollContainer.current.scrollTo({
+      left: targetPos,
+      behavior: 'smooth', // No clue yet why this doesn't always work
+    });
+  }, [fileId, flatPhotos, colVirtualizer, fileIndex]);
+
   return (
     <div
       className="no-scrollbar h-full snap-x snap-mandatory overflow-x-scroll"
@@ -147,7 +174,7 @@ const InnerSlider = ({
       <div
         className="relative h-full"
         style={{
-          width: `${colVirtualizer.getTotalSize()}px`,
+          width: `${flatPhotos.length * slideWidth}px`,
         }}
       >
         {colVirtualizer.getVirtualItems()?.map((virtualCol) => {
@@ -220,7 +247,6 @@ export const PhotoActions = ({
     navigate(urlPrefix || '/');
   };
 
-  // TODO: Preload siblings
   const doNext = () => {
     navigate(`${urlPrefix ? urlPrefix : ''}/photo/${nextSibling?.fileId}`);
   };
@@ -359,7 +385,7 @@ export const PhotoActions = ({
         <ActionButton
           icon={ArrowLeft}
           onClick={() => doPrev()}
-          className="absolute left-2 top-[calc(50%-1.25rem)] z-10 rounded-full p-3"
+          className="absolute left-2 top-[calc(50%-1.25rem)] z-10 hidden rounded-full p-3 lg:block"
           size="square"
           type="secondary"
         />
@@ -368,7 +394,7 @@ export const PhotoActions = ({
         <ActionButton
           icon={Arrow}
           onClick={() => doNext()}
-          className="absolute right-2 top-[calc(50%-1.25rem)] z-10 rounded-full p-3"
+          className="absolute right-2 top-[calc(50%-1.25rem)] z-10 hidden rounded-full p-3 lg:block"
           size="square"
           type="secondary"
         />

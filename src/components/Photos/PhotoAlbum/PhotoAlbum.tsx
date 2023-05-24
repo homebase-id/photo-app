@@ -173,7 +173,11 @@ const PhotoAlbum = ({
                 const photos = chunkedPhotos[virtualRow.index];
 
                 return (
-                  <div ref={virtualizer.measureElement} key={virtualRow.index}>
+                  <div
+                    ref={virtualizer.measureElement}
+                    key={virtualRow.index}
+                    data-index={virtualRow.index}
+                  >
                     <PhotoGroup
                       photos={photos}
                       targetDrive={PhotoConfig.PhotoDrive}
