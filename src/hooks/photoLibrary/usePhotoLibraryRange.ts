@@ -1,54 +1,10 @@
-import {
-  DriveSearchResult,
-  TargetDrive,
-  getFileHeader,
-  stringGuidsEqual,
-} from '@youfoundation/js-lib';
-import { InfiniteData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchPhotosByMonth, useInfintePhotosReturn, usePhotosByMonth } from './usePhotos';
+import { DriveSearchResult, TargetDrive, stringGuidsEqual } from '@youfoundation/js-lib';
+import { useQuery } from '@tanstack/react-query';
+import { fetchPhotosByMonth, usePhotosByMonth } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 import { createDateObject } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
-
-export const useFileHeader = ({
-  targetDrive,
-  photoFileId,
-}: {
-  targetDrive: TargetDrive;
-  photoFileId?: string;
-}) => {
-  const queryClient = useQueryClient();
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
-
-  const fetchCurrent = async (targetDrive: TargetDrive, photoFileId: string) => {
-    const previousKeys = queryClient
-      .getQueryCache()
-      .findAll(['photos', targetDrive?.alias], { exact: false })
-      .filter((query) => query.state.status === 'success');
-
-    for (let i = 0; i < previousKeys.length; i++) {
-      const key = previousKeys[i];
-      const dataForDay = queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(
-        key.queryKey
-      );
-      if (!dataForDay) continue;
-
-      const dsr = dataForDay?.pages
-        ?.flatMap((page) => page.results)
-        .find((dsr) => stringGuidsEqual(dsr.fileId, photoFileId));
-      if (dsr) return dsr;
-    }
-
-    return await getFileHeader(dotYouClient, targetDrive, photoFileId);
-  };
-
-  return useQuery(
-    ['photo-header', targetDrive?.alias, photoFileId],
-    () => fetchCurrent(targetDrive, photoFileId as string),
-    { enabled: !!photoFileId }
-  );
-};
+import { useFileHeader } from './usePhotoHeader';
 
 const useCurrentPhoto = ({
   targetDrive,
@@ -100,64 +56,6 @@ export const useFlatMonthsFromMeta = ({
   };
 
   return useQuery(['flat-photos', targetDrive?.alias, album], fetch, { enabled: !!photoLibrary });
-};
-
-export const usePhotoLibrarySiblings = ({
-  targetDrive,
-  album,
-  photoFileId,
-}: {
-  targetDrive: TargetDrive;
-  album?: string;
-  photoFileId: string;
-}) => {
-  const { currentIndex, dataForMonth, current } = useCurrentPhoto({
-    targetDrive,
-    album,
-    photoFileId,
-  });
-  const { data: flatMonths } = useFlatMonthsFromMeta({ targetDrive, album });
-
-  const prevInSameMonth =
-    dataForMonth && currentIndex !== undefined && dataForMonth[currentIndex - 1];
-  const nextInSameMonth =
-    dataForMonth && currentIndex !== undefined && dataForMonth[currentIndex + 1];
-
-  const currentDate = current
-    ? new Date(current.fileMetadata.appData.userDate || current.fileMetadata.created)
-    : undefined;
-  const currentYear = currentDate?.getFullYear();
-  const currentMonth = currentDate ? currentDate.getMonth() + 1 : undefined;
-
-  const flatIndex = flatMonths?.findIndex(
-    (flat) => flat.year === currentYear && flat.month === currentMonth
-  );
-  const prevMonth = flatMonths && flatIndex !== undefined ? flatMonths[flatIndex - 1] : undefined;
-  const nextMonth = flatMonths && flatIndex !== undefined ? flatMonths[flatIndex + 1] : undefined;
-
-  const { data: prevData } = usePhotosByMonth({
-    targetDrive,
-    album,
-    date: prevMonth ? createDateObject(prevMonth.year, prevMonth.month, 1) : undefined,
-  }).fetchPhotos;
-  const { data: nextData } = usePhotosByMonth({
-    targetDrive,
-    album,
-    date: nextMonth ? createDateObject(nextMonth.year, nextMonth.month, 1) : undefined,
-  }).fetchPhotos;
-
-  const prevSibling =
-    prevInSameMonth ||
-    prevData?.pages[prevData?.pages.length - 1].results[
-      prevData?.pages[prevData?.pages.length - 1].results.length - 1
-    ];
-  const nextSibling = nextInSameMonth || nextData?.pages[0].results[0];
-
-  return {
-    current,
-    nextSibling,
-    prevSibling,
-  };
 };
 
 export const useSiblingsRange = ({

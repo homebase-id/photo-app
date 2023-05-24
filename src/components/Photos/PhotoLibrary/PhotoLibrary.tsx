@@ -7,7 +7,7 @@ import PhotoScroll from '../PhotoScroll/PhotoScroll';
 import { PhotoDay } from '../PhotoSection/PhotoSection';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { createDateObject } from '../../../provider/photos/PhotoProvider';
-import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
+import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibraryRange';
 import { usePhotosByMonth } from '../../../hooks/photoLibrary/usePhotos';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
 

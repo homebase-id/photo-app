@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoLibrarySiblings';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
@@ -16,6 +15,7 @@ import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import MediaWithLoader from './MediaLoader';
 import useDebounce from '../../../hooks/debounce/useDebounce';
+import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = ({

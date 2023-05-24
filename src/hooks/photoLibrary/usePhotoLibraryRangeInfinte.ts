@@ -3,34 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { usePhotosInfinte } from './usePhotos';
 import { TargetDrive } from '@youfoundation/js-lib';
 
-export const usePhotoLibrarySiblingsInfinite = ({
-  targetDrive,
-  album,
-  photoFileId,
-}: {
-  targetDrive: TargetDrive;
-  album?: string;
-  photoFileId: string;
-}) => {
-  const { data: photos } = usePhotosInfinte({
-    targetDrive: targetDrive,
-    album: album,
-  }).fetchPhotos;
-
-  const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
-
-  const currentIndex = flatPhotos.findIndex((photo) => photo.fileId === photoFileId);
-  const current = flatPhotos[currentIndex];
-  const nextSibling = flatPhotos[currentIndex + 1];
-  const prevSibling = flatPhotos[currentIndex - 1];
-
-  return {
-    current,
-    nextSibling,
-    prevSibling,
-  };
-};
-
 export const useSiblingsRangeInfinte = ({
   targetDrive,
   album,
