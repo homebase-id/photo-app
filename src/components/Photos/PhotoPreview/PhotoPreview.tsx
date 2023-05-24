@@ -12,10 +12,10 @@ import Question from '../../ui/Icons/Question/Question';
 import Times from '../../ui/Icons/Times/Times';
 import Archive from '../../ui/Icons/Archive/Archive';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
-import { PhotoWithLoader } from './PhotoWithLoader';
-import { VideoWithLoader } from './VideoWithLoader';
 import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import MediaWithLoader from './MediaLoader';
+import useDebounce from '../../../hooks/debounce/useDebounce';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = ({
@@ -29,8 +29,40 @@ const PhotoPreview = ({
 }) => {
   urlPrefix = urlPrefix || albumKey ? `/album/${albumKey}` : '';
 
-  const scrollContainer = useRef<HTMLDivElement>(null);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
+
+  return (
+    <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
+      <div className="flex h-screen max-w-[100vw] flex-row justify-center">
+        <div className="relative w-full">
+          <PhotoActions
+            fileId={fileId}
+            current={fileHeader}
+            setIsInfoOpen={setIsInfoOpen}
+            isInfoOpen={isInfoOpen}
+            urlPrefix={urlPrefix}
+          />
+          <InnerSlider fileId={fileId} albumKey={albumKey} urlPrefix={urlPrefix} />
+        </div>
+        {isInfoOpen ? (
+          <PhotoInfo current={fileHeader} setIsInfoOpen={setIsInfoOpen} key={fileId} />
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+const InnerSlider = ({
+  fileId,
+  albumKey,
+  urlPrefix,
+}: {
+  fileId: string;
+  albumKey?: string;
+  urlPrefix?: string;
+}) => {
+  const scrollContainer = useRef<HTMLDivElement>(null);
   const slideWidth = window.innerWidth; // Not clientWidth as the scrollbar is removed be disabled scrolling on the body
   const [didSetOffset, setDidSetOffset] = useState(false);
 
@@ -42,10 +74,9 @@ const PhotoPreview = ({
   } = usePhotosInfinte({ targetDrive, album: albumKey }).fetchPhotos;
 
   const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
-  useEffect(() => {
-    const scrollListener = () => {
+  const scrollListener = useDebounce(
+    () => {
       const currentIndex = Math.round((scrollContainer.current?.scrollLeft ?? 0) / slideWidth);
 
       // Update the url with the current fileId when scrolling
@@ -55,22 +86,17 @@ const PhotoPreview = ({
         '',
         `${urlPrefix ? urlPrefix : ''}/photo/${flatPhotos?.[currentIndex]?.fileId}`
       );
-    };
+    },
+    [flatPhotos],
+    500
+  );
 
-    // TODO: debounce listener
-    scrollContainer.current?.addEventListener('scroll', scrollListener, { passive: true });
+  useEffect(() => {
+    scrollContainer.current?.addEventListener('scroll', scrollListener, {
+      passive: true,
+    });
     return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
-  }, [flatPhotos]);
-
-  // Virtual scrolling
-  const colVirtualizer = useVirtualizer({
-    horizontal: true,
-    count: hasNextPage ? flatPhotos.length + 1 : flatPhotos.length,
-    getScrollElement: () => scrollContainer.current,
-    estimateSize: () => slideWidth,
-    overscan: 2,
-    initialOffset: flatPhotos.findIndex((photo) => photo.fileId === fileId) * slideWidth,
-  });
+  }, [flatPhotos, scrollListener, scrollListener]);
 
   useEffect(() => {
     if (didSetOffset) return;
@@ -84,10 +110,23 @@ const PhotoPreview = ({
     });
   }, [flatPhotos]);
 
+  useEffect(() => {
+    console.log('navigate to fileId?', fileId);
+  }, [fileId]);
+
+  // Virtual scrolling
+  const colVirtualizer = useVirtualizer({
+    horizontal: true,
+    count: hasNextPage ? flatPhotos.length + 1 : flatPhotos.length,
+    getScrollElement: () => scrollContainer.current,
+    estimateSize: () => slideWidth,
+    overscan: 2,
+    initialOffset: flatPhotos.findIndex((photo) => photo.fileId === fileId) * slideWidth,
+  });
+
   // Fetch next page when scrolling to the end
   useEffect(() => {
     const [lastItem] = [...colVirtualizer.getVirtualItems()].reverse();
-
     if (!lastItem) return;
 
     if (lastItem.index >= flatPhotos.length - 1 && hasNextPage && !isFetchingNextPage)
@@ -100,82 +139,49 @@ const PhotoPreview = ({
     colVirtualizer.getVirtualItems(),
   ]);
 
-  const items = colVirtualizer.getVirtualItems();
-
   return (
-    <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
-      <div className="flex h-screen max-w-[100vw] flex-row justify-center">
-        <div className="relative w-full">
-          <PhotoActions
-            fileId={fileId}
-            current={fileHeader}
-            setIsInfoOpen={setIsInfoOpen}
-            isInfoOpen={isInfoOpen}
-            urlPrefix={urlPrefix}
-          />
-          <div
-            className="no-scrollbar h-full snap-x snap-mandatory overflow-x-scroll"
-            ref={scrollContainer}
-          >
+    <div
+      className="no-scrollbar h-full snap-x snap-mandatory overflow-x-scroll"
+      ref={scrollContainer}
+    >
+      <div
+        className="relative h-full"
+        style={{
+          width: `${colVirtualizer.getTotalSize()}px`,
+        }}
+      >
+        {colVirtualizer.getVirtualItems()?.map((virtualCol) => {
+          const isLoaderRow = virtualCol.index > flatPhotos.length - 1;
+
+          if (isLoaderRow) {
+            return hasNextPage || isFetchingNextPage ? (
+              <div className="mt-5 animate-pulse" key={'loading'}>
+                {t('Loading...')}
+              </div>
+            ) : null;
+          }
+
+          const photo = flatPhotos[virtualCol.index];
+          return (
             <div
+              className="absolute inset-0 h-full"
               style={{
-                width: `${colVirtualizer.getTotalSize()}px`,
-                height: '100%',
-                position: 'relative',
+                width: `${virtualCol.size}px`,
+                transform: `translateX(${virtualCol.start}px)`,
+                display: 'inline-block',
               }}
+              key={photo.fileId}
             >
-              {items?.map((virtualCol) => {
-                const isLoaderRow = virtualCol.index > flatPhotos.length - 1;
-
-                if (isLoaderRow) {
-                  return hasNextPage || isFetchingNextPage ? (
-                    <div className="mt-5 animate-pulse" key={'loading'}>
-                      {t('Loading...')}
-                    </div>
-                  ) : null;
-                }
-
-                const photo = flatPhotos[virtualCol.index];
-                return (
-                  <div
-                    className="absolute inset-0 h-full"
-                    style={{
-                      width: `${virtualCol.size}px`,
-                      transform: `translateX(${virtualCol.start}px)`,
-                      display: 'inline-block',
-                    }}
-                    key={photo.fileId}
-                  >
-                    <MediaWithLoader media={photo} fileId={photo.fileId} />
-                  </div>
-                );
-              })}
+              <MediaWithLoader
+                media={photo}
+                fileId={photo.fileId}
+                className="relative h-full w-[100vw] flex-shrink-0 snap-start"
+              />
             </div>
-          </div>
-        </div>
-        {isInfoOpen ? (
-          <PhotoInfo current={fileHeader} setIsInfoOpen={setIsInfoOpen} key={fileId} />
-        ) : null}
+          );
+        })}
       </div>
     </div>
-  );
-};
-
-const MediaWithLoader = ({ media, fileId }: { media?: DriveSearchResult; fileId?: string }) => {
-  if (!media || !fileId) return <div className="relative h-full w-[100vw]"></div>;
-
-  return media?.fileMetadata.contentType.startsWith('video/') ? (
-    <VideoWithLoader fileId={fileId} targetDrive={targetDrive} fit="contain" />
-  ) : (
-    <PhotoWithLoader
-      fileId={fileId}
-      targetDrive={targetDrive}
-      previewThumbnail={media?.fileMetadata.appData.previewThumbnail}
-      size={{ pixelWidth: 1600, pixelHeight: 1600 }}
-      fit="contain"
-      key={fileId}
-      className="relative h-full w-[100vw] flex-shrink-0 snap-start"
-    />
   );
 };
 

@@ -7,6 +7,7 @@ export const VideoWithLoader = ({
   targetDrive,
   fit = 'cover',
   preview,
+  className,
 }: {
   fileId: string;
   targetDrive: TargetDrive;
@@ -14,12 +15,13 @@ export const VideoWithLoader = ({
   size?: ImageSize;
   fit?: 'cover' | 'contain';
   preview?: boolean;
+  className?: string;
 }) => {
   const { getDotYouClient } = useAuth();
   const dotYouClient = getDotYouClient();
 
   return (
-    <div className="relative h-full w-full">
+    <div className={className || 'relative h-full w-full'} data-file={fileId}>
       {preview ? (
         <OdinImage
           dotYouClient={dotYouClient}
