@@ -84,6 +84,14 @@ const getPhotoExifMeta = async (bytes: Uint8Array) => {
           fNumber: exifData.FNumber,
           iso: exifData.ISO,
           focalLength: exifData.FocalLength,
+          geolocation:
+            exifData.latitude && exifData.longitude
+              ? {
+                  latitude: exifData.latitude,
+                  longitude: exifData.longitude,
+                  altitude: exifData.altitude,
+                }
+              : undefined,
         },
       }
     : undefined;
