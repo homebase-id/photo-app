@@ -9,6 +9,7 @@ import {
   APP_AUTH_TOKEN,
   APP_SHARED_SECRET,
   getRegistrationParams,
+  preAuth as preauthApps,
 } from '../../provider/AuthenticationProvider';
 import { retrieveIdentity } from '../../provider/IdentityProvider';
 
@@ -58,6 +59,10 @@ const useAuth = () => {
     window.location.reload();
   };
 
+  const preauth = async (): Promise<void> => {
+    await preauthApps();
+  };
+
   const getSharedSecret = () => {
     const raw = window.localStorage.getItem(APP_SHARED_SECRET);
     if (raw) {
@@ -101,6 +106,7 @@ const useAuth = () => {
     authenticate,
     finalizeAuthentication,
     logout,
+    preauth,
     getDotYouClient,
     getSharedSecret,
     getIdentity: retrieveIdentity,

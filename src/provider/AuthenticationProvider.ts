@@ -134,3 +134,24 @@ export const logout = async () => {
   window.localStorage.removeItem(APP_SHARED_SECRET);
   window.localStorage.removeItem(APP_AUTH_TOKEN);
 };
+
+export const preAuth = async () => {
+  const dotYouClient = new DotYouClient({
+    api: ApiType.App,
+    identity: retrieveIdentity(),
+    sharedSecret: getSharedSecret(),
+  });
+  const client = dotYouClient.createAxiosClient();
+
+  await client
+    .post('/notify/preauth', undefined, {
+      validateStatus: () => true,
+      headers: {
+        BX0900: localStorage.getItem(APP_AUTH_TOKEN),
+      },
+    })
+    .catch((error) => {
+      console.error({ error });
+      return { status: 400, data: false };
+    });
+};
