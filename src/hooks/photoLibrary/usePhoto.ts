@@ -108,7 +108,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     fileId: string;
     addTags: string[];
   }) => {
-    const header = await getFileHeader(dotYouClient, targetDrive, fileId, undefined, true);
+    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
 
     const existingTags =
       header.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
@@ -130,7 +130,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     fileId: string;
     removeTags: string[];
   }) => {
-    const header = await getFileHeader(dotYouClient, targetDrive, fileId, undefined, true);
+    const header = await getFileHeader(dotYouClient, targetDrive, fileId);
     const existingTags = header.fileMetadata.appData.tags || [];
     const newTags = [
       ...existingTags.filter(

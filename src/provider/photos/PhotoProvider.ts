@@ -204,7 +204,7 @@ export const updatePhoto = async (
   photoFileId: string,
   newMetaData: MediaUploadMeta
 ) => {
-  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
+  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId);
   const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
@@ -254,7 +254,7 @@ export const updatePhotoMetadata = async (
   photoFileId: string,
   newImageMetadata: ImageMetadata
 ) => {
-  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId, undefined, true);
+  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId);
   const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
