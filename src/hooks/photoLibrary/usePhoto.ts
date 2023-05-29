@@ -206,6 +206,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onSuccess: (_param, _data) => {
         queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
         queryClient.invalidateQueries(['photos', targetDrive?.alias, 'bin']);
+        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
@@ -241,6 +242,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onSettled: (_param, _error, data) => {
         queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
         queryClient.invalidateQueries(['photos', targetDrive?.alias, 'archive']);
+        // queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, tag]); => Stays in the album, as they contain archived photos
       },
       onError: (ex) => {
         console.error(ex);
@@ -276,6 +278,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onSuccess: (_param, _data) => {
         queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
         queryClient.invalidateQueries(['photos', targetDrive?.alias]);
+        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
@@ -301,6 +304,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
             },
           };
 
+          console.log('newQueryData', newQueryData);
+
           queryClient.setQueryData<DriveSearchResult>(
             ['photo-header', toAddData.targetDrive.alias, toAddData.fileId],
             newQueryData
@@ -310,6 +315,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onSettled: (data, error, variables) => {
         variables.addTags.forEach((tag) => {
           queryClient.invalidateQueries(['photo-library', targetDrive?.alias, tag]);
+          queryClient.invalidateQueries(['photos', targetDrive?.alias, tag]);
+          queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, tag]);
         });
       },
     }),
@@ -330,11 +337,14 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
                 ...queryData.fileMetadata.appData,
                 tags:
                   queryData.fileMetadata.appData.tags?.filter(
-                    (tag) => !toRemoveData.removeTags.includes(tag)
+                    (tag) =>
+                      !toRemoveData.removeTags.some((removeTag) => stringGuidsEqual(removeTag, tag))
                   ) || [],
               },
             },
           };
+
+          console.log('newQueryData', newQueryData);
 
           queryClient.setQueryData<DriveSearchResult>(
             ['photo-header', toRemoveData.targetDrive.alias, toRemoveData.fileId],
@@ -345,6 +355,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
           queryClient.invalidateQueries(['photo-library', targetDrive?.alias, tag]);
+          queryClient.invalidateQueries(['photos', targetDrive?.alias, tag]);
+          queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, tag]);
         });
       },
     }),
