@@ -14,12 +14,14 @@ const ConfirmDialog = ({
   needConfirmation,
   onConfirm,
   onCancel,
+  type,
 }: {
   title: string;
   confirmText: string;
   children: ReactNode;
   trickQuestion?: TrickQuestion;
   needConfirmation: boolean;
+  type?: 'critical' | 'info';
   onConfirm: (e: React.MouseEvent<HTMLElement>) => void;
   onCancel: (e: React.MouseEvent<HTMLElement>) => void;
 }) => {
@@ -44,12 +46,16 @@ const ConfirmDialog = ({
               return false;
             }}
           >
-            <div className="bg-white px-4 pt-5 pb-4 text-gray-900 dark:bg-black dark:text-slate-50 sm:p-6 sm:pb-4">
+            <div className="bg-white px-4 pb-4 pt-5 text-gray-900 dark:bg-black dark:text-slate-50 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
-                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-red-400 sm:mx-0 sm:h-10 sm:w-10">
+                <div
+                  className={`mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${
+                    type === 'info' ? 'text-indigo-400' : 'text-red-400'
+                  } sm:mx-0 sm:h-10 sm:w-10`}
+                >
                   <Exclamation />
                 </div>
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <h3 className="text-lg font-medium leading-6" id="modal-title">
                     {title}
                   </h3>
@@ -67,9 +73,11 @@ const ConfirmDialog = ({
             <div className="bg-gray-50 px-4 py-3 dark:bg-slate-900  sm:flex sm:flex-row-reverse sm:px-6">
               <button
                 type="button"
-                className={`${
-                  !isValid ? 'pointer-events-none opacity-40' : ''
-                } inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
+                className={`${!isValid ? 'pointer-events-none opacity-40' : ''} ${
+                  type === 'info'
+                    ? 'hover:bg-indigo-70 bg-indigo-600 focus:ring-indigo-500'
+                    : 'hover:bg-red-70 bg-red-600 focus:ring-red-500'
+                } inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
                 onClick={onConfirm}
                 disabled={!isValid}
               >
@@ -77,7 +85,7 @@ const ConfirmDialog = ({
               </button>
               <button
                 type="button"
-                className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-700 dark:text-white sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-700 dark:text-white sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm"
                 onClick={onCancel}
               >
                 {t('Cancel')}

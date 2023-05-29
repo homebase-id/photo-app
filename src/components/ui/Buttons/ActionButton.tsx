@@ -39,6 +39,7 @@ export interface ActionButtonProps {
     buttonText: string;
     body: string;
     trickQuestion?: TrickQuestion;
+    type?: 'critical' | 'info';
   };
 }
 
@@ -175,6 +176,7 @@ const ActionButton: FC<ActionButtonProps> = ({
           title={confirmOptions.title}
           confirmText={confirmOptions.buttonText}
           trickQuestion={confirmOptions.trickQuestion}
+          type={confirmOptions.type}
           needConfirmation={needsConfirmation}
           onConfirm={(e) => {
             setNeedsConfirmation(false);
