@@ -1,6 +1,5 @@
 import {
   DotYouClient,
-  queryBatch,
   DriveSearchResult,
   getPayload,
   jsonStringify64,
@@ -10,6 +9,7 @@ import {
   SecurityGroupType,
   uploadFile,
   ArchivalStatus,
+  queryModified,
 } from '@youfoundation/js-lib';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
 
@@ -17,13 +17,14 @@ const encryptPhotoLibrary = true;
 
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
-  albumTag?: string
+  albumTag?: string,
+  lastCursor?: number
 ): Promise<PhotoLibraryMetadata | null> => {
   const typedAlbum = albumTag === 'bin' || albumTag === 'archive';
   const archivalStatus: ArchivalStatus[] =
     albumTag === 'bin' ? [2] : albumTag === 'archive' ? [1] : albumTag ? [0, 1] : [0];
 
-  const batch = await queryBatch(
+  const batch = await queryModified(
     dotYouClient,
     {
       targetDrive: PhotoConfig.PhotoDrive,
@@ -31,14 +32,19 @@ export const getPhotoLibrary = async (
       tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
       archivalStatus,
     },
-    { maxRecords: 2, includeMetadataHeader: true }
+    { maxRecords: 2, includeJsonContent: true, cursor: lastCursor }
   );
 
   if (batch.searchResults.length === 0) return null;
   if (batch.searchResults.length > 1)
     console.error('broken state, more than one photo library metadata file found');
 
-  return await dsrToPhotoLibraryMetadata(dotYouClient, batch.searchResults[0]);
+  const meta = await dsrToPhotoLibraryMetadata(dotYouClient, batch.searchResults[0]);
+  if (!meta) return null;
+  return {
+    ...meta,
+    lastCursor: batch.cursor,
+  };
 };
 
 const dsrToPhotoLibraryMetadata = async (
@@ -287,6 +293,8 @@ export const mergeLibrary = (libA: PhotoLibraryMetadata, libB: PhotoLibraryMetad
   const libC: PhotoLibraryMetadata = {
     yearsWithMonths: mergedYears,
     totalNumberOfPhotos: Math.max(libA.totalNumberOfPhotos, libB.totalNumberOfPhotos),
+    lastUpdated: Math.max(libA.lastUpdated || 0, libB.lastUpdated || 0),
+    lastCursor: Math.max(libA.lastUpdated || 0, libB.lastUpdated || 0),
   };
 
   return libC;

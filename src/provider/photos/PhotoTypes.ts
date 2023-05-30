@@ -53,6 +53,7 @@ export interface PhotoLibraryMetadata {
   fileId?: string;
   versionTag?: string;
   lastUpdated?: number;
+  lastCursor?: number;
 
   yearsWithMonths: PhotoMetaYear[];
   totalNumberOfPhotos: number;

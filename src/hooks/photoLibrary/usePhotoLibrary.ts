@@ -60,7 +60,11 @@ const usePhotoLibrary = ({
     ]);
 
     // Get meta file from server
-    const photoLibOnServer = await getPhotoLibrary(dotYouClient, album);
+    const photoLibOnServer = await getPhotoLibrary(
+      dotYouClient,
+      album,
+      photoLibOnClient?.lastCursor
+    );
     if (photoLibOnServer) {
       // Merge with local cache
       if (photoLibOnClient) {
@@ -74,9 +78,7 @@ const usePhotoLibrary = ({
     }
 
     if (photoLibOnClient) {
-      console.error(
-        'You are late... The meta is not on the server yet, and it is fetched already...'
-      );
+      console.log('Server has no updated lib, local cache is up to date');
       return photoLibOnClient;
     }
 
@@ -142,7 +144,6 @@ const usePhotoLibrary = ({
       album,
     ]);
     if (!currentLib) return;
-    console.log('fetched lib from cache', currentLib);
 
     const updatedLib = updateCount(currentLib, date, newCount);
     if (!updatedLib) return;
