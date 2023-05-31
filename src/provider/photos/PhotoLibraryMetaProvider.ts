@@ -9,7 +9,7 @@ import {
   SecurityGroupType,
   uploadFile,
   ArchivalStatus,
-  queryModified,
+  queryBatch,
 } from '@youfoundation/js-lib';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
 
@@ -24,7 +24,7 @@ export const getPhotoLibrary = async (
   const archivalStatus: ArchivalStatus[] =
     albumTag === 'bin' ? [2] : albumTag === 'archive' ? [1] : albumTag ? [0, 1] : [0];
 
-  const batch = await queryModified(
+  const batch = await queryBatch(
     dotYouClient,
     {
       targetDrive: PhotoConfig.PhotoDrive,
@@ -32,7 +32,11 @@ export const getPhotoLibrary = async (
       tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
       archivalStatus,
     },
-    { maxRecords: 2, includeJsonContent: true, cursor: lastCursor }
+    {
+      maxRecords: 2,
+      includeMetadataHeader: true,
+      // cursor: lastCursor
+    }
   );
 
   if (batch.searchResults.length === 0) return null;
@@ -43,7 +47,7 @@ export const getPhotoLibrary = async (
   if (!meta) return null;
   return {
     ...meta,
-    lastCursor: batch.cursor,
+    // lastCursor: batch.cursor,
   };
 };
 

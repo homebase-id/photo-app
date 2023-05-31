@@ -62,8 +62,8 @@ const usePhotoLibrary = ({
     // Get meta file from server
     const photoLibOnServer = await getPhotoLibrary(
       dotYouClient,
-      album,
-      photoLibOnClient?.lastCursor
+      album
+      // photoLibOnClient?.lastCursor
     );
     if (photoLibOnServer) {
       // Merge with local cache
@@ -147,8 +147,6 @@ const usePhotoLibrary = ({
 
     const updatedLib = updateCount(currentLib, date, newCount);
     if (!updatedLib) return;
-
-    console.log('updated lib from cache', updatedLib);
 
     queryClient.setQueryData<PhotoLibraryMetadata>(
       ['photo-library', targetDrive.alias, album],
