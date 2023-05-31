@@ -46,7 +46,7 @@ const PhotoPreview = ({
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
-        <div className="relative w-full">
+        <div className={`relative ${isInfoOpen ? 'w-full md:w-[calc(100%-27rem)]' : 'w-full'}`}>
           <PhotoActions
             fileId={fileId}
             current={fileHeader}
