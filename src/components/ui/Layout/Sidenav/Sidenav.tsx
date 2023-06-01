@@ -19,6 +19,7 @@ import Trash from '../../Icons/Trash/Trash';
 import { MiniDarkModeToggle } from '../DarkModeToggle/DarkModeToggle';
 import { useAlbumThumbnail } from '../../../../hooks/photoLibrary/useAlbum';
 import Plus from '../../Icons/Plus/Plus';
+import Grid from '../../Icons/Grid/Grid';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -81,6 +82,7 @@ const Sidenav = () => {
 
             <div className="py-3">
               <NavItem icon={Archive} label={'Archive'} to={`/archive`} end={true} />
+              <NavItem icon={Grid} label={'Apps'} to={`/apps`} end={true} />
               <NavItem icon={Trash} label={'Bin'} to={`/bin`} end={true} />
             </div>
 

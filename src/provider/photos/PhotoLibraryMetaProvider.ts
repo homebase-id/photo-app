@@ -20,9 +20,17 @@ export const getPhotoLibrary = async (
   albumTag?: string,
   lastCursor?: number
 ): Promise<PhotoLibraryMetadata | null> => {
-  const typedAlbum = albumTag === 'bin' || albumTag === 'archive';
+  const typedAlbum = albumTag === 'bin' || albumTag === 'archive' || albumTag === 'apps';
   const archivalStatus: ArchivalStatus[] =
-    albumTag === 'bin' ? [2] : albumTag === 'archive' ? [1] : albumTag ? [0, 1] : [0];
+    albumTag === 'bin'
+      ? [2]
+      : albumTag === 'archive'
+      ? [1]
+      : albumTag === 'apps'
+      ? [3]
+      : albumTag
+      ? [0, 1, 3]
+      : [0];
 
   const batch = await queryBatch(
     dotYouClient,
@@ -77,8 +85,9 @@ export const savePhotoLibraryMetadata = async (
   albumTag?: string,
   onVersionConflict?: () => void
 ) => {
-  const typedAlbum = albumTag === 'bin' || albumTag === 'archive';
-  const archivalStatus: ArchivalStatus = albumTag === 'bin' ? 2 : albumTag === 'archive' ? 1 : 0;
+  const typedAlbum = albumTag === 'bin' || albumTag === 'archive' || albumTag === 'apps';
+  const archivalStatus: ArchivalStatus =
+    albumTag === 'bin' ? 2 : albumTag === 'archive' ? 1 : albumTag === 'apps' ? 3 : 0;
 
   const existingPhotoLib = await getPhotoLibrary(dotYouClient, albumTag);
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)

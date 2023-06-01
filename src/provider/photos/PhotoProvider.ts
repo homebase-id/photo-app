@@ -38,9 +38,17 @@ export const getPhotos = async (
   cursorState?: string,
   ordering?: 'older' | 'newer'
 ) => {
-  const typedAlbum = album === 'bin' || album === 'archive';
+  const typedAlbum = album === 'bin' || album === 'archive' || album === 'apps';
   const archivalStatus: ArchivalStatus[] =
-    album === 'bin' ? [2] : album === 'archive' ? [1] : album ? [0, 1] : [0];
+    album === 'bin'
+      ? [2]
+      : album === 'archive'
+      ? [1]
+      : album === 'apps'
+      ? [3]
+      : album
+      ? [0, 1, 3]
+      : [0];
 
   const reponse = await queryBatch(
     dotYouClient,

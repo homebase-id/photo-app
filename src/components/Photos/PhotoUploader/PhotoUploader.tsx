@@ -5,7 +5,6 @@ import usePhoto from '../../../hooks/photoLibrary/usePhoto';
 import { FileLike, PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
-import useAlbum from '../../../hooks/photoLibrary/useAlbum';
 import { t } from '../../../helpers/i18n/dictionary';
 import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
@@ -71,21 +70,6 @@ const Uploader = ({
     }
   }, [isFileSelectorOpen]);
 
-  const {
-    fetch: { data: album, isFetched: albumFetched },
-    save: { mutateAsync: saveAlbum },
-  } = useAlbum(PhotoConfig.PinTag);
-
-  useEffect(() => {
-    if (!album && albumFetched) {
-      saveAlbum({
-        name: t('Apps'),
-        description: t('Photos from apps'),
-        tag: PhotoConfig.PinTag,
-      });
-    }
-  }, [album, albumFetched]);
-
   useEffect(() => {
     const messageListener = (e: MessageEvent) => {
       if (e?.data?.source?.startsWith('react-devtools-')) return;
@@ -131,15 +115,15 @@ const Uploader = ({
 
       doUploadToServer({
         newPhoto: currentFile,
-        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
-        meta: { archivalStatus: isPin ? 1 : 0 },
+        albumKey: albumKey,
+        meta: { archivalStatus: isPin ? 3 : 0 },
         thumb: currentVideoThumb,
       });
     } else {
       doUploadToServer({
         newPhoto: currentFile,
-        albumKey: isPin ? PhotoConfig.PinTag : albumKey,
-        meta: { archivalStatus: isPin ? 1 : 0 },
+        albumKey: albumKey,
+        meta: { archivalStatus: isPin ? 3 : 0 },
       });
     }
   }, [currentFile, currentVideoThumb]);

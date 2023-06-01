@@ -62,7 +62,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
 
     if (
       uploadResult?.userDate &&
-      (!albumKey || ['bin', 'archive', PhotoConfig.FavoriteTag].includes(albumKey))
+      (!albumKey || ['bin', 'archive', 'apps', PhotoConfig.FavoriteTag].includes(albumKey))
     ) {
       console.log('adding', uploadResult.userDate, albumKey);
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
@@ -183,7 +183,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           .findAll(['photos', targetDrive?.alias])
           .forEach((query) => {
             const queryKey = query.queryKey;
-            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
+            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | 'apps' | string;
             const queryData =
               queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
@@ -219,7 +219,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           .findAll(['photos', targetDrive?.alias])
           .forEach((query) => {
             const queryKey = query.queryKey;
-            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
+            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | 'apps' | string;
             const queryData =
               queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 

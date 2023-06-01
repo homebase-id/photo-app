@@ -124,7 +124,7 @@ const PhotoSelection = ({
     clearSelection();
   };
 
-  const typedAlbum = albumKey === 'bin' || albumKey === 'archive';
+  const typedAlbum = albumKey === 'bin' || albumKey === 'archive' || albumKey === 'apps';
 
   return (
     <div className="sticky top-0 z-10 -mx-2 -mt-10 flex flex-row items-center bg-indigo-400 p-3 shadow-md sm:-mx-10">
@@ -168,7 +168,7 @@ const PhotoSelection = ({
           />
         ) : null}
 
-        {typedAlbum ? (
+        {typedAlbum && albumKey !== 'apps' ? (
           <ActionButton onClick={() => restoreSelection()}>{t('Restore')}</ActionButton>
         ) : (
           <>
@@ -179,7 +179,7 @@ const PhotoSelection = ({
               type="secondary"
               onClick={() => favoriteSelection()}
             />
-            {albums && !albumKey ? (
+            {albums && (!albumKey || (albumKey && typedAlbum)) ? (
               <ActionButtonWithOptions
                 type="secondary"
                 options={albums.map((album) => {
@@ -189,7 +189,7 @@ const PhotoSelection = ({
                 {t('Add to album')}
               </ActionButtonWithOptions>
             ) : null}
-            {albumKey && albumKey !== 'archive' && albumKey !== 'bin' ? (
+            {albumKey && !typedAlbum ? (
               <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
                 {t('Remove from album')}
               </ActionButton>

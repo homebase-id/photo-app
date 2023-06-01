@@ -12,6 +12,7 @@ import About from '../templates/About/About';
 const Photos = lazy(() => import('../templates/Photos/Photos'));
 const PhotosBin = lazy(() => import('../templates/Photos/PhotosBin'));
 const PhotosArchive = lazy(() => import('../templates/Photos/PhotosArchive'));
+const PhotosFromApps = lazy(() => import('../templates/Photos/PhotosFromApps'));
 const PhotosFavorites = lazy(() => import('../templates/Photos/PhotosFavorites'));
 const NotFound = lazy(() => import('../templates/NotFound/NotFound'));
 const Auth = lazy(() => import('../templates/Auth/Auth'));
@@ -64,6 +65,8 @@ function App() {
                   <Route path="/favorites/photo/:photoKey" element={<PhotosFavorites />}></Route>
                   <Route path="/archive" element={<PhotosArchive />}></Route>
                   <Route path="/archive/photo/:photoKey" element={<PhotosArchive />}></Route>
+                  <Route path="/apps" element={<PhotosFromApps />}></Route>
+                  <Route path="/apps/photo/:photoKey" element={<PhotosFromApps />}></Route>
                   <Route path="/bin" element={<PhotosBin />}></Route>
                   <Route path="/bin/photo/:photoKey" element={<PhotosBin />}></Route>
                 </Route>

@@ -50,7 +50,7 @@ const usePhotoLibrary = ({
     if (!dotYouClient || !targetDrive) return null;
 
     // We don't manage meta files for normal albums
-    if (album && ![PhotoConfig.FavoriteTag, 'bin', 'archive'].includes(album)) return null;
+    if (album && ![PhotoConfig.FavoriteTag, 'bin', 'archive', 'apps'].includes(album)) return null;
 
     // Get meta file from client
     const photoLibOnClient = queryClient.getQueryData<PhotoLibraryMetadata>([
