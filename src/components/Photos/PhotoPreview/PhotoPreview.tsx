@@ -24,6 +24,7 @@ const PhotoPreview = ({
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
+  const [loadOriginal, setLoadOriginal] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add('overflow-hidden');
@@ -55,6 +56,8 @@ const PhotoPreview = ({
             urlPrefix={urlPrefix}
             nextSibling={nextSibling}
             prevSibling={prevSibling}
+            loadOriginal={loadOriginal}
+            setLoadOriginal={setLoadOriginal}
           />
           {flatPhotos?.length ? (
             <InnerSlider
@@ -64,6 +67,7 @@ const PhotoPreview = ({
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
               flatPhotos={flatPhotos}
+              originals={loadOriginal}
             />
           ) : null}
         </div>
@@ -83,6 +87,7 @@ const InnerSlider = ({
   hasNextPage,
   isFetchingNextPage,
   flatPhotos,
+  originals,
 }: {
   fileId: string;
 
@@ -91,6 +96,7 @@ const InnerSlider = ({
   hasNextPage?: boolean;
   isFetchingNextPage: boolean;
   flatPhotos: DriveSearchResult[];
+  originals?: boolean;
 }) => {
   // I know this is strange, as this will break hooks consistentcy,
   // but if there's no photos the virtual scrolling will initialize with no width, and the intialOffset will be 0
@@ -98,7 +104,7 @@ const InnerSlider = ({
 
   const fileIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
   const scrollContainer = useRef<HTMLDivElement>(null);
-  const slideWidth = window.innerWidth; // Not clientWidth as the scrollbar is removed be disabled scrolling on the body
+  const slideWidth = scrollContainer.current?.parentElement?.clientWidth || window.innerWidth; // Not widow.clientWidth as the scrollbar is removed be disabled scrolling on the body
   const [initialOffset] = useState(fileIndex * slideWidth);
 
   const scrollListener = useDebounce(
@@ -163,7 +169,7 @@ const InnerSlider = ({
 
     scrollContainer.current.scrollTo({
       left: targetPos,
-      behavior: 'smooth', // No clue yet why this doesn't always work
+      behavior: 'smooth',
     });
   }, [fileId, flatPhotos, colVirtualizer, fileIndex]);
 
@@ -204,6 +210,7 @@ const InnerSlider = ({
                 media={photo}
                 fileId={photo.fileId}
                 className="relative h-full w-[100vw] flex-shrink-0 snap-start"
+                original={originals}
               />
             </div>
           );

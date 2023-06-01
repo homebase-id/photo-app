@@ -58,7 +58,7 @@ export const PhotoInfo = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black md:static md:w-[27rem] md:flex-shrink-0">
+      <div className="fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black dark:text-white md:static md:w-[27rem] md:flex-shrink-0">
         <div className="px-8 py-7">
           <div className="mb-10 flex flex-row">
             <button onClick={() => setIsInfoOpen(false)} className="mr-2">

@@ -9,10 +9,12 @@ const MediaWithLoader = ({
   media,
   fileId,
   className,
+  original,
 }: {
   media?: DriveSearchResult;
   fileId?: string;
   className?: string;
+  original?: boolean;
 }) => {
   if (!media || !fileId) return <div className="relative h-full w-[100vw]"></div>;
 
@@ -28,7 +30,7 @@ const MediaWithLoader = ({
       fileId={fileId}
       targetDrive={targetDrive}
       previewThumbnail={media?.fileMetadata.appData.previewThumbnail}
-      size={{ pixelWidth: 1600, pixelHeight: 1600 }}
+      size={!original ? { pixelWidth: 1600, pixelHeight: 1600 } : undefined}
       fit="contain"
       key={fileId}
       className={className}

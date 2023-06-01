@@ -21,6 +21,8 @@ export const PhotoActions = ({
   setIsInfoOpen,
   isInfoOpen,
   urlPrefix,
+  loadOriginal,
+  setLoadOriginal,
 }: {
   fileId: string;
   current?: DriveSearchResult;
@@ -29,6 +31,8 @@ export const PhotoActions = ({
   setIsInfoOpen: (isOpen: boolean) => void;
   isInfoOpen: boolean;
   urlPrefix?: string;
+  loadOriginal: boolean;
+  setLoadOriginal: (loadOriginal: boolean) => void;
 }) => {
   const navigate = useNavigate();
 
@@ -166,6 +170,18 @@ export const PhotoActions = ({
           size="square"
           type="hybrid"
         />
+      </div>
+      <div className="absolute bottom-3 right-3 z-10">
+        <button
+          className={`flex flex-row items-center gap-2 rounded-3xl border border-white border-opacity-10 bg-white px-2 py-1 text-sm text-white before:block before:h-2 before:w-2 before:rounded-full before:bg-white before:content-[''] ${
+            loadOriginal
+              ? 'bg-opacity-20 before:bg-opacity-100'
+              : 'bg-opacity-10 text-opacity-50 before:bg-opacity-10'
+          }`}
+          onClick={() => setLoadOriginal(!loadOriginal)}
+        >
+          {t('Original')}
+        </button>
       </div>
       {prevSibling ? (
         <ActionButton
