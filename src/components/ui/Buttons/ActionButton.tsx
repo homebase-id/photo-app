@@ -28,7 +28,7 @@ export interface ActionButtonProps {
     | 'check'
     | 'times'
     | FC<IconProps>;
-  type?: 'primary' | 'secondary' | 'remove' | 'mute';
+  type?: 'primary' | 'secondary' | 'remove' | 'mute' | 'hybrid';
   state?: ActionButtonState;
   isDisabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLElement>;
@@ -125,6 +125,8 @@ const ActionButton: FC<ActionButtonProps> = ({
       ? 'bg-red-500 hover:bg-red-600 text-white'
       : type === 'secondary'
       ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-800 dark:text-white'
+      : type === 'hybrid'
+      ? 'bg-white bg-opacity-10 text-white hover:bg-white hover:bg-opacity-20'
       : type === 'remove'
       ? 'bg-red-200 hover:bg-red-400 dark:bg-red-700 hover:dark:bg-red-800 dark:text-white'
       : type === 'mute'

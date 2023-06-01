@@ -33,8 +33,8 @@ export const PhotoActions = ({
   const navigate = useNavigate();
 
   const {
-    remove: { mutateAsync: removePhoto, status: removePhotoStatus },
-    archive: { mutateAsync: archivePhoto, status: archivePhotoStatus },
+    remove: { mutateAsync: removePhoto, status: removePhotoStatus, reset: resetRemove },
+    archive: { mutateAsync: archivePhoto, status: archivePhotoStatus, reset: resetArchive },
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
@@ -65,6 +65,8 @@ export const PhotoActions = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
+    resetRemove();
+    resetArchive();
 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [fileId, prevSibling, nextSibling]); // We need new handlers to reflect the new fileId and navigate to the respective siblings
@@ -102,7 +104,7 @@ export const PhotoActions = ({
             state={removePhotoStatus}
             className="p-3"
             size="square"
-            type="secondary"
+            type="hybrid"
             confirmOptions={{
               title: t('Remove Photo'),
               body: t('Are you sure you want to remove this photo?'),
@@ -121,7 +123,7 @@ export const PhotoActions = ({
             state={archivePhotoStatus}
             className="p-3"
             size="square"
-            type="secondary"
+            type="hybrid"
             confirmOptions={{
               title: t('Archive Photo'),
               body: t('Are you sure you want to archive this photo?'),
@@ -135,14 +137,14 @@ export const PhotoActions = ({
           onClick={() => setIsInfoOpen(!isInfoOpen)}
           className="p-3"
           size="square"
-          type="secondary"
+          type="hybrid"
         />
         <ActionButton
           icon={isFavorite ? SolidHeart : Heart}
           onClick={() => doFavorite()}
           className="p-3"
           size="square"
-          type="secondary"
+          type="hybrid"
         />
         {current?.fileMetadata.appData.archivalStatus === 1 ||
         current?.fileMetadata.appData.archivalStatus === 2 ? (
@@ -162,7 +164,7 @@ export const PhotoActions = ({
           onClick={doClose}
           className="rounded-full p-3 lg:fixed"
           size="square"
-          type="secondary"
+          type="hybrid"
         />
       </div>
       {prevSibling ? (
@@ -171,7 +173,7 @@ export const PhotoActions = ({
           onClick={() => doPrev()}
           className="absolute left-2 top-[calc(50%-1.25rem)] z-10 hidden rounded-full p-3 lg:block"
           size="square"
-          type="secondary"
+          type="hybrid"
         />
       ) : null}
       {nextSibling ? (
@@ -180,7 +182,7 @@ export const PhotoActions = ({
           onClick={() => doNext()}
           className="absolute right-2 top-[calc(50%-1.25rem)] z-10 hidden rounded-full p-3 lg:block"
           size="square"
-          type="secondary"
+          type="hybrid"
         />
       ) : null}
     </>
