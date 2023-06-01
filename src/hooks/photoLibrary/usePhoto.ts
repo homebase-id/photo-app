@@ -7,6 +7,7 @@ import {
   DriveSearchResult,
   ThumbnailFile,
   MediaUploadMeta,
+  getPayloadBytes,
 } from '@youfoundation/js-lib';
 import useAuth from '../auth/useAuth';
 
@@ -141,6 +142,35 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     return await updatePhoto(dotYouClient, targetDrive, fileId, {
       tag: newTags,
     });
+  };
+
+  const download = async ({
+    targetDrive,
+    dsr,
+  }: {
+    targetDrive: TargetDrive;
+    dsr: DriveSearchResult;
+  }) => {
+    if (!targetDrive) return null;
+
+    const decryptedPayload = await getPayloadBytes(
+      dotYouClient,
+      targetDrive,
+      dsr.fileId,
+      dsr.fileMetadata.payloadIsEncrypted ? dsr.sharedSecretEncryptedKeyHeader : undefined
+    );
+
+    if (!decryptedPayload) return null;
+
+    const url = window.URL.createObjectURL(
+      new Blob([decryptedPayload.bytes], { type: decryptedPayload.contentType })
+    );
+
+    // Dirty hack for easy download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = url.substring(url.lastIndexOf('/') + 1);
+    link.click();
   };
 
   return {
@@ -360,6 +390,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         });
       },
     }),
+    download: useMutation(download),
   };
 };
 

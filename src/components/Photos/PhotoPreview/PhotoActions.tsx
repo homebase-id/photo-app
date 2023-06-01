@@ -5,11 +5,11 @@ import { t } from '../../../helpers/i18n/dictionary';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
-import Archive from '../../ui/Icons/Archive/Archive';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
 import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
 import Question from '../../ui/Icons/Question/Question';
 import Times from '../../ui/Icons/Times/Times';
+import { ActionGroup } from '../../ui/Buttons/ActionGroup';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -38,10 +38,11 @@ export const PhotoActions = ({
 
   const {
     remove: { mutateAsync: removePhoto, status: removePhotoStatus, reset: resetRemove },
-    archive: { mutateAsync: archivePhoto, status: archivePhotoStatus, reset: resetArchive },
+    archive: { mutateAsync: archivePhoto },
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
+    download: { mutateAsync: downloadPhoto },
   } = usePhoto(targetDrive);
 
   const isFavorite = current?.fileMetadata.appData.tags?.some((tag) =>
@@ -70,7 +71,6 @@ export const PhotoActions = ({
 
     window.addEventListener('keydown', handleKeyDown);
     resetRemove();
-    resetArchive();
 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [fileId, prevSibling, nextSibling]); // We need new handlers to reflect the new fileId and navigate to the respective siblings
@@ -97,6 +97,35 @@ export const PhotoActions = ({
         className="absolute right-3 top-3 z-10 flex w-[50%] flex-row-reverse gap-2"
         onClick={(e) => e.stopPropagation()}
       >
+        <ActionGroup
+          options={[
+            {
+              label: t('Download'),
+              onClick: () => current && downloadPhoto({ targetDrive, dsr: current }),
+            },
+            ...(current?.fileMetadata.appData.archivalStatus !== 1
+              ? [
+                  {
+                    label: t('Archive'),
+                    onClick: async () => {
+                      await archivePhoto({ photoFileId: fileId });
+                      if (nextSibling) doNext();
+                      else doClose();
+                    },
+                    confirmOptions: {
+                      title: t('Archive Photo'),
+                      body: t('Are you sure you want to archive this photo?'),
+                      buttonText: t('Archive'),
+                    },
+                  },
+                ]
+              : []),
+          ]}
+          state={removePhotoStatus}
+          innerClassname="p-3 text-white"
+          size="square"
+          type="hybrid"
+        />
         {current?.fileMetadata.appData.archivalStatus !== 2 ? (
           <ActionButton
             icon={'trash'}
@@ -113,25 +142,6 @@ export const PhotoActions = ({
               title: t('Remove Photo'),
               body: t('Are you sure you want to remove this photo?'),
               buttonText: t('Remove'),
-            }}
-          />
-        ) : null}
-        {current?.fileMetadata.appData.archivalStatus !== 1 ? (
-          <ActionButton
-            icon={Archive}
-            onClick={async () => {
-              await archivePhoto({ photoFileId: fileId });
-              if (nextSibling) doNext();
-              else doClose();
-            }}
-            state={archivePhotoStatus}
-            className="p-3"
-            size="square"
-            type="hybrid"
-            confirmOptions={{
-              title: t('Archive Photo'),
-              body: t('Are you sure you want to archive this photo?'),
-              buttonText: t('Archive'),
             }}
           />
         ) : null}

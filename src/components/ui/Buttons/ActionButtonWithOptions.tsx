@@ -2,17 +2,19 @@ import { FC, useRef, useState } from 'react';
 import useOutsideTrigger from '../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
 import ActionButton, { ActionButtonProps } from './ActionButton';
 
-interface ActionButtonWithOptionsProps extends Omit<ActionButtonProps, 'icon'> {
+interface ActionButtonWithOptionsProps extends ActionButtonProps {
   options: {
     name: string;
     group?: string;
     onClick?: React.MouseEventHandler<HTMLElement>;
   }[];
+  innerClassName?: string;
 }
 
 const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
   options,
   className,
+  innerClassName,
   ...actionButtonProps
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -55,10 +57,10 @@ const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
   return (
     <div className={`relative ${className ?? ''}`} ref={wrapperRef}>
       <ActionButton
-        {...actionButtonProps}
-        className="w-full sm:w-full"
-        onClick={() => setIsOpen(!isOpen)}
         icon="down"
+        {...actionButtonProps}
+        className={`w-full sm:w-full ${innerClassName ?? ''}`}
+        onClick={() => setIsOpen(!isOpen)}
       />
       {optionGroups?.length ? (
         <ul
