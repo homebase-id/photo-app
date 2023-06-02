@@ -14,10 +14,12 @@ const Uploader = ({
   isFileSelectorOpen,
   setFileSelectorOpen,
   albumKey,
+  archivalStatus,
 }: {
   isFileSelectorOpen: boolean;
   setFileSelectorOpen: (isOpen: boolean) => void;
   albumKey?: string;
+  archivalStatus?: number;
 }) => {
   const [failedFiles, setFailedFiles] = useState<(File | FileLike)[]>([]);
   const [uploadQueue, setUploadQueue] = useState<(File | FileLike)[]>([]);
@@ -116,14 +118,14 @@ const Uploader = ({
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: albumKey,
-        meta: { archivalStatus: isPin ? 3 : 0 },
+        meta: { archivalStatus: isPin ? 3 : archivalStatus || 0 },
         thumb: currentVideoThumb,
       });
     } else {
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: albumKey,
-        meta: { archivalStatus: isPin ? 3 : 0 },
+        meta: { archivalStatus: isPin ? 3 : archivalStatus || 0 },
       });
     }
   }, [currentFile, currentVideoThumb]);

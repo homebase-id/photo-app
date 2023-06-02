@@ -63,9 +63,16 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
 
     if (
       uploadResult?.userDate &&
-      (!albumKey || ['bin', 'archive', 'apps', PhotoConfig.FavoriteTag].includes(albumKey))
+      ((!albumKey && !meta?.archivalStatus) ||
+        (albumKey && stringGuidsEqual(PhotoConfig.FavoriteTag, albumKey)))
     ) {
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
+    }
+
+    if (meta?.archivalStatus === 3) {
+      addDayToLibrary({ album: 'apps', date: uploadResult.userDate });
+    } else if (meta?.archivalStatus === 1) {
+      addDayToLibrary({ album: 'archive', date: uploadResult.userDate });
     }
   };
 
