@@ -14,6 +14,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Authenticate to Github packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+
       - uses: jsmrcaga/action-netlify-deploy@v2.0.0
         with:
           NETLIFY_SITE_ID: 5e581e51-e8be-4871-8e5f-156eef719f6c
