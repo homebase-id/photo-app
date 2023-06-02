@@ -89,7 +89,7 @@ const PhotoLibrary = ({
 
   const virtualizer = useWindowVirtualizer({
     count: (monthsToShow?.length || 0) + 1, // Add 1 so we have an index for the 'no more photos row'
-    estimateSize: () => 1000, // Rough size of a photoSection
+    estimateSize: () => 500, // Rough size of a photoSection
     scrollMargin: parentOffsetRef.current,
     overscan: 1, // Amount of items to load before and after (improved performance especially with images)
   });
@@ -139,7 +139,12 @@ const PhotoLibrary = ({
               const isFinalRow = virtualRow.index > monthsToShow.length - 1;
               if (isFinalRow)
                 return (
-                  <div className="mt-5 italic opacity-50" key={'no-more'}>
+                  <div
+                    className="pt-5 italic opacity-50"
+                    key={virtualRow.key}
+                    data-index={virtualRow.index}
+                    ref={virtualizer.measureElement}
+                  >
                     {t('No more photos')}
                   </div>
                 );
