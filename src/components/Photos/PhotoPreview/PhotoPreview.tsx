@@ -72,7 +72,12 @@ const PhotoPreview = ({
           ) : null}
         </div>
         {isInfoOpen ? (
-          <PhotoInfo current={fileHeader} setIsInfoOpen={setIsInfoOpen} key={fileId} />
+          <PhotoInfo
+            current={fileHeader}
+            setIsInfoOpen={setIsInfoOpen}
+            loadOriginal={loadOriginal}
+            key={fileId}
+          />
         ) : null}
       </div>
     </div>

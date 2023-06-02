@@ -27,9 +27,11 @@ const timeFormat: Intl.DateTimeFormatOptions = {
 export const PhotoInfo = ({
   current,
   setIsInfoOpen,
+  loadOriginal,
 }: {
   current?: DriveSearchResult;
   setIsInfoOpen: (infoOpen: boolean) => void;
+  loadOriginal: boolean;
 }) => {
   const [isEditUserDate, setIsEditUserDate] = useState(false);
   const {
@@ -55,6 +57,12 @@ export const PhotoInfo = ({
   });
 
   const debouncedChangeDesc = useMemo(() => debounce(onChange.current, 1500), [onChange]);
+
+  const originalSize = current?.fileMetadata.appData.previewThumbnail;
+  const maxThumb =
+    current?.fileMetadata.appData.additionalThumbnails?.[
+      current?.fileMetadata.appData.additionalThumbnails?.length - 1
+    ];
 
   return (
     <>
@@ -93,7 +101,26 @@ export const PhotoInfo = ({
             {photoMetadata ? <PhotoCaptureDetails metadata={photoMetadata} /> : null}
             <li>
               <p>
-                Unique identifier:
+                Image size
+                <small className="block">
+                  {loadOriginal ? (
+                    <>
+                      {originalSize?.pixelWidth} x {originalSize?.pixelHeight}
+                    </>
+                  ) : (
+                    <>
+                      {maxThumb?.pixelWidth} x {maxThumb?.pixelHeight}
+                      <span className="ml-2 text-slate-400">
+                        ({originalSize?.pixelWidth} x {originalSize?.pixelHeight} original)
+                      </span>
+                    </>
+                  )}
+                </small>
+              </p>
+            </li>
+            <li>
+              <p>
+                Unique identifier
                 <small className="block text-sm text-slate-400">
                   {current?.fileMetadata.appData.uniqueId}
                 </small>
