@@ -201,8 +201,14 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       }
     },
     upload: useMutation(uploadNewMedia, {
-      onSuccess: () => {
-        // queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+      onSuccess: (data, variables) => {
+        // Need to invalidate the infinite query to update the photoPreview;
+        queryClient.invalidateQueries([
+          'photos-infinite',
+          targetDrive?.alias,
+          variables.albumKey,
+          null,
+        ]);
       },
     }),
     remove: useMutation(removePhoto, {

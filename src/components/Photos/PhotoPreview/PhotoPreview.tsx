@@ -165,7 +165,7 @@ const InnerSlider = ({
     if (fileIndex === -1 || !scrollContainer.current) return;
 
     const targetPos = colVirtualizer.getOffsetForIndex(fileIndex)[0];
-    if (targetPos === initialOffset) return;
+    if (targetPos === initialOffset && targetPos !== 0) return; // Even if initialOffset is 0 we do want to scroll to it
 
     scrollContainer.current.scrollTo({
       left: targetPos,
