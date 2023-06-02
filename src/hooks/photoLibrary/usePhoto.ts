@@ -65,7 +65,6 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       uploadResult?.userDate &&
       (!albumKey || ['bin', 'archive', 'apps', PhotoConfig.FavoriteTag].includes(albumKey))
     ) {
-      console.log('adding', uploadResult.userDate, albumKey);
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
     }
   };

@@ -10,6 +10,7 @@ import {
   uploadFile,
   ArchivalStatus,
   queryBatch,
+  queryModified,
 } from '@youfoundation/js-lib';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
 
@@ -32,20 +33,34 @@ export const getPhotoLibrary = async (
       ? [0, 1, 3]
       : [0];
 
-  const batch = await queryBatch(
-    dotYouClient,
-    {
-      targetDrive: PhotoConfig.PhotoDrive,
-      fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-      tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
-      archivalStatus,
-    },
-    {
-      maxRecords: 2,
-      includeMetadataHeader: true,
-      // cursor: lastCursor
-    }
-  );
+  const batch = lastCursor
+    ? await queryModified(
+        dotYouClient,
+        {
+          targetDrive: PhotoConfig.PhotoDrive,
+          fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
+          tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
+          archivalStatus,
+        },
+        {
+          maxRecords: 2,
+          includeJsonContent: true,
+          cursor: lastCursor,
+        }
+      )
+    : await queryBatch(
+        dotYouClient,
+        {
+          targetDrive: PhotoConfig.PhotoDrive,
+          fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
+          tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
+          archivalStatus,
+        },
+        {
+          maxRecords: 2,
+          includeMetadataHeader: true,
+        }
+      );
 
   if (batch.searchResults.length === 0) return null;
   if (batch.searchResults.length > 1)
@@ -55,7 +70,7 @@ export const getPhotoLibrary = async (
   if (!meta) return null;
   return {
     ...meta,
-    // lastCursor: batch.cursor,
+    lastCursor: 'cursor' in batch ? batch.cursor : batch.queryTime,
   };
 };
 
@@ -175,9 +190,11 @@ export const buildMetaStructure = (headers: DriveSearchResult[]): PhotoLibraryMe
 
         return {
           month: parseInt(month),
-          photosThisMonth: days.flatMap((day) => {
-            return arrayStruc[year][month][day];
-          }).length,
+          photosThisMonth: days
+            .flatMap((day) => {
+              return arrayStruc[year][month][day];
+            })
+            .reduce((partialSum, a) => partialSum + a, 0),
         };
       }),
     };
@@ -230,14 +247,14 @@ export const addDay = (currentLib: PhotoLibraryMetadata, date: Date): PhotoLibra
   };
   const newMonth = newYear?.months?.find((m) => m.month === date.getMonth() + 1) || {
     month: date.getMonth() + 1,
-    photosThisMonth: 1,
+    photosThisMonth: 0,
   };
 
   const newMonths = [
     ...newYear.months.filter((m) => m.month !== date.getMonth() + 1),
     {
       ...newMonth,
-      photosThisMonth: newMonth.photosThisMonth ? newMonth.photosThisMonth + 1 : 1,
+      photosThisMonth: newMonth.photosThisMonth !== undefined ? newMonth.photosThisMonth + 1 : 1,
     },
   ];
   newMonths.sort((monthA, monthB) => monthB.month - monthA.month);

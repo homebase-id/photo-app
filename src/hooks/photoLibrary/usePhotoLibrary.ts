@@ -25,7 +25,7 @@ const rebuildLibrary = async ({
   const allPhotos = (await getPhotos(dotYouClient, targetDrive, album, 1200, undefined)).results;
   const metaStruc = buildMetaStructure(allPhotos);
 
-  console.log('Rebuilding library', { album });
+  console.log('[Metadata] Rebuilding library', { album });
 
   // Store meta file on server (No need to await, it doesn't need to be on the server already to be used)
   savePhotoLibraryMetadata(dotYouClient, metaStruc, album);
@@ -69,16 +69,16 @@ const usePhotoLibrary = ({
       // Merge with local cache
       if (photoLibOnClient) {
         const mergedLib = mergeLibrary(photoLibOnServer, photoLibOnClient);
-        console.log('get merged lib', mergedLib, { album });
+        console.log('[Metadata] get merged lib', mergedLib, { album });
         return mergedLib;
       }
 
-      console.log('get lib from server', photoLibOnServer, { album });
+      console.log('[Metadata] get lib from server', photoLibOnServer, { album });
       return photoLibOnServer;
     }
 
     if (photoLibOnClient) {
-      console.log('Server has no "new" lib, local cache is up to date');
+      console.log('[Metadata] Server has no "new" lib, local cache is up to date');
       return photoLibOnClient;
     }
 
@@ -100,7 +100,6 @@ const usePhotoLibrary = ({
           if (!libToSave) return;
 
           const fetchAndMergeAgain = async () => {
-            console.log('conflict version tag');
             const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>([
               'photo-library',
               targetDrive?.alias,
@@ -114,8 +113,8 @@ const usePhotoLibrary = ({
           };
 
           try {
-            console.log('saving lib', libToSave);
             await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey, fetchAndMergeAgain);
+            // queryClient.invalidateQueries(['photo-library', targetDrive?.alias, albumKey]); // Probably shuldn't validate as we already update the cache and save that...
           } catch (err) {
             console.warn(err);
           }
@@ -125,7 +124,7 @@ const usePhotoLibrary = ({
       // send request to the backend
       // access to latest state here
       console.log(
-        'saved all libs to server',
+        '[Metadata] saved all libs to server',
         libQueries.map((q) => q.queryKey)
       );
     },
@@ -152,7 +151,6 @@ const usePhotoLibrary = ({
     if (!currentLib) return;
 
     const updatedLib = updateCount(currentLib, date, newCount);
-    console.log({ updatedLib });
     if (!updatedLib) return;
 
     queryClient.setQueryData<PhotoLibraryMetadata>(
@@ -160,6 +158,7 @@ const usePhotoLibrary = ({
       updatedLib
     );
 
+    console.log('[Metadata] Photo count mismatch, updated count', date);
     debouncedSaveOfLibs();
   };
 
@@ -180,6 +179,7 @@ const usePhotoLibrary = ({
       updatedLib
     );
 
+    console.log('[Metadata] Added', date, album);
     debouncedSaveOfLibs();
   };
 
@@ -192,12 +192,8 @@ const usePhotoLibrary = ({
       enabled: !!targetDrive && album !== 'new' && !disabled,
       onError: (err) => console.error(err),
     }),
-    updateCount: useMutation(saveNewCount, {
-      onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive?.alias, album]),
-    }),
-    addDay: useMutation(saveNewDay, {
-      onSettled: () => queryClient.invalidateQueries(['photo-library', targetDrive?.alias, album]),
-    }),
+    updateCount: useMutation(saveNewCount),
+    addDay: useMutation(saveNewDay),
   };
 };
 

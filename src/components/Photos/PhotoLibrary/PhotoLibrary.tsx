@@ -229,7 +229,6 @@ export const PhotoMonth = ({
     if (!hasNextPage && photosFetched) {
       // All photos fetched
       if (photos?.length !== monthMeta.photosThisMonth) {
-        console.warn('Photo count mismatch, updating count', monthInDateObj);
         updateCount({
           album: albumKey,
           date: monthInDateObj,
