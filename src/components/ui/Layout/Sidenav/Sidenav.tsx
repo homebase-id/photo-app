@@ -4,11 +4,11 @@ import { getVersion } from '../../../../helpers/common';
 import { t } from '../../../../helpers/i18n/dictionary';
 import useAuth from '../../../../hooks/auth/useAuth';
 import useOutsideTrigger from '../../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
-import useAblums from '../../../../hooks/photoLibrary/useAlbums';
+import useAlbums from '../../../../hooks/photoLibrary/useAlbums';
 import useDarkMode from '../../../../hooks/useDarkMode';
 import { AlbumDefinition } from '../../../../provider/photos/PhotoTypes';
 import Archive from '../../Icons/Archive/Archive';
-import { ArrowDown } from '../../Icons/Arrow/Arrow';
+import Arrow, { ArrowDown } from '../../Icons/Arrow/Arrow';
 import Bars from '../../Icons/Bars/Bars';
 import Ellipsis from '../../Icons/Ellipsis/Ellipsis';
 import { SolidHeart } from '../../Icons/Heart/Heart';
@@ -20,6 +20,7 @@ import { MiniDarkModeToggle } from '../DarkModeToggle/DarkModeToggle';
 import { useAlbumThumbnail } from '../../../../hooks/photoLibrary/useAlbum';
 import Plus from '../../Icons/Plus/Plus';
 import Grid from '../../Icons/Grid/Grid';
+import AlbumIcon from '../../Icons/Album/Album';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -186,8 +187,8 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
 };
 
 const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { data: albums } = useAblums().fetch;
+  const [isOpen, setIsOpen] = useState(true);
+  const { data: albums } = useAlbums().fetch;
 
   return (
     <>
@@ -203,7 +204,7 @@ const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
           setIsOpen(!isOpen);
         }}
       >
-        {Archive({ className: iconClassName })}
+        {AlbumIcon({ className: iconClassName })}
         <span className={`my-auto ml-3 flex w-full flex-row items-stretch overflow-hidden`}>
           <span>{t('Albums')} </span>
           <button className={`${iconClassName} ml-auto opacity-80 `}>
@@ -213,13 +214,17 @@ const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
       </NavLink>
 
       {isOpen ? (
-        <div className={``}>
-          {albums?.map((album, index) => (
+        <div className={isNavOpen ? `pl-5` : ''}>
+          {albums?.slice(0, 5)?.map((album, index) => (
             <AlbumNavItem album={album} key={album.fileId ?? index} />
           ))}
-          <span className={isNavOpen ? 'opacity-100' : 'opacity-0'}>
-            <NavItem label={t('New album')} icon={Plus} to={`/album/new`} end={true} />
-          </span>
+          {albums && albums?.length > 5 ? (
+            <NavItem label={t('View all')} icon={Arrow} to={`/albums`} end={true} />
+          ) : (
+            <span className={isNavOpen ? 'opacity-100' : 'opacity-0'}>
+              <NavItem label={t('New album')} icon={Plus} to={`/album/new`} end={true} />
+            </span>
+          )}
         </div>
       ) : null}
     </>

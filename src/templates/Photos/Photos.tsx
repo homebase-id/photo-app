@@ -14,6 +14,7 @@ import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
 import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/ErrorNotification';
 import PhotoAlbum from '../../components/Photos/PhotoAlbum/PhotoAlbum';
+import AlbumIcon from '../../components/ui/Icons/Album/Album';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
@@ -42,7 +43,10 @@ const Photos = () => {
     <>
       <PageMeta
         title={album?.name || t('Photos')}
-        icon={Image}
+        icon={album ? AlbumIcon : Image}
+        breadCrumbs={
+          album ? [{ title: t('Albums'), href: '/albums' }, { title: album.name }] : undefined
+        }
         actions={
           <>
             {album ? (
