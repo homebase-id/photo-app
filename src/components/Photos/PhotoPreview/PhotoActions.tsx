@@ -10,6 +10,7 @@ import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
 import Question from '../../ui/Icons/Question/Question';
 import Times from '../../ui/Icons/Times/Times';
 import { ActionGroup } from '../../ui/Buttons/ActionGroup';
+import Info from '../../ui/Icons/Info/Info';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -147,7 +148,7 @@ export const PhotoActions = ({
         ) : null}
 
         <ActionButton
-          icon={Question}
+          icon={Info}
           onClick={() => setIsInfoOpen(!isInfoOpen)}
           className="p-3"
           size="square"
