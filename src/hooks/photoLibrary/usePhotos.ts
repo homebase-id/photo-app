@@ -101,6 +101,9 @@ export const usePhotosByMonth = ({
         refetchOnWindowFocus: false,
         enabled: !!targetDrive && !!date,
         onError: (err) => console.error(err),
+
+        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+        cacheTime: Infinity, // Never => react query will never remove the data from the cache
       }
     ),
   };
@@ -140,6 +143,9 @@ export const usePhotosInfinte = ({
         refetchOnWindowFocus: false,
         enabled: !!targetDrive,
         onError: (err) => console.error(err),
+
+        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+        cacheTime: Infinity, // Never => react query will never remove the data from the cache
       }
     ),
   };
