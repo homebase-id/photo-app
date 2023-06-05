@@ -10,6 +10,7 @@ import useAuth from '../hooks/auth/useAuth';
 import About from '../templates/About/About';
 
 const Photos = lazy(() => import('../templates/Photos/Photos'));
+const Albums = lazy(() => import('../templates/Albums/Albums'));
 const PhotosBin = lazy(() => import('../templates/Photos/PhotosBin'));
 const PhotosArchive = lazy(() => import('../templates/Photos/PhotosArchive'));
 const PhotosFromApps = lazy(() => import('../templates/Photos/PhotosFromApps'));
@@ -57,6 +58,7 @@ function App() {
                   }
                 >
                   <Route path="" element={<Photos />}></Route>
+                  <Route path="/albums" element={<Albums />}></Route>
                   <Route path="/album/:albumKey" element={<Photos />}></Route>
                   <Route path="/album/:albumKey/photo/:photoKey" element={<Photos />}></Route>
                   <Route path="/photo/:photoKey" element={<Photos />}></Route>

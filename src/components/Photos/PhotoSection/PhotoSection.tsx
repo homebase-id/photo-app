@@ -83,7 +83,7 @@ export const PhotoDay = ({
   }, [photosCount]);
 
   return (
-    <section className="mb-5" ref={wrapperRef}>
+    <section className="pb-5" ref={wrapperRef}>
       <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
       <div className={gridClasses}>
         {!photos && photosCount ? (

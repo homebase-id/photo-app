@@ -179,7 +179,7 @@ const usePhotoLibrary = ({
       updatedLib
     );
 
-    console.log('[Metadata] Added (to)', date, album);
+    console.log('[Metadata] Added (to)', date, album, updatedLib);
     debouncedSaveOfLibs();
   };
 

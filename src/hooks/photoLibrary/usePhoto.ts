@@ -63,9 +63,16 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
 
     if (
       uploadResult?.userDate &&
-      (!albumKey || ['bin', 'archive', 'apps', PhotoConfig.FavoriteTag].includes(albumKey))
+      ((!albumKey && !meta?.archivalStatus) ||
+        (albumKey && stringGuidsEqual(PhotoConfig.FavoriteTag, albumKey)))
     ) {
       addDayToLibrary({ album: albumKey, date: uploadResult.userDate });
+    }
+
+    if (meta?.archivalStatus === 3) {
+      addDayToLibrary({ album: 'apps', date: uploadResult.userDate });
+    } else if (meta?.archivalStatus === 1) {
+      addDayToLibrary({ album: 'archive', date: uploadResult.userDate });
     }
   };
 
@@ -201,8 +208,14 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       }
     },
     upload: useMutation(uploadNewMedia, {
-      onSuccess: () => {
-        // queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
+      onSuccess: (data, variables) => {
+        // Need to invalidate the infinite query to update the photoPreview;
+        queryClient.invalidateQueries([
+          'photos-infinite',
+          targetDrive?.alias,
+          variables.albumKey,
+          null,
+        ]);
       },
     }),
     remove: useMutation(removePhoto, {
