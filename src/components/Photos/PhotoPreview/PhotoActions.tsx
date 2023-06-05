@@ -7,7 +7,6 @@ import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
 import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
-import Question from '../../ui/Icons/Question/Question';
 import Times from '../../ui/Icons/Times/Times';
 import { ActionGroup } from '../../ui/Buttons/ActionGroup';
 import Info from '../../ui/Icons/Info/Info';
