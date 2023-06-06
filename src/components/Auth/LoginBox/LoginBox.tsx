@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import useAuth from '../../../hooks/auth/useAuth';
+import useAuth, { appId, appName, drives } from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
 import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
 
@@ -9,7 +9,7 @@ export const LoginBox = () => {
 
   useEffect(() => {
     (async () => {
-      if (!params) setParams(await getRegistrationParams('/'));
+      if (!params) setParams(await getRegistrationParams('/', appName, appId, drives));
     })();
   }, []);
 
