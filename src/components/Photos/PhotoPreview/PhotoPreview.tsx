@@ -167,18 +167,15 @@ const InnerSlider = ({
   ]);
 
   useEffect(() => {
-    if (fileIndex === -1 || !scrollContainer.current) {
-      console.log('cannot scroll', {
-        fileIndex,
-        scrollContainer: scrollContainer.current,
-        flatPhotos,
-      });
-      return;
-    }
-    console.log('scrolling', { fileIndex, scrollContainer: scrollContainer.current });
+    if (fileIndex === -1 || !scrollContainer.current) return;
 
     const targetPos = colVirtualizer.getOffsetForIndex(fileIndex)[0];
-    if (targetPos === initialOffset && targetPos !== 0) return; // Even if initialOffset is 0 we do want to scroll to it
+    console.debug('scrolling', {
+      fileIndex,
+      scrollContainer: scrollContainer.current,
+      targetPos,
+      initialOffset,
+    });
 
     scrollContainer.current.scrollTo({
       left: targetPos,
