@@ -341,12 +341,24 @@ export const getAlbumThumbnail = async (
   targetDrive: TargetDrive,
   albumTag: string
 ): Promise<PhotoFile | null> => {
+  const archivalStatus: ArchivalStatus[] =
+    albumTag === 'bin'
+      ? [2]
+      : albumTag === 'archive'
+      ? [1]
+      : albumTag === 'apps'
+      ? [3]
+      : albumTag
+      ? [0, 1, 3]
+      : [0];
+
   const reponse = await queryBatch(
     dotYouClient,
     {
       targetDrive: targetDrive,
       tagsMatchAll: [albumTag],
       fileType: [MediaConfig.MediaFileType],
+      archivalStatus: archivalStatus,
     },
     { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }
   );

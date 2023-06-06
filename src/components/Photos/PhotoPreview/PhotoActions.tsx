@@ -103,7 +103,8 @@ export const PhotoActions = ({
               label: t('Download'),
               onClick: () => current && downloadPhoto({ targetDrive, dsr: current }),
             },
-            ...(current?.fileMetadata.appData.archivalStatus !== 1
+            ...(current?.fileMetadata.appData.archivalStatus !== 1 &&
+            current?.fileMetadata.appData.archivalStatus !== 2
               ? [
                   {
                     label: t('Archive'),
@@ -153,13 +154,15 @@ export const PhotoActions = ({
           size="square"
           type="hybrid"
         />
-        <ActionButton
-          icon={isFavorite ? SolidHeart : Heart}
-          onClick={() => doFavorite()}
-          className="p-3"
-          size="square"
-          type="hybrid"
-        />
+        {current?.fileMetadata.appData.archivalStatus !== 2 ? (
+          <ActionButton
+            icon={isFavorite ? SolidHeart : Heart}
+            onClick={() => doFavorite()}
+            className="p-3"
+            size="square"
+            type="hybrid"
+          />
+        ) : null}
         {current?.fileMetadata.appData.archivalStatus === 1 ||
         current?.fileMetadata.appData.archivalStatus === 2 ? (
           <ActionButton

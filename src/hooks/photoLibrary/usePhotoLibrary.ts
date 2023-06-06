@@ -11,7 +11,8 @@ import {
   savePhotoLibraryMetadata,
   updateCount,
 } from '../../provider/photos/PhotoLibraryMetaProvider';
-import useDebounce from '../debounce/useDebounce';
+
+let saveScheduled = false;
 
 const rebuildLibrary = async ({
   dotYouClient,
@@ -86,8 +87,11 @@ const usePhotoLibrary = ({
     return rebuildLibrary({ dotYouClient, targetDrive, album });
   };
 
-  const debouncedSaveOfLibs = useDebounce(
-    async () => {
+  const debouncedSaveOfLibs = async () => {
+    if (saveScheduled) return;
+    saveScheduled = true;
+
+    setTimeout(async () => {
       const libQueries = queryClient
         .getQueryCache()
         .findAll(['photo-library', targetDrive?.alias], { exact: false })
@@ -113,24 +117,31 @@ const usePhotoLibrary = ({
           };
 
           try {
-            await savePhotoLibraryMetadata(dotYouClient, libToSave, albumKey, fetchAndMergeAgain);
-            // queryClient.invalidateQueries(['photo-library', targetDrive?.alias, albumKey]); // Probably shuldn't validate as we already update the cache and save that...
+            const { newVersionTag } = await savePhotoLibraryMetadata(
+              dotYouClient,
+              libToSave,
+              albumKey,
+              fetchAndMergeAgain
+            );
+            // Update versionTag in cache
+            queryClient.setQueryData<PhotoLibraryMetadata>(query.queryKey, {
+              ...libToSave,
+              versionTag: newVersionTag,
+            });
           } catch (err) {
             console.warn(err);
           }
         })
       );
-
       // send request to the backend
       // access to latest state here
       console.log(
         '[Metadata] saved all libs to server',
         libQueries.map((q) => q.queryKey)
       );
-    },
-    undefined,
-    10000 //10s
-  );
+      saveScheduled = false;
+    }, 10000);
+  };
 
   const saveNewCount = async ({
     album,
@@ -158,7 +169,7 @@ const usePhotoLibrary = ({
       updatedLib
     );
 
-    console.log('[Metadata] Photo count mismatch, updated count', date);
+    console.log('[Metadata] Photo count mismatch, updated count', album, date);
     debouncedSaveOfLibs();
   };
 
