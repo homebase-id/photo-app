@@ -7,8 +7,8 @@ import { ErrorBoundary } from '../components/ui/Layout/ErrorBoundary/ErrorBounda
 import Layout from '../components/ui/Layout/Layout';
 import LoadingDetailPage from '../components/ui/Layout/Loaders/LoadingDetailPage/LoadingDetailPage';
 import useAuth from '../hooks/auth/useAuth';
-import About from '../templates/About/About';
 
+const About = lazy(() => import('../templates/About/About'));
 const Photos = lazy(() => import('../templates/Photos/Photos'));
 const Albums = lazy(() => import('../templates/Albums/Albums'));
 const PhotosBin = lazy(() => import('../templates/Photos/PhotosBin'));

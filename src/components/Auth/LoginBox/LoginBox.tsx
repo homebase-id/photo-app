@@ -9,7 +9,7 @@ export const LoginBox = () => {
 
   useEffect(() => {
     (async () => {
-      if (!params) setParams(await getRegistrationParams('/', appName, appId, drives));
+      if (!params) setParams(await getRegistrationParams('/'));
     })();
   }, []);
 

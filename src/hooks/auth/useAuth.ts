@@ -115,7 +115,8 @@ const useAuth = () => {
   }, [hasValidToken]);
 
   return {
-    getRegistrationParams,
+    getRegistrationParams: (returnUrl: string) =>
+      getRegistrationParams(returnUrl, appName, appId, drives),
     authenticate,
     finalizeAuthentication,
     logout,
