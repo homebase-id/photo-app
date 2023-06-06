@@ -1,4 +1,3 @@
-import { DriveSearchResult, stringGuidsEqual } from '@youfoundation/js-lib';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
@@ -9,6 +8,8 @@ import MediaWithLoader from './MediaLoader';
 import useDebounce from '../../../hooks/debounce/useDebounce';
 import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 import { PhotoActions } from './PhotoActions';
+import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = ({
@@ -47,7 +48,7 @@ const PhotoPreview = ({
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
-        <div className={`relative ${isInfoOpen ? 'w-full md:w-[calc(100%-27rem)]' : 'w-full'}`}>
+        <div className={`relative ${isInfoOpen ? 'md:w-[calc(100%-27rem)] w-full' : 'w-full'}`}>
           <PhotoActions
             fileId={fileId}
             current={fileHeader}

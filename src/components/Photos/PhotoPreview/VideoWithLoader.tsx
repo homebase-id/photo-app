@@ -1,6 +1,6 @@
-import { TargetDrive, EmbeddedThumb, ImageSize } from '@youfoundation/js-lib';
 import { OdinImage, OdinVideo } from '@youfoundation/ui-lib';
 import useAuth from '../../../hooks/auth/useAuth';
+import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
 
 export const VideoWithLoader = ({
   fileId,

@@ -4,7 +4,7 @@ import {
   DriveSearchResult,
   DotYouClient,
   CursoredResult,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/core';
 import { buildCursor, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 

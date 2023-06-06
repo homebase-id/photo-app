@@ -1,4 +1,3 @@
-import { DriveSearchResult, ImageMetadata } from '@youfoundation/js-lib';
 import { debounce } from 'lodash-es';
 import Times from '../../../ui/Icons/Times/Times';
 import { useState, useMemo, useRef } from 'react';
@@ -7,6 +6,7 @@ import usePhotoMetadata from '../../../../hooks/photoLibrary/usePhotoMeta';
 import ActionButton from '../../../ui/Buttons/ActionButton';
 import { PhotoConfig } from '../../../../provider/photos/PhotoTypes';
 import EditDateDialog from '../../../Dialog/EditDateDialog/EditDateDialog';
+import { DriveSearchResult, ImageMetadata } from '@youfoundation/js-lib/core';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -66,7 +66,7 @@ export const PhotoInfo = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black dark:text-white md:static md:w-[27rem] md:flex-shrink-0">
+      <div className="md:w-[27rem] fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black dark:text-white md:static md:flex-shrink-0">
         <div className="px-8 py-7">
           <div className="mb-10 flex flex-row">
             <button onClick={() => setIsInfoOpen(false)} className="mr-2">

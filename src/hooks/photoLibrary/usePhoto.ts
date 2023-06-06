@@ -3,12 +3,12 @@ import {
   TargetDrive,
   ImageSize,
   getFileHeader,
-  stringGuidsEqual,
   DriveSearchResult,
   ThumbnailFile,
   MediaUploadMeta,
   getPayloadBytes,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
 
 import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';

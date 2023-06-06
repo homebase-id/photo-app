@@ -1,4 +1,5 @@
-import { DriveSearchResult, TargetDrive, stringGuidsEqual } from '@youfoundation/js-lib';
+import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPhotosByMonth, usePhotosByMonth } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';

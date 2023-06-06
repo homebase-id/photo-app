@@ -1,31 +1,33 @@
 import {
-  DotYouClient,
-  TargetDrive,
-  queryBatch,
-  ImageSize,
-  getDecryptedImageUrl,
-  DriveSearchResult,
-  MediaConfig,
-  getFileHeader,
-  getDecryptedImageMetadata,
-  ImageMetadata,
-  ImageContentType,
-  SecurityGroupType,
-  toGuidId,
-  uploadImage,
-  MediaUploadMeta,
   ArchivalStatus,
-  UploadInstructionSet,
-  getRandom16ByteArray,
+  DotYouClient,
+  DriveSearchResult,
+  ImageContentType,
+  ImageMetadata,
+  ImageSize,
+  MediaConfig,
+  MediaUploadMeta,
+  SecurityGroupType,
+  TargetDrive,
+  ThumbnailFile,
   UploadFileMetadata,
-  jsonStringify64,
+  UploadInstructionSet,
   VideoContentType,
-  uploadVideo,
+  getDecryptedImageMetadata,
+  getDecryptedImageUrl,
+  getFileHeader,
+  getRandom16ByteArray,
+  queryBatch,
   uploadHeader,
+  uploadImage,
+  uploadVideo,
+} from '@youfoundation/js-lib/core';
+import {
+  toGuidId,
+  jsonStringify64,
   mergeByteArrays,
   uint8ArrayToBase64,
-  ThumbnailFile,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/helpers';
 
 import { FileLike, PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
@@ -172,7 +174,7 @@ const uploadNewVideo = async (
     };
 
   // Segment video file
-  const segmentVideoFile = (await import('@youfoundation/js-lib')).segmentVideoFile;
+  const segmentVideoFile = (await import('@youfoundation/js-lib/helpers')).segmentVideoFile;
   const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
 
   return {

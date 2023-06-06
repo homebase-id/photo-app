@@ -6,7 +6,7 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoSection/PhotoSection';
 import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
-import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
+import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
 
 const gridClasses = `flex flex-row gap-[0.1rem] md:gap-1 `;
 

@@ -1,18 +1,18 @@
 import {
+  ArchivalStatus,
   DotYouClient,
   DriveSearchResult,
-  getPayload,
-  jsonStringify64,
-  UploadInstructionSet,
-  getRandom16ByteArray,
-  UploadFileMetadata,
   SecurityGroupType,
-  uploadFile,
-  ArchivalStatus,
+  UploadFileMetadata,
+  UploadInstructionSet,
+  getPayload,
+  getRandom16ByteArray,
   queryBatch,
   queryModified,
-} from '@youfoundation/js-lib';
+  uploadFile,
+} from '@youfoundation/js-lib/core';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
+import { jsonStringify64 } from '@youfoundation/js-lib/helpers';
 
 const encryptPhotoLibrary = true;
 

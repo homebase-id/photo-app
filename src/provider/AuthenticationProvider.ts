@@ -1,9 +1,5 @@
-import {
-  ApiType,
-  base64ToUint8Array,
-  DotYouClient,
-  uint8ArrayToBase64,
-} from '@youfoundation/js-lib';
+import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
+import { base64ToUint8Array, uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 import { getBrowser, getOperatingSystem } from '../helpers/browserInfo';
 import { retrieveIdentity, saveIdentity } from './IdentityProvider';
 import { decryptWithKey, newPair, throwAwayTheKey } from './KeyProvider';

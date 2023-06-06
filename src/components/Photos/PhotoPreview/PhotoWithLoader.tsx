@@ -1,8 +1,9 @@
-import { TargetDrive, EmbeddedThumb, ImageSize, base64ToUint8Array } from '@youfoundation/js-lib';
 import { useState, useMemo } from 'react';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import Loader from '../../ui/Icons/Loader/Loader';
+import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
+import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 
 export const PhotoWithLoader = ({
   fileId,

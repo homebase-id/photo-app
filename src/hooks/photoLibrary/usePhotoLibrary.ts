@@ -1,4 +1,4 @@
-import { DotYouClient, TargetDrive } from '@youfoundation/js-lib';
+import { DotYouClient, TargetDrive } from '@youfoundation/js-lib/core';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

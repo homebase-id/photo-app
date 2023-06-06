@@ -1,4 +1,4 @@
-import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib';
+import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { useState, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
@@ -228,7 +228,7 @@ export const PhotoItem = ({
           ) : null}
         </div>
         {isDesktop ? (
-          <div className="group absolute inset-0 hidden hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080] md:block">
+          <div className="hover:from-[#00000080] group absolute inset-0 hidden hover:bg-opacity-50 hover:bg-gradient-to-b md:block">
             <button
               className={`pl-2 pt-2 group-hover:block ${isChecked ? 'block' : 'hidden'}`}
               onClick={(e) => {

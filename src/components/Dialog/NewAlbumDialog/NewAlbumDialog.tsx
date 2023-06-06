@@ -1,4 +1,4 @@
-import { getNewId } from '@youfoundation/js-lib';
+import { getNewId } from '@youfoundation/js-lib/helpers';
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';

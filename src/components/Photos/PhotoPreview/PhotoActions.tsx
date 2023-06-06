@@ -1,4 +1,3 @@
-import { DriveSearchResult, stringGuidsEqual } from '@youfoundation/js-lib';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
@@ -10,6 +9,8 @@ import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
 import { ActionGroup } from '../../ui/Buttons/ActionGroup';
 import Info from '../../ui/Icons/Info/Info';
+import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -186,7 +187,7 @@ export const PhotoActions = ({
       </div>
       <div className="absolute bottom-3 right-3 z-10">
         <button
-          className={`flex flex-row items-center gap-2 rounded-3xl border border-white border-opacity-10 bg-white px-2 py-1 text-sm text-white before:block before:h-2 before:w-2 before:rounded-full before:bg-white before:content-[''] ${
+          className={`before:content-[''] flex flex-row items-center gap-2 rounded-3xl border border-white border-opacity-10 bg-white px-2 py-1 text-sm text-white before:block before:h-2 before:w-2 before:rounded-full before:bg-white ${
             loadOriginal
               ? 'bg-opacity-20 before:bg-opacity-100'
               : 'bg-opacity-10 text-opacity-50 before:bg-opacity-10'
