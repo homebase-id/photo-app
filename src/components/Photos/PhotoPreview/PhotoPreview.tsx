@@ -1,4 +1,4 @@
-import { DriveSearchResult } from '@youfoundation/js-lib';
+import { DriveSearchResult, stringGuidsEqual } from '@youfoundation/js-lib';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
@@ -107,7 +107,7 @@ const InnerSlider = ({
   // but if there's no photos the virtual scrolling will initialize with no width, and the intialOffset will be 0
   if (!flatPhotos?.length) return null;
 
-  const fileIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
+  const fileIndex = flatPhotos.findIndex((photo) => stringGuidsEqual(photo.fileId, fileId));
   const scrollContainer = useRef<HTMLDivElement>(null);
   const slideWidth = scrollContainer.current?.parentElement?.clientWidth || window.innerWidth; // Not widow.clientWidth as the scrollbar is removed be disabled scrolling on the body
   const [initialOffset] = useState(fileIndex * slideWidth);
@@ -117,7 +117,7 @@ const InnerSlider = ({
       const currentIndex = Math.round((scrollContainer.current?.scrollLeft ?? 0) / slideWidth);
 
       // Update the url with the current fileId when scrolling
-      if (!flatPhotos || flatPhotos[currentIndex]?.fileId === fileId) return;
+      if (!flatPhotos || stringGuidsEqual(flatPhotos[currentIndex]?.fileId, fileId)) return;
 
       const paths = window.location.pathname.split('/');
       if (paths[paths.length - 1] === flatPhotos?.[currentIndex]?.fileId) return; // Already on the correct url
@@ -167,7 +167,10 @@ const InnerSlider = ({
   ]);
 
   useEffect(() => {
-    if (fileIndex === -1 || !scrollContainer.current) return;
+    if (fileIndex === -1 || !scrollContainer.current) {
+      console.log('cannot scroll', { fileIndex, scrollContainer: scrollContainer.current });
+      return;
+    }
 
     const targetPos = colVirtualizer.getOffsetForIndex(fileIndex)[0];
     if (targetPos === initialOffset && targetPos !== 0) return; // Even if initialOffset is 0 we do want to scroll to it
