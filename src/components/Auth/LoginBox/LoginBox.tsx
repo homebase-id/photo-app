@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import useAuth, { appId, appName, drives } from '../../../hooks/auth/useAuth';
+import useAuth from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
-import LoadingParagraph from '../../ui/Layout/Loaders/LoadingParagraph/LoadingParagraph';
+import LoadingBlock from '../../ui/Layout/Loaders/LoadingBlock/LoadingBlock';
 
 export const LoginBox = () => {
   const [params, setParams] = useState<string | null>(null);
@@ -16,7 +16,7 @@ export const LoginBox = () => {
   if (!params)
     return (
       <>
-        <LoadingParagraph className="h-[16rem] w-full " />
+        <LoadingBlock className="h-[16rem] w-full " />
       </>
     );
 
