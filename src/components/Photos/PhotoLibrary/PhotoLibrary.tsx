@@ -101,7 +101,9 @@ const PhotoLibrary = ({
   if (!monthsToShow?.length) {
     return (
       <div className="flex flex-row">
-        <p className="my-auto">{t('Mmh, this looks empty... Time to add some photos?')} </p>
+        <p className="my-auto italic text-gray-400">
+          {t('Mmh, this looks empty... Time to add some photos?')}{' '}
+        </p>
         {setFileSelectorOpen && (
           <ActionButton
             onClick={(e) => {
@@ -110,7 +112,7 @@ const PhotoLibrary = ({
 
               return false;
             }}
-            type="secondary"
+            type="primary"
             className="ml-2"
           >
             {t('Add')}
