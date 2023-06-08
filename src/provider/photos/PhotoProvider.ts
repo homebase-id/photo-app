@@ -29,26 +29,26 @@ import {
   uint8ArrayToBase64,
 } from '@youfoundation/js-lib/helpers';
 
-import { FileLike, PhotoFile } from './PhotoTypes';
+import { FileLike, PhotoConfig, PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 
 export const getPhotos = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
+  type: 'bin' | 'archive' | 'apps' | 'favorites' | undefined,
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
   ordering?: 'older' | 'newer'
 ) => {
-  const typedAlbum = album === 'bin' || album === 'archive' || album === 'apps';
   const archivalStatus: ArchivalStatus[] =
-    album === 'bin'
+    type === 'bin'
       ? [2]
-      : album === 'archive'
+      : type === 'archive'
       ? [1]
-      : album === 'apps'
+      : type === 'apps'
       ? [3]
-      : album
+      : album || type === 'favorites'
       ? [0, 1, 3]
       : [0];
 
@@ -56,7 +56,7 @@ export const getPhotos = async (
     dotYouClient,
     {
       targetDrive: targetDrive,
-      tagsMatchAll: album && !typedAlbum ? [album] : undefined,
+      tagsMatchAll: album ? [album] : type === 'favorites' ? [PhotoConfig.FavoriteTag] : undefined,
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },

@@ -9,11 +9,11 @@ const monthFormat: Intl.DateTimeFormatOptions = {
 };
 
 const PhotoScroll = ({
-  albumKey,
+  type,
   onJumpInTime,
   onScroll,
 }: {
-  albumKey?: string;
+  type?: 'bin' | 'archive' | 'apps' | 'favorites' | undefined;
   onJumpInTime: (time: { year: number; month: number }) => void;
   onScroll?: (scrollPercentage: number) => void;
 }) => {
@@ -36,7 +36,7 @@ const PhotoScroll = ({
 
   const { data: photoLib } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey && albumKey !== 'new' ? albumKey : undefined,
+    type: type,
   }).fetchLibrary;
 
   if (!photoLib) return null;

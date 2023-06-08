@@ -61,7 +61,7 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   }) => {
     if (!targetDrive) return null;
 
-    addDayToLibrary({ album: undefined, date: new Date(newDate) });
+    addDayToLibrary({ type: undefined, date: new Date(newDate) });
     return await updatePhoto(dotYouClient, targetDrive, photoFileId, { userDate: newDate });
   };
 

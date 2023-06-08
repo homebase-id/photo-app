@@ -19,8 +19,6 @@ const PhotosArchive = () => {
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
-  const albumKey = 'archive';
-
   return (
     <>
       <PageMeta
@@ -44,23 +42,23 @@ const PhotosArchive = () => {
         isSelecting={isSelecting}
         selection={selection}
         clearSelection={clearSelection}
-        albumKey={albumKey}
+        type="archive"
       />
       <Uploader
         isFileSelectorOpen={isFileSelectorOpen}
         setFileSelectorOpen={setFileSelectorOpen}
-        archivalStatus={1}
+        type="archive"
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
         selectRange={selectRange}
-        albumKey={albumKey}
+        type={'archive'}
         isSelected={isSelected}
         isSelecting={isSelecting}
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} urlPrefix={'/archive'} />
+          <PhotoPreview fileId={photoKey} type={'archive'} urlPrefix={'/archive'} />
         </Suspense>
       ) : null}
     </>

@@ -98,7 +98,6 @@ const Photos = () => {
           toggleSelection={toggleSelection}
           selectRange={selectRange}
           setFileSelectorOpen={setFileSelectorOpen}
-          albumKey={albumKey}
           isSelected={isSelected}
           isSelecting={isSelecting}
         />

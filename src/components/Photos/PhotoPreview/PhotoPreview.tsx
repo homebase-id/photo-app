@@ -15,10 +15,12 @@ const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = ({
   fileId,
   albumKey,
+  type,
   urlPrefix: urlPrefixProp,
 }: {
   fileId: string;
   albumKey?: string;
+  type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
@@ -37,7 +39,7 @@ const PhotoPreview = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = usePhotosInfinte({ targetDrive, album: albumKey }).fetchPhotos;
+  } = usePhotosInfinte({ targetDrive, album: albumKey, type }).fetchPhotos;
 
   const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
 
@@ -48,7 +50,7 @@ const PhotoPreview = ({
   return (
     <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
-        <div className={`relative ${isInfoOpen ? 'md:w-[calc(100%-27rem)] w-full' : 'w-full'}`}>
+        <div className={`relative ${isInfoOpen ? 'w-full md:w-[calc(100%-27rem)]' : 'w-full'}`}>
           <PhotoActions
             fileId={fileId}
             current={fileHeader}

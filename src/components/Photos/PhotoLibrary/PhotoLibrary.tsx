@@ -21,14 +21,14 @@ const thisYearMonthFormat: Intl.DateTimeFormatOptions = {
 };
 
 const PhotoLibrary = ({
-  albumKey,
+  type,
   toggleSelection,
   selectRange,
   isSelected,
   isSelecting,
   setFileSelectorOpen,
 }: {
-  albumKey?: string;
+  type?: 'bin' | 'archive' | 'apps' | 'favorites';
   toggleSelection: (fileId: string) => void;
   selectRange: (fileIds: string[]) => void;
   isSelected: (fileId: string) => boolean;
@@ -39,12 +39,12 @@ const PhotoLibrary = ({
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
   const { data: photoLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey,
+    type,
   }).fetchLibrary;
 
   const { data: selection } = useSiblingsRange({
     targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey,
+    type,
     fromFileId: selectionRangeFrom,
     toFileId: selectionRangeTo,
   });
@@ -159,7 +159,7 @@ const PhotoLibrary = ({
                 >
                   <PhotoMonth
                     monthMeta={monthsToShow[virtualRow.index]}
-                    albumKey={albumKey}
+                    type={type}
                     toggleSelection={doToggleSelection}
                     rangeSelection={doRangeSelection}
                     isSelected={isSelected}
@@ -172,7 +172,7 @@ const PhotoLibrary = ({
         </div>
       </div>
       <PhotoScroll
-        albumKey={albumKey}
+        type={type}
         onJumpInTime={(time) => {
           const target = monthsToShow.findIndex((month) => {
             return month.year === time.year && month.month === time.month;
@@ -189,7 +189,7 @@ const PhotoLibrary = ({
 
 export const PhotoMonth = ({
   monthMeta,
-  albumKey,
+  type,
   toggleSelection,
   rangeSelection,
   isSelected,
@@ -200,7 +200,7 @@ export const PhotoMonth = ({
     photosThisMonth: number;
     year: number;
   };
-  albumKey?: string;
+  type?: 'bin' | 'archive' | 'apps' | 'favorites';
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;
@@ -220,13 +220,13 @@ export const PhotoMonth = ({
     fetchNextPage,
   } = usePhotosByMonth({
     targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey,
+    type,
     date: isInView ? monthInDateObj : undefined,
   }).fetchPhotos;
 
   const { mutate: updateCount } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    album: albumKey,
+    type,
     disabled: true,
   }).updateCount;
 
@@ -237,7 +237,7 @@ export const PhotoMonth = ({
       // All photos fetched
       if (photos?.length !== monthMeta.photosThisMonth) {
         updateCount({
-          album: albumKey,
+          type,
           date: monthInDateObj,
           newCount: photos?.length || 0,
         });

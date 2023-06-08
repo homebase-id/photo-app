@@ -20,8 +20,6 @@ const PhotosFavorites = () => {
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
-  const albumKey = PhotoConfig.FavoriteTag;
-
   return (
     <>
       <PageMeta
@@ -45,23 +43,23 @@ const PhotosFavorites = () => {
         isSelecting={isSelecting}
         selection={selection}
         clearSelection={clearSelection}
-        albumKey={albumKey}
+        albumKey={PhotoConfig.FavoriteTag}
       />
       <Uploader
         isFileSelectorOpen={isFileSelectorOpen}
         setFileSelectorOpen={setFileSelectorOpen}
-        albumKey={albumKey}
+        albumKey={PhotoConfig.FavoriteTag}
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
         selectRange={selectRange}
-        albumKey={albumKey}
+        type={'favorites'}
         isSelected={isSelected}
         isSelecting={isSelecting}
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} urlPrefix={'/favorites'} />
+          <PhotoPreview fileId={photoKey} type={'favorites'} urlPrefix={'/favorites'} />
         </Suspense>
       ) : null}
     </>
