@@ -1,4 +1,5 @@
-import { ApiType, base64ToUint8Array, DotYouClient } from '@youfoundation/js-lib';
+import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
+import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useVerifyToken from './useVerifyToken';
@@ -10,8 +11,20 @@ import {
   APP_SHARED_SECRET,
   getRegistrationParams,
   preAuth as preauthApps,
-} from '../../provider/AuthenticationProvider';
-import { retrieveIdentity } from '../../provider/IdentityProvider';
+  retrieveIdentity,
+} from '@youfoundation/js-lib/auth';
+
+export const drives = [
+  {
+    a: '6483b7b1f71bd43eb6896c86148668cc',
+    t: '2af68fe72fb84896f39f97c59d60813a',
+    n: 'Photo Library',
+    d: 'Place for your memories',
+    p: 3,
+  },
+];
+export const appName = 'Odin - Photos';
+export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
 
 const hasSharedSecret = () => {
   const raw = window.localStorage.getItem(APP_SHARED_SECRET);
@@ -28,7 +41,7 @@ const useAuth = () => {
   const authenticate = (identity: string, returnUrl: string): void => {
     const strippedIdentity = identity.replace(new RegExp('^(http|https)://'), '').split('/')[0];
 
-    authenticateYouAuth(strippedIdentity, returnUrl);
+    authenticateYouAuth(strippedIdentity, returnUrl, appName, appId, drives);
   };
 
   const finalizeAuthentication = async (
@@ -102,7 +115,8 @@ const useAuth = () => {
   }, [hasValidToken]);
 
   return {
-    getRegistrationParams,
+    getRegistrationParams: (returnUrl: string) =>
+      getRegistrationParams(returnUrl, appName, appId, drives),
     authenticate,
     finalizeAuthentication,
     logout,

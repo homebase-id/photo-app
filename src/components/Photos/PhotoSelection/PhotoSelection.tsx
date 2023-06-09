@@ -14,11 +14,13 @@ const PhotoSelection = ({
   clearSelection,
   isSelecting,
   albumKey,
+  type,
 }: {
   selection: string[];
   clearSelection: () => void;
   isSelecting: boolean;
   albumKey?: string;
+  type?: 'bin' | 'archive' | 'apps';
 }) => {
   const {
     remove: { mutateAsync: removePhoto },
@@ -124,8 +126,6 @@ const PhotoSelection = ({
     clearSelection();
   };
 
-  const typedAlbum = albumKey === 'bin' || albumKey === 'archive' || albumKey === 'apps';
-
   return (
     <div className="sticky top-0 z-10 -mx-2 -mt-10 flex flex-row items-center bg-indigo-400 p-3 shadow-md sm:-mx-10">
       <button className="mr-2 px-1 text-white" onClick={clearSelection}>
@@ -168,7 +168,7 @@ const PhotoSelection = ({
           />
         ) : null}
 
-        {typedAlbum && albumKey !== 'apps' ? (
+        {type === 'archive' || type === 'bin' ? (
           <ActionButton onClick={() => restoreSelection()}>{t('Restore')}</ActionButton>
         ) : (
           <>
@@ -179,7 +179,7 @@ const PhotoSelection = ({
               type="secondary"
               onClick={() => favoriteSelection()}
             />
-            {albums && (!albumKey || (albumKey && typedAlbum)) ? (
+            {albums && !albumKey ? (
               <ActionButtonWithOptions
                 type="secondary"
                 options={albums.map((album) => {
@@ -189,7 +189,7 @@ const PhotoSelection = ({
                 {t('Add to album')}
               </ActionButtonWithOptions>
             ) : null}
-            {albumKey && !typedAlbum ? (
+            {albumKey ? (
               <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
                 {t('Remove from album')}
               </ActionButton>

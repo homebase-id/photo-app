@@ -1,4 +1,5 @@
-import { ImageContentType, ThumbnailFile, base64ToUint8Array } from '@youfoundation/js-lib';
+import { ImageContentType, ThumbnailFile } from '@youfoundation/js-lib/core';
+import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import usePhoto from '../../../hooks/photoLibrary/usePhoto';
@@ -14,12 +15,12 @@ const Uploader = ({
   isFileSelectorOpen,
   setFileSelectorOpen,
   albumKey,
-  archivalStatus,
+  type,
 }: {
   isFileSelectorOpen: boolean;
   setFileSelectorOpen: (isOpen: boolean) => void;
   albumKey?: string;
-  archivalStatus?: number;
+  type?: 'archive' | 'apps';
 }) => {
   const [failedFiles, setFailedFiles] = useState<(File | FileLike)[]>([]);
   const [uploadQueue, setUploadQueue] = useState<(File | FileLike)[]>([]);
@@ -118,14 +119,14 @@ const Uploader = ({
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: albumKey,
-        meta: { archivalStatus: isPin ? 3 : archivalStatus || 0 },
+        meta: { archivalStatus: isPin || type === 'apps' ? 3 : type === 'archive' ? 1 : 0 },
         thumb: currentVideoThumb,
       });
     } else {
       doUploadToServer({
         newPhoto: currentFile,
         albumKey: albumKey,
-        meta: { archivalStatus: isPin ? 3 : archivalStatus || 0 },
+        meta: { archivalStatus: isPin || type === 'apps' ? 3 : type === 'archive' ? 1 : 0 },
       });
     }
   }, [currentFile, currentVideoThumb]);

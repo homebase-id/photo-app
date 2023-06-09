@@ -1,4 +1,4 @@
-import { DriveSearchResult } from '@youfoundation/js-lib';
+import { DriveSearchResult } from '@youfoundation/js-lib/core';
 import { PhotoWithLoader } from './PhotoWithLoader';
 import { VideoWithLoader } from './VideoWithLoader';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';

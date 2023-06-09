@@ -6,7 +6,7 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoSection/PhotoSection';
 import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
-import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib';
+import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
 
 const gridClasses = `flex flex-row gap-[0.1rem] md:gap-1 `;
 
@@ -125,7 +125,9 @@ const PhotoAlbum = ({
   if (!chunkedPhotos?.length) {
     return (
       <div className="flex flex-row">
-        <p className="my-auto">{t('Mmh, this looks empty... Time to add some photos?')} </p>
+        <p className="my-auto italic text-gray-400">
+          {t('Mmh, this looks empty... Time to add some photos?')}{' '}
+        </p>
         {setFileSelectorOpen && (
           <ActionButton
             onClick={(e) => {
@@ -134,7 +136,7 @@ const PhotoAlbum = ({
 
               return false;
             }}
-            type="secondary"
+            type="primary"
             className="ml-2"
           >
             {t('Add')}

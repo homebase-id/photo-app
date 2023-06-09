@@ -4,7 +4,7 @@ import {
   NotificationType,
   Subscribe,
   TypedConnectionNotification,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/core';
 import { useRef, useEffect } from 'react';
 import useAuth from '../auth/useAuth';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';

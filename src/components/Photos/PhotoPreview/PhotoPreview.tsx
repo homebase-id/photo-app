@@ -1,4 +1,3 @@
-import { DriveSearchResult, stringGuidsEqual } from '@youfoundation/js-lib';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
@@ -9,15 +8,19 @@ import MediaWithLoader from './MediaLoader';
 import useDebounce from '../../../hooks/debounce/useDebounce';
 import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 import { PhotoActions } from './PhotoActions';
+import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = ({
   fileId,
   albumKey,
+  type,
   urlPrefix: urlPrefixProp,
 }: {
   fileId: string;
   albumKey?: string;
+  type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
@@ -36,7 +39,7 @@ const PhotoPreview = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = usePhotosInfinte({ targetDrive, album: albumKey }).fetchPhotos;
+  } = usePhotosInfinte({ targetDrive, album: albumKey, type }).fetchPhotos;
 
   const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
 

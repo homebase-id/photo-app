@@ -1,10 +1,6 @@
 import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  TargetDrive,
-  ImageMetadata,
-  DriveSearchResult,
-  stringGuidsEqual,
-} from '@youfoundation/js-lib';
+import { TargetDrive, ImageMetadata, DriveSearchResult } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
 
 import {
@@ -65,7 +61,7 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   }) => {
     if (!targetDrive) return null;
 
-    addDayToLibrary({ album: undefined, date: new Date(newDate) });
+    addDayToLibrary({ type: undefined, date: new Date(newDate) });
     return await updatePhoto(dotYouClient, targetDrive, photoFileId, { userDate: newDate });
   };
 

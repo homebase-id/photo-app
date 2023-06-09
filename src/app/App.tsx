@@ -7,8 +7,8 @@ import { ErrorBoundary } from '../components/ui/Layout/ErrorBoundary/ErrorBounda
 import Layout from '../components/ui/Layout/Layout';
 import LoadingDetailPage from '../components/ui/Layout/Loaders/LoadingDetailPage/LoadingDetailPage';
 import useAuth from '../hooks/auth/useAuth';
-import About from '../templates/About/About';
 
+const About = lazy(() => import('../templates/About/About'));
 const Photos = lazy(() => import('../templates/Photos/Photos'));
 const Albums = lazy(() => import('../templates/Albums/Albums'));
 const PhotosBin = lazy(() => import('../templates/Photos/PhotosBin'));
@@ -90,7 +90,7 @@ const RootRoute = ({ children }: { children: ReactNode }) => {
       return <>{children}</>;
     }
 
-    console.debug('[NOT AUTHENTICATED]: Redirect to login');
+    console.debug('[NOT AUTHENTICATED]: Redirect to "login"');
 
     // It can happen that the RootRoute renders when we already are rendering Login, which would cause and endless url of returnUrls; So return early if it is the login already
     if (window.location.pathname === AUTH_PATH) {

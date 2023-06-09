@@ -4,7 +4,7 @@ import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
 import useAuth from '../auth/useAuth';
 import useAlbums from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
-import { stringGuidsEqual } from '@youfoundation/js-lib';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
 const useAlbum = (albumKey?: string) => {
   const { getDotYouClient } = useAuth();

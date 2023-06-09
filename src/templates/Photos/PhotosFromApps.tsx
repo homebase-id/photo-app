@@ -19,8 +19,6 @@ const PhotosFromApps = () => {
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
-  const albumKey = 'apps';
-
   return (
     <>
       <PageMeta
@@ -44,23 +42,23 @@ const PhotosFromApps = () => {
         isSelecting={isSelecting}
         selection={selection}
         clearSelection={clearSelection}
-        albumKey={albumKey}
+        type="apps"
       />
       <Uploader
         isFileSelectorOpen={isFileSelectorOpen}
         setFileSelectorOpen={setFileSelectorOpen}
-        archivalStatus={3}
+        type="apps"
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
         selectRange={selectRange}
-        albumKey={albumKey}
+        type={'apps'}
         isSelected={isSelected}
         isSelecting={isSelecting}
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} urlPrefix={'/apps'} />
+          <PhotoPreview fileId={photoKey} type={'apps'} urlPrefix={'/apps'} />
         </Suspense>
       ) : null}
     </>

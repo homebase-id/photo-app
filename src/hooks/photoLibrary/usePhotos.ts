@@ -4,7 +4,7 @@ import {
   DriveSearchResult,
   DotYouClient,
   CursoredResult,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/core';
 import { buildCursor, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 
@@ -21,13 +21,13 @@ export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
 export const fetchPhotosByMonth = async ({
   dotYouClient,
   targetDrive,
-  album,
+  type,
   date,
   cursorState,
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
-  album?: string;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
   date: Date;
   cursorState?: string;
 }): Promise<useInfintePhotosReturn> => {
@@ -38,7 +38,8 @@ export const fetchPhotosByMonth = async ({
   const results = await getPhotos(
     dotYouClient,
     targetDrive,
-    album,
+    type,
+    undefined, // album
     PAGE_SIZE,
     cursorState || dateCursor
   );
@@ -58,26 +59,28 @@ export const fetchPhotosByMonth = async ({
 const fetchPhotosByCursor = async ({
   dotYouClient,
   targetDrive,
+  type,
   album,
   cursorState,
   direction,
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
   album?: string;
   cursorState?: string;
   direction?: 'older' | 'newer';
 }): Promise<CursoredResult<DriveSearchResult[]>> => {
-  return await getPhotos(dotYouClient, targetDrive, album, PAGE_SIZE, cursorState, direction);
+  return await getPhotos(dotYouClient, targetDrive, type, album, PAGE_SIZE, cursorState, direction);
 };
 
 export const usePhotosByMonth = ({
   targetDrive,
-  album,
+  type,
   date,
 }: {
   targetDrive?: TargetDrive;
-  album?: string;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
   date?: Date;
 }) => {
   const { getDotYouClient } = useAuth();
@@ -85,12 +88,12 @@ export const usePhotosByMonth = ({
 
   return {
     fetchPhotos: useInfiniteQuery(
-      ['photos', targetDrive?.alias, album, date && `${date.getFullYear()}-${date.getMonth()}}`],
+      ['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}}`],
       ({ pageParam }) =>
         fetchPhotosByMonth({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
-          album,
+          type,
           date: date as Date,
           cursorState: pageParam,
         }),
@@ -112,11 +115,13 @@ export const usePhotosByMonth = ({
 export const usePhotosInfinte = ({
   targetDrive,
   album,
+  type,
   startFromDate,
   direction,
 }: {
   targetDrive?: TargetDrive;
   album?: string;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
   startFromDate?: Date;
   direction?: 'older' | 'newer';
 }) => {
@@ -127,11 +132,12 @@ export const usePhotosInfinte = ({
 
   return {
     fetchPhotos: useInfiniteQuery(
-      ['photos-infinite', targetDrive?.alias, album, startFromDate?.getTime()],
+      ['photos-infinite', targetDrive?.alias, type, album, startFromDate?.getTime()],
       ({ pageParam }) =>
         fetchPhotosByCursor({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
+          type,
           album,
           cursorState: pageParam || startFromDateCursor,
           direction: direction,
@@ -141,7 +147,7 @@ export const usePhotosInfinte = ({
           (lastPage?.results?.length === PAGE_SIZE && lastPage?.cursorState) ?? undefined,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
-        enabled: !!targetDrive,
+        enabled: !!targetDrive && album !== 'new',
         onError: (err) => console.error(err),
 
         staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)

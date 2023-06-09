@@ -1,35 +1,34 @@
 import {
+  ArchivalStatus,
   DotYouClient,
   DriveSearchResult,
-  getPayload,
-  jsonStringify64,
-  UploadInstructionSet,
-  getRandom16ByteArray,
-  UploadFileMetadata,
   SecurityGroupType,
-  uploadFile,
-  ArchivalStatus,
+  UploadFileMetadata,
+  UploadInstructionSet,
+  getPayload,
+  getRandom16ByteArray,
   queryBatch,
   queryModified,
-} from '@youfoundation/js-lib';
+  uploadFile,
+} from '@youfoundation/js-lib/core';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
+import { jsonStringify64 } from '@youfoundation/js-lib/helpers';
 
 const encryptPhotoLibrary = true;
 
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
-  albumTag?: string,
+  type?: 'bin' | 'archive' | 'apps' | 'favorites',
   lastCursor?: number
 ): Promise<PhotoLibraryMetadata | null> => {
-  const typedAlbum = albumTag === 'bin' || albumTag === 'archive' || albumTag === 'apps';
   const archivalStatus: ArchivalStatus[] =
-    albumTag === 'bin'
+    type === 'bin'
       ? [2]
-      : albumTag === 'archive'
+      : type === 'archive'
       ? [1]
-      : albumTag === 'apps'
+      : type === 'apps'
       ? [3]
-      : albumTag
+      : type
       ? [0, 1, 3]
       : [0];
 
@@ -39,7 +38,8 @@ export const getPhotoLibrary = async (
         {
           targetDrive: PhotoConfig.PhotoDrive,
           fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-          tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
+          tagsMatchAtLeastOne:
+            type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
           archivalStatus,
         },
         {
@@ -53,7 +53,8 @@ export const getPhotoLibrary = async (
         {
           targetDrive: PhotoConfig.PhotoDrive,
           fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-          tagsMatchAtLeastOne: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
+          tagsMatchAtLeastOne:
+            type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
           archivalStatus,
         },
         {
@@ -97,14 +98,13 @@ const dsrToPhotoLibraryMetadata = async (
 export const savePhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   def: PhotoLibraryMetadata,
-  albumTag?: string,
+  type?: 'archive' | 'bin' | 'apps' | 'favorites',
   onVersionConflict?: () => void
 ) => {
-  const typedAlbum = albumTag === 'bin' || albumTag === 'archive' || albumTag === 'apps';
   const archivalStatus: ArchivalStatus =
-    albumTag === 'bin' ? 2 : albumTag === 'archive' ? 1 : albumTag === 'apps' ? 3 : 0;
+    type === 'bin' ? 2 : type === 'archive' ? 1 : type === 'apps' ? 3 : 0;
 
-  const existingPhotoLib = await getPhotoLibrary(dotYouClient, albumTag);
+  const existingPhotoLib = await getPhotoLibrary(dotYouClient, type);
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)
     def.fileId = existingPhotoLib.fileId;
 
@@ -130,7 +130,7 @@ export const savePhotoLibraryMetadata = async (
     contentType: 'application/json',
     versionTag: def.versionTag,
     appData: {
-      tags: albumTag && !typedAlbum ? [albumTag] : [PhotoConfig.MainTag],
+      tags: type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
       fileType: PhotoConfig.PhotoLibraryMetadataFileType,
       contentIsComplete: true,
       jsonContent: payloadJson,

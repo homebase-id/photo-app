@@ -1,52 +1,54 @@
 import {
-  DotYouClient,
-  TargetDrive,
-  queryBatch,
-  ImageSize,
-  getDecryptedImageUrl,
-  DriveSearchResult,
-  MediaConfig,
-  getFileHeader,
-  getDecryptedImageMetadata,
-  ImageMetadata,
-  ImageContentType,
-  SecurityGroupType,
-  toGuidId,
-  uploadImage,
-  MediaUploadMeta,
   ArchivalStatus,
-  UploadInstructionSet,
-  getRandom16ByteArray,
+  DotYouClient,
+  DriveSearchResult,
+  ImageContentType,
+  ImageMetadata,
+  ImageSize,
+  MediaConfig,
+  MediaUploadMeta,
+  SecurityGroupType,
+  TargetDrive,
+  ThumbnailFile,
   UploadFileMetadata,
-  jsonStringify64,
+  UploadInstructionSet,
   VideoContentType,
-  uploadVideo,
+  getDecryptedImageMetadata,
+  getDecryptedImageUrl,
+  getFileHeader,
+  getRandom16ByteArray,
+  queryBatch,
   uploadHeader,
+  uploadImage,
+  uploadVideo,
+} from '@youfoundation/js-lib/core';
+import {
+  toGuidId,
+  jsonStringify64,
   mergeByteArrays,
   uint8ArrayToBase64,
-  ThumbnailFile,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/helpers';
 
-import { FileLike, PhotoFile } from './PhotoTypes';
+import { FileLike, PhotoConfig, PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
 
 export const getPhotos = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
+  type: 'bin' | 'archive' | 'apps' | 'favorites' | undefined,
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
   ordering?: 'older' | 'newer'
 ) => {
-  const typedAlbum = album === 'bin' || album === 'archive' || album === 'apps';
   const archivalStatus: ArchivalStatus[] =
-    album === 'bin'
+    type === 'bin'
       ? [2]
-      : album === 'archive'
+      : type === 'archive'
       ? [1]
-      : album === 'apps'
+      : type === 'apps'
       ? [3]
-      : album
+      : album || type === 'favorites'
       ? [0, 1, 3]
       : [0];
 
@@ -54,7 +56,7 @@ export const getPhotos = async (
     dotYouClient,
     {
       targetDrive: targetDrive,
-      tagsMatchAll: album && !typedAlbum ? [album] : undefined,
+      tagsMatchAll: album ? [album] : type === 'favorites' ? [PhotoConfig.FavoriteTag] : undefined,
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
@@ -172,7 +174,7 @@ const uploadNewVideo = async (
     };
 
   // Segment video file
-  const segmentVideoFile = (await import('@youfoundation/js-lib')).segmentVideoFile;
+  const segmentVideoFile = (await import('@youfoundation/js-lib/helpers')).segmentVideoFile;
   const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
 
   return {
@@ -341,12 +343,24 @@ export const getAlbumThumbnail = async (
   targetDrive: TargetDrive,
   albumTag: string
 ): Promise<PhotoFile | null> => {
+  const archivalStatus: ArchivalStatus[] =
+    albumTag === 'bin'
+      ? [2]
+      : albumTag === 'archive'
+      ? [1]
+      : albumTag === 'apps'
+      ? [3]
+      : albumTag
+      ? [0, 1, 3]
+      : [0];
+
   const reponse = await queryBatch(
     dotYouClient,
     {
       targetDrive: targetDrive,
       tagsMatchAll: [albumTag],
       fileType: [MediaConfig.MediaFileType],
+      archivalStatus: archivalStatus,
     },
     { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }
   );

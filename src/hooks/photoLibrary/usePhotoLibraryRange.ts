@@ -1,4 +1,5 @@
-import { DriveSearchResult, TargetDrive, stringGuidsEqual } from '@youfoundation/js-lib';
+import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPhotosByMonth, usePhotosByMonth } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
@@ -8,11 +9,11 @@ import { useFileHeader } from './usePhotoHeader';
 
 const useCurrentPhoto = ({
   targetDrive,
-  album,
+  type,
   photoFileId,
 }: {
   targetDrive: TargetDrive;
-  album?: string;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
   photoFileId?: string;
 }) => {
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId });
@@ -20,7 +21,7 @@ const useCurrentPhoto = ({
   const date = fileHeader
     ? new Date(fileHeader.fileMetadata.appData.userDate || fileHeader.fileMetadata.created)
     : undefined;
-  const { data: photos } = usePhotosByMonth({ targetDrive, album, date }).fetchPhotos;
+  const { data: photos } = usePhotosByMonth({ targetDrive, type, date }).fetchPhotos;
 
   if (!photoFileId)
     return {
@@ -42,12 +43,12 @@ const useCurrentPhoto = ({
 
 export const useFlatMonthsFromMeta = ({
   targetDrive,
-  album,
+  type,
 }: {
   targetDrive: TargetDrive;
-  album?: string;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
 }) => {
-  const { data: photoLibrary } = usePhotoLibrary({ targetDrive, album }).fetchLibrary;
+  const { data: photoLibrary } = usePhotoLibrary({ targetDrive, type }).fetchLibrary;
 
   const fetch = () => {
     return photoLibrary?.yearsWithMonths?.flatMap((year) =>
@@ -55,28 +56,28 @@ export const useFlatMonthsFromMeta = ({
     );
   };
 
-  return useQuery(['flat-photos', targetDrive?.alias, album], fetch, { enabled: !!photoLibrary });
+  return useQuery(['flat-photos', targetDrive?.alias, type], fetch, { enabled: !!photoLibrary });
 };
 
 export const useSiblingsRange = ({
   targetDrive,
-  album,
+  type,
   fromFileId,
   toFileId,
 }: {
   targetDrive: TargetDrive;
-  album?: string;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
   fromFileId?: string;
   toFileId?: string;
 }) => {
   const dotYouClient = useAuth().getDotYouClient();
   const { data: flatMonths } = useFlatMonthsFromMeta({
     targetDrive,
-    album,
+    type,
   });
 
-  const fromCurrentData = useCurrentPhoto({ targetDrive, album, photoFileId: fromFileId });
-  const toCurrentData = useCurrentPhoto({ targetDrive, album, photoFileId: toFileId });
+  const fromCurrentData = useCurrentPhoto({ targetDrive, type, photoFileId: fromFileId });
+  const toCurrentData = useCurrentPhoto({ targetDrive, type, photoFileId: toFileId });
 
   const getRange = async () => {
     if (
@@ -128,7 +129,7 @@ export const useSiblingsRange = ({
           await fetchPhotosByMonth({
             dotYouClient,
             targetDrive,
-            album,
+            type,
             date: createDateObject(day.year, day.month, 1),
           })
       )
@@ -138,7 +139,7 @@ export const useSiblingsRange = ({
     return returnRange;
   };
 
-  return useQuery(['siblings-range', targetDrive?.alias, album, fromFileId, toFileId], getRange, {
+  return useQuery(['siblings-range', targetDrive?.alias, type, fromFileId, toFileId], getRange, {
     enabled:
       !!flatMonths &&
       fromCurrentData?.currentIndex !== undefined &&

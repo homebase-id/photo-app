@@ -4,14 +4,14 @@ import {
   DriveSearchResult,
   getPayload,
   getRandom16ByteArray,
-  jsonStringify64,
   queryBatch,
   SecurityGroupType,
   uploadFile,
   UploadFileMetadata,
   UploadInstructionSet,
-} from '@youfoundation/js-lib';
+} from '@youfoundation/js-lib/core';
 import { AlbumDefinition, PhotoConfig } from './PhotoTypes';
+import { jsonStringify64 } from '@youfoundation/js-lib/helpers';
 
 const encryptAlbums = true;
 

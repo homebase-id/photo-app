@@ -15,8 +15,6 @@ const PhotosBin = () => {
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
-  const albumKey = 'bin';
-
   return (
     <>
       <PageMeta title={t('Bin')} icon={Image} actions={<LoginNav />} />
@@ -24,18 +22,18 @@ const PhotosBin = () => {
         isSelecting={isSelecting}
         selection={selection}
         clearSelection={clearSelection}
-        albumKey={albumKey}
+        type="bin"
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}
         selectRange={selectRange}
-        albumKey={albumKey}
+        type={'bin'}
         isSelected={isSelected}
         isSelecting={isSelecting}
       />
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} urlPrefix={'/bin'} />
+          <PhotoPreview fileId={photoKey} type={'bin'} urlPrefix={'/bin'} />
         </Suspense>
       ) : null}
     </>

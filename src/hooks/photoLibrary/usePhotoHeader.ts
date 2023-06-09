@@ -1,5 +1,6 @@
 import { useQueryClient, InfiniteData, useQuery } from '@tanstack/react-query';
-import { TargetDrive, stringGuidsEqual, getFileHeader } from '@youfoundation/js-lib';
+import { TargetDrive, getFileHeader } from '@youfoundation/js-lib/core';
+import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
 import { useInfintePhotosReturn } from './usePhotos';
 
