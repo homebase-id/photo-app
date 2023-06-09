@@ -46,7 +46,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     thumb,
     meta,
   }: {
-    newPhoto: File | FileLike;
+    newPhoto: File | Blob | FileLike;
     albumKey?: string;
     thumb?: ThumbnailFile;
     meta?: MediaUploadMeta;
@@ -74,6 +74,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     } else if (meta?.archivalStatus === 1) {
       addDayToLibrary({ type: 'archive', date: uploadResult.userDate });
     }
+
+    return uploadResult;
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
