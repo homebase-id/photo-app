@@ -1,4 +1,4 @@
-import { DotYouClient, TargetDrive } from '@youfoundation/js-lib/core';
+import { DotYouClient, TargetDrive, UploadResult } from '@youfoundation/js-lib/core';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -102,7 +102,17 @@ const usePhotoLibrary = ({
           const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
           if (!libToSave) return;
 
-          const fetchAndMergeAgain = async () => {
+          const saveNewVersionTag = async (uploadResult: UploadResult) => {
+            if (!uploadResult) return;
+            const { newVersionTag } = uploadResult;
+            // Update versionTag in cache
+            queryClient.setQueryData<PhotoLibraryMetadata>(query.queryKey, {
+              ...libToSave,
+              versionTag: newVersionTag,
+            });
+          };
+
+          const fetchAndMerge = async () => {
             const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>([
               'photo-library',
               targetDrive?.alias,
@@ -110,23 +120,24 @@ const usePhotoLibrary = ({
             ]);
 
             // TODO Should we avoid endless loops here? (Shouldn't happen, but...)
-            await savePhotoLibraryMetadata(dotYouClient, newlyMergedLib, type, () =>
-              setTimeout(fetchAndMergeAgain, 1000)
+            const uploadResult = await savePhotoLibraryMetadata(
+              dotYouClient,
+              newlyMergedLib,
+              type,
+              () => setTimeout(fetchAndMerge, 1000)
             );
+            saveNewVersionTag(uploadResult);
           };
 
           try {
-            const { newVersionTag } = await savePhotoLibraryMetadata(
+            const uploadResult = await savePhotoLibraryMetadata(
               dotYouClient,
               libToSave,
               type,
-              fetchAndMergeAgain
+              fetchAndMerge
             );
-            // Update versionTag in cache
-            queryClient.setQueryData<PhotoLibraryMetadata>(query.queryKey, {
-              ...libToSave,
-              versionTag: newVersionTag,
-            });
+
+            saveNewVersionTag(uploadResult);
           } catch (err) {
             console.warn(err);
           }

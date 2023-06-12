@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import usePhoto from '../photoLibrary/usePhoto';
+import usePhotoMeta from '../photoLibrary/usePhotoMeta';
 
 const DB_NAME = 'OdinPhotosDatabase';
 const UPLOADED_FILES_STORE = 'uploadedFiles';
@@ -35,6 +36,10 @@ const useImporter = () => {
   const [log, setLog] = useState('');
 
   const { mutateAsync: doUploadToServer } = usePhoto(PhotoConfig.PhotoDrive).upload;
+  const {
+    updateDate: { mutateAsync: updateDate },
+    updateMeta: { mutateAsync: updateMeta },
+  } = usePhotoMeta(PhotoConfig.PhotoDrive);
 
   const queryClient = useQueryClient();
 
@@ -142,6 +147,14 @@ const useImporter = () => {
   // =================== API to ODIN =======================
   //
 
+  interface GeoData {
+    altitude: number;
+    latitude: number;
+    latitudeSpan: number;
+    longitude: number;
+    longitudeSpan: number;
+  }
+
   // @Stef
   // Stub function for processing the record.
   // Use the ODIN API to update fileId with jsonData
@@ -149,8 +162,42 @@ const useImporter = () => {
   async function applyJsonPhotos(
     fileId: string,
     record: { uniquename: string },
-    jsonData: unknown
+    jsonData: {
+      creationTime: { timestamp: string; formatted: string };
+      description: string;
+      geoData: GeoData;
+      geoDataExif: GeoData;
+      photoTakenTime: { timestamp: string; formatted: string };
+      title: string;
+    }
   ) {
+    try {
+      await updateDate({
+        photoFileId: fileId,
+        newDate: new Date(parseInt(jsonData.photoTakenTime.timestamp)).getTime(),
+      });
+    } catch (error) {
+      console.error({ error, _context: { fileId, jsonData } });
+    }
+
+    try {
+      await updateMeta({
+        photoFileId: fileId,
+        newImageMetadata: {
+          description: jsonData.description,
+          captureDetails: {
+            geolocation: {
+              latitude: jsonData.geoData.latitude,
+              longitude: jsonData.geoData.longitude,
+              altitude: jsonData.geoData.altitude,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error({ error, _context: { fileId, jsonData } });
+    }
+
     try {
       console.log(`Apply JSON API to photo ${record.uniquename}.`);
       await updateUploadStatus(record.uniquename, 1); // 1 means "applied successfully"
@@ -169,34 +216,37 @@ const useImporter = () => {
     requiresConversion: boolean
   ) {
     const uniquename = createUniquename(fullName);
-    const g = await getUploadedFileGuid(uniquename);
+    const alreadyUploaded = await getUploadedFileGuid(uniquename);
 
-    if (fullName.endsWith('.mp4')) {
-      // skip for now
+    if (requiresConversion) {
+      // TODO: Upload unprocessed as normal payload
+
+      // => skip for now
       return generateGUID();
     }
 
-    if (g === null) {
-      //TODO: look at "requiresConversion"..
-      // TODO: Add MimeType to the File (Missing from jsZip)
+    if (alreadyUploaded === null) {
+      try {
+        const uploadResult = await doUploadToServer({
+          newPhoto: fileData,
+          meta: { archivalStatus: 0 },
+        });
 
-      const uploadResult = await doUploadToServer({
-        newPhoto: fileData,
-        meta: { archivalStatus: 0 },
-      });
+        if (!uploadResult || !uploadResult.fileId) {
+          console.error('Error uploading file to server.');
+          return;
+        }
+        const uniqueGuid = uploadResult.fileId;
 
-      if (!uploadResult || !uploadResult.fileId) {
-        console.error('Error uploading file to server.');
-        return;
+        await addUploadedFile(uniquename, uniqueGuid); // Save in the database
+        setStatus('uploaded successfully.\n');
+        return uniqueGuid;
+      } catch (error) {
+        console.error(`Error uploading file to server:`, error);
       }
-      const uniqueGuid = uploadResult.fileId;
-
-      await addUploadedFile(uniquename, uniqueGuid); // Save in the database
-      setStatus('uploaded successfully.\n');
-      return uniqueGuid;
     } else {
       setStatus('skipping, already uploaded.\n');
-      return g;
+      return alreadyUploaded;
     }
   }
 
@@ -299,7 +349,7 @@ const useImporter = () => {
     });
   };
 
-  const processImageFile = async (fileData: File | Blob, fullName: string) => {
+  const processMediaFile = async (fileData: File | Blob, fullName: string) => {
     setStatus(`Uploading ${fullName} ... `);
 
     let requiresConversion = false;
@@ -331,12 +381,12 @@ const useImporter = () => {
       await processJsonFile(fileData, filename);
     } else if (vid2cvt.some((ext) => filename.toLowerCase().endsWith(ext))) {
       logString(`File ${filename} added to MP4Conversion album.\n`);
-      await processImageFile(fileData, filename);
+      await processMediaFile(fileData, filename);
     } else if (img2cvt.some((ext) => filename.toLowerCase().endsWith(ext))) {
       logString(`Converting to jpg: ${filename}\n`);
-      await processImageFile(fileData, filename);
+      await processMediaFile(fileData, filename);
     } else if (extensions.some((ext) => filename.toLowerCase().endsWith(ext))) {
-      await processImageFile(fileData, filename);
+      await processMediaFile(fileData, filename);
     } else {
       console.log('Invalid extension: ' + filename);
       logString('*** Invalid extension for file: ' + filename + '\n');

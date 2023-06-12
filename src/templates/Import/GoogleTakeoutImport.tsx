@@ -40,7 +40,7 @@ const GoogleTakeoutImport = () => {
 
         <textarea
           readOnly
-          className="my-5 flex-grow rounded-lg border bg-white p-1 text-gray-700 focus:outline-none dark:border-gray-900 dark:bg-black dark:text-gray-300"
+          className="my-5 flex-grow resize-none rounded-lg border bg-white p-1 text-gray-700 focus:outline-none dark:border-gray-900 dark:bg-black dark:text-gray-300"
           defaultValue={log}
         />
         <div className="my-5 flex flex-row flex-wrap gap-2">
