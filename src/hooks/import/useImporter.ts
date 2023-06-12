@@ -172,9 +172,14 @@ const useImporter = () => {
     }
   ) {
     try {
+      const dateAsNumber = parseInt(
+        `${jsonData.photoTakenTime.timestamp}${
+          jsonData.photoTakenTime.timestamp.length === 10 ? '000' : ''
+        }`
+      );
       await updateDate({
         photoFileId: fileId,
-        newDate: new Date(parseInt(jsonData.photoTakenTime.timestamp)).getTime(),
+        newDate: new Date(dateAsNumber).getTime(),
       });
     } catch (error) {
       console.error({ error, _context: { fileId, jsonData } });

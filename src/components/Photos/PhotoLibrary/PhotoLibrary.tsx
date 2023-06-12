@@ -208,7 +208,10 @@ export const PhotoMonth = ({
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
-  useIntersection(wrapperRef, () => setIsInView(true));
+  useIntersection(wrapperRef, () => setIsInView(true), {
+    keepObserving: false,
+    fastThreshold: true,
+  });
   const { year, month } = monthMeta;
 
   const monthInDateObj = createDateObject(year, month, 1);

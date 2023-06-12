@@ -11,7 +11,7 @@ import useAuth from '../auth/useAuth';
 export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
 // TODO: Decrease page size to 100
-const PAGE_SIZE = 500;
+const PAGE_SIZE = 2000;
 
 export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
   const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
