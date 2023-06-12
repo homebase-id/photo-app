@@ -25,8 +25,8 @@ const handleIntersections: IntersectionObserverCallback = (entries) => {
 const getIntersectionObserver = (fastThreshold: boolean) => {
   if (observer === undefined) {
     observer = new IntersectionObserver(handleIntersections, {
-      rootMargin: '100px',
-      threshold: fastThreshold ? 0.01 : 0.15,
+      rootMargin: fastThreshold ? '100%' : '100px',
+      threshold: fastThreshold ? 0.001 : 0.15,
     });
   }
   return observer;
