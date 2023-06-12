@@ -10,7 +10,8 @@ import useAuth from '../auth/useAuth';
 
 export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
-const PAGE_SIZE = 100;
+// TODO: Decrease page size to 100
+const PAGE_SIZE = 500;
 
 export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
   const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
@@ -31,7 +32,7 @@ export const fetchPhotosByMonth = async ({
   date: Date;
   cursorState?: string;
 }): Promise<useInfintePhotosReturn> => {
-  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 2, 0);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
   const dateCursor = buildCursor(endOfMonth.getTime(), beginOfMonth.getTime());
