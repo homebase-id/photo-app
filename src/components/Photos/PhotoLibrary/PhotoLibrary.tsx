@@ -207,15 +207,9 @@ export const PhotoMonth = ({
   isSelecting?: boolean;
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-  useIntersection(wrapperRef, () => setIsInView(true), {
-    keepObserving: false,
-    fastThreshold: true,
-  });
   const { year, month } = monthMeta;
 
   const monthInDateObj = createDateObject(year, month, 1);
-
   const {
     data: photosInfinte,
     isFetched: photosFetched,
@@ -224,7 +218,7 @@ export const PhotoMonth = ({
   } = usePhotosByMonth({
     targetDrive: PhotoConfig.PhotoDrive,
     type,
-    date: isInView ? monthInDateObj : undefined,
+    date: monthInDateObj,
   }).fetchPhotos;
 
   const { mutate: updateCount } = usePhotoLibrary({
