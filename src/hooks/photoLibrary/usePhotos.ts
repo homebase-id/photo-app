@@ -12,8 +12,7 @@ import { useRef } from 'react';
 
 export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
-// TODO: Decrease page size to 100
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 1000;
 
 export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
   const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
@@ -151,7 +150,6 @@ export const useFlatPhotosByMonth = ({
         startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
       ],
       async ({ pageParam }) => {
-        console.log(pageParam);
         const pageDateParam = pageParam instanceof Date ? pageParam : undefined;
         const cursorState = pageParam instanceof Date ? undefined : pageParam;
 
@@ -205,6 +203,7 @@ export const useFlatPhotosByMonth = ({
       {
         enabled: !!targetDrive && !!date,
         getPreviousPageParam: (firstPage) => {
+          // TODO: Check if we need something special here to fetch them reverted? And support pages inside of the months (not only a page per month)
           if (firstPage.prevMonth) {
             return createDateObject(firstPage.prevMonth?.year, firstPage.prevMonth?.month);
           }

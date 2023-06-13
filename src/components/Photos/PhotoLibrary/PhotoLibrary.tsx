@@ -227,7 +227,10 @@ export const PhotoMonth = ({
     disabled: true,
   }).updateCount;
 
-  const photos = photosInfinte?.pages?.flatMap((page) => page.results);
+  const photos = useMemo(
+    () => photosInfinte?.pages?.flatMap((page) => page.results),
+    [photosInfinte, photosInfinte?.pages]
+  );
 
   useEffect(() => {
     if (!hasNextPage && photosFetched) {

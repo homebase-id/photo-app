@@ -14,7 +14,6 @@ import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 import { PhotoActions } from './PhotoActions';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import { useFlatMonthsFromMeta } from '../../../hooks/photoLibrary/usePhotoLibraryRange';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
@@ -25,14 +24,12 @@ const PhotoPreview = (props: {
 }) => {
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: props.fileId });
 
-  // if (!fileHeader) return null;
-
   if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader} />;
   else return <PhotoLibPreview {...props} dsr={fileHeader} />;
 };
 
 const PhotoLibPreview = ({
-  dsr,
+  dsr: fileHeader,
   fileId,
   albumKey,
   type,
@@ -49,7 +46,6 @@ const PhotoLibPreview = ({
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [loadOriginal, setLoadOriginal] = useState(false);
 
-  const fileHeader = dsr;
   const currentDate = fileHeader
     ? new Date(fileHeader?.fileMetadata.appData.userDate || fileHeader?.fileMetadata.created)
     : undefined;
@@ -74,7 +70,10 @@ const PhotoLibPreview = ({
     date: currentDate,
   }).fetchPhotos;
 
-  const flatPhotos = photosInCache?.pages.flatMap((page) => page.results) || [];
+  const flatPhotos = useMemo(
+    () => photosInCache?.pages.flatMap((page) => page.results) || [],
+    [photosInCache, photosInCache?.pages]
+  );
   flatPhotos.sort(sortDsrFunction);
 
   const currentIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
@@ -125,7 +124,7 @@ const PhotoLibPreview = ({
 };
 
 const PhotoAlbumPreview = ({
-  dsr,
+  dsr: fileHeader,
   fileId,
   albumKey,
   type,
@@ -140,7 +139,6 @@ const PhotoAlbumPreview = ({
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const fileHeader = dsr;
   const [loadOriginal, setLoadOriginal] = useState(false);
 
   useEffect(() => {
