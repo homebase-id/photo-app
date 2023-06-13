@@ -180,6 +180,21 @@ export const PhotoItem = ({
     { shouldPreventDefault: true, delay: 300 }
   );
 
+  const width = Math.round(aspect * 200);
+  const sizeStyle = isDesktop
+    ? {
+        height: `${200}px`,
+        width: `${Math.round(aspect * 200)}px`,
+      }
+    : {};
+  const transformStyle = {
+    transform: isChecked
+      ? isDesktop
+        ? `scale3d(${(width - 15) / width}, ${(200 - 15) / 200}, 1)`
+        : `scale3d(0.9, 0.9, 1)`
+      : `scale3d(1, 1, 1)`,
+  };
+
   return (
     <div
       className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}
@@ -197,10 +212,11 @@ export const PhotoItem = ({
         }}
       >
         <div
-          className={`${imgWrapperClasses} transition-transform ${
-            isChecked ? 'scale-90' : 'scale-100'
-          }`}
-          style={isDesktop ? { height: `${200}px`, width: `${Math.round(aspect * 200)}px` } : {}}
+          className={`${imgWrapperClasses} transition-transform`}
+          style={{
+            ...sizeStyle,
+            ...transformStyle,
+          }}
           ref={wrapperRef}
         >
           {isInView ? (
@@ -228,7 +244,7 @@ export const PhotoItem = ({
           ) : null}
         </div>
         {isDesktop ? (
-          <div className="hover:from-[#00000080] group absolute inset-0 hidden hover:bg-opacity-50 hover:bg-gradient-to-b md:block">
+          <div className="group absolute inset-0 hidden hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080] md:block">
             <button
               className={`pl-2 pt-2 group-hover:block ${isChecked ? 'block' : 'hidden'}`}
               onClick={(e) => {

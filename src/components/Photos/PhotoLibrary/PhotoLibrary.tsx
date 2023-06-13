@@ -4,12 +4,11 @@ import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig, PhotoMetaDay } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import PhotoScroll from '../PhotoScroll/PhotoScroll';
-import { PhotoDay } from '../PhotoSection/PhotoSection';
+import { PhotoDay } from '../PhotoDay/PhotoDay';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { createDateObject } from '../../../provider/photos/PhotoProvider';
 import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibraryRange';
 import { usePhotosByMonth } from '../../../hooks/photoLibrary/usePhotos';
-import { useIntersection } from '../../../hooks/intersection/useIntersection';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',

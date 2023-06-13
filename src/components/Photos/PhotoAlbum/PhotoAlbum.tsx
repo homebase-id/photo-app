@@ -3,7 +3,7 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
-import { PhotoItem } from '../PhotoSection/PhotoSection';
+import { PhotoItem } from '../PhotoDay/PhotoDay';
 import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
