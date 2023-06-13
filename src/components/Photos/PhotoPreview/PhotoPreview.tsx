@@ -74,7 +74,6 @@ const PhotoLibPreview = ({
     () => photosInCache?.pages.flatMap((page) => page.results) || [],
     [photosInCache, photosInCache?.pages]
   );
-  flatPhotos.sort(sortDsrFunction);
 
   const currentIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
   const nextSibling = flatPhotos[currentIndex + 1];
