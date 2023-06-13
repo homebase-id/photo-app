@@ -445,7 +445,7 @@ export const buildCursor = (fromUnixTimeInMs: number, toUnixTimeInMs?: number) =
 };
 
 export const createDateObject = (year: number, month: number, day?: number) => {
-  const newDate = new Date();
+  const newDate = new Date(0);
   newDate.setFullYear(year);
   newDate.setMonth(month - 1);
 

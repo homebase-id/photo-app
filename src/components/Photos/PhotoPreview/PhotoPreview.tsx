@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
-import { useFlatPhotosByMonth, usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
+import {
+  sortDsrFunction,
+  useFlatPhotosByMonth,
+  usePhotosInfinte,
+} from '../../../hooks/photoLibrary/usePhotos';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import MediaWithLoader from './MediaLoader';
 import useDebounce from '../../../hooks/debounce/useDebounce';
@@ -19,16 +23,22 @@ const PhotoPreview = (props: {
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
-  if (props.albumKey) return <PhotoAlbumPreview {...props} />;
-  else return <PhotoLibPreview {...props} />;
+  const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: props.fileId });
+
+  // if (!fileHeader) return null;
+
+  if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader} />;
+  else return <PhotoLibPreview {...props} dsr={fileHeader} />;
 };
 
 const PhotoLibPreview = ({
+  dsr,
   fileId,
   albumKey,
   type,
   urlPrefix: urlPrefixProp,
 }: {
+  dsr?: DriveSearchResult;
   fileId: string;
   albumKey?: string;
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
@@ -37,42 +47,35 @@ const PhotoLibPreview = ({
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
   const [loadOriginal, setLoadOriginal] = useState(false);
 
+  const fileHeader = dsr;
   const currentDate = fileHeader
     ? new Date(fileHeader?.fileMetadata.appData.userDate || fileHeader?.fileMetadata.created)
     : undefined;
-
-  const { data: flatMonths } = useFlatMonthsFromMeta({
-    targetDrive,
-    type,
-  });
-
-  const currentMonth = flatMonths?.find(
-    (month) => month.month === currentDate?.getMonth() && month.year === currentDate?.getFullYear()
-  );
-  console.log(currentMonth);
 
   useEffect(() => {
     document.documentElement.classList.add('overflow-hidden');
     return () => document.documentElement.classList.remove('overflow-hidden');
   }, []);
 
-  // // Fetch months
-  // useSiblingPhotosOfMonths({
-  //   targetDrive,
-  //   type,
-  //   currentDate,
-  // });
+  const {
+    data: photosInCache,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
 
-  const { data: photosInCache } = useFlatPhotosByMonth({
+    hasPreviousPage: hasPrevPage,
+    fetchPreviousPage: fetchPrevPage,
+    isFetchingPreviousPage: isFetchingPrevPage,
+  } = useFlatPhotosByMonth({
     targetDrive,
     type,
     date: currentDate,
   }).fetchPhotos;
 
   const flatPhotos = photosInCache?.pages.flatMap((page) => page.results) || [];
+  flatPhotos.sort(sortDsrFunction);
 
   const currentIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
   const nextSibling = flatPhotos[currentIndex + 1];
@@ -97,14 +100,12 @@ const PhotoLibPreview = ({
             <InnerSlider
               fileId={fileId}
               urlPrefix={urlPrefix}
-              //fetchNextPage={fetchNextPage}
-              fetchNextPage={() => {
-                //
-              }}
-              //hasNextPage={hasNextPage}
-              hasNextPage={false}
-              //isFetchingNextPage={isFetchingNextPage}
-              isFetchingNextPage={false}
+              fetchNextPage={fetchNextPage}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              fetchPrevPage={fetchPrevPage}
+              hasPrevPage={hasPrevPage}
+              isFetchingPrevPage={isFetchingPrevPage}
               flatPhotos={flatPhotos}
               originals={loadOriginal}
             />
@@ -124,11 +125,13 @@ const PhotoLibPreview = ({
 };
 
 const PhotoAlbumPreview = ({
+  dsr,
   fileId,
   albumKey,
   type,
   urlPrefix: urlPrefixProp,
 }: {
+  dsr?: DriveSearchResult;
   fileId: string;
   albumKey?: string;
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
@@ -137,7 +140,7 @@ const PhotoAlbumPreview = ({
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: fileId });
+  const fileHeader = dsr;
   const [loadOriginal, setLoadOriginal] = useState(false);
 
   useEffect(() => {
@@ -200,20 +203,29 @@ const PhotoAlbumPreview = ({
 
 const InnerSlider = ({
   fileId,
-
   urlPrefix,
+
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
+
+  fetchPrevPage,
+  hasPrevPage,
+  isFetchingPrevPage,
+
   flatPhotos,
   originals,
 }: {
   fileId: string;
-
   urlPrefix?: string;
+
   fetchNextPage: () => void;
   hasNextPage?: boolean;
   isFetchingNextPage: boolean;
+  fetchPrevPage?: () => void;
+  hasPrevPage?: boolean;
+  isFetchingPrevPage?: boolean;
+
   flatPhotos: DriveSearchResult[];
   originals?: boolean;
 }) => {
@@ -265,40 +277,53 @@ const InnerSlider = ({
     initialOffset: initialOffset,
   });
 
-  // // Fetch next page when scrolling to the end
-  // useEffect(() => {
-  //   const [lastItem] = [...colVirtualizer.getVirtualItems()].reverse();
-  //   if (!lastItem) return;
+  // Fetch prev page when scrolling to the start
+  useEffect(() => {
+    const [firstItem] = colVirtualizer.getVirtualItems();
+    if (!firstItem || !fetchPrevPage) return;
 
-  //   if (lastItem.index >= flatPhotos.length - 1 && hasNextPage && !isFetchingNextPage)
-  //     fetchNextPage();
-  // }, [
-  //   hasNextPage,
-  //   fetchNextPage,
-  //   flatPhotos.length,
-  //   isFetchingNextPage,
-  //   colVirtualizer.getVirtualItems(),
-  // ]);
+    if (firstItem.index === 0 && hasPrevPage && !isFetchingNextPage && !isFetchingPrevPage) {
+      fetchPrevPage();
+    }
+  }, [
+    hasPrevPage,
+    fetchPrevPage,
+    flatPhotos.length,
+    isFetchingPrevPage,
+    isFetchingNextPage,
+    colVirtualizer.getVirtualItems(),
+  ]);
 
-  // useEffect(() => {
-  //   if (fileIndex === -1 || !scrollContainer.current) {
-  //     console.log('cannot scroll', { fileIndex, scrollContainer: scrollContainer.current });
-  //     return;
-  //   }
+  // Fetch next page when scrolling to the end
+  useEffect(() => {
+    const [lastItem] = [...colVirtualizer.getVirtualItems()].reverse();
+    if (!lastItem) return;
 
-  //   const targetPos = colVirtualizer.getOffsetForIndex(fileIndex)[0];
-  //   console.log('scrolling', {
-  //     fileIndex,
-  //     scrollContainer: scrollContainer.current,
-  //     targetPos,
-  //     initialOffset,
-  //   });
+    if (
+      lastItem.index >= flatPhotos.length - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetchingPrevPage
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    flatPhotos.length,
+    isFetchingPrevPage,
+    isFetchingNextPage,
+    colVirtualizer.getVirtualItems(),
+  ]);
 
-  //   scrollContainer.current.scrollTo({
-  //     left: targetPos,
-  //     behavior: 'smooth',
-  //   });
-  // }, [fileId, flatPhotos, colVirtualizer, fileIndex]);
+  useEffect(() => {
+    if (fileIndex === -1 || !scrollContainer.current) {
+      console.log('cannot scroll', { fileIndex, scrollContainer: scrollContainer.current });
+      return;
+    }
+
+    colVirtualizer.scrollToIndex(fileIndex, { behavior: 'auto' });
+  }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
 
   return (
     <div
