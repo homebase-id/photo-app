@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { getVersion } from '../../../../helpers/common';
 import { t } from '../../../../helpers/i18n/dictionary';
 import useAuth from '../../../../hooks/auth/useAuth';
@@ -21,6 +21,7 @@ import { useAlbumThumbnail } from '../../../../hooks/photoLibrary/useAlbum';
 import Plus from '../../Icons/Plus/Plus';
 import Grid from '../../Icons/Grid/Grid';
 import AlbumIcon from '../../Icons/Album/Album';
+import Upload from '../../Icons/Upload/Upload';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -176,6 +177,11 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
           <Person className={`${iconClassName}`} />
           <span className={`my-auto ml-3`}>Log out</span>
         </button>
+        <hr className="border-b dark:border-slate-500" />
+        <Link to={'/import'} className={`w-full ${navItemClassName}`}>
+          <Upload className={`${iconClassName}`} />
+          <span className={`my-auto ml-3`}>{t('Import')}</span>
+        </Link>
         <hr className="border-b dark:border-slate-500" />
         <button className={navItemClassName} onClick={() => toggleDarkMode()}>
           <MiniDarkModeToggle className={`my-auto ${iconClassName}`} />

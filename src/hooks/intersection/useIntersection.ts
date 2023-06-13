@@ -22,11 +22,11 @@ const handleIntersections: IntersectionObserverCallback = (entries) => {
   });
 };
 
-const getIntersectionObserver = () => {
+const getIntersectionObserver = (fastThreshold: boolean) => {
   if (observer === undefined) {
     observer = new IntersectionObserver(handleIntersections, {
-      rootMargin: '100px',
-      threshold: 0.15,
+      rootMargin: fastThreshold ? '0px' : '100px',
+      threshold: fastThreshold ? 0 : 0.15,
     });
   }
   return observer;
@@ -35,18 +35,21 @@ const getIntersectionObserver = () => {
 export const useIntersection = (
   elem: React.RefObject<HTMLElement> | undefined,
   callback: () => void,
-  keepObserving = false
+  options: { keepObserving: boolean; fastThreshold: boolean } = {
+    keepObserving: false,
+    fastThreshold: false,
+  }
 ) => {
   useEffect(() => {
     const target = elem?.current;
-    const observer = getIntersectionObserver();
+    const observer = getIntersectionObserver(options.fastThreshold);
 
     if (!target) {
       return;
     }
 
     listenerCallbacks.set(target, callback);
-    cleanupSettings.set(target, !keepObserving);
+    cleanupSettings.set(target, !options.keepObserving);
     observer.observe(target);
 
     return () => {

@@ -46,7 +46,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     thumb,
     meta,
   }: {
-    newPhoto: File | FileLike;
+    newPhoto: File | Blob | FileLike;
     albumKey?: string;
     thumb?: ThumbnailFile;
     meta?: MediaUploadMeta;
@@ -74,6 +74,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     } else if (meta?.archivalStatus === 1) {
       addDayToLibrary({ type: 'archive', date: uploadResult.userDate });
     }
+
+    return uploadResult;
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -180,7 +182,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       {
         refetchOnMount: false,
         refetchOnWindowFocus: false,
-        staleTime: Infinity,
+        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+        cacheTime: Infinity, // Never => react query will never remove the data from the cache
         enabled: !!targetDrive && !!fileId,
       }
     ),

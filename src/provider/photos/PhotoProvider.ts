@@ -113,12 +113,13 @@ const uploadNewPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newPhoto: File | FileLike,
+  newPhoto: File | Blob | FileLike,
   meta?: MediaUploadMeta
 ) => {
   const bytes = 'bytes' in newPhoto ? newPhoto.bytes : new Uint8Array(await newPhoto.arrayBuffer());
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
-  const userDate = dateTimeOriginal?.getTime() || newPhoto.lastModified || new Date().getTime();
+  const userDate =
+    dateTimeOriginal?.getTime() || (newPhoto as File).lastModified || new Date().getTime();
 
   return {
     ...(await uploadImage(
@@ -147,11 +148,11 @@ const uploadNewVideo = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newVideo: File | FileLike,
+  newVideo: File | Blob | FileLike,
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ) => {
-  const userDate = newVideo.lastModified || new Date().getTime();
+  const userDate = (newVideo as File).lastModified || new Date().getTime();
 
   // if video is tiny enough (less than 10MB), don't segment just upload
   if (newVideo.size < 10000000 || 'bytes' in newVideo)
@@ -199,7 +200,7 @@ export const uploadNew = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newFile: File | FileLike,
+  newFile: File | Blob | FileLike,
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ): Promise<{ fileId?: string; userDate: Date }> => {
@@ -444,7 +445,7 @@ export const buildCursor = (fromUnixTimeInMs: number, toUnixTimeInMs?: number) =
 };
 
 export const createDateObject = (year: number, month: number, day?: number) => {
-  const newDate = new Date();
+  const newDate = new Date(0);
   newDate.setFullYear(year);
   newDate.setMonth(month - 1);
 
