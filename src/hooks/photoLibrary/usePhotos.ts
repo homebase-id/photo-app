@@ -1,15 +1,18 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
   DriveSearchResult,
   DotYouClient,
   CursoredResult,
 } from '@youfoundation/js-lib/core';
-import { buildCursor, getPhotos } from '../../provider/photos/PhotoProvider';
+import { buildCursor, createDateObject, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
+import { useFlatMonthsFromMeta } from './usePhotoLibraryRange';
+import { useRef } from 'react';
 
 export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
+// TODO: Decrease page size to 100
 const PAGE_SIZE = 100;
 
 export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
@@ -31,7 +34,7 @@ export const fetchPhotosByMonth = async ({
   date: Date;
   cursorState?: string;
 }): Promise<useInfintePhotosReturn> => {
-  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 2, 0);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
   const dateCursor = buildCursor(endOfMonth.getTime(), beginOfMonth.getTime());
@@ -88,9 +91,9 @@ export const usePhotosByMonth = ({
 
   return {
     fetchPhotos: useInfiniteQuery(
-      ['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}}`],
-      ({ pageParam }) =>
-        fetchPhotosByMonth({
+      ['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`],
+      async ({ pageParam }) =>
+        await fetchPhotosByMonth({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
           type,
@@ -107,6 +110,116 @@ export const usePhotosByMonth = ({
 
         staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
         cacheTime: Infinity, // Never => react query will never remove the data from the cache
+      }
+    ),
+  };
+};
+
+export const useFlatPhotosByMonth = ({
+  targetDrive,
+  type,
+  date,
+}: {
+  targetDrive: TargetDrive;
+  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  date?: Date;
+}) => {
+  const { getDotYouClient } = useAuth();
+  const dotYouClient = getDotYouClient();
+  const queryClient = useQueryClient();
+
+  const { data: flatMonths } = useFlatMonthsFromMeta({
+    targetDrive,
+    type,
+  });
+
+  const startMonthIndex =
+    flatMonths?.findIndex(
+      (flatDay) => flatDay.year === date?.getFullYear() && flatDay.month === date?.getMonth() + 1
+    ) || 0;
+
+  const startMonth = useRef<{ year: number; month: number }>();
+  if (!startMonth.current) startMonth.current = flatMonths?.[startMonthIndex];
+
+  // Cache key is the starting point (first Photo month that was openend)
+  return {
+    fetchPhotos: useInfiniteQuery(
+      [
+        'flat-photos',
+        targetDrive?.alias,
+        type,
+        startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
+      ],
+      async ({ pageParam }) => {
+        console.log(pageParam);
+        const pageDateParam = pageParam instanceof Date ? pageParam : undefined;
+        const cursorState = pageParam instanceof Date ? undefined : pageParam;
+
+        const dateParam = pageDateParam || (date as Date);
+        //  ||
+        // (startMonth?.current
+        //   ? createDateObject(startMonth.current.year, startMonth.current?.month)
+        //   : new Date());
+        const currentData = await queryClient.fetchInfiniteQuery(
+          [
+            'photos',
+            targetDrive?.alias,
+            type,
+            dateParam && `${dateParam.getFullYear()}-${dateParam.getMonth()}`,
+          ],
+          async () =>
+            await fetchPhotosByMonth({
+              dotYouClient,
+              targetDrive: targetDrive as TargetDrive,
+              type,
+              date: dateParam,
+              cursorState: cursorState,
+            }),
+          {
+            cacheTime: Infinity,
+            staleTime: Infinity,
+          }
+        );
+
+        const currentMonthIndex =
+          flatMonths?.findIndex(
+            (flatDay) =>
+              flatDay.year === dateParam?.getFullYear() &&
+              flatDay.month === dateParam?.getMonth() + 1
+          ) || 0;
+
+        const nextMonth = flatMonths?.[currentMonthIndex + 1];
+        const prevMonth = flatMonths?.[currentMonthIndex - 1];
+
+        return {
+          results: currentData.pages.flatMap((page) => page.results),
+          // Pass cursorState of the last page of this month, but only if there is a next page
+          cursorState:
+            currentData.pages[currentData.pages.length - 1]?.results?.length >= PAGE_SIZE
+              ? currentData.pages[currentData.pages.length - 1].cursorState
+              : undefined,
+          prevMonth: prevMonth,
+          nextMonth: nextMonth,
+        };
+      },
+      {
+        enabled: !!targetDrive && !!date,
+        getPreviousPageParam: (firstPage) => {
+          if (firstPage.prevMonth) {
+            return createDateObject(firstPage.prevMonth?.year, firstPage.prevMonth?.month);
+          }
+          return undefined;
+        },
+        getNextPageParam: (lastPage) => {
+          if (lastPage?.cursorState) {
+            return lastPage.cursorState;
+          } else if (lastPage.nextMonth) {
+            return createDateObject(lastPage.nextMonth?.year, lastPage.nextMonth?.month);
+          }
+          return undefined;
+        },
+        cacheTime: Infinity,
+        staleTime: Infinity,
       }
     ),
   };

@@ -66,7 +66,7 @@ export const PhotoInfo = ({
 
   return (
     <>
-      <div className="md:w-[27rem] fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black dark:text-white md:static md:flex-shrink-0">
+      <div className="fixed inset-0 z-30 h-screen w-full bg-white dark:bg-black dark:text-white md:static md:w-[27rem] md:flex-shrink-0">
         <div className="px-8 py-7">
           <div className="mb-10 flex flex-row">
             <button onClick={() => setIsInfoOpen(false)} className="mr-2">
@@ -98,7 +98,18 @@ export const PhotoInfo = ({
                 className="ml-auto"
               />
             </li>
-            {photoMetadata ? <PhotoCaptureDetails metadata={photoMetadata} /> : null}
+            {photoMetadata ? (
+              <>
+                <PhotoCaptureDetails
+                  metadata={photoMetadata}
+                  key={'PhotoCaptureDetails' + current?.fileId}
+                />
+                <PhotoGeoLocation
+                  metadata={photoMetadata}
+                  key={'PhotoGeoLocation' + current?.fileId}
+                />
+              </>
+            ) : null}
             <li>
               <p>
                 Image size
@@ -166,6 +177,22 @@ const PhotoCaptureDetails = ({ metadata }: { metadata: ImageMetadata }) => {
           <span>{iso}</span>
         </small>
       ) : null}
+    </li>
+  );
+};
+
+const PhotoGeoLocation = ({ metadata }: { metadata: ImageMetadata }) => {
+  if (!metadata || !metadata.captureDetails?.geolocation) {
+    return null;
+  }
+
+  const { latitude, longitude, altitude } = metadata.captureDetails.geolocation;
+
+  return (
+    <li>
+      <p>
+        {latitude} (lat), {longitude} (lng), {altitude}m
+      </p>
     </li>
   );
 };

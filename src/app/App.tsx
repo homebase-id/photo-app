@@ -18,6 +18,7 @@ const PhotosFavorites = lazy(() => import('../templates/Photos/PhotosFavorites')
 const NotFound = lazy(() => import('../templates/NotFound/NotFound'));
 const Auth = lazy(() => import('../templates/Auth/Auth'));
 const FinalizeAuth = lazy(() => import('../templates/Auth/FinalizeAuth'));
+const GoogleTakeoutImport = lazy(() => import('../templates/Import/GoogleTakeoutImport'));
 
 const AUTH_PATH = '/auth';
 
@@ -71,6 +72,8 @@ function App() {
                   <Route path="/apps/photo/:photoKey" element={<PhotosFromApps />}></Route>
                   <Route path="/bin" element={<PhotosBin />}></Route>
                   <Route path="/bin/photo/:photoKey" element={<PhotosBin />}></Route>
+
+                  <Route path="/import" element={<GoogleTakeoutImport />}></Route>
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Route>
