@@ -33,11 +33,11 @@ export const fetchPhotosByMonth = async ({
   date: Date;
   cursorState?: string;
 }): Promise<useInfintePhotosReturn> => {
-  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 2, 0);
+  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
   const dateCursor = buildCursor(endOfMonth.getTime(), beginOfMonth.getTime());
-  const results = await getPhotos(
+  return await getPhotos(
     dotYouClient,
     targetDrive,
     type,
@@ -45,17 +45,6 @@ export const fetchPhotosByMonth = async ({
     PAGE_SIZE,
     cursorState || dateCursor
   );
-
-  const filteredResults = results.results.filter((result) => {
-    const userDate = new Date(result.fileMetadata.appData.userDate || result.fileMetadata.created);
-    if (userDate.getFullYear() === date.getFullYear() && userDate.getMonth() === date.getMonth())
-      return true;
-    else return false;
-  });
-
-  filteredResults.sort(sortDsrFunction);
-
-  return { results: filteredResults, cursorState: results.cursorState };
 };
 
 const fetchPhotosByCursor = async ({
