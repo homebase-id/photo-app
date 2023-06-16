@@ -136,6 +136,7 @@ export const PhotoActions = ({
             size="square"
             type="hybrid"
             confirmOptions={{
+              type: 'warning',
               title: t('Remove Photo'),
               body: t('Are you sure you want to remove this photo?'),
               buttonText: t('Remove'),

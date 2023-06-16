@@ -54,8 +54,11 @@ const Photos = () => {
                 icon={'trash'}
                 type="secondary"
                 confirmOptions={{
+                  type: 'warning',
                   title: `${t('Delete')} ${album.name}?`,
-                  body: t('Are you sure you want to delete this album?'),
+                  body: t(
+                    'Are you sure you want to delete this album? Photos will remain in your library.'
+                  ),
                   buttonText: t('Delete'),
                 }}
                 onClick={() => removeAlbum(album)}
