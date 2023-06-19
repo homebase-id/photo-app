@@ -37,6 +37,7 @@ const LoginNav = () => {
           ) : (
             <Person className="h-4 w-4" />
           )}
+          <span className="sr-only">{isAuthenticated ? t('You are logged in') : t('Login')}</span>
         </button>
       )}
       {isOpen ? (
