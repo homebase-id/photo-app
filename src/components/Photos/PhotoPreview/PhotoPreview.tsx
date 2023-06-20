@@ -2,11 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
-import {
-  sortDsrFunction,
-  useFlatPhotosByMonth,
-  usePhotosInfinte,
-} from '../../../hooks/photoLibrary/usePhotos';
+import { useFlatPhotosByMonth, usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import MediaWithLoader from './MediaLoader';
 import useDebounce from '../../../hooks/debounce/useDebounce';
@@ -320,7 +316,8 @@ const InnerSlider = ({
     }
 
     colVirtualizer.scrollToIndex(fileIndex, { behavior: 'auto' });
-  }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
+    // }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
+  }, [fileId, flatPhotos, colVirtualizer, fileIndex]);
 
   return (
     <div
@@ -355,12 +352,14 @@ const InnerSlider = ({
               }}
               key={photo.fileId}
             >
-              <MediaWithLoader
-                media={photo}
-                fileId={photo.fileId}
-                className="relative h-full w-[100vw] flex-shrink-0 snap-start"
-                original={originals}
-              />
+              <div className="flex h-screen w-screen snap-start">
+                <MediaWithLoader
+                  media={photo}
+                  fileId={photo.fileId}
+                  className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
+                  original={originals}
+                />
+              </div>
             </div>
           );
         })}

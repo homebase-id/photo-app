@@ -1,9 +1,6 @@
-import { useState, useMemo } from 'react';
-import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import Loader from '../../ui/Icons/Loader/Loader';
-import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
-import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
+import { EmbeddedThumb, ImageSize, TargetDrive, ThumbSize } from '@youfoundation/js-lib/core';
+import { OdinImage } from '@youfoundation/ui-lib';
+import useAuth from '../../../hooks/auth/useAuth';
 
 export const PhotoWithLoader = ({
   fileId,
@@ -20,63 +17,18 @@ export const PhotoWithLoader = ({
   fit?: 'cover' | 'contain';
   className?: string;
 }) => {
-  const [isTinyLoaded, setIsTinyLoaded] = useState(false);
-  const [isFinal, setIsFinal] = useState(false);
-  const {
-    fetch: { data: photo },
-    fromCache,
-  } = usePhoto(PhotoConfig.PhotoDrive, fileId, size);
-
-  const cachedPreview = useMemo(
-    () => (fileId ? fromCache(targetDrive, fileId) : undefined),
-    [fileId]
-  );
-
-  const previewThumbUrl = useMemo(() => {
-    if (!previewThumbnail || cachedPreview) return;
-    return window.URL.createObjectURL(
-      new Blob([base64ToUint8Array(previewThumbnail.content)], {
-        type: previewThumbnail.contentType,
-      })
-    );
-  }, [previewThumbnail]);
-
-  const previewUrl = cachedPreview?.url || previewThumbUrl;
-  const naturalSize = {
-    width: previewThumbnail?.pixelWidth,
-    height: previewThumbnail?.pixelHeight,
-  };
+  const { getDotYouClient } = useAuth();
+  const dotYouClient = getDotYouClient();
 
   return (
-    <div className={className || 'relative h-full w-full'} data-file={fileId}>
-      <img
-        src={previewUrl}
-        className={`absolute inset-0 h-full w-full ${
-          fit === 'cover' ? 'object-cover' : 'object-contain'
-        } ${cachedPreview ? '' : 'blur-xl'} transition-opacity delay-500 ${
-          isFinal ? 'opacity-0' : 'opacity-100'
-        }`}
-        {...naturalSize}
-        onLoad={() => setIsTinyLoaded(true)}
-      />
-      {!isFinal ? (
-        <div
-          className={`absolute inset-0 flex text-white transition-opacity delay-[2000ms] ${
-            isTinyLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <Loader className="m-auto h-7 w-7" />
-        </div>
-      ) : null}
-      <img
-        src={photo?.url}
-        className={`relative h-full w-full ${
-          fit === 'cover' ? 'object-cover' : 'object-contain'
-        } transition-opacity ${isFinal ? 'opacity-100' : 'opacity-0'}`}
-        onClick={(e) => e.stopPropagation()}
-        onLoad={() => setIsFinal(true)}
-        // {...naturalSize}
-      />
-    </div>
+    <OdinImage
+      dotYouClient={dotYouClient}
+      targetDrive={targetDrive}
+      fileId={fileId}
+      previewThumbnail={previewThumbnail}
+      explicitSize={size as ThumbSize}
+      fit={fit}
+      className={className}
+    />
   );
 };
