@@ -246,8 +246,6 @@ export const usePhotosInfinte = ({
       {
         getNextPageParam: (lastPage) =>
           (lastPage?.results?.length === PAGE_SIZE && lastPage?.cursorState) ?? undefined,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
         enabled: !!targetDrive && album !== 'new',
         onError: (err) => console.error(err),
 
