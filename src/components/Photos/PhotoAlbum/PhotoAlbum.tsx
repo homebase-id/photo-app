@@ -8,8 +8,7 @@ import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
 
-const gridClasses = `flex flex-row gap-[0.1rem] md:gap-1 `;
-
+const gridClasses = `grid grid-cols-4 md:grid-cols-6 lg:flex lg:flex-row gap-[0.1rem] md:gap-1 `;
 const PhotoAlbum = ({
   albumKey,
   toggleSelection,
@@ -161,7 +160,7 @@ const PhotoAlbum = ({
               transform: `translateY(${items[0].start - virtualizer.options.scrollMargin}px)`,
             }}
           >
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-[0.1rem] md:gap-1">
               {items.map((virtualRow) => {
                 const isLoaderRow = virtualRow.index > flatPhotos.length - 1;
                 if (isLoaderRow) {

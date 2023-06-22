@@ -239,6 +239,7 @@ export const PhotoItem = ({
                 previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
                 size={{ pixelWidth: 200, pixelHeight: 200 }}
                 fit="cover"
+                className="h-full w-full"
               />
             )
           ) : null}
