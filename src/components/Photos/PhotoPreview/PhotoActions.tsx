@@ -114,11 +114,6 @@ export const PhotoActions = ({
                       if (nextSibling) doNext();
                       else doClose();
                     },
-                    confirmOptions: {
-                      title: t('Archive Photo'),
-                      body: t('Are you sure you want to archive this photo?'),
-                      buttonText: t('Archive'),
-                    },
                   },
                 ]
               : []),
@@ -141,6 +136,7 @@ export const PhotoActions = ({
             size="square"
             type="hybrid"
             confirmOptions={{
+              type: 'warning',
               title: t('Remove Photo'),
               body: t('Are you sure you want to remove this photo?'),
               buttonText: t('Remove'),
@@ -187,7 +183,7 @@ export const PhotoActions = ({
       </div>
       <div className="absolute bottom-3 right-3 z-10">
         <button
-          className={`before:content-[''] flex flex-row items-center gap-2 rounded-3xl border border-white border-opacity-10 bg-white px-2 py-1 text-sm text-white before:block before:h-2 before:w-2 before:rounded-full before:bg-white ${
+          className={`flex flex-row items-center gap-2 rounded-3xl border border-white border-opacity-10 bg-white px-2 py-1 text-sm text-white before:block before:h-2 before:w-2 before:rounded-full before:bg-white before:content-[''] ${
             loadOriginal
               ? 'bg-opacity-20 before:bg-opacity-100'
               : 'bg-opacity-10 text-opacity-50 before:bg-opacity-10'

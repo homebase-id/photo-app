@@ -4,12 +4,11 @@ import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig, PhotoMetaDay } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import PhotoScroll from '../PhotoScroll/PhotoScroll';
-import { PhotoDay } from '../PhotoSection/PhotoSection';
+import { PhotoDay } from '../PhotoDay/PhotoDay';
 import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
 import { createDateObject } from '../../../provider/photos/PhotoProvider';
 import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibraryRange';
 import { usePhotosByMonth } from '../../../hooks/photoLibrary/usePhotos';
-import { useIntersection } from '../../../hooks/intersection/useIntersection';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -89,9 +88,9 @@ const PhotoLibrary = ({
 
   const virtualizer = useWindowVirtualizer({
     count: (monthsToShow?.length || 0) + 1, // Add 1 so we have an index for the 'no more photos row'
-    estimateSize: () => 500, // Rough size of a photoSection
+    estimateSize: () => 1000, // Rough size of a photoSection
     scrollMargin: parentOffsetRef.current,
-    overscan: 1, // Amount of items to load before and after (improved performance especially with images)
+    overscan: 0, // Overscan as small as possible as the months are expected to span more than one screen height
   });
 
   const items = virtualizer.getVirtualItems();
@@ -227,7 +226,10 @@ export const PhotoMonth = ({
     disabled: true,
   }).updateCount;
 
-  const photos = photosInfinte?.pages?.flatMap((page) => page.results);
+  const photos = useMemo(
+    () => photosInfinte?.pages?.flatMap((page) => page.results),
+    [photosInfinte, photosInfinte?.pages]
+  );
 
   useEffect(() => {
     if (!hasNextPage && photosFetched) {

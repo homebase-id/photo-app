@@ -12,8 +12,7 @@ import { useRef } from 'react';
 
 export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
-// TODO: Decrease page size to 100
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 1000;
 
 export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
   const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
@@ -34,11 +33,11 @@ export const fetchPhotosByMonth = async ({
   date: Date;
   cursorState?: string;
 }): Promise<useInfintePhotosReturn> => {
-  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 2, 0);
+  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
   const dateCursor = buildCursor(endOfMonth.getTime(), beginOfMonth.getTime());
-  const results = await getPhotos(
+  return await getPhotos(
     dotYouClient,
     targetDrive,
     type,
@@ -46,17 +45,6 @@ export const fetchPhotosByMonth = async ({
     PAGE_SIZE,
     cursorState || dateCursor
   );
-
-  const filteredResults = results.results.filter((result) => {
-    const userDate = new Date(result.fileMetadata.appData.userDate || result.fileMetadata.created);
-    if (userDate.getFullYear() === date.getFullYear() && userDate.getMonth() === date.getMonth())
-      return true;
-    else return false;
-  });
-
-  filteredResults.sort(sortDsrFunction);
-
-  return { results: filteredResults, cursorState: results.cursorState };
 };
 
 const fetchPhotosByCursor = async ({
@@ -151,7 +139,6 @@ export const useFlatPhotosByMonth = ({
         startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
       ],
       async ({ pageParam }) => {
-        console.log(pageParam);
         const pageDateParam = pageParam instanceof Date ? pageParam : undefined;
         const cursorState = pageParam instanceof Date ? undefined : pageParam;
 
@@ -205,6 +192,7 @@ export const useFlatPhotosByMonth = ({
       {
         enabled: !!targetDrive && !!date,
         getPreviousPageParam: (firstPage) => {
+          // TODO: Check if we need something special here to fetch them reverted? And support pages inside of the months (not only a page per month)
           if (firstPage.prevMonth) {
             return createDateObject(firstPage.prevMonth?.year, firstPage.prevMonth?.month);
           }
@@ -258,8 +246,6 @@ export const usePhotosInfinte = ({
       {
         getNextPageParam: (lastPage) =>
           (lastPage?.results?.length === PAGE_SIZE && lastPage?.cursorState) ?? undefined,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
         enabled: !!targetDrive && album !== 'new',
         onError: (err) => console.error(err),
 

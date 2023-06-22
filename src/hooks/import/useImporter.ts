@@ -280,7 +280,7 @@ const useImporter = () => {
           console.log(`Cursor at record ${uniquename}`);
           cursor.continue();
 
-          let jsonData = null;
+          let jsonData: any = null;
           try {
             jsonData = await getJsonFile(uniquename);
           } catch (error) {

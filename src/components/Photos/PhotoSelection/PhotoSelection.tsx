@@ -145,6 +145,7 @@ const PhotoSelection = ({
             size="square"
             type="secondary"
             confirmOptions={{
+              type: 'warning',
               title: t('Remove Photos'),
               body: `${t('Are you sure you want to remove')} ${selection.length} ${t('photos?')}`,
               buttonText: t('Remove'),
@@ -161,6 +162,7 @@ const PhotoSelection = ({
             size="square"
             type="secondary"
             confirmOptions={{
+              type: 'info',
               title: t('Archive Photos'),
               body: `${t('Are you sure you want to archive')} ${selection.length} ${t('photos?')}`,
               buttonText: t('Archive'),

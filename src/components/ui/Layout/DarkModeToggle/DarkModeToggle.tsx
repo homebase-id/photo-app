@@ -4,6 +4,7 @@ import Moon from '../../Icons/Moon/Moon';
 import Sun from '../../Icons/Sun/Sun';
 
 import './darkModeToggle.css';
+import { t } from '../../../../helpers/i18n/dictionary';
 
 interface DarkModeToggleProps {
   className?: string;
@@ -21,6 +22,7 @@ export const MiniDarkModeToggle: FC<DarkModeToggleProps> = ({ className }) => {
   return (
     <span onClick={() => toggleDarkMode()} className={className}>
       {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+      <span className="sr-only">{t('Toggle dark mode')}</span>
     </span>
   );
 };

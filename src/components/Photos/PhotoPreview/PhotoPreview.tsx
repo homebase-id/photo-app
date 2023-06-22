@@ -2,11 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
-import {
-  sortDsrFunction,
-  useFlatPhotosByMonth,
-  usePhotosInfinte,
-} from '../../../hooks/photoLibrary/usePhotos';
+import { useFlatPhotosByMonth, usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import MediaWithLoader from './MediaLoader';
 import useDebounce from '../../../hooks/debounce/useDebounce';
@@ -14,7 +10,6 @@ import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 import { PhotoActions } from './PhotoActions';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import { useFlatMonthsFromMeta } from '../../../hooks/photoLibrary/usePhotoLibraryRange';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
@@ -25,14 +20,12 @@ const PhotoPreview = (props: {
 }) => {
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: props.fileId });
 
-  // if (!fileHeader) return null;
-
   if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader} />;
   else return <PhotoLibPreview {...props} dsr={fileHeader} />;
 };
 
 const PhotoLibPreview = ({
-  dsr,
+  dsr: fileHeader,
   fileId,
   albumKey,
   type,
@@ -49,7 +42,6 @@ const PhotoLibPreview = ({
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [loadOriginal, setLoadOriginal] = useState(false);
 
-  const fileHeader = dsr;
   const currentDate = fileHeader
     ? new Date(fileHeader?.fileMetadata.appData.userDate || fileHeader?.fileMetadata.created)
     : undefined;
@@ -74,8 +66,10 @@ const PhotoLibPreview = ({
     date: currentDate,
   }).fetchPhotos;
 
-  const flatPhotos = photosInCache?.pages.flatMap((page) => page.results) || [];
-  flatPhotos.sort(sortDsrFunction);
+  const flatPhotos = useMemo(
+    () => photosInCache?.pages.flatMap((page) => page.results) || [],
+    [photosInCache, photosInCache?.pages]
+  );
 
   const currentIndex = flatPhotos.findIndex((photo) => photo.fileId === fileId);
   const nextSibling = flatPhotos[currentIndex + 1];
@@ -125,7 +119,7 @@ const PhotoLibPreview = ({
 };
 
 const PhotoAlbumPreview = ({
-  dsr,
+  dsr: fileHeader,
   fileId,
   albumKey,
   type,
@@ -140,7 +134,6 @@ const PhotoAlbumPreview = ({
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const fileHeader = dsr;
   const [loadOriginal, setLoadOriginal] = useState(false);
 
   useEffect(() => {
@@ -264,7 +257,7 @@ const InnerSlider = ({
       passive: true,
     });
     return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
-  }, [flatPhotos, scrollListener, scrollListener]);
+  }, [flatPhotos, scrollListener]);
 
   // Virtual scrolling
   const colVirtualizer = useVirtualizer({
@@ -321,6 +314,7 @@ const InnerSlider = ({
       console.log('cannot scroll', { fileIndex, scrollContainer: scrollContainer.current });
       return;
     }
+    if (colVirtualizer.isScrolling) return;
 
     colVirtualizer.scrollToIndex(fileIndex, { behavior: 'auto' });
   }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
@@ -358,12 +352,14 @@ const InnerSlider = ({
               }}
               key={photo.fileId}
             >
-              <MediaWithLoader
-                media={photo}
-                fileId={photo.fileId}
-                className="relative h-full w-[100vw] flex-shrink-0 snap-start"
-                original={originals}
-              />
+              <div className="flex h-screen w-screen snap-start">
+                <MediaWithLoader
+                  media={photo}
+                  fileId={photo.fileId}
+                  className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
+                  original={originals}
+                />
+              </div>
             </div>
           );
         })}

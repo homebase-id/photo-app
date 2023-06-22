@@ -79,7 +79,7 @@ const Sidenav = () => {
             </div>
             <div className="py-3">
               <NavItem icon={SolidHeart} label={'Favorites'} to={`/favorites`} end={true} />
-              <AlbumsNavItem isOpen={isOpen || isHoverOpen} />
+              <AlbumsNavItem />
             </div>
 
             <div className="py-3">
@@ -192,7 +192,7 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
   );
 };
 
-const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
+const AlbumsNavItem = () => {
   const [isOpen, setIsOpen] = useState(true);
   const { data: albums } = useAlbums().fetch;
 
@@ -220,14 +220,14 @@ const AlbumsNavItem = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
       </NavLink>
 
       {isOpen ? (
-        <div className={isNavOpen ? `pl-5` : ''}>
+        <div className={''}>
           {albums?.slice(0, 5)?.map((album, index) => (
             <AlbumNavItem album={album} key={album.fileId ?? index} />
           ))}
           {albums && albums?.length > 5 ? (
             <NavItem label={t('View all')} icon={Arrow} to={`/albums`} end={true} />
           ) : (
-            <span className={isNavOpen ? 'opacity-100' : 'opacity-0'}>
+            <span>
               <NavItem label={t('New album')} icon={Plus} to={`/album/new`} end={true} />
             </span>
           )}

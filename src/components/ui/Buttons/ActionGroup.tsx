@@ -1,7 +1,7 @@
 import { FC, useRef, useState } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import useOutsideTrigger from '../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
-import ConfirmDialog from '../../Dialog/ConfirmDialog/ConfirmDialog';
+import ConfirmDialog, { ConfirmDialogProps } from '../../Dialog/ConfirmDialog/ConfirmDialog';
 import ActionButton, { ActionButtonProps } from './ActionButton';
 
 export interface ActionGroupOptionProps {
@@ -9,11 +9,7 @@ export interface ActionGroupOptionProps {
   label: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
   href?: string;
-  confirmOptions?: {
-    title: string;
-    buttonText: string;
-    body: string;
-  };
+  confirmOptions?: Omit<ConfirmDialogProps, 'onConfirm' | 'onCancel'>;
 }
 
 export interface ActionGroupProps extends Omit<ActionButtonProps, 'onClick'> {
@@ -93,20 +89,20 @@ const ActionOption = ({ icon, label, onClick, href, confirmOptions }: ActionGrou
           <span className={''}>{label}</span>
         </a>
       </li>
-      {confirmOptions && onClick && (
+      {confirmOptions && onClick && needsConfirmation ? (
         <ConfirmDialog
-          title={confirmOptions.title}
-          confirmText={confirmOptions.buttonText}
-          needConfirmation={needsConfirmation}
-          onConfirm={() => mouseEvent && onClick(mouseEvent)}
+          {...confirmOptions}
+          onConfirm={() => {
+            if (!mouseEvent) return;
+            setNeedsConfirmation(false);
+            onClick(mouseEvent);
+          }}
           onCancel={(e) => {
             e.stopPropagation();
             setNeedsConfirmation(false);
           }}
-        >
-          <p className="text-sm">{confirmOptions.body}</p>
-        </ConfirmDialog>
-      )}
+        />
+      ) : null}
     </>
   );
 };

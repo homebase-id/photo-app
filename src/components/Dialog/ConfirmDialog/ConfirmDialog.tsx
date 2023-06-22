@@ -1,36 +1,33 @@
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { t } from '../../../helpers/i18n/dictionary';
 import usePortal from '../../../hooks/portal/usePortal';
 import Input from '../../Form/Input';
 import Label from '../../Form/Label';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
+import Question from '../../ui/Icons/Question/Question';
+
+export interface ConfirmDialogProps {
+  type?: 'critical' | 'info' | 'warning';
+  title: string;
+  buttonText: string;
+  body: string;
+  trickQuestion?: TrickQuestion;
+  onConfirm: (e: React.MouseEvent<HTMLElement> | React.FormEvent<HTMLElement>) => void;
+  onCancel: (e: React.MouseEvent<HTMLElement>) => void;
+}
 
 const ConfirmDialog = ({
+  type,
   title,
-  confirmText,
-  children,
+  buttonText,
+  body,
   trickQuestion,
-  needConfirmation,
   onConfirm,
   onCancel,
-  type,
-}: {
-  title: string;
-  confirmText: string;
-  children: ReactNode;
-  trickQuestion?: TrickQuestion;
-  needConfirmation: boolean;
-  type?: 'critical' | 'info';
-  onConfirm: (e: React.MouseEvent<HTMLElement>) => void;
-  onCancel: (e: React.MouseEvent<HTMLElement>) => void;
-}) => {
+}: ConfirmDialogProps) => {
   const target = usePortal('modal-container');
   const [isValid, setIsvalid] = useState(!trickQuestion);
-
-  if (!needConfirmation) {
-    return null;
-  }
 
   const dialog = (
     <div className="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -50,22 +47,36 @@ const ConfirmDialog = ({
               <div className="sm:flex sm:items-start">
                 <div
                   className={`mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${
-                    type === 'info' ? 'text-indigo-400' : 'text-red-400'
+                    type === 'info'
+                      ? 'text-indigo-400'
+                      : type === 'warning'
+                      ? 'text-orange-400'
+                      : 'text-red-400'
                   } sm:mx-0 sm:h-10 sm:w-10`}
                 >
-                  <Exclamation />
+                  {type !== 'info' ? <Exclamation /> : <Question />}
                 </div>
                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <h3 className="text-lg font-medium leading-6" id="modal-title">
                     {title}
                   </h3>
-                  <div className="mt-2">{children}</div>
+                  <div className="mt-2">
+                    <p className="text-sm">{body}</p>
+                  </div>
                   {trickQuestion ? (
-                    <TrickQuestion
-                      setIsValid={setIsvalid}
-                      question={trickQuestion.question}
-                      answer={trickQuestion.answer}
-                    />
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (isValid) onConfirm(e);
+                      }}
+                    >
+                      <TrickQuestion
+                        setIsValid={setIsvalid}
+                        question={trickQuestion.question}
+                        answer={trickQuestion.answer}
+                      />
+                    </form>
                   ) : null}
                 </div>
               </div>
@@ -74,19 +85,27 @@ const ConfirmDialog = ({
               <button
                 type="button"
                 className={`${!isValid ? 'pointer-events-none opacity-40' : ''} ${
-                  type === 'info'
+                  type !== 'critical'
                     ? 'hover:bg-indigo-70 bg-indigo-600 focus:ring-indigo-500'
                     : 'hover:bg-red-70 bg-red-600 focus:ring-red-500'
                 } inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
-                onClick={onConfirm}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onConfirm(e);
+                }}
                 disabled={!isValid}
               >
-                {confirmText}
+                {buttonText}
               </button>
               <button
                 type="button"
                 className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-700 dark:text-white sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm"
-                onClick={onCancel}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCancel(e);
+                }}
               >
                 {t('Cancel')}
               </button>

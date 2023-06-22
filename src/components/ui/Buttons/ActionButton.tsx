@@ -1,5 +1,5 @@
 import { FC, ReactNode, useState } from 'react';
-import ConfirmDialog, { TrickQuestion } from '../../Dialog/ConfirmDialog/ConfirmDialog';
+import ConfirmDialog, { ConfirmDialogProps } from '../../Dialog/ConfirmDialog/ConfirmDialog';
 import Arrow from '../Icons/Arrow/Arrow';
 import Check from '../Icons/Check/Check';
 import Exclamation from '../Icons/Exclamation/Exclamation';
@@ -34,13 +34,7 @@ export interface ActionButtonProps {
   onClick?: React.MouseEventHandler<HTMLElement>;
   title?: string;
   size?: 'large' | 'small' | 'square';
-  confirmOptions?: {
-    title: string;
-    buttonText: string;
-    body: string;
-    trickQuestion?: TrickQuestion;
-    type?: 'critical' | 'info';
-  };
+  confirmOptions?: Omit<ConfirmDialogProps, 'onConfirm' | 'onCancel'>;
 }
 
 export const mergeStates = (
@@ -119,6 +113,7 @@ const ActionButton: FC<ActionButtonProps> = ({
   };
 
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [mouseEvent, setMouseEvent] = useState<React.MouseEvent<HTMLElement>>();
 
   const colorClasses =
     (state === 'error'
@@ -164,6 +159,7 @@ const ActionButton: FC<ActionButtonProps> = ({
             ? (e) => {
                 e.preventDefault();
                 setNeedsConfirmation(true);
+                setMouseEvent(e);
                 return false;
               }
             : onClick
@@ -173,24 +169,16 @@ const ActionButton: FC<ActionButtonProps> = ({
         {children}
         <Icon className={`my-auto ${children ? 'ml-1' : ''} h-4 w-4`} />
       </button>
-      {confirmOptions && onClick && (
+      {confirmOptions && onClick && needsConfirmation ? (
         <ConfirmDialog
-          title={confirmOptions.title}
-          confirmText={confirmOptions.buttonText}
-          trickQuestion={confirmOptions.trickQuestion}
-          type={confirmOptions.type}
-          needConfirmation={needsConfirmation}
-          onConfirm={(e) => {
+          {...confirmOptions}
+          onConfirm={() => {
             setNeedsConfirmation(false);
-            onClick(e);
+            onClick && mouseEvent && onClick(mouseEvent);
           }}
-          onCancel={() => {
-            setNeedsConfirmation(false);
-          }}
-        >
-          <p className="text-sm">{confirmOptions.body}</p>
-        </ConfirmDialog>
-      )}
+          onCancel={() => setNeedsConfirmation(false)}
+        />
+      ) : null}
     </>
   );
 };
