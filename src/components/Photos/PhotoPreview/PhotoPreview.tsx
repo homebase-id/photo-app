@@ -257,7 +257,7 @@ const InnerSlider = ({
       passive: true,
     });
     return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
-  }, [flatPhotos, scrollListener, scrollListener]);
+  }, [flatPhotos, scrollListener]);
 
   // Virtual scrolling
   const colVirtualizer = useVirtualizer({
@@ -314,10 +314,10 @@ const InnerSlider = ({
       console.log('cannot scroll', { fileIndex, scrollContainer: scrollContainer.current });
       return;
     }
+    if (colVirtualizer.isScrolling) return;
 
     colVirtualizer.scrollToIndex(fileIndex, { behavior: 'auto' });
-    // }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
-  }, [fileId, flatPhotos, colVirtualizer, fileIndex]);
+  }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
 
   return (
     <div
