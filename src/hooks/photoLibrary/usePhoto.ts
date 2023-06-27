@@ -27,19 +27,6 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
 
   const dotYouClient = getDotYouClient();
 
-  const fetchPhoto = async ({
-    targetDrive,
-    fileId,
-    size,
-  }: {
-    targetDrive?: TargetDrive;
-    fileId?: string;
-    size?: ImageSize;
-  }) => {
-    if (!targetDrive || !fileId) return null;
-    return await getPhoto(dotYouClient, targetDrive, fileId, size, true);
-  };
-
   const uploadNewMedia = async ({
     newPhoto,
     albumKey,
@@ -176,17 +163,6 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   };
 
   return {
-    fetch: useQuery(
-      ['photo', targetDrive?.alias, fileId, `${size?.pixelHeight}x${size?.pixelWidth}`],
-      () => fetchPhoto({ targetDrive, fileId, size }),
-      {
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-        cacheTime: Infinity, // Never => react query will never remove the data from the cache
-        enabled: !!targetDrive && !!fileId,
-      }
-    ),
     fromCache: (targetDrive: TargetDrive, fileId: string) => {
       const previousKeys = queryClient
         .getQueryCache()
