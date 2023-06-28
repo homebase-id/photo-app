@@ -5,13 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import useVerifyToken from './useVerifyToken';
 import {
   logout as logoutYouauth,
-  authenticate as authenticateYouAuth,
   finalizeAuthentication as finalizeAuthenticationYouAuth,
   APP_AUTH_TOKEN,
   APP_SHARED_SECRET,
   getRegistrationParams,
   preAuth as preauthApps,
   retrieveIdentity,
+  retrieveKey,
+  createPair,
+  saveKey,
+  throwAwayTheKey,
 } from '@youfoundation/js-lib/auth';
 
 export const drives = [
@@ -35,14 +38,7 @@ const useAuth = () => {
   const [authenticationState, setAuthenticationState] = useState<
     'unknown' | 'anonymous' | 'authenticated'
   >(hasSharedSecret() ? 'unknown' : 'anonymous');
-  const { data: hasValidToken, isFetchedAfterMount } = useVerifyToken();
   const navigate = useNavigate();
-
-  const authenticate = (identity: string, returnUrl: string): void => {
-    const strippedIdentity = identity.replace(new RegExp('^(http|https)://'), '').split('/')[0];
-
-    authenticateYouAuth(strippedIdentity, returnUrl, appName, appId, drives);
-  };
 
   const finalizeAuthentication = async (
     registrationData: string | null,
@@ -50,11 +46,20 @@ const useAuth = () => {
     identity: string | null
   ) => {
     if (!registrationData || !v) {
+      console.error('Missing data');
+      return false;
+    }
+    const privateKey = await retrieveKey();
+    if (!privateKey) {
+      console.error('Missing key');
       return false;
     }
 
     try {
-      await finalizeAuthenticationYouAuth(registrationData, v, identity);
+      await finalizeAuthenticationYouAuth(registrationData, v, identity, privateKey);
+
+      // Remove key
+      throwAwayTheKey();
     } catch (ex) {
       console.error(ex);
       return false;
@@ -64,7 +69,7 @@ const useAuth = () => {
   };
 
   const logout = async (): Promise<void> => {
-    await logoutYouauth();
+    await logoutYouauth(getDotYouClient());
 
     setAuthenticationState('anonymous');
 
@@ -98,6 +103,8 @@ const useAuth = () => {
     });
   };
 
+  const { data: hasValidToken, isFetchedAfterMount } = useVerifyToken(getDotYouClient());
+
   useEffect(() => {
     if (isFetchedAfterMount && hasValidToken !== undefined) {
       setAuthenticationState(hasValidToken ? 'authenticated' : 'anonymous');
@@ -115,9 +122,23 @@ const useAuth = () => {
   }, [hasValidToken]);
 
   return {
-    getRegistrationParams: (returnUrl: string) =>
-      getRegistrationParams(returnUrl, appName, appId, drives),
-    authenticate,
+    getRegistrationParams: async (returnUrl: string) => {
+      const key = await createPair();
+      if (!key) throw new Error('Failed to retrieve key');
+
+      // Persist key for usage on finalize
+      await saveKey(key);
+
+      // Get params with publicKey embedded
+      return await getRegistrationParams(
+        `${window.location.origin}/auth/finalize?returnUrl=${encodeURIComponent(returnUrl)}`,
+        appName,
+        appId,
+        drives,
+        key.publicKey,
+        window.location.host
+      );
+    },
     finalizeAuthentication,
     logout,
     preauth,
