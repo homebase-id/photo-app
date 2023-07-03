@@ -20,7 +20,7 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 const timeFormat: Intl.DateTimeFormatOptions = {
   hour: 'numeric',
   minute: 'numeric',
-  weekday: 'short',
+  // weekday: 'short',
   timeZoneName: 'short',
 };
 
