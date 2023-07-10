@@ -135,7 +135,7 @@ const PhotoSelection = ({
         {selection.length} {t('Selected')}
       </p>
       <div className="ml-auto flex flex-row-reverse gap-2">
-        {albumKey !== 'bin' ? (
+        {type !== 'bin' ? (
           <ActionButton
             icon={'trash'}
             onClick={async () => {
@@ -152,7 +152,7 @@ const PhotoSelection = ({
             }}
           />
         ) : null}
-        {albumKey !== 'archive' ? (
+        {type !== 'archive' ? (
           <ActionButton
             icon={Archive}
             onClick={async () => {
@@ -192,9 +192,15 @@ const PhotoSelection = ({
               </ActionButtonWithOptions>
             ) : null}
             {albumKey ? (
-              <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
-                {t('Remove from album')}
-              </ActionButton>
+              albumKey === PhotoConfig.FavoriteTag ? (
+                <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+                  {t('Remove from favorites')}
+                </ActionButton>
+              ) : (
+                <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+                  {t('Remove from album')}
+                </ActionButton>
+              )
             ) : null}
           </>
         )}
