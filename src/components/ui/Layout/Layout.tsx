@@ -9,8 +9,8 @@ interface LayoutProps {
   noPadding?: boolean;
 }
 
-const SHADED_BG = 'bg-[rgb(246,_248,_250)] dark:bg-gray-900 dark:text-gray-400';
-const NOT_SHADED_BG = 'bg-white dark:bg-black dark:text-gray-400';
+const SHADED_BG = 'bg-[rgb(246,_248,_250)] dark:bg-gray-900 dark:text-gray-200';
+const NOT_SHADED_BG = 'bg-white dark:bg-black dark:text-gray-200';
 
 const Layout: FC<LayoutProps> = ({ children, noShadedBg, noPadding }) => {
   const [searchParams] = useSearchParams();
