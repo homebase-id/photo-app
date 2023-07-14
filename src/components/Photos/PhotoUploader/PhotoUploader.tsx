@@ -11,6 +11,9 @@ import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Check from '../../ui/Icons/Check/Check';
 
+const kiloBytes = 1024;
+const megaBytes = kiloBytes * 1024;
+
 const Uploader = ({
   isFileSelectorOpen,
   setFileSelectorOpen,
@@ -113,8 +116,8 @@ const Uploader = ({
 
     const isPin = 'bytes' in currentFile;
     if (currentFile.type === 'video/mp4') {
-      // We need a thumb, so we wait till it's grabbed
-      if (!currentVideoThumb) return;
+      // We need a thumb, so we wait till it's grabbed; Unless the file is too big, then we just upload it
+      if (!currentVideoThumb && currentFile?.size < 512 * megaBytes) return;
 
       doUploadToServer({
         newPhoto: currentFile,
@@ -245,7 +248,7 @@ const CurrentFile = ({
 
   return !isVideo ? (
     <img src={url} className={`relative aspect-square h-full w-full object-cover`} />
-  ) : (
+  ) : file?.size < 512 * megaBytes ? (
     <video
       src={url}
       onCanPlay={() => url && URL.revokeObjectURL(url)}
@@ -253,6 +256,8 @@ const CurrentFile = ({
       onSeeked={(e) => grabThumb(e.currentTarget)}
       className={`relative aspect-square h-full w-full object-cover`}
     />
+  ) : (
+    <div className="aspect-square h-full w-full animate-pulse bg-slate-400 dark:bg-slate-800"></div>
   );
 };
 

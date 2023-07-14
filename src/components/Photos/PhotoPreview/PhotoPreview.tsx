@@ -101,7 +101,7 @@ const PhotoLibPreview = ({
               hasPrevPage={hasPrevPage}
               isFetchingPrevPage={isFetchingPrevPage}
               flatPhotos={flatPhotos}
-              originals={loadOriginal}
+              original={loadOriginal}
             />
           ) : null}
         </div>
@@ -177,7 +177,7 @@ const PhotoAlbumPreview = ({
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
               flatPhotos={flatPhotos}
-              originals={loadOriginal}
+              original={loadOriginal}
             />
           ) : null}
         </div>
@@ -207,7 +207,7 @@ const InnerSlider = ({
   isFetchingPrevPage,
 
   flatPhotos,
-  originals,
+  original,
 }: {
   fileId: string;
   urlPrefix?: string;
@@ -220,7 +220,7 @@ const InnerSlider = ({
   isFetchingPrevPage?: boolean;
 
   flatPhotos: DriveSearchResult[];
-  originals?: boolean;
+  original?: boolean;
 }) => {
   // I know this is strange, as this will break hooks consistentcy,
   // but if there's no photos the virtual scrolling will initialize with no width, and the intialOffset will be 0
@@ -357,7 +357,7 @@ const InnerSlider = ({
                   media={photo}
                   fileId={photo.fileId}
                   className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
-                  original={originals}
+                  original={original}
                 />
               </div>
             </div>

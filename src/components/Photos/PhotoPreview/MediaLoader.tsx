@@ -24,6 +24,7 @@ const MediaWithLoader = ({
       targetDrive={targetDrive}
       fit="contain"
       className={className}
+      skipChunkedPlayback={original}
     />
   ) : (
     <PhotoWithLoader
