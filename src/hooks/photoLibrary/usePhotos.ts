@@ -139,12 +139,12 @@ export const useFlatPhotosByMonth = ({
         startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
       ],
       async ({ pageParam }) => {
-        console.log('fetchPhotos', [
-          'flat-photos',
-          targetDrive?.alias,
-          type,
-          startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
-        ]);
+        // console.log('fetchPhotos', [
+        //   'flat-photos',
+        //   targetDrive?.alias,
+        //   type,
+        //   startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
+        // ]);
 
         const pageDateParam = pageParam instanceof Date ? pageParam : undefined;
         const cursorState = pageParam instanceof Date ? undefined : pageParam;
