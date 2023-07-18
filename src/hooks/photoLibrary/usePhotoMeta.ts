@@ -133,11 +133,6 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
           console.log('Updated photo header', newQueryData);
         }
       },
-      onSettled: (_param, error, _data) => {
-        queryClient.invalidateQueries(['photo-library', targetDrive?.alias]);
-        // queryClient.invalidateQueries(['photo-header', targetDrive?.alias, _data.photoFileId]);
-        // Update of the header is too slow on the server side
-      },
     }),
   };
 };

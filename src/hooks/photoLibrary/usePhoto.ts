@@ -421,13 +421,11 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
-          queryClient.invalidateQueries(['photo-library', targetDrive?.alias, undefined, tag]);
           queryClient.invalidateQueries(['photos', targetDrive?.alias, undefined, tag]);
           queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, undefined, tag]);
         });
 
         if (variables.removeTags.includes(PhotoConfig.FavoriteTag)) {
-          queryClient.invalidateQueries(['photo-library', targetDrive?.alias, 'favorites']);
           queryClient.invalidateQueries(['photos', targetDrive?.alias, 'favorites']);
           queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, 'favorites']);
         }
