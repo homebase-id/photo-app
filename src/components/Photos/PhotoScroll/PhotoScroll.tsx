@@ -95,7 +95,7 @@ const PhotoScroll = ({
       </ol>
       {overlayData ? (
         <span
-          className="pointer-events-none fixed right-0 top-0 z-20 border-b bg-white"
+          className="pointer-events-none fixed right-0 top-0 z-20 border-b bg-white dark:bg-black"
           style={{ transform: `translateY(${overlayTop}px)` }}
         >
           {overlayText}
