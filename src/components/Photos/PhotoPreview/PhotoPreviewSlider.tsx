@@ -98,11 +98,11 @@ const PhotoPreviewSlider = ({
       {photosToShow.map((photo) => {
         return (
           <div className="h-full w-screen" key={photo.fileId}>
-            <div className="flex h-screen w-screen snap-start">
+            <div className="relative flex h-screen w-screen snap-start">
               <MediaWithLoader
                 media={photo}
                 fileId={photo.fileId}
-                className={`relative m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
+                className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
                 original={original}
               />
             </div>
