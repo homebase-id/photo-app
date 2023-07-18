@@ -24,6 +24,7 @@ const PhotoSelection = ({
 }) => {
   const {
     remove: { mutateAsync: removePhoto },
+    deleteFile: { mutateAsync: deletePhoto },
     archive: { mutateAsync: archivePhoto },
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
@@ -54,6 +55,16 @@ const PhotoSelection = ({
     await Promise.all(
       selection.map(async (fileId) => {
         await removePhoto({ photoFileId: fileId });
+      })
+    );
+
+    clearSelection();
+  };
+
+  const deleteSelection = async () => {
+    await Promise.all(
+      selection.map(async (fileId) => {
+        await deletePhoto({ photoFileId: fileId });
       })
     );
 
@@ -170,6 +181,9 @@ const PhotoSelection = ({
           />
         ) : null}
 
+        {type === 'bin' ? (
+          <ActionButton onClick={() => deleteSelection()}>{t('Delete permanently')}</ActionButton>
+        ) : null}
         {type === 'archive' || type === 'bin' ? (
           <ActionButton onClick={() => restoreSelection()}>{t('Restore')}</ActionButton>
         ) : (

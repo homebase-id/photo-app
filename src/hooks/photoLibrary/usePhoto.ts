@@ -7,6 +7,7 @@ import {
   ThumbnailFile,
   MediaUploadMeta,
   getPayloadBytes,
+  deleteFile,
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
@@ -71,6 +72,12 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
       archivalStatus: 2,
     });
+  };
+
+  const deletePhoto = async ({ photoFileId }: { photoFileId: string }) => {
+    if (!targetDrive) return null;
+
+    return await deleteFile(dotYouClient, targetDrive, photoFileId);
   };
 
   const archivePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -223,6 +230,38 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
 
         if (_param?.date) addDayToLibrary({ type: 'bin', date: _param.date });
+      },
+      onError: (ex) => {
+        console.error(ex);
+      },
+    }),
+    deleteFile: useMutation(deletePhoto, {
+      onMutate: (toRemovePhotoData) => {
+        queryClient
+          .getQueryCache()
+          .findAll(['photos', targetDrive?.alias])
+          .forEach((query) => {
+            const queryKey = query.queryKey;
+            const queryData =
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
+
+            if (!queryData) return;
+
+            // Remove from all libraryTypes
+            queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, {
+              ...queryData,
+              pages: queryData.pages.map((page) => ({
+                ...page,
+                results: page.results.filter(
+                  (photo) => photo.fileId !== toRemovePhotoData.photoFileId
+                ),
+              })),
+            });
+          });
+      },
+      onSuccess: (_param, _data) => {
+        queryClient.invalidateQueries(['photos', targetDrive?.alias, 'bin']);
+        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
