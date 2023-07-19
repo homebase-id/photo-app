@@ -10,6 +10,7 @@ import { t } from '../../../helpers/i18n/dictionary';
 import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Check from '../../ui/Icons/Check/Check';
+import Loader from '../../ui/Icons/Loader/Loader';
 
 const kiloBytes = 1024;
 const megaBytes = kiloBytes * 1024;
@@ -200,6 +201,9 @@ const Uploader = ({
                   {currentIndex + 1} {t('of')} {uploadQueue.length}
                 </>
               )}
+              <div className="absolute bottom-4 right-4 ">
+                <Loader className="h-7 w-7" />
+              </div>
             </div>
           </div>
         </div>
