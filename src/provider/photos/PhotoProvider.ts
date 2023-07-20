@@ -234,7 +234,7 @@ export const updatePhoto = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: jsonStringify64({ ...imageMetadata }),
+        jsonContent: imageMetadata ? jsonStringify64({ ...imageMetadata }) : null,
         ...newMetaData,
         tags: newMetaData?.tag
           ? [...(Array.isArray(newMetaData.tag) ? newMetaData.tag : [newMetaData.tag])]
