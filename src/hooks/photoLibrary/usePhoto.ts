@@ -49,21 +49,18 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       meta
     );
 
+    let type: 'favorites' | 'apps' | 'archive' | undefined;
     // Cache updates happen here as they need the context and correct point in time;
     if (uploadResult?.userDate && !meta?.archivalStatus) {
-      addDayToLibrary({
-        type: albumKey === PhotoConfig.FavoriteTag ? 'favorites' : undefined,
-        date: uploadResult.userDate,
-      });
-    }
-
-    if (meta?.archivalStatus === 3) {
-      addDayToLibrary({ type: 'apps', date: uploadResult.userDate });
+      type = albumKey === PhotoConfig.FavoriteTag ? 'favorites' : undefined;
+    } else if (meta?.archivalStatus === 3) {
+      type = 'apps';
     } else if (meta?.archivalStatus === 1) {
-      addDayToLibrary({ type: 'archive', date: uploadResult.userDate });
+      type = 'archive';
     }
+    addDayToLibrary({ type, date: uploadResult.userDate });
 
-    return uploadResult;
+    return { ...uploadResult, type };
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -196,6 +193,18 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           variables.albumKey,
           null,
         ]);
+
+        // Invalidate fetchByMonth
+        //['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`]
+        queryClient.invalidateQueries(
+          [
+            'photos',
+            targetDrive?.alias,
+            data?.type,
+            data?.userDate && `${data?.userDate.getFullYear()}-${data?.userDate.getMonth()}`,
+          ],
+          { exact: false }
+        );
       },
     }),
     remove: useMutation(removePhoto, {
