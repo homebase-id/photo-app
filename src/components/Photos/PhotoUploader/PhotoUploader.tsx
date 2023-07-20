@@ -201,9 +201,11 @@ const Uploader = ({
                   {currentIndex + 1} {t('of')} {uploadQueue.length}
                 </>
               )}
-              <div className="absolute bottom-4 right-4 ">
-                <Loader className="h-7 w-7" />
-              </div>
+              {!isFinished ? (
+                <div className="absolute bottom-4 right-4 ">
+                  <Loader className="h-7 w-7" />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
