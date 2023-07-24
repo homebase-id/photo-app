@@ -17,8 +17,9 @@ const VideoPlayer = () => {
           dotYouClient={dotYouClient}
           targetDrive={targetDrive}
           fileId={photoKey}
-          className={`absolute inset-0 h-full w-full bg-pink-100 ${'object-contain'}`}
+          className={`absolute inset-0 h-full w-full bg-black object-contain`}
           skipChunkedPlayback={false}
+          autoPlay={true}
         />
       </ErrorBoundary>
       {photoKey}
