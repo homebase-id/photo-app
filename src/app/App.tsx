@@ -19,6 +19,7 @@ const NotFound = lazy(() => import('../templates/NotFound/NotFound'));
 const Auth = lazy(() => import('../templates/Auth/Auth'));
 const FinalizeAuth = lazy(() => import('../templates/Auth/FinalizeAuth'));
 const GoogleTakeoutImport = lazy(() => import('../templates/Import/GoogleTakeoutImport'));
+const VideoPlayer = lazy(() => import('../templates/VideoPlayer/VideoPlayer'));
 
 const AUTH_PATH = '/auth';
 
@@ -41,21 +42,23 @@ function App() {
               <Route
                 path=""
                 element={
-                  <Layout>
-                    <Suspense fallback={<LoadingDetailPage />}>
-                      <ErrorBoundary>
-                        <Outlet />
-                      </ErrorBoundary>
-                    </Suspense>
-                  </Layout>
+                  <RootRoute>
+                    <Outlet />
+                  </RootRoute>
                 }
               >
+                <Route path="/player/:photoKey" element={<VideoPlayer />}></Route>
+
                 <Route
                   path=""
                   element={
-                    <RootRoute>
-                      <Outlet />
-                    </RootRoute>
+                    <Layout>
+                      <Suspense fallback={<LoadingDetailPage />}>
+                        <ErrorBoundary>
+                          <Outlet />
+                        </ErrorBoundary>
+                      </Suspense>
+                    </Layout>
                   }
                 >
                   <Route path="" element={<Photos />}></Route>
