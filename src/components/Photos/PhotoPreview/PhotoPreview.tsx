@@ -16,8 +16,8 @@ const PhotoPreview = (props: {
 }) => {
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: props.fileId });
 
-  if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader} />;
-  else return <PhotoLibPreview {...props} dsr={fileHeader} />;
+  if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader || undefined} />;
+  else return <PhotoLibPreview {...props} dsr={fileHeader || undefined} />;
 };
 
 const PhotoLibPreview = ({

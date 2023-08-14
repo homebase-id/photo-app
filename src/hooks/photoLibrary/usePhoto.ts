@@ -1,7 +1,6 @@
-import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
-  ImageSize,
   getFileHeader,
   DriveSearchResult,
   ThumbnailFile,
@@ -12,12 +11,12 @@ import {
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
 
-import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
+import { getPhotoMetadata, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
 import { FileLike, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { useInfintePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 
-const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
+const usePhoto = (targetDrive?: TargetDrive) => {
   const queryClient = useQueryClient();
   const { getDotYouClient } = useAuth();
 
@@ -105,7 +104,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     const header = await getFileHeader(dotYouClient, targetDrive, fileId);
 
     const existingTags =
-      header.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
+      header?.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
     const newTags = Array.from(
       new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
     );
@@ -125,7 +124,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     removeTags: string[];
   }) => {
     const header = await getFileHeader(dotYouClient, targetDrive, fileId);
-    const existingTags = header.fileMetadata.appData.tags || [];
+    const existingTags = header?.fileMetadata.appData.tags || [];
     const newTags = [
       ...existingTags.filter(
         (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
@@ -146,6 +145,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   }) => {
     if (!targetDrive) return null;
 
+    const photoMeta = await getPhotoMetadata(dotYouClient, targetDrive, dsr.fileId);
+
     const decryptedPayload = await getPayloadBytes(
       dotYouClient,
       targetDrive,
@@ -162,7 +163,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     // Dirty hack for easy download
     const link = document.createElement('a');
     link.href = url;
-    link.download = url.substring(url.lastIndexOf('/') + 1);
+    link.download = photoMeta?.originalFileName || url.substring(url.lastIndexOf('/') + 1);
     link.click();
   };
 

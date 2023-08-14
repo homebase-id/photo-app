@@ -115,7 +115,7 @@ export const PhotoInfo = ({
             {!isVideo ? (
               <li>
                 <p>
-                  {t('Image size')}
+                  {photoMetadata?.originalFileName || t('Image size')}
                   <small className="block">
                     {loadOriginal ? (
                       <>
