@@ -5,10 +5,11 @@ import {
   DotYouClient,
   CursoredResult,
 } from '@youfoundation/js-lib/core';
-import { buildCursor, createDateObject, getPhotos } from '../../provider/photos/PhotoProvider';
+import { createDateObject, getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useFlatMonthsFromMeta } from './usePhotoLibraryRange';
 import { useRef } from 'react';
+import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
 
 export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
 
@@ -36,7 +37,7 @@ export const fetchPhotosByMonth = async ({
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
-  const dateCursor = buildCursor(endOfMonth.getTime(), beginOfMonth.getTime());
+  const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
   return await getPhotos(
     dotYouClient,
     targetDrive,
@@ -229,7 +230,9 @@ export const usePhotosInfinte = ({
   const { getDotYouClient } = useAuth();
   const dotYouClient = getDotYouClient();
 
-  const startFromDateCursor = startFromDate ? buildCursor(startFromDate.getTime()) : undefined;
+  const startFromDateCursor = startFromDate
+    ? getQueryBatchCursorFromTime(startFromDate.getTime())
+    : undefined;
 
   return {
     fetchPhotos: useInfiniteQuery(
