@@ -5,8 +5,10 @@ import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/cor
 export const VideoWithLoader = ({
   fileId,
   targetDrive,
+  previewThumbnail,
   fit = 'cover',
   preview,
+  skipChunkedPlayback,
   className,
 }: {
   fileId: string;
@@ -15,6 +17,7 @@ export const VideoWithLoader = ({
   size?: ImageSize;
   fit?: 'cover' | 'contain';
   preview?: boolean;
+  skipChunkedPlayback?: boolean;
   className?: string;
 }) => {
   const { getDotYouClient } = useAuth();
@@ -23,19 +26,25 @@ export const VideoWithLoader = ({
   return (
     <div className={className || 'relative h-full w-full'} data-file={fileId}>
       {preview ? (
-        <OdinImage
-          dotYouClient={dotYouClient}
-          targetDrive={targetDrive}
-          fileId={fileId}
-          fit={fit}
-          className={`w-full} absolute inset-0 h-full`}
-          avoidPayload={true}
-        />
+        previewThumbnail ? (
+          <OdinImage
+            dotYouClient={dotYouClient}
+            targetDrive={targetDrive}
+            previewThumbnail={previewThumbnail}
+            fileId={fileId}
+            fit={fit}
+            className={`absolute inset-0 h-full w-full`}
+            avoidPayload={true}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-indigo-100 dark:bg-indigo-950"></div> // No preview available
+        )
       ) : (
         <OdinVideo
           dotYouClient={dotYouClient}
           targetDrive={targetDrive}
           fileId={fileId}
+          skipChunkedPlayback={skipChunkedPlayback}
           className={`absolute inset-0 h-full w-full ${
             fit === 'cover' ? 'object-cover' : 'object-contain'
           }`}

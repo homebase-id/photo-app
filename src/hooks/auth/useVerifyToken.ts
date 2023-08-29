@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  APP_SHARED_SECRET,
-  hasValidToken as hasValidYouAuthToken,
-} from '@youfoundation/js-lib/auth';
+import { APP_SHARED_SECRET, hasValidToken } from '@youfoundation/js-lib/auth';
+import { DotYouClient } from '@youfoundation/js-lib/core';
 
 const MINUTE_IN_MS = 60000;
 
@@ -11,13 +9,13 @@ const hasSharedSecret = () => {
   return !!raw;
 };
 
-const useVerifyToken = () => {
+const useVerifyToken = (dotYouClient: DotYouClient) => {
   const fetchData = async () => {
     if (!hasSharedSecret()) {
       return false;
     }
 
-    return await hasValidYouAuthToken();
+    return await hasValidToken(dotYouClient);
   };
   return useQuery(['verifyToken'], fetchData, {
     refetchOnMount: false,

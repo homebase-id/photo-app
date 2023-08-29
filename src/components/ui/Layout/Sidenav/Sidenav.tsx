@@ -213,8 +213,12 @@ const AlbumsNavItem = () => {
         {AlbumIcon({ className: iconClassName })}
         <span className={`my-auto ml-3 flex w-full flex-row items-stretch overflow-hidden`}>
           <span>{t('Albums')} </span>
-          <button className={`${iconClassName} ml-auto opacity-80 `}>
-            <ArrowDown className={`transition-transform ${isOpen ? '-rotate-90' : ''}`} />
+          <button
+            className={`${iconClassName} ml-auto opacity-80 transition-transform ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          >
+            <ArrowDown />
           </button>
         </span>
       </NavLink>

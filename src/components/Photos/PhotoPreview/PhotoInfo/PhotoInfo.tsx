@@ -20,7 +20,7 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 const timeFormat: Intl.DateTimeFormatOptions = {
   hour: 'numeric',
   minute: 'numeric',
-  weekday: 'short',
+  // weekday: 'short',
   timeZoneName: 'short',
 };
 
@@ -38,6 +38,8 @@ export const PhotoInfo = ({
     fetchMeta: { data: photoMetadata },
     updateMeta: { mutate: updatePhotoMeta },
   } = usePhotoMetadata(targetDrive, current?.fileId);
+
+  const isVideo = current?.fileMetadata.contentType.startsWith('video/');
 
   const date = useMemo(() => {
     if (current?.fileMetadata.appData.userDate)
@@ -110,28 +112,30 @@ export const PhotoInfo = ({
                 />
               </>
             ) : null}
+            {!isVideo ? (
+              <li>
+                <p>
+                  {photoMetadata?.originalFileName || t('Image size')}
+                  <small className="block">
+                    {loadOriginal ? (
+                      <>
+                        {originalSize?.pixelWidth} x {originalSize?.pixelHeight}
+                      </>
+                    ) : (
+                      <>
+                        {maxThumb?.pixelWidth} x {maxThumb?.pixelHeight}
+                        <span className="ml-2 text-slate-400">
+                          ({originalSize?.pixelWidth} x {originalSize?.pixelHeight} original)
+                        </span>
+                      </>
+                    )}
+                  </small>
+                </p>
+              </li>
+            ) : null}
             <li>
               <p>
-                Image size
-                <small className="block">
-                  {loadOriginal ? (
-                    <>
-                      {originalSize?.pixelWidth} x {originalSize?.pixelHeight}
-                    </>
-                  ) : (
-                    <>
-                      {maxThumb?.pixelWidth} x {maxThumb?.pixelHeight}
-                      <span className="ml-2 text-slate-400">
-                        ({originalSize?.pixelWidth} x {originalSize?.pixelHeight} original)
-                      </span>
-                    </>
-                  )}
-                </small>
-              </p>
-            </li>
-            <li>
-              <p>
-                Unique identifier
+                {t('Unique identifier')}
                 <small className="block text-sm text-slate-400">
                   {current?.fileMetadata.appData.uniqueId}
                 </small>
@@ -154,9 +158,7 @@ export const PhotoInfo = ({
 };
 
 const PhotoCaptureDetails = ({ metadata }: { metadata: ImageMetadata }) => {
-  if (!metadata) {
-    return null;
-  }
+  if (!metadata || (!metadata.captureDetails && !metadata.camera)) return null;
 
   const details = metadata.captureDetails;
   const fNumber = details?.fNumber ? `f/${details.fNumber}` : null;
@@ -182,9 +184,7 @@ const PhotoCaptureDetails = ({ metadata }: { metadata: ImageMetadata }) => {
 };
 
 const PhotoGeoLocation = ({ metadata }: { metadata: ImageMetadata }) => {
-  if (!metadata || !metadata.captureDetails?.geolocation) {
-    return null;
-  }
+  if (!metadata || !metadata.captureDetails?.geolocation) return null;
 
   const { latitude, longitude, altitude } = metadata.captureDetails.geolocation;
 

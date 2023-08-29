@@ -1,22 +1,22 @@
-import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
-  ImageSize,
   getFileHeader,
   DriveSearchResult,
   ThumbnailFile,
   MediaUploadMeta,
   getPayloadBytes,
+  deleteFile,
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
 
-import { getPhoto, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
+import { getPhotoMetadata, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
 import { FileLike, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { useInfintePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 
-const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) => {
+const usePhoto = (targetDrive?: TargetDrive) => {
   const queryClient = useQueryClient();
   const { getDotYouClient } = useAuth();
 
@@ -48,21 +48,18 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       meta
     );
 
+    let type: 'favorites' | 'apps' | 'archive' | undefined;
     // Cache updates happen here as they need the context and correct point in time;
     if (uploadResult?.userDate && !meta?.archivalStatus) {
-      addDayToLibrary({
-        type: albumKey === PhotoConfig.FavoriteTag ? 'favorites' : undefined,
-        date: uploadResult.userDate,
-      });
-    }
-
-    if (meta?.archivalStatus === 3) {
-      addDayToLibrary({ type: 'apps', date: uploadResult.userDate });
+      type = albumKey === PhotoConfig.FavoriteTag ? 'favorites' : undefined;
+    } else if (meta?.archivalStatus === 3) {
+      type = 'apps';
     } else if (meta?.archivalStatus === 1) {
-      addDayToLibrary({ type: 'archive', date: uploadResult.userDate });
+      type = 'archive';
     }
+    addDayToLibrary({ type, date: uploadResult.userDate });
 
-    return uploadResult;
+    return { ...uploadResult, type };
   };
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -71,6 +68,12 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
       archivalStatus: 2,
     });
+  };
+
+  const deletePhoto = async ({ photoFileId }: { photoFileId: string }) => {
+    if (!targetDrive) return null;
+
+    return await deleteFile(dotYouClient, targetDrive, photoFileId);
   };
 
   const archivePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -101,7 +104,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     const header = await getFileHeader(dotYouClient, targetDrive, fileId);
 
     const existingTags =
-      header.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
+      header?.fileMetadata.appData.tags?.map((tag) => tag.replaceAll('-', '')) || [];
     const newTags = Array.from(
       new Set([...existingTags, ...addTags.map((tag) => tag.replaceAll('-', ''))])
     );
@@ -121,7 +124,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     removeTags: string[];
   }) => {
     const header = await getFileHeader(dotYouClient, targetDrive, fileId);
-    const existingTags = header.fileMetadata.appData.tags || [];
+    const existingTags = header?.fileMetadata.appData.tags || [];
     const newTags = [
       ...existingTags.filter(
         (tag) => !removeTags.some((toRemoveTag) => stringGuidsEqual(toRemoveTag, tag))
@@ -142,6 +145,8 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
   }) => {
     if (!targetDrive) return null;
 
+    const photoMeta = await getPhotoMetadata(dotYouClient, targetDrive, dsr.fileId);
+
     const decryptedPayload = await getPayloadBytes(
       dotYouClient,
       targetDrive,
@@ -158,7 +163,7 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
     // Dirty hack for easy download
     const link = document.createElement('a');
     link.href = url;
-    link.download = url.substring(url.lastIndexOf('/') + 1);
+    link.download = photoMeta?.originalFileName || url.substring(url.lastIndexOf('/') + 1);
     link.click();
   };
 
@@ -189,6 +194,18 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
           variables.albumKey,
           null,
         ]);
+
+        // Invalidate fetchByMonth
+        //['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`]
+        queryClient.invalidateQueries(
+          [
+            'photos',
+            targetDrive?.alias,
+            data?.type,
+            data?.userDate && `${data?.userDate.getFullYear()}-${data?.userDate.getMonth()}`,
+          ],
+          { exact: false }
+        );
       },
     }),
     remove: useMutation(removePhoto, {
@@ -223,6 +240,38 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
         queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
 
         if (_param?.date) addDayToLibrary({ type: 'bin', date: _param.date });
+      },
+      onError: (ex) => {
+        console.error(ex);
+      },
+    }),
+    deleteFile: useMutation(deletePhoto, {
+      onMutate: (toRemovePhotoData) => {
+        queryClient
+          .getQueryCache()
+          .findAll(['photos', targetDrive?.alias])
+          .forEach((query) => {
+            const queryKey = query.queryKey;
+            const queryData =
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
+
+            if (!queryData) return;
+
+            // Remove from all libraryTypes
+            queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, {
+              ...queryData,
+              pages: queryData.pages.map((page) => ({
+                ...page,
+                results: page.results.filter(
+                  (photo) => photo.fileId !== toRemovePhotoData.photoFileId
+                ),
+              })),
+            });
+          });
+      },
+      onSuccess: (_param, _data) => {
+        queryClient.invalidateQueries(['photos', targetDrive?.alias, 'bin']);
+        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
       },
       onError: (ex) => {
         console.error(ex);
@@ -382,13 +431,11 @@ const usePhoto = (targetDrive?: TargetDrive, fileId?: string, size?: ImageSize) 
       },
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
-          queryClient.invalidateQueries(['photo-library', targetDrive?.alias, undefined, tag]);
           queryClient.invalidateQueries(['photos', targetDrive?.alias, undefined, tag]);
           queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, undefined, tag]);
         });
 
         if (variables.removeTags.includes(PhotoConfig.FavoriteTag)) {
-          queryClient.invalidateQueries(['photo-library', targetDrive?.alias, 'favorites']);
           queryClient.invalidateQueries(['photos', targetDrive?.alias, 'favorites']);
           queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias, 'favorites']);
         }

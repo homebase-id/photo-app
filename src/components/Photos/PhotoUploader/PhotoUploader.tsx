@@ -10,6 +10,10 @@ import { t } from '../../../helpers/i18n/dictionary';
 import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Check from '../../ui/Icons/Check/Check';
+import Loader from '../../ui/Icons/Loader/Loader';
+
+const kiloBytes = 1024;
+const megaBytes = kiloBytes * 1024;
 
 const Uploader = ({
   isFileSelectorOpen,
@@ -113,8 +117,8 @@ const Uploader = ({
 
     const isPin = 'bytes' in currentFile;
     if (currentFile.type === 'video/mp4') {
-      // We need a thumb, so we wait till it's grabbed
-      if (!currentVideoThumb) return;
+      // We need a thumb, so we wait till it's grabbed; Unless the file is too big, then we just upload it
+      if (!currentVideoThumb && currentFile?.size < 512 * megaBytes) return;
 
       doUploadToServer({
         newPhoto: currentFile,
@@ -158,7 +162,7 @@ const Uploader = ({
       />
 
       {hasFiles ? (
-        <div className="fixed bottom-8 right-8 z-50 w-full max-w-sm bg-white shadow-md">
+        <div className="fixed bottom-8 right-8 z-50 w-full max-w-sm bg-white shadow-md dark:bg-black">
           <div className="flex flex-row">
             {currentFile ? (
               <div className="relative w-1/2">
@@ -197,6 +201,11 @@ const Uploader = ({
                   {currentIndex + 1} {t('of')} {uploadQueue.length}
                 </>
               )}
+              {!isFinished ? (
+                <div className="absolute bottom-4 right-4 ">
+                  <Loader className="h-7 w-7" />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -245,7 +254,7 @@ const CurrentFile = ({
 
   return !isVideo ? (
     <img src={url} className={`relative aspect-square h-full w-full object-cover`} />
-  ) : (
+  ) : file?.size < 512 * megaBytes ? (
     <video
       src={url}
       onCanPlay={() => url && URL.revokeObjectURL(url)}
@@ -253,6 +262,8 @@ const CurrentFile = ({
       onSeeked={(e) => grabThumb(e.currentTarget)}
       className={`relative aspect-square h-full w-full object-cover`}
     />
+  ) : (
+    <div className="aspect-square h-full w-full animate-pulse bg-slate-400 dark:bg-slate-800"></div>
   );
 };
 

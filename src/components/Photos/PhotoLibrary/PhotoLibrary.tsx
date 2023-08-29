@@ -36,10 +36,6 @@ const PhotoLibrary = ({
 }) => {
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
-  const { data: photoLibrary } = usePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
-    type,
-  }).fetchLibrary;
 
   const { data: selection } = useSiblingsRange({
     targetDrive: PhotoConfig.PhotoDrive,
@@ -73,6 +69,11 @@ const PhotoLibrary = ({
       setSelectionRangeTo(undefined);
     }
   }, [isSelecting]);
+
+  const { data: photoLibrary } = usePhotoLibrary({
+    targetDrive: PhotoConfig.PhotoDrive,
+    type,
+  }).fetchLibrary;
 
   const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
     year.months.map((month) => ({ year: year.year, ...month }))

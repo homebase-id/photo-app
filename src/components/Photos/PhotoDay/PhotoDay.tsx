@@ -225,6 +225,7 @@ export const PhotoItem = ({
                 <VideoWithLoader
                   fileId={photoDsr.fileId}
                   targetDrive={targetDrive}
+                  previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
                   fit="cover"
                   preview={true}
                 />

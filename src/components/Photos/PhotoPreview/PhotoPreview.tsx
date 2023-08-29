@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { t } from '../../../helpers/i18n/dictionary';
+import { useEffect, useMemo, useState } from 'react';
 import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
 import { useFlatPhotosByMonth, usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import MediaWithLoader from './MediaLoader';
-import useDebounce from '../../../hooks/debounce/useDebounce';
 import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 import { PhotoActions } from './PhotoActions';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
-import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import PhotoPreviewSlider from './PhotoPreviewSlider';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
@@ -20,8 +16,8 @@ const PhotoPreview = (props: {
 }) => {
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: props.fileId });
 
-  if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader} />;
-  else return <PhotoLibPreview {...props} dsr={fileHeader} />;
+  if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader || undefined} />;
+  else return <PhotoLibPreview {...props} dsr={fileHeader || undefined} />;
 };
 
 const PhotoLibPreview = ({
@@ -53,13 +49,13 @@ const PhotoLibPreview = ({
 
   const {
     data: photosInCache,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
+    hasNextPage: hasOlderPage,
+    fetchNextPage: fetchOlderPage,
+    isFetchingNextPage: isFetchingOlderPage,
 
-    hasPreviousPage: hasPrevPage,
-    fetchPreviousPage: fetchPrevPage,
-    isFetchingPreviousPage: isFetchingPrevPage,
+    hasPreviousPage: hasNewerPage,
+    fetchPreviousPage: fetchNewerPage,
+    isFetchingPreviousPage: isFetchingNewerPage,
   } = useFlatPhotosByMonth({
     targetDrive,
     type,
@@ -91,17 +87,17 @@ const PhotoLibPreview = ({
             setLoadOriginal={setLoadOriginal}
           />
           {flatPhotos?.length ? (
-            <InnerSlider
+            <PhotoPreviewSlider
               fileId={fileId}
               urlPrefix={urlPrefix}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              fetchPrevPage={fetchPrevPage}
-              hasPrevPage={hasPrevPage}
-              isFetchingPrevPage={isFetchingPrevPage}
+              hasOlderPage={hasOlderPage}
+              fetchOlderPage={fetchOlderPage}
+              isFetchingOlderPage={isFetchingOlderPage}
+              hasNewerPage={hasNewerPage}
+              fetchNewerPage={fetchNewerPage}
+              isFetchingNewerPage={isFetchingNewerPage}
               flatPhotos={flatPhotos}
-              originals={loadOriginal}
+              original={loadOriginal}
             />
           ) : null}
         </div>
@@ -143,10 +139,10 @@ const PhotoAlbumPreview = ({
 
   const {
     data: photos,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = usePhotosInfinte({ targetDrive, album: albumKey, type }).fetchPhotos;
+    fetchNextPage: fetchOlderPage,
+    hasNextPage: hasOlderPage,
+    isFetchingNextPage: isFetchingOlderPage,
+  } = usePhotosInfinte({ targetDrive, album: albumKey, type, direction: 'newer' }).fetchPhotos;
 
   const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
 
@@ -170,14 +166,14 @@ const PhotoAlbumPreview = ({
             setLoadOriginal={setLoadOriginal}
           />
           {flatPhotos?.length ? (
-            <InnerSlider
+            <PhotoPreviewSlider
               fileId={fileId}
               urlPrefix={urlPrefix}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
+              fetchOlderPage={fetchOlderPage}
+              hasOlderPage={hasOlderPage}
+              isFetchingOlderPage={isFetchingOlderPage}
               flatPhotos={flatPhotos}
-              originals={loadOriginal}
+              original={loadOriginal}
             />
           ) : null}
         </div>
@@ -189,180 +185,6 @@ const PhotoAlbumPreview = ({
             key={fileId}
           />
         ) : null}
-      </div>
-    </div>
-  );
-};
-
-const InnerSlider = ({
-  fileId,
-  urlPrefix,
-
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-
-  fetchPrevPage,
-  hasPrevPage,
-  isFetchingPrevPage,
-
-  flatPhotos,
-  originals,
-}: {
-  fileId: string;
-  urlPrefix?: string;
-
-  fetchNextPage: () => void;
-  hasNextPage?: boolean;
-  isFetchingNextPage: boolean;
-  fetchPrevPage?: () => void;
-  hasPrevPage?: boolean;
-  isFetchingPrevPage?: boolean;
-
-  flatPhotos: DriveSearchResult[];
-  originals?: boolean;
-}) => {
-  // I know this is strange, as this will break hooks consistentcy,
-  // but if there's no photos the virtual scrolling will initialize with no width, and the intialOffset will be 0
-  if (!flatPhotos?.length) return null;
-
-  const fileIndex = flatPhotos.findIndex((photo) => stringGuidsEqual(photo.fileId, fileId));
-  const scrollContainer = useRef<HTMLDivElement>(null);
-  const slideWidth = scrollContainer.current?.parentElement?.clientWidth || window.innerWidth; // Not widow.clientWidth as the scrollbar is removed be disabled scrolling on the body
-  const [initialOffset] = useState(fileIndex * slideWidth);
-
-  const scrollListener = useDebounce(
-    () => {
-      const currentIndex = Math.round((scrollContainer.current?.scrollLeft ?? 0) / slideWidth);
-
-      // Update the url with the current fileId when scrolling
-      if (!flatPhotos || stringGuidsEqual(flatPhotos[currentIndex]?.fileId, fileId)) return;
-
-      const paths = window.location.pathname.split('/');
-      if (paths[paths.length - 1] === flatPhotos?.[currentIndex]?.fileId) return; // Already on the correct url
-      if (paths[paths.length - 2] !== 'photo') return; // No longer on preview
-
-      window.history.replaceState(
-        null,
-        '',
-        `${urlPrefix ? urlPrefix : ''}/photo/${flatPhotos?.[currentIndex]?.fileId}`
-      );
-    },
-    [flatPhotos],
-    500
-  );
-
-  useEffect(() => {
-    scrollContainer.current?.addEventListener('scroll', scrollListener, {
-      passive: true,
-    });
-    return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
-  }, [flatPhotos, scrollListener]);
-
-  // Virtual scrolling
-  const colVirtualizer = useVirtualizer({
-    horizontal: true,
-    count: hasNextPage ? flatPhotos.length + 1 : flatPhotos.length,
-    getScrollElement: () => scrollContainer.current,
-    estimateSize: () => slideWidth,
-    overscan: 2,
-
-    initialOffset: initialOffset,
-  });
-
-  // Fetch prev page when scrolling to the start
-  useEffect(() => {
-    const [firstItem] = colVirtualizer.getVirtualItems();
-    if (!firstItem || !fetchPrevPage) return;
-
-    if (firstItem.index === 0 && hasPrevPage && !isFetchingNextPage && !isFetchingPrevPage) {
-      fetchPrevPage();
-    }
-  }, [
-    hasPrevPage,
-    fetchPrevPage,
-    flatPhotos.length,
-    isFetchingPrevPage,
-    isFetchingNextPage,
-    colVirtualizer.getVirtualItems(),
-  ]);
-
-  // Fetch next page when scrolling to the end
-  useEffect(() => {
-    const [lastItem] = [...colVirtualizer.getVirtualItems()].reverse();
-    if (!lastItem) return;
-
-    if (
-      lastItem.index >= flatPhotos.length - 1 &&
-      hasNextPage &&
-      !isFetchingNextPage &&
-      !isFetchingPrevPage
-    ) {
-      fetchNextPage();
-    }
-  }, [
-    hasNextPage,
-    fetchNextPage,
-    flatPhotos.length,
-    isFetchingPrevPage,
-    isFetchingNextPage,
-    colVirtualizer.getVirtualItems(),
-  ]);
-
-  useEffect(() => {
-    if (fileIndex === -1 || !scrollContainer.current) {
-      console.log('cannot scroll', { fileIndex, scrollContainer: scrollContainer.current });
-      return;
-    }
-    if (colVirtualizer.isScrolling) return;
-
-    colVirtualizer.scrollToIndex(fileIndex, { behavior: 'auto' });
-  }, [fileId, flatPhotos, colVirtualizer, colVirtualizer.getVirtualItems(), fileIndex]);
-
-  return (
-    <div
-      className="no-scrollbar h-full snap-x snap-mandatory overflow-x-scroll"
-      ref={scrollContainer}
-    >
-      <div
-        className="relative h-full"
-        style={{
-          width: `${flatPhotos.length * slideWidth}px`,
-        }}
-      >
-        {colVirtualizer.getVirtualItems()?.map((virtualCol) => {
-          const isLoaderRow = virtualCol.index > flatPhotos.length - 1;
-
-          if (isLoaderRow) {
-            return hasNextPage || isFetchingNextPage ? (
-              <div className="mt-5 animate-pulse" key={'loading'}>
-                {t('Loading...')}
-              </div>
-            ) : null;
-          }
-
-          const photo = flatPhotos[virtualCol.index];
-          return (
-            <div
-              className="absolute inset-0 h-full"
-              style={{
-                width: `${virtualCol.size}px`,
-                transform: `translateX(${virtualCol.start}px)`,
-                display: 'inline-block',
-              }}
-              key={photo.fileId}
-            >
-              <div className="flex h-screen w-screen snap-start">
-                <MediaWithLoader
-                  media={photo}
-                  fileId={photo.fileId}
-                  className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
-                  original={originals}
-                />
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );

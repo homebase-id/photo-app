@@ -24,6 +24,7 @@ const PhotoSelection = ({
 }) => {
   const {
     remove: { mutateAsync: removePhoto },
+    deleteFile: { mutateAsync: deletePhoto },
     archive: { mutateAsync: archivePhoto },
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
@@ -54,6 +55,16 @@ const PhotoSelection = ({
     await Promise.all(
       selection.map(async (fileId) => {
         await removePhoto({ photoFileId: fileId });
+      })
+    );
+
+    clearSelection();
+  };
+
+  const deleteSelection = async () => {
+    await Promise.all(
+      selection.map(async (fileId) => {
+        await deletePhoto({ photoFileId: fileId });
       })
     );
 
@@ -135,7 +146,7 @@ const PhotoSelection = ({
         {selection.length} {t('Selected')}
       </p>
       <div className="ml-auto flex flex-row-reverse gap-2">
-        {albumKey !== 'bin' ? (
+        {type !== 'bin' ? (
           <ActionButton
             icon={'trash'}
             onClick={async () => {
@@ -152,7 +163,7 @@ const PhotoSelection = ({
             }}
           />
         ) : null}
-        {albumKey !== 'archive' ? (
+        {type !== 'archive' ? (
           <ActionButton
             icon={Archive}
             onClick={async () => {
@@ -170,6 +181,9 @@ const PhotoSelection = ({
           />
         ) : null}
 
+        {type === 'bin' ? (
+          <ActionButton onClick={() => deleteSelection()}>{t('Delete permanently')}</ActionButton>
+        ) : null}
         {type === 'archive' || type === 'bin' ? (
           <ActionButton onClick={() => restoreSelection()}>{t('Restore')}</ActionButton>
         ) : (
@@ -192,9 +206,15 @@ const PhotoSelection = ({
               </ActionButtonWithOptions>
             ) : null}
             {albumKey ? (
-              <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
-                {t('Remove from album')}
-              </ActionButton>
+              albumKey === PhotoConfig.FavoriteTag ? (
+                <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+                  {t('Remove from favorites')}
+                </ActionButton>
+              ) : (
+                <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+                  {t('Remove from album')}
+                </ActionButton>
+              )
             ) : null}
           </>
         )}
