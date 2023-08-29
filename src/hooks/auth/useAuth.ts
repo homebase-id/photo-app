@@ -135,12 +135,7 @@ export const useYouAuthAuthorization = () => {
     );
   };
 
-  const finalizeAuthorization = async (
-    identity: string,
-    code: string,
-    publicKey: string,
-    salt: string
-  ) => {
+  const finalizeAuthorization = async (identity: string, publicKey: string, salt: string) => {
     try {
       const privateKey = await retrieveEccKey();
       if (!privateKey) throw new Error('Failed to retrieve key');
@@ -149,8 +144,7 @@ export const useYouAuthAuthorization = () => {
         identity,
         privateKey,
         publicKey,
-        salt,
-        code
+        salt
       );
 
       if (identity) saveIdentity(identity);
