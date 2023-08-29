@@ -1,38 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/ui/Layout/Layout';
-import useAuth from '../../hooks/auth/useAuth';
+import { useYouAuthAuthorization } from '../../hooks/auth/useAuth';
 import PhotoLibraryLoader from '../../components/Photos/PhotoLibraryLoader/PhotoLibraryLoader';
 
 const AuthFinalize = () => {
-  const [searchParams] = useSearchParams();
-  const { finalizeAuthentication } = useAuth();
-  const [state, setState] = useState<undefined | 'success' | 'error'>();
+  const isRunning = useRef(false);
 
-  const data = decodeURIComponent(searchParams.get('d') || '');
-  const v = decodeURIComponent(searchParams.get('v') || '');
-  const id = decodeURIComponent(searchParams.get('id') || '');
-  const returnUrl = decodeURIComponent(searchParams.get('returnUrl') || '');
+  const [searchParams] = useSearchParams();
+  const { finalizeAuthorization } = useYouAuthAuthorization();
+  const [finalizeState, setFinalizeState] = useState<undefined | 'success' | 'error'>();
+
+  const code = searchParams.get('code');
+  const identity = searchParams.get('identity');
+  const public_key = searchParams.get('public_key');
+  const salt = searchParams.get('salt');
+  const returnUrl = searchParams.get('state');
 
   useEffect(() => {
     (async () => {
-      const authState = await finalizeAuthentication(data, v, id);
-      setState(authState ? 'success' : 'error');
+      if (!code || !identity || !public_key || !salt) return;
+      if (isRunning.current) return;
+
+      isRunning.current = true;
+      const authState = await finalizeAuthorization(identity, code, public_key, salt);
+      setFinalizeState(authState ? 'success' : 'error');
     })();
   }, []);
 
-  if (!data?.length || !v?.length) {
-    return <Navigate to={'/auth'} />;
-  }
-
-  if (state === 'success') {
-    return <Navigate to={returnUrl} />;
-  }
-
-  if (state === 'error') {
-    return <Navigate to={'/auth?state=finalize-error'} />;
-  }
+  if (!code || !identity || !public_key || !salt) return <Navigate to={'/auth'} />;
+  if (finalizeState === 'success') return <Navigate to={returnUrl || '/'} />;
+  if (finalizeState === 'error') return <Navigate to={'/auth?state=finalize-error'} />;
 
   return (
     <>
