@@ -112,22 +112,17 @@ const useAuth = () => {
 
 export const useYouAuthAuthorization = () => {
   const getAuthorizationParameters = async (returnUrl: string): Promise<YouAuthorizationParams> => {
-    const rsaKey = await createRsaPair();
     const eccKey = await createEccPair();
-    if (!rsaKey) throw new Error('Failed to retrieve key');
 
     // Persist key for usage on finalize
-    await saveRsaKey(rsaKey);
     await saveEccKey(eccKey);
 
     const finalizeUrl = `${window.location.origin}/auth/finalize`;
-
     return getRegistrationParams(
       finalizeUrl,
       appName,
       appId,
       drives,
-      rsaKey.publicKey,
       eccKey.publicKey,
       window.location.host,
       undefined,
