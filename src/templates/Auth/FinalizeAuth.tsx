@@ -35,7 +35,7 @@ const AuthFinalize = () => {
   return (
     <>
       <Helmet>
-        <title>Login | Odin</title>
+        <title>Login | Homebase</title>
       </Helmet>
       <div className="cursor-wait ">
         <div className="pointer-events-none ">
