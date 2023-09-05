@@ -10,9 +10,7 @@ import {
   preAuth as preauthApps,
   retrieveIdentity,
   saveIdentity,
-  createRsaPair,
   createEccPair,
-  saveRsaKey,
   YouAuthorizationParams,
   saveEccKey,
   retrieveEccKey,
@@ -28,7 +26,7 @@ export const drives = [
     p: 3,
   },
 ];
-export const appName = 'Odin - Photos';
+export const appName = 'Homebase - Photos';
 export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
 
 export const APP_SHARED_SECRET = 'APSS';

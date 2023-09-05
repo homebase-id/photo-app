@@ -144,7 +144,7 @@ const useImporter = () => {
     });
   };
   //
-  // =================== API to ODIN =======================
+  // =================== API to Homebase =======================
   //
 
   interface GeoData {
@@ -157,7 +157,7 @@ const useImporter = () => {
 
   // @Stef
   // Stub function for processing the record.
-  // Use the ODIN API to update fileId with jsonData
+  // Use the Homebase API to update fileId with jsonData
   //
   async function applyJsonPhotos(
     fileId: string,
@@ -212,7 +212,7 @@ const useImporter = () => {
   }
 
   // @Stef
-  // Stub function to upload the file to ODIN
+  // Stub function to upload the file to Homebase
   //
   //
   async function uploadToOdinPhotos(
@@ -458,7 +458,7 @@ const useImporter = () => {
   };
 
   const generateGUID = () => {
-    // This function generates a random GUID. Replace this with actual GUID returned from Odin Photos.
+    // This function generates a random GUID. Replace this with actual GUID returned from Homebase Photos.
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0,
         v = c === 'x' ? r : (r & 0x3) | 0x8;
