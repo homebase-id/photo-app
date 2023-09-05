@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
-import useAuth from '../../../hooks/auth/useAuth';
+import { useYouAuthAuthorization } from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
 import LoadingBlock from '../../ui/Layout/Loaders/LoadingBlock/LoadingBlock';
+import { stringifyToQueryParams } from '@youfoundation/js-lib/helpers';
+import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
 
 export const LoginBox = () => {
-  const [params, setParams] = useState<string | null>(null);
-  const { getRegistrationParams } = useAuth();
+  const [authParams, setAuthParams] = useState<YouAuthorizationParams>();
+  const { getAuthorizationParameters } = useYouAuthAuthorization();
 
   useEffect(() => {
     (async () => {
-      if (!params) setParams(await getRegistrationParams('/'));
+      if (!authParams) setAuthParams(await getAuthorizationParameters('/'));
     })();
   }, []);
 
-  if (!params)
+  if (!authParams)
     return (
       <>
         <LoadingBlock className="h-[16rem] w-full " />
@@ -24,7 +26,9 @@ export const LoginBox = () => {
     <iframe
       src={`${
         import.meta.env.VITE_CENTRAL_LOGIN_URL
-      }?isDarkMode=${document.documentElement.classList.contains(IS_DARK_CLASSNAME)}&${params}`}
+      }?isDarkMode=${document.documentElement.classList.contains(IS_DARK_CLASSNAME)}${
+        authParams ? `&${stringifyToQueryParams(authParams as any)}` : ''
+      }`}
       className="h-[16rem] w-full"
     ></iframe>
   );
