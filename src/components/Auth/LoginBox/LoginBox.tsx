@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
 import { useYouAuthAuthorization } from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
 import LoadingBlock from '../../ui/Layout/Loaders/LoadingBlock/LoadingBlock';
 import { stringifyToQueryParams } from '@youfoundation/js-lib/helpers';
-import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
 import { Helmet } from 'react-helmet-async';
+import { useQuery } from '@tanstack/react-query';
+
+const useParams = (returnUrl: string) => {
+  const { getAuthorizationParameters } = useYouAuthAuthorization();
+  return useQuery(['params'], () => getAuthorizationParameters(returnUrl), {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+};
 
 export const LoginBox = () => {
-  const [authParams, setAuthParams] = useState<YouAuthorizationParams>();
-  const { getAuthorizationParameters } = useYouAuthAuthorization();
+  const { data: authParams, isLoading } = useParams('/');
 
-  useEffect(() => {
-    (async () => {
-      if (!authParams) setAuthParams(await getAuthorizationParameters('/'));
-    })();
-  }, []);
-
-  if (!authParams)
+  if (isLoading)
     return (
       <>
         <LoadingBlock className="h-[16rem] w-full " />
