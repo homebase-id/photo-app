@@ -16,7 +16,7 @@ import {
   retrieveEccKey,
   throwAwayTheECCKey,
 } from '@youfoundation/js-lib/auth';
-import { DrivePermissionType } from '@youfoundation/js-lib/network';
+import { DrivePermissionType } from '@youfoundation/js-lib/core';
 
 export const drives = [
   {
@@ -24,7 +24,7 @@ export const drives = [
     t: '2af68fe72fb84896f39f97c59d60813a',
     n: 'Photo Library',
     d: 'Place for your memories',
-    p: DrivePermissionType.Editor,
+    p: DrivePermissionType.Read + DrivePermissionType.Write,
   },
 ];
 export const appName = 'Homebase - Photos';
