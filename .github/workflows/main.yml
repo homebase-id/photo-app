@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - 'packages/web/src/**'
 
 jobs:
   deploy:
@@ -25,5 +27,5 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_DEPLOY_TO_PROD: true
           install_command: npm install
-          build_command: npm run build
-          build_directory: dist
+          build_command: npm run build -w pacakges/web
+          build_directory: packages/web/dist
