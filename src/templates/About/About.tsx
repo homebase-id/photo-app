@@ -8,7 +8,7 @@ import image3 from '../../assets/jaddy-liu-nk-xUZwSjR4-unsplash.webp';
 import image4 from '../../assets/scott-webb-IZmPdbnb-3I-unsplash.webp';
 import image5 from '../../assets/thought-catalog-23KdVfc395A-unsplash.webp';
 import image6 from '../../assets/vitolda-klein-oLolBcPEs2k-unsplash.webp';
-import Logo from '../../components/ui/Icons/Logo/Logo';
+import { Logo } from '../../components/ui/Icons/Logo/Logo';
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 
 const About = () => {

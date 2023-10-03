@@ -1,21 +1,22 @@
-import { useState, useEffect } from 'react';
 import { useYouAuthAuthorization } from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
 import LoadingBlock from '../../ui/Layout/Loaders/LoadingBlock/LoadingBlock';
 import { stringifyToQueryParams } from '@youfoundation/js-lib/helpers';
-import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
+import { Helmet } from 'react-helmet-async';
+import { useQuery } from '@tanstack/react-query';
+
+const useParams = (returnUrl: string) => {
+  const { getAuthorizationParameters } = useYouAuthAuthorization();
+  return useQuery(['params'], () => getAuthorizationParameters(returnUrl), {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+};
 
 export const LoginBox = () => {
-  const [authParams, setAuthParams] = useState<YouAuthorizationParams>();
-  const { getAuthorizationParameters } = useYouAuthAuthorization();
+  const { data: authParams, isLoading } = useParams('/');
 
-  useEffect(() => {
-    (async () => {
-      if (!authParams) setAuthParams(await getAuthorizationParameters('/'));
-    })();
-  }, []);
-
-  if (!authParams)
+  if (isLoading)
     return (
       <>
         <LoadingBlock className="h-[16rem] w-full " />
@@ -23,13 +24,20 @@ export const LoginBox = () => {
     );
 
   return (
-    <iframe
-      src={`${
-        import.meta.env.VITE_CENTRAL_LOGIN_URL
-      }?isDarkMode=${document.documentElement.classList.contains(IS_DARK_CLASSNAME)}${
-        authParams ? `&${stringifyToQueryParams(authParams as any)}` : ''
-      }`}
-      className="h-[16rem] w-full"
-    ></iframe>
+    <>
+      {authParams ? (
+        <Helmet>
+          <meta name="youauth" content={stringifyToQueryParams(authParams as any)} />
+        </Helmet>
+      ) : null}
+      <iframe
+        src={`${
+          import.meta.env.VITE_CENTRAL_LOGIN_URL
+        }?isDarkMode=${document.documentElement.classList.contains(IS_DARK_CLASSNAME)}${
+          authParams ? `&${stringifyToQueryParams(authParams as any)}` : ''
+        }`}
+        className="h-[16rem] w-full"
+      ></iframe>
+    </>
   );
 };
