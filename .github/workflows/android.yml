@@ -13,6 +13,12 @@ jobs:
         with:
           java-version: '11'
 
+      - name: Bump version
+        uses: chkfung/android-version-actions@v1.2.1
+        with:
+          gradlePath: packages/mobile/android/app/build.gradle # or app/build.gradle.kts 
+          versionCode: ${{github.run_number}}
+
       - name: Authenticate to Github packages
         run: |
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
@@ -46,3 +52,11 @@ jobs:
           name: photo-native-app
           #path: packages/mobile/android/app/build/outputs/bundle/release/
           path: packages/mobile/android/app/build/outputs/apk/release/
+
+      # Push the version increment back into the repo
+      - name: Commit version updates
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -am "Bump version code"
+          git push
