@@ -27,5 +27,5 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_DEPLOY_TO_PROD: true
           install_command: npm install
-          build_command: npm run build -w pacakges/web
+          build_command: npm run build -w packages/web
           build_directory: packages/web/dist
