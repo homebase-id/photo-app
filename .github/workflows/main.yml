@@ -21,11 +21,23 @@ jobs:
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.PACKAGES_PAT }}" >> .npmrc
 
-      - uses: jsmrcaga/action-netlify-deploy@v2.0.0
+      - run: npm ci
+
+      - run: npm run build -w packages/web
+
+      - name: Publish to Netlify
+        uses: netlify/actions/cli@master
         with:
-          NETLIFY_SITE_ID: 5e581e51-e8be-4871-8e5f-156eef719f6c
+          args: deploy --dir=packages/web/dist --prod
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_DEPLOY_TO_PROD: true
-          install_command: npm install
-          build_command: npm run build -w packages/web
-          build_directory: packages/web/dist
+
+      # - uses: jsmrcaga/action-netlify-deploy@v2.0.0
+      #   with:
+      #     NETLIFY_SITE_ID: 5e581e51-e8be-4871-8e5f-156eef719f6c
+      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      #     NETLIFY_DEPLOY_TO_PROD: true
+      #     install_command: npm install
+      #     build_command: npm run build -w packages/web
+      #     build_directory: packages/web/dist
