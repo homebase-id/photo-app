@@ -244,6 +244,7 @@ export const updatePhoto = async (
       metadata
     );
 
+    if (!uploadResult) return;
     return {
       fileId: uploadResult.file.fileId,
       date: new Date(

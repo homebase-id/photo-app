@@ -126,6 +126,7 @@ const usePhotoLibrary = ({
               type,
               () => setTimeout(fetchAndMerge, 1000)
             );
+            if (!uploadResult) return;
             saveNewVersionTag(uploadResult);
           };
 
@@ -136,7 +137,7 @@ const usePhotoLibrary = ({
               type,
               fetchAndMerge
             );
-
+            if (!uploadResult) return;
             saveNewVersionTag(uploadResult);
           } catch (err) {
             console.warn(err);
