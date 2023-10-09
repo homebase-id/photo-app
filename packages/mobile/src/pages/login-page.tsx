@@ -34,8 +34,8 @@ const useFinalize = () => {
 
     // Finalize
     (async () => {
-      if (url?.startsWith('odin-photos://auth/finalize/')) {
-        const dataParams = url?.split('odin-photos://auth/finalize/')[1];
+      if (url?.startsWith('homebase-photos://auth/finalize/')) {
+        const dataParams = url?.split('homebase-photos://auth/finalize/')[1];
         const params = new URLSearchParams(dataParams);
 
         const identity = params.get('identity');

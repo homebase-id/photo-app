@@ -56,7 +56,7 @@ const useAuth = () => {
 
     // Get params with publicKey embedded
     return await getRegistrationParamsYouAuth(
-      'odin-photos://auth/finalize/',
+      'homebase-photos://auth/finalize/',
       appName,
       appId,
       undefined,

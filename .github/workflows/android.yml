@@ -53,10 +53,10 @@ jobs:
           #path: packages/mobile/android/app/build/outputs/bundle/release/
           path: packages/mobile/android/app/build/outputs/apk/release/
 
-      # Push the version increment back into the repo
-      - name: Commit version updates
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git commit -am "Bump version code"
-          git push
+      # # Push the version increment back into the repo
+      # - name: Commit version updates
+      #   run: |
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git commit -am "Bump version code"
+      #     git push
