@@ -27,7 +27,7 @@ const LibraryPage = (_props: LibraryProps) => {
   const { data: albums } = useAlbums().fetch;
 
   return (
-    <SafeAreaView>
+    <View>
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <Container>
           <View
@@ -68,7 +68,7 @@ const LibraryPage = (_props: LibraryProps) => {
           </View>
         </Container>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -121,7 +121,8 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
   const { data: thumb } = useAlbumThumbnail(album.tag).fetch;
 
   const windowWidth = Dimensions.get('window').width;
-  const itemWidth = Math.round(windowWidth / 2) - 10;
+  const itemsPerRow = windowWidth > 500 ? 4 : 2;
+  const itemWidth = Math.round(windowWidth / itemsPerRow) - 10;
 
   return (
     <TouchableOpacity
@@ -169,21 +170,22 @@ const NewAlbumItem = () => {
   const { isDarkMode } = useDarkMode();
 
   const windowWidth = Dimensions.get('window').width;
-  const itemWidth = Math.round(windowWidth / 2) - 10;
+  const itemsPerRow = windowWidth > 500 ? 4 : 2;
+  const itemWidth = Math.round(windowWidth / itemsPerRow);
 
   return (
     <>
       <TouchableOpacity
         style={{
           padding: 5,
-          width: Math.round(windowWidth / 2),
-          height: Math.round(windowWidth / 2),
+          width: itemWidth,
+          height: itemWidth,
         }}
         onPress={() => setIsOpen(!isOpen)}>
         <View
           style={{
-            width: itemWidth,
-            height: itemWidth,
+            width: itemWidth - 10,
+            height: itemWidth - 10,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',

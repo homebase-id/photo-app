@@ -249,7 +249,7 @@ const InnerPhotoPreview = ({
   if (!olderPhotos || !newerPhotos) return null;
 
   return (
-    <SafeAreaView style={{ backgroundColor: Colors.black }}>
+    <View style={{ backgroundColor: Colors.black }}>
       <PreviewHeader
         currentDate={activeDate || currentDate}
         goBack={goBack}
@@ -333,7 +333,7 @@ const InnerPhotoPreview = ({
           onClose={() => setIsInfoOpen(false)}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -404,6 +404,7 @@ const PreviewHeader = ({
         left: 0,
         right: 0,
         opacity: showHeader ? 1 : 0,
+        paddingVertical: 3,
         zIndex: 10,
       }}>
       <Header
