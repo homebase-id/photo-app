@@ -19,7 +19,7 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Build Android package:
+      - name: Build Android package
         run: npm run build:android-codepush
 
       - name: Install AppCenter CLI
