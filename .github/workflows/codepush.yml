@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps: 
+      - name: Install AppCenter CLI
+        run: npm install -g appcenter-cli
+
       - uses: actions/checkout@v3
 
       - name: Authenticate to Github packages
@@ -21,11 +24,16 @@ jobs:
 
       - name: Build Android package
         run: npm run build:android-codepush -w packages/mobile
-
-      - name: Install AppCenter CLI
-        run: npm install -g appcenter-cli
         
       - name: Deploy to CodePush Android
-        run: npm run release:android-codepush -w packages/mobile
+        run: npm run release:codepush -w packages/mobile
         env:
           APPCENTER_ACCESS_TOKEN: ${{ secrets.APPCENTER_ACCESS_TOKEN_ANDROID }}
+
+      # - name: Build iOS package
+      #   run: npm run build:ios-codepush -w packages/mobile
+        
+      # - name: Deploy to CodePush iOS
+      #   run: npm run release:codepush -w packages/mobile
+      #   env:
+      #     APPCENTER_ACCESS_TOKEN: ${{ secrets.APPCENTER_ACCESS_TOKEN_IOS }}
