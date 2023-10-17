@@ -35,20 +35,20 @@ jobs:
         working-directory: packages/mobile/ios
         with:
           # project-path: packages/mobile/ios/${{ secrets.APP_PROJECT_NAME }}.xcodeproj
-          project-path: ${{ secrets.APP_PROJECT_NAME }}.xcodeproj
+          project-path: ${{ secrets.PHOTOS_APP_PROJECT_NAME }}.xcodeproj
           p12-base64: ${{ secrets.IOS_P12_BASE64 }}
-          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+          mobileprovision-base64: ${{ secrets.PHOTOS_IOS_MOBILE_PROVISION_BASE64 }}
           code-signing-identity: 'iPhone Distribution'
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          workspace-path: ios/${{ secrets.APP_PROJECT_NAME }}.xcworkspace
-          scheme: ${{ secrets.APP_PROJECT_NAME }}
+          workspace-path: ios/${{ secrets.PHOTOS_APP_PROJECT_NAME }}.xcworkspace
+          scheme: ${{ secrets.PHOTOS_APP_PROJECT_NAME }}
 
-      - name: 'Upload app to TestFlight'
-        working-directory: packages/mobile/ios
-        uses: apple-actions/upload-testflight-build@v1
-        with:
-          app-path: 'output.ipa'
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      # - name: 'Upload app to TestFlight'
+      #   working-directory: packages/mobile/ios
+      #   uses: apple-actions/upload-testflight-build@v1
+      #   with:
+      #     app-path: 'output.ipa'
+      #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+      #     api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+      #     api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
