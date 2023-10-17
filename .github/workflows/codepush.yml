@@ -18,7 +18,13 @@ jobs:
         run: |
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.PACKAGES_PAT }}" >> .npmrc    
-
+      
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        with:
+          path: packages/mobile
+      
       - name: Install npm dependencies
         run: npm ci
 
@@ -26,7 +32,9 @@ jobs:
         run: npm run build:android-codepush -w packages/mobile
         
       - name: Deploy to CodePush Android
-        run: npm run release:codepush -w packages/mobile
+        working-directory: packages/mobile
+        run: appcenter codepush release -a odinops/Homebase-Photo -d Staging -c ./codepush -t ${{ steps.package-version.outputs.current-version }} && rm -rf codepush
+        # run: npm run release:codepush -w packages/mobile
         env:
           APPCENTER_ACCESS_TOKEN: ${{ secrets.APPCENTER_ACCESS_TOKEN_ANDROID }}
 

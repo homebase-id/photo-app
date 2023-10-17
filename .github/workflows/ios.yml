@@ -26,6 +26,12 @@ jobs:
           ruby-version: 2.7.4
           bundler-cache: true
 
+      - name: Bump version
+        uses: yanamura/ios-bump-version@v1
+        with:
+          version: ${{ steps.package-version.outputs.current-version}}
+          build-number: ${{github.run_number}}
+
       - name: Install Pods
         run: pod install --repo-update
         working-directory: packages/mobile/ios
