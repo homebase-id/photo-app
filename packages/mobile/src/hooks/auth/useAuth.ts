@@ -26,9 +26,8 @@ export const drives = [
     p: DrivePermissionType.Read + DrivePermissionType.Write,
   },
 ];
-export const appName = 'Odin - Photos (Mobile App)';
-// export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
-export const appId = '32f0bdbf-017f-4fc0-8004-2d4431182d1e'; // Different appId to avoid clash in Host with the web version; However should this be different?
+export const appName = 'Homebase - Photos';
+export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
 
 // Adapted to work in react-native; With no fallbacks to web support; If we someday merge this with the web version, we should add the fallbacks
 const useAuth = () => {
@@ -64,7 +63,7 @@ const useAuth = () => {
       drives,
       undefined,
       uint8ArrayToBase64(stringToUint8Array(JSON.stringify(publicKeyJwk))),
-      'photos.odin.earth',
+      'photos.homebase.id',
       `${
         Platform.OS === 'ios'
           ? 'iOS'
