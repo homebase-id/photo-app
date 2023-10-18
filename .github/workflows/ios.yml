@@ -12,6 +12,12 @@ jobs:
     steps: 
       - uses: actions/checkout@v3
 
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        with:
+          path: packages/mobile
+
       - name: Authenticate to Github packages
         run: |
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
@@ -26,11 +32,12 @@ jobs:
           ruby-version: 2.7.4
           bundler-cache: true
 
-      #- name: Bump version
-      #  uses: yanamura/ios-bump-version@v1
-      #  with:
-      #    version: ${{ steps.package-version.outputs.current-version}}
-      #    build-number: ${{github.run_number}}
+      - name: Bump version
+        working-directory: packages/mobile/ios
+        uses: yanamura/ios-bump-version@v1
+        with:
+          version: ${{ steps.package-version.outputs.current-version}}
+          build-number: ${{github.run_number}}
 
       - name: Install Pods
         run: pod install --repo-update
