@@ -1,7 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
+
+import { version as appVersion } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
 import {
@@ -164,10 +166,30 @@ const SettingsPage = (_props: SettingsProps) => {
               Check for app updates
             </Text>
           </TouchableOpacity>
+          <VersionInfo />
         </VStack>
       </Container>
     </SafeAreaView>
   );
+};
+
+const getVersionInfo = async () => {
+  const update = await codePush.getUpdateMetadata();
+
+  if (!update) return `v${appVersion}`;
+
+  const label = update.label.substring(1);
+  return `v${appVersion} rev.${label}`;
+};
+
+const VersionInfo = () => {
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    getVersionInfo().then(v => setVersion(v));
+  }, []);
+
+  return <Text style={{ paddingTop: 10 }}>{version}</Text>;
 };
 
 export default SettingsPage;
