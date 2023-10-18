@@ -33,8 +33,8 @@ jobs:
           bundler-cache: true
 
       - name: Bump version
-        working-directory: packages/mobile/ios
         uses: yanamura/ios-bump-version@v1
+        working-directory: packages/mobile/ios
         with:
           version: ${{ steps.package-version.outputs.current-version}}
           build-number: ${{github.run_number}}
