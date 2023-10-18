@@ -9,7 +9,7 @@ jobs:
   build-ios:
     runs-on: macOS-latest
 
-    steps: 
+    steps:
       - uses: actions/checkout@v3
 
       - name: get-npm-version
@@ -21,11 +21,11 @@ jobs:
       - name: Authenticate to Github packages
         run: |
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PACKAGES_PAT }}" >> .npmrc    
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install npm dependencies
         run: npm ci
-        
+
       - name: Setup Ruby (bundle)
         uses: ruby/setup-ruby@v1
         with:

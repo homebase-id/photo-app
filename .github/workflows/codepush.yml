@@ -8,7 +8,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
       - name: Install AppCenter CLI
         run: npm install -g appcenter-cli
 
@@ -17,20 +17,20 @@ jobs:
       - name: Authenticate to Github packages
         run: |
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PACKAGES_PAT }}" >> .npmrc    
-      
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
       - name: get-npm-version
         id: package-version
         uses: Saionaro/extract-package-version@v1.2.1
         with:
           path: packages/mobile
-      
+
       - name: Install npm dependencies
         run: npm ci
 
       - name: Build Android package
         run: npm run build:android-codepush -w packages/mobile
-        
+
       - name: Deploy to CodePush Android
         working-directory: packages/mobile
         run: appcenter codepush release -a odinops/Homebase-Photo -d Production -c ./codepush -t ${{ steps.package-version.outputs.version }} && rm -rf codepush

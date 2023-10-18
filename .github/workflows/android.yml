@@ -8,7 +8,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v3
 
       - name: get-npm-version
@@ -25,18 +25,18 @@ jobs:
       - name: Bump version
         uses: chkfung/android-version-actions@v1.2.1
         with:
-          gradlePath: packages/mobile/android/app/build.gradle # or app/build.gradle.kts 
+          gradlePath: packages/mobile/android/app/build.gradle # or app/build.gradle.kts
           versionCode: ${{github.run_number}}
           versionName: ${{ steps.package-version.outputs.version }}
 
       - name: Authenticate to Github packages
         run: |
           echo "@youfoundation:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PACKAGES_PAT }}" >> .npmrc    
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install npm dependencies
         run: npm ci
-        
+
       - name: Decode Homebase Keystore to file
         id: decode_keystore_file
         env:
@@ -47,7 +47,7 @@ jobs:
           KEYSTORE_FILE_PATH="${TMP_KEYSTORE_FILE_PATH}"/homebase.keystore
           echo $ENCODED_STRING | base64 -di > "${KEYSTORE_FILE_PATH}"
           echo "KEYSTORE_FILE_PATH=$KEYSTORE_FILE_PATH" >> $GITHUB_OUTPUT
-        
+
       - name: Build Android Bundle
         #run: cd packages/mobile/android && ./gradlew bundleRelease
         run: cd packages/mobile/android && ./gradlew assembleRelease
