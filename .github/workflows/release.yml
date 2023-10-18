@@ -56,7 +56,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: photo-native-app
+          name: homebase-photo-app-ios
           path: output.ipa
 
   build-android:
@@ -111,5 +111,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: photo-native-app
+          name: homebase-photo-app-android
           path: packages/mobile/android/app/build/outputs/bundle/release/
