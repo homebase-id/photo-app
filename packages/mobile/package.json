@@ -9,9 +9,10 @@
     "ios": "react-native run-ios",
     "build:android": "react-native build-android --mode=release",
     "build-apk": "cd packages/mobile/android && ./gradlew clean && ./gradlew assembleRelease",
-    "build:android-codepush": "rm -rf codepush && mkdir codepush && react-native bundle --platform android --dev false --entry-file packages/mobile/index.js --bundle-output codepush/main.jsbundle --assets-dest codepush",
-    "build:ios-codepush": "rm -rf codepush && mkdir codepush && react-native bundle --platform ios --dev false --entry-file packages/mobile/index.js --bundle-output codepush/main.jsbundle --assets-dest codepush",
-    "release:codepush": "appcenter codepush release -a odinops/Homebase-Photo -d Staging -c ./codepush -t 0.0.x && rm -rf codepush"
+    "build:android-codepush": "rm -rf codepush && mkdir codepush && react-native bundle --platform android --dev false --entry-file packages/mobile/index.js --bundle-output codepush/index.android.bundle --assets-dest codepush",
+    "build:ios-codepush": "rm -rf codepush && mkdir codepush && react-native bundle --platform ios --dev false --entry-file packages/mobile/index.js --bundle-output codepush/index.ios.bundle --assets-dest codepush",
+    "release:android-codepush": "appcenter codepush release -a odinops/Homebase-Photo -d Staging -c ./codepush -t 0.0.1 && rm -rf codepush",
+    "release:ios-codepush": "appcenter codepush release -a odinops/Homebase-Photo-ios -d Staging -c ./codepush -t 0.0.1 && rm -rf codepush"
   },
   "dependencies": {
     "@bam.tech/react-native-image-resizer": "^3.0.5",

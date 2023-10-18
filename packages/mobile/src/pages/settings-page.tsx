@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 
 import { version as appVersion } from '../../package.json';
@@ -24,6 +24,8 @@ import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
 const SettingsPage = (_props: SettingsProps) => {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [codePushResult, setCodePushResult] = useState<codePush.SyncStatus>();
   const { logout, getIdentity } = useAuth();
   const { cleanup } = useDbSync();
   const {
@@ -44,10 +46,19 @@ const SettingsPage = (_props: SettingsProps) => {
   };
 
   const doCheckForUpdate = async () => {
-    codePush.sync({
-      updateDialog: {},
+    setIsSyncing(true);
+    const state = await codePush.sync({
+      updateDialog: {
+        title: 'You have an update',
+        optionalUpdateMessage:
+          'There is an update available. Do you want to install?',
+        optionalIgnoreButtonLabel: 'Nop',
+        optionalInstallButtonLabel: 'Yep',
+      },
       installMode: codePush.InstallMode.IMMEDIATE,
     });
+    setCodePushResult(state);
+    setIsSyncing(false);
   };
 
   return (
@@ -165,7 +176,25 @@ const SettingsPage = (_props: SettingsProps) => {
               }}>
               Check for app updates
             </Text>
+            {isSyncing ? (
+              <ActivityIndicator
+                size="small"
+                color="#000"
+                style={{ marginLeft: 'auto' }}
+              />
+            ) : codePushResult !== undefined ? (
+              <Text style={{ marginLeft: 'auto', fontStyle: 'italic' }}>
+                {codePushResult === codePush.SyncStatus.UP_TO_DATE
+                  ? 'Up to date'
+                  : codePushResult === codePush.SyncStatus.UPDATE_INSTALLED
+                  ? 'Installed'
+                  : codePushResult === codePush.SyncStatus.SYNC_IN_PROGRESS
+                  ? 'Unknown'
+                  : null}
+              </Text>
+            ) : null}
           </TouchableOpacity>
+          {/* <Text>It is new, codepush works?</Text> */}
           <VersionInfo />
         </VStack>
       </Container>
