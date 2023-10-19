@@ -162,7 +162,7 @@ const Uploader = ({
       />
 
       {hasFiles ? (
-        <div className="fixed bottom-8 right-8 z-50 w-full max-w-sm bg-white shadow-md dark:bg-black">
+        <div className="fixed bottom-8 right-8 z-40 w-full max-w-sm bg-white shadow-md dark:bg-black">
           <div className="flex flex-row">
             {currentFile ? (
               <div className="relative w-1/2">

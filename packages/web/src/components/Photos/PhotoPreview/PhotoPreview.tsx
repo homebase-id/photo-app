@@ -72,7 +72,7 @@ const PhotoLibPreview = ({
   const prevSibling = flatPhotos[currentIndex - 1];
 
   return (
-    <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
+    <div className={`fixed inset-0 z-40 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
         <div className={`relative ${isInfoOpen ? 'w-full md:w-[calc(100%-27rem)]' : 'w-full'}`}>
           <PhotoActions
@@ -151,7 +151,7 @@ const PhotoAlbumPreview = ({
   const prevSibling = flatPhotos[currentIndex - 1];
 
   return (
-    <div className={`fixed inset-0 z-50 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
+    <div className={`fixed inset-0 z-40 overflow-auto bg-black backdrop-blur-sm dark:bg-black`}>
       <div className="flex h-screen max-w-[100vw] flex-row justify-center">
         <div className={`relative ${isInfoOpen ? 'w-full md:w-[calc(100%-27rem)]' : 'w-full'}`}>
           <PhotoActions
