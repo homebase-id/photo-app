@@ -52,8 +52,8 @@ const SettingsPage = (_props: SettingsProps) => {
         title: 'You have an update',
         optionalUpdateMessage:
           'There is an update available. Do you want to install?',
-        optionalIgnoreButtonLabel: 'Nop',
-        optionalInstallButtonLabel: 'Yep',
+        optionalIgnoreButtonLabel: 'No',
+        optionalInstallButtonLabel: 'Yes',
       },
       installMode: codePush.InstallMode.IMMEDIATE,
     });
