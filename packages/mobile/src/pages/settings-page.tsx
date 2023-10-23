@@ -1,6 +1,12 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleProp,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 
 import { version as appVersion } from '../../package.json';
@@ -160,48 +166,19 @@ const SettingsPage = (_props: SettingsProps) => {
               Clear local data
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => doCheckForUpdate()}
+          <CheckForUpdates
             style={{
-              display: 'flex',
-              flexDirection: 'row',
               alignItems: 'center',
               paddingVertical: 12,
               width: '100%',
-            }}>
-            <Download size={'lg'} />
-            <Text
-              style={{
-                marginLeft: 16,
-              }}>
-              Check for app updates
-            </Text>
-            {isSyncing ? (
-              <ActivityIndicator
-                size="small"
-                color="#000"
-                style={{ marginLeft: 'auto' }}
-              />
-            ) : codePushResult !== undefined ? (
-              <Text style={{ marginLeft: 'auto', fontStyle: 'italic' }}>
-                {codePushResult === codePush.SyncStatus.UP_TO_DATE
-                  ? 'Up to date'
-                  : codePushResult === codePush.SyncStatus.UPDATE_INSTALLED
-                  ? 'Installed'
-                  : codePushResult === codePush.SyncStatus.SYNC_IN_PROGRESS
-                  ? 'Unknown'
-                  : null}
-              </Text>
-            ) : null}
-          </TouchableOpacity>
-          {/* <Text>It is new, codepush works?</Text> */}
+            }}
+          />
           <VersionInfo />
         </VStack>
       </Container>
     </SafeAreaView>
   );
 };
-
 const getVersionInfo = async () => {
   const update = await codePush.getUpdateMetadata();
 
@@ -211,7 +188,7 @@ const getVersionInfo = async () => {
   return `v${appVersion} rev.${label}`;
 };
 
-const VersionInfo = () => {
+export const VersionInfo = () => {
   const [version, setVersion] = useState<string>('');
 
   useEffect(() => {
@@ -219,6 +196,68 @@ const VersionInfo = () => {
   }, []);
 
   return <Text style={{ paddingTop: 10 }}>{version}</Text>;
+};
+
+export const CheckForUpdates = ({
+  style,
+  hideIcon,
+}: {
+  style: StyleProp<ViewStyle>;
+  hideIcon?: boolean;
+}) => {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [codePushResult, setCodePushResult] = useState<codePush.SyncStatus>();
+  const doCheckForUpdate = async () => {
+    setIsSyncing(true);
+    const state = await codePush.sync({
+      updateDialog: {
+        title: 'You have an update',
+        optionalUpdateMessage:
+          'There is an update available. Do you want to install?',
+        optionalIgnoreButtonLabel: 'No',
+        optionalInstallButtonLabel: 'Yes',
+      },
+      installMode: codePush.InstallMode.IMMEDIATE,
+    });
+    setCodePushResult(state);
+    setIsSyncing(false);
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={() => doCheckForUpdate()}
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 5,
+        ...(style as any),
+      }}>
+      {hideIcon ? null : <Download size={'lg'} />}
+      <Text
+        style={{
+          marginLeft: hideIcon ? 0 : 11,
+        }}>
+        Check for app updates
+      </Text>
+      {isSyncing ? (
+        <ActivityIndicator
+          size="small"
+          color="#000"
+          style={{ marginLeft: 'auto' }}
+        />
+      ) : codePushResult !== undefined ? (
+        <Text style={{ marginLeft: 'auto', fontStyle: 'italic' }}>
+          {codePushResult === codePush.SyncStatus.UP_TO_DATE
+            ? 'Up to date'
+            : codePushResult === codePush.SyncStatus.UPDATE_INSTALLED
+            ? 'Installed'
+            : codePushResult === codePush.SyncStatus.SYNC_IN_PROGRESS
+            ? 'Unknown'
+            : null}
+        </Text>
+      ) : null}
+    </TouchableOpacity>
+  );
 };
 
 export default SettingsPage;

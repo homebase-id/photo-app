@@ -32,7 +32,6 @@ export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
 // Adapted to work in react-native; With no fallbacks to web support; If we someday merge this with the web version, we should add the fallbacks
 const useAuth = () => {
   const {
-    privateKey: privateKeyFromLocalStorage,
     setPrivateKey,
     sharedSecret,
     setSharedSecret,
@@ -42,78 +41,9 @@ const useAuth = () => {
     setIdentity,
   } = useEncrtypedStorage();
 
-  const throwAwayTheKey = async () => await setPrivateKey('');
-
   const [authenticationState, setAuthenticationState] = useState<
     'unknown' | 'anonymous' | 'authenticated'
   >(sharedSecret ? 'unknown' : 'anonymous');
-
-  const getRegistrationParams = async () => {
-    const { privateKeyHex, publicKeyJwk } = await createEccPair();
-    // Persist key for usage on finalize
-    await setPrivateKey(JSON.stringify(privateKeyHex) + '');
-
-    // Get params with publicKey embedded
-    return await getRegistrationParamsYouAuth(
-      'homebase-photos://auth/finalize/',
-      appName,
-      appId,
-      undefined,
-      undefined,
-      drives,
-      undefined,
-      uint8ArrayToBase64(stringToUint8Array(JSON.stringify(publicKeyJwk))),
-      'photos.homebase.id',
-      `${
-        Platform.OS === 'ios'
-          ? 'iOS'
-          : Platform.OS === 'android'
-          ? 'Android'
-          : Platform.OS
-      } | ${Platform.Version}`,
-    );
-  };
-
-  const finalizeAuthentication = async (
-    identity: string,
-    publicKey: string,
-    salt: string,
-  ) => {
-    if (!identity || !publicKey || !salt) {
-      console.error('Missing data');
-      return false;
-    }
-    try {
-      const privateKeyHex = JSON.parse(privateKeyFromLocalStorage || '');
-      if (!privateKeyFromLocalStorage || !privateKeyHex) {
-        console.error('Missing key');
-        return false;
-      }
-      const publicKeyJwk = JSON.parse(
-        byteArrayToString(base64ToUint8Array(publicKey)),
-      );
-
-      const { clientAuthToken, sharedSecret } =
-        await finalizeAuthenticationYouAuth(
-          identity,
-          privateKeyHex,
-          publicKeyJwk,
-          salt,
-        );
-
-      await throwAwayTheKey();
-
-      // Store all data in secure storage
-      await setAuthToken(uint8ArrayToBase64(clientAuthToken));
-      await setSharedSecret(uint8ArrayToBase64(sharedSecret));
-      await setIdentity(identity);
-    } catch (ex) {
-      console.error(ex);
-      return false;
-    }
-
-    return true;
-  };
 
   const logout = useCallback(async (): Promise<void> => {
     await logoutYouauth(getDotYouClient());
@@ -172,9 +102,6 @@ const useAuth = () => {
   }, [sharedSecret, authenticationState]);
 
   return {
-    getRegistrationParams,
-    canFinzalizeAuthentication: !!privateKeyFromLocalStorage,
-    finalizeAuthentication,
     logout,
     getDotYouClient,
     getSharedSecret: () => sharedSecret && base64ToUint8Array(sharedSecret),
@@ -182,6 +109,85 @@ const useAuth = () => {
     getIdentity: () => identity,
     isAuthenticated: authenticationState !== 'anonymous',
   };
+};
+
+export const useYouAuthAuthorization = () => {
+  const {
+    privateKey: privateKeyFromLocalStorage,
+    setPrivateKey,
+    setSharedSecret,
+    setAuthToken,
+    setIdentity,
+  } = useEncrtypedStorage();
+
+  // const throwAwayTheKey = async () => await setPrivateKey('');
+
+  const getRegistrationParams = async () => {
+    const { privateKeyHex, publicKeyJwk } = await createEccPair();
+    // Persist key for usage on finalize
+    await setPrivateKey(JSON.stringify(privateKeyHex) + '');
+
+    // Get params with publicKey embedded
+    return await getRegistrationParamsYouAuth(
+      'homebase-photos://auth/finalize/',
+      appName,
+      appId,
+      undefined,
+      undefined,
+      drives,
+      undefined,
+      uint8ArrayToBase64(stringToUint8Array(JSON.stringify(publicKeyJwk))),
+      'photos.homebase.id',
+      `${
+        Platform.OS === 'ios'
+          ? 'iOS'
+          : Platform.OS === 'android'
+          ? 'Android'
+          : Platform.OS
+      } | ${Platform.Version}`,
+    );
+  };
+
+  const finalizeAuthentication = async (
+    identity: string,
+    publicKey: string,
+    salt: string,
+  ) => {
+    if (!identity || !publicKey || !salt) {
+      console.error('Missing data');
+      return false;
+    }
+    try {
+      const privateKeyHex = JSON.parse(privateKeyFromLocalStorage || '');
+      if (!privateKeyFromLocalStorage || !privateKeyHex) {
+        console.error('Missing key');
+        return false;
+      }
+      const publicKeyJwk = JSON.parse(
+        byteArrayToString(base64ToUint8Array(publicKey)),
+      );
+
+      const { clientAuthToken, sharedSecret } =
+        await finalizeAuthenticationYouAuth(
+          identity,
+          privateKeyHex,
+          publicKeyJwk,
+          salt,
+        );
+
+      // Store all data in secure storage
+      await setAuthToken(uint8ArrayToBase64(clientAuthToken));
+      await setSharedSecret(uint8ArrayToBase64(sharedSecret));
+      await setIdentity(identity);
+    } catch (ex) {
+      console.error(ex);
+      return false;
+    }
+
+    return true;
+  };
+
+  return { getRegistrationParams, finalizeAuthentication };
 };
 
 export default useAuth;
