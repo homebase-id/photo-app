@@ -278,7 +278,7 @@ const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
         contentIsComplete: row.contentIsComplete === 1,
         userDate: row.userDate,
         tags: tagRows || [],
-        jsonContent: row.jsonContent,
+        jsonContent: row.jsonContent ? JSON.parse(row.jsonContent) : undefined,
         previewThumbnail: row.previewThumbnail
           ? JSON.parse(row.previewThumbnail)
           : undefined,
