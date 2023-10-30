@@ -60,6 +60,11 @@ const useDbSync = () => {
           );
           await invalidatePhotos();
           await invalidateFlatPhotos();
+          queryClient.invalidateQueries([
+            'photo-meta',
+            targetDrive?.alias,
+            fileNotification.header.fileId,
+          ]);
         } else if (
           fileNotification.header.fileMetadata.appData.fileType ===
           PhotoConfig.PhotoLibraryMetadataFileType

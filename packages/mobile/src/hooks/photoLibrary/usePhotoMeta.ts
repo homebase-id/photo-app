@@ -43,7 +43,6 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
 
     const fetchDataPromise = async () => {
       const localHeader = await getHeaderFromLocalDb(targetDrive, fileId);
-      // console.log('localHeader', localHeader?.fileMetadata.appData.jsonContent);
       if (!localHeader)
         return getPhotoMetadata(dotYouClient, targetDrive, fileId);
 
@@ -92,7 +91,6 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
       {
         refetchOnMount: false,
         refetchOnWindowFocus: false,
-        staleTime: Infinity,
         enabled: !!targetDrive && !!fileId,
       },
     ),

@@ -92,21 +92,23 @@ const PhotoInfo = ({
           }}>
           {/* Description */}
           <View style={{ marginBottom: 30, width: '100%' }}>
-            <TextArea
-              h={20}
-              w="100%"
-              placeholder="Add a description"
-              value={photoMetadata?.description}
-              autoCompleteType={'off'}
-              onChangeText={e =>
-                debouncedChangeDesc({
-                  target: { name: 'description', value: e },
-                })
-              }
-              style={{
-                fontSize: 16,
-              }}
-            />
+            {photoMetadata ? (
+              <TextArea
+                h={20}
+                w="100%"
+                placeholder="Add a description"
+                defaultValue={photoMetadata?.description}
+                autoCompleteType={'off'}
+                onChangeText={e =>
+                  debouncedChangeDesc({
+                    target: { name: 'description', value: e },
+                  })
+                }
+                style={{
+                  fontSize: 16,
+                }}
+              />
+            ) : null}
           </View>
           <Text
             style={{
