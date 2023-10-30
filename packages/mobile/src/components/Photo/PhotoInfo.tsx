@@ -68,7 +68,6 @@ const PhotoInfo = ({
     ];
 
   const { isDarkMode } = useDarkMode();
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} avoidKeyboard>
       <Modal.Content

@@ -8,7 +8,6 @@ import {
   ImageUploadResult,
   SecurityGroupType,
   UploadInstructionSet,
-  getRandom16ByteArray,
   EmbeddedThumb,
   getFileHeader,
   UploadFileMetadata,
@@ -17,6 +16,7 @@ import {
 } from '@youfoundation/js-lib/core';
 import {
   uint8ArrayToBase64,
+  getRandom16ByteArray,
   getNewId,
   jsonStringify64,
   base64ToUint8Array,

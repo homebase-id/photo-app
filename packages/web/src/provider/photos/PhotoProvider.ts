@@ -16,13 +16,16 @@ import {
   getDecryptedImageMetadata,
   getDecryptedImageUrl,
   getFileHeader,
-  getRandom16ByteArray,
   queryBatch,
   uploadHeader,
   uploadImage,
   uploadVideo,
 } from '@youfoundation/js-lib/core';
-import { toGuidId, jsonStringify64 } from '@youfoundation/js-lib/helpers';
+import {
+  toGuidId,
+  jsonStringify64,
+  getRandom16ByteArray,
+} from '@youfoundation/js-lib/helpers';
 
 import { FileLike, PhotoConfig, PhotoFile } from './PhotoTypes';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
@@ -34,7 +37,7 @@ export const getPhotos = async (
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
-  ordering?: 'older' | 'newer'
+  ordering?: 'older' | 'newer',
 ) => {
   const archivalStatus: ArchivalStatus[] =
     type === 'bin'
@@ -51,7 +54,11 @@ export const getPhotos = async (
     dotYouClient,
     {
       targetDrive: targetDrive,
-      tagsMatchAll: album ? [album] : type === 'favorites' ? [PhotoConfig.FavoriteTag] : undefined,
+      tagsMatchAll: album
+        ? [album]
+        : type === 'favorites'
+        ? [PhotoConfig.FavoriteTag]
+        : undefined,
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
@@ -61,7 +68,7 @@ export const getPhotos = async (
       includeMetadataHeader: false,
       sorting: 'userDate',
       ordering: ordering === 'newer' ? 'oldestFirst' : 'newestFirst',
-    }
+    },
   );
 
   return {
@@ -83,7 +90,11 @@ const getPhotoExifMeta = async (bytes: Uint8Array) => {
 
   const imageMetadata: ImageMetadata | undefined = exifData
     ? {
-        camera: { make: exifData.Make, model: exifData.Model, lens: exifData.LensModel },
+        camera: {
+          make: exifData.Make,
+          model: exifData.Model,
+          lens: exifData.LensModel,
+        },
         captureDetails: {
           exposureTime: exifData.ExposureTime,
           fNumber: exifData.FNumber,
@@ -109,12 +120,18 @@ const uploadNewPhoto = async (
   targetDrive: TargetDrive,
   albumKey: string | undefined,
   newPhoto: File | Blob | FileLike,
-  meta?: MediaUploadMeta
+  meta?: MediaUploadMeta,
 ) => {
-  const bytes = 'bytes' in newPhoto ? newPhoto.bytes : new Uint8Array(await newPhoto.arrayBuffer());
-  const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(bytes);
+  const bytes =
+    'bytes' in newPhoto
+      ? newPhoto.bytes
+      : new Uint8Array(await newPhoto.arrayBuffer());
+  const { imageMetadata, imageUniqueId, dateTimeOriginal } =
+    await getPhotoExifMeta(bytes);
   const userDate =
-    dateTimeOriginal?.getTime() || (newPhoto as File).lastModified || new Date().getTime();
+    dateTimeOriginal?.getTime() ||
+    (newPhoto as File).lastModified ||
+    new Date().getTime();
 
   return {
     ...(await uploadImage(
@@ -133,7 +150,7 @@ const uploadNewPhoto = async (
       [
         { quality: 100, width: 500, height: 500 },
         { quality: 100, width: 2000, height: 2000 },
-      ]
+      ],
     )),
     userDate: new Date(userDate),
   };
@@ -145,7 +162,7 @@ const uploadNewVideo = async (
   albumKey: string | undefined,
   newVideo: File | Blob | FileLike,
   thumb?: ThumbnailFile,
-  meta?: MediaUploadMeta
+  meta?: MediaUploadMeta,
 ) => {
   const userDate = (newVideo as File).lastModified || new Date().getTime();
 
@@ -157,20 +174,25 @@ const uploadNewVideo = async (
         targetDrive,
         { requiredSecurityGroup: SecurityGroupType.Owner },
         'bytes' in newVideo ? newVideo.bytes : newVideo,
-        { isSegmented: false, mimeType: newVideo.type, fileSize: newVideo.size },
+        {
+          isSegmented: false,
+          mimeType: newVideo.type,
+          fileSize: newVideo.size,
+        },
         {
           ...meta,
           type: newVideo.type as VideoContentType,
           tag: albumKey ? [albumKey] : undefined,
           userDate,
           thumb: thumb,
-        }
+        },
       )),
       userDate: new Date(userDate),
     };
 
   // Segment video file
-  const segmentVideoFile = (await import('@youfoundation/js-lib/helpers')).segmentVideoFile;
+  const segmentVideoFile = (await import('@youfoundation/js-lib/helpers'))
+    .segmentVideoFile;
   const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
 
   return {
@@ -185,7 +207,7 @@ const uploadNewVideo = async (
         tag: albumKey ? [albumKey] : undefined,
         userDate,
         thumb: thumb,
-      }
+      },
     )),
     userDate: new Date(userDate),
   };
@@ -197,7 +219,7 @@ export const uploadNew = async (
   albumKey: string | undefined,
   newFile: File | Blob | FileLike,
   thumb?: ThumbnailFile,
-  meta?: MediaUploadMeta
+  meta?: MediaUploadMeta,
 ): Promise<{ fileId?: string; userDate: Date }> => {
   return newFile.type === 'video/mp4'
     ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb, meta)
@@ -208,10 +230,13 @@ export const updatePhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   photoFileId: string,
-  newMetaData: MediaUploadMeta
+  newMetaData: MediaUploadMeta,
 ) => {
-  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId);
-  const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
+  const header = await getFileHeader<ImageMetadata>(
+    dotYouClient,
+    targetDrive,
+    photoFileId,
+  );
 
   if (header) {
     const instructionSet: UploadInstructionSet = {
@@ -229,10 +254,16 @@ export const updatePhoto = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: imageMetadata ? jsonStringify64({ ...imageMetadata }) : null,
+        jsonContent: header.fileMetadata.appData.jsonContent
+          ? jsonStringify64({ ...header.fileMetadata.appData.jsonContent })
+          : null,
         ...newMetaData,
         tags: newMetaData?.tag
-          ? [...(Array.isArray(newMetaData.tag) ? newMetaData.tag : [newMetaData.tag])]
+          ? [
+              ...(Array.isArray(newMetaData.tag)
+                ? newMetaData.tag
+                : [newMetaData.tag]),
+            ]
           : header.fileMetadata.appData.tags,
       },
     };
@@ -241,14 +272,16 @@ export const updatePhoto = async (
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
-      metadata
+      metadata,
     );
 
     if (!uploadResult) return;
     return {
       fileId: uploadResult.file.fileId,
       date: new Date(
-        newMetaData.userDate || header.fileMetadata.appData.userDate || header.fileMetadata.created
+        newMetaData.userDate ||
+          header.fileMetadata.appData.userDate ||
+          header.fileMetadata.created,
       ),
       tags: header.fileMetadata.appData.tags,
     };
@@ -259,10 +292,13 @@ export const updatePhotoMetadata = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   photoFileId: string,
-  newImageMetadata: ImageMetadata
+  newImageMetadata: ImageMetadata,
 ) => {
-  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId);
-  const imageMetadata = await getDecryptedImageMetadata(dotYouClient, targetDrive, photoFileId);
+  const header = await getFileHeader<ImageMetadata>(
+    dotYouClient,
+    targetDrive,
+    photoFileId,
+  );
 
   if (header) {
     const instructionSet: UploadInstructionSet = {
@@ -280,7 +316,10 @@ export const updatePhotoMetadata = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: jsonStringify64({ ...imageMetadata, ...newImageMetadata }),
+        jsonContent: jsonStringify64({
+          ...(header.fileMetadata.appData.jsonContent || {}),
+          ...newImageMetadata,
+        }),
       },
     };
 
@@ -290,7 +329,7 @@ export const updatePhotoMetadata = async (
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
-      metadata
+      metadata,
     );
   }
 };
@@ -300,11 +339,17 @@ export const getPhoto = async (
   targetDrive: TargetDrive,
   fileId: string,
   size?: ImageSize,
-  isProbablyEncrypted?: boolean
+  isProbablyEncrypted?: boolean,
 ): Promise<PhotoFile> => {
   return {
     fileId: fileId,
-    url: await getDecryptedImageUrl(dotYouClient, targetDrive, fileId, size, isProbablyEncrypted),
+    url: await getDecryptedImageUrl(
+      dotYouClient,
+      targetDrive,
+      fileId,
+      size,
+      isProbablyEncrypted,
+    ),
   };
 };
 
@@ -313,7 +358,7 @@ const dsrToPhoto = async (
   targetDrive: TargetDrive,
   dsr: DriveSearchResult,
   size?: ImageSize,
-  isProbablyEncrypted?: boolean
+  isProbablyEncrypted?: boolean,
 ): Promise<PhotoFile> => {
   return {
     fileId: dsr.fileId,
@@ -322,7 +367,7 @@ const dsrToPhoto = async (
       targetDrive,
       dsr.fileId,
       size,
-      isProbablyEncrypted
+      isProbablyEncrypted,
     ),
   };
 };
@@ -330,15 +375,14 @@ const dsrToPhoto = async (
 export const getPhotoMetadata = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  fileId: string
-): Promise<ImageMetadata | null> => {
-  return await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
-};
+  fileId: string,
+): Promise<ImageMetadata | null> =>
+  await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 
 export const getAlbumThumbnail = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  albumTag: string
+  albumTag: string,
 ): Promise<PhotoFile | null> => {
   const archivalStatus: ArchivalStatus[] =
     albumTag === 'bin'
@@ -359,7 +403,7 @@ export const getAlbumThumbnail = async (
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
-    { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }
+    { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false },
   );
 
   if (!reponse.searchResults || reponse.searchResults.length === 0) {

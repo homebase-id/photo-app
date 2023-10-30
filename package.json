@@ -12,7 +12,7 @@
         "start:web": "npm run start --w packages/web"
     },
     "dependencies": {
-        "@youfoundation/js-lib": "0.0.1-alpha.111"
+        "@youfoundation/js-lib": "0.0.1-alpha.155"
     },
     "devDependencies": {
         "patch-package": "^7.0.2"

@@ -12,11 +12,13 @@ import {
   getDecryptedImageMetadata,
   getDecryptedImageUrl,
   getFileHeader,
-  getRandom16ByteArray,
   queryBatch,
   uploadHeader,
 } from '@youfoundation/js-lib/core';
-import { jsonStringify64 } from '@youfoundation/js-lib/helpers';
+import {
+  getRandom16ByteArray,
+  jsonStringify64,
+} from '@youfoundation/js-lib/helpers';
 
 import { PhotoConfig, PhotoFile } from './PhotoTypes';
 
@@ -73,8 +75,7 @@ export const updatePhoto = async (
   photoFileId: string,
   newMetaData: MediaUploadMeta,
 ) => {
-  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId);
-  const imageMetadata = await getDecryptedImageMetadata(
+  const header = await getFileHeader<ImageMetadata>(
     dotYouClient,
     targetDrive,
     photoFileId,
@@ -96,8 +97,8 @@ export const updatePhoto = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: imageMetadata
-          ? jsonStringify64({ ...imageMetadata })
+        jsonContent: header.fileMetadata.appData.jsonContent
+          ? jsonStringify64({ ...header.fileMetadata.appData.jsonContent })
           : null,
         ...newMetaData,
         tags: newMetaData?.tag
@@ -117,6 +118,7 @@ export const updatePhoto = async (
       metadata,
     );
 
+    if (!uploadResult) return;
     return {
       fileId: uploadResult.file.fileId,
       date: new Date(
@@ -135,8 +137,7 @@ export const updatePhotoMetadata = async (
   photoFileId: string,
   newImageMetadata: ImageMetadata,
 ) => {
-  const header = await getFileHeader(dotYouClient, targetDrive, photoFileId);
-  const imageMetadata = await getDecryptedImageMetadata(
+  const header = await getFileHeader<ImageMetadata>(
     dotYouClient,
     targetDrive,
     photoFileId,
@@ -158,7 +159,10 @@ export const updatePhotoMetadata = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: jsonStringify64({ ...imageMetadata, ...newImageMetadata }),
+        jsonContent: jsonStringify64({
+          ...(header.fileMetadata.appData.jsonContent || {}),
+          ...newImageMetadata,
+        }),
       },
     };
 
@@ -213,10 +217,8 @@ export const getPhotoMetadata = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   fileId: string,
-): Promise<ImageMetadata | null> => {
-  //return null;
-  return await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
-};
+): Promise<ImageMetadata | null> =>
+  await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 
 export const getAlbumThumbnail = async (
   dotYouClient: DotYouClient,

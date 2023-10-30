@@ -5,14 +5,16 @@ import {
   SecurityGroupType,
   UploadFileMetadata,
   UploadInstructionSet,
-  getPayload,
-  getRandom16ByteArray,
+  getContentFromHeaderOrPayload,
   queryBatch,
   queryModified,
   uploadFile,
 } from '@youfoundation/js-lib/core';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
-import { jsonStringify64 } from '@youfoundation/js-lib/helpers';
+import {
+  getRandom16ByteArray,
+  jsonStringify64,
+} from '@youfoundation/js-lib/helpers';
 
 const encryptPhotoLibrary = true;
 
@@ -88,7 +90,7 @@ const dsrToPhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   dsr: DriveSearchResult,
 ): Promise<PhotoLibraryMetadata | null> => {
-  const payload = await getPayload<PhotoLibraryMetadata>(
+  const payload = await getContentFromHeaderOrPayload<PhotoLibraryMetadata>(
     dotYouClient,
     PhotoConfig.PhotoDrive,
     dsr,
@@ -176,28 +178,31 @@ export const buildMetaStructure = (
   }, [] as DriveSearchResult[]);
 
   // Build easier to use structure
-  const arrayStruc = headers.reduce((curVal, head) => {
-    const currDate = new Date(
-      head.fileMetadata.appData.userDate || head.fileMetadata.created,
-    );
-    const year = currDate.getFullYear();
-    const month = currDate.getMonth() + 1;
-    const day = currDate.getDate();
+  const arrayStruc = headers.reduce(
+    (curVal, head) => {
+      const currDate = new Date(
+        head.fileMetadata.appData.userDate || head.fileMetadata.created,
+      );
+      const year = currDate.getFullYear();
+      const month = currDate.getMonth() + 1;
+      const day = currDate.getDate();
 
-    const returnObj = { ...curVal };
-    returnObj[year] = {
-      ...returnObj[year],
-    };
-    returnObj[year][month] = {
-      ...returnObj[year][month],
-    };
+      const returnObj = { ...curVal };
+      returnObj[year] = {
+        ...returnObj[year],
+      };
+      returnObj[year][month] = {
+        ...returnObj[year][month],
+      };
 
-    returnObj[year][month][day] = returnObj[year][month][day]
-      ? returnObj[year][month][day] + 1
-      : 1;
+      returnObj[year][month][day] = returnObj[year][month][day]
+        ? returnObj[year][month][day] + 1
+        : 1;
 
-    return returnObj;
-  }, {} as Record<string, Record<string, Record<string, number>>>);
+      return returnObj;
+    },
+    {} as Record<string, Record<string, Record<string, number>>>,
+  );
 
   // Convert struc into complex meta object
   const years = sortRecents(Object.keys(arrayStruc));

@@ -200,7 +200,9 @@ export const saveToLocalDb = async (
                   header.fileMetadata.appData.additionalThumbnails,
                 )
               : undefined,
-            header.fileMetadata.appData.jsonContent,
+            header.fileMetadata.appData.jsonContent
+              ? jsonStringify64(header.fileMetadata.appData.jsonContent)
+              : undefined,
             header.sharedSecretEncryptedKeyHeader
               ? jsonStringify64(header.sharedSecretEncryptedKeyHeader)
               : undefined,
@@ -300,12 +302,14 @@ const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
       allowDistribution: false,
       doNotIndex: false,
     },
-    sharedSecretEncryptedKeyHeader: {
-      encryptedAesKey: base64ToUint8Array(ssObject.encryptedAesKey),
-      encryptionVersion: ssObject.encryptionVersion,
-      iv: base64ToUint8Array(ssObject.iv),
-      type: ssObject.type,
-    },
+    sharedSecretEncryptedKeyHeader: ssObject
+      ? {
+          encryptedAesKey: base64ToUint8Array(ssObject.encryptedAesKey),
+          encryptionVersion: ssObject.encryptionVersion,
+          iv: base64ToUint8Array(ssObject.iv),
+          type: ssObject.type,
+        }
+      : (null as any),
   };
 };
 
@@ -339,7 +343,6 @@ export const syncHeaderFile = async (
   fileId: string,
 ): Promise<void> => {
   const header = await getFileHeader(dotYouClient, targetDrive, fileId);
-
   if (header) await saveToLocalDb(targetDrive, [header]);
   else await removeFromLocalDb(targetDrive, fileId);
 

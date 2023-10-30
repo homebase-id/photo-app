@@ -8,7 +8,6 @@ import {
   TargetDrive,
   ImageMetadata,
   DriveSearchResult,
-  getPayload,
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
@@ -44,17 +43,11 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
 
     const fetchDataPromise = async () => {
       const localHeader = await getHeaderFromLocalDb(targetDrive, fileId);
+      // console.log('localHeader', localHeader?.fileMetadata.appData.jsonContent);
       if (!localHeader)
         return getPhotoMetadata(dotYouClient, targetDrive, fileId);
 
-      // We trick the getPayload method to avoid trying to fetch the payload (which is the image)
-      localHeader.fileMetadata.appData.contentIsComplete = true;
-      return await getPayload<ImageMetadata>(
-        dotYouClient,
-        targetDrive,
-        localHeader,
-        true,
-      );
+      return localHeader.fileMetadata.appData.jsonContent as ImageMetadata;
     };
 
     return await fetchDataPromise();
