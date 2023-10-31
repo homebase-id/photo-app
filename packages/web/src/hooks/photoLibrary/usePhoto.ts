@@ -199,7 +199,10 @@ const usePhoto = (targetDrive?: TargetDrive) => {
     fromCache: (targetDrive: TargetDrive, fileId: string) => {
       const previousKeys = queryClient
         .getQueryCache()
-        .findAll(['photo', targetDrive?.alias, fileId], { exact: false })
+        .findAll({
+          queryKey: ['photo', targetDrive?.alias, fileId],
+          exact: false,
+        })
         .filter(query => query.state.status === 'success');
 
       if (previousKeys?.length) {
@@ -214,35 +217,39 @@ const usePhoto = (targetDrive?: TargetDrive) => {
         if (existingCachedImage) return existingCachedImage;
       }
     },
-    upload: useMutation(uploadNewMedia, {
+    upload: useMutation({
+      mutationFn: uploadNewMedia,
       onSuccess: (data, variables) => {
         // Need to invalidate the infinite query to update the photoPreview;
-        queryClient.invalidateQueries([
-          'photos-infinite',
-          targetDrive?.alias,
-          variables.albumKey,
-          null,
-        ]);
+        queryClient.invalidateQueries({
+          queryKey: [
+            'photos-infinite',
+            targetDrive?.alias,
+            variables.albumKey,
+            null,
+          ],
+        });
 
         // Invalidate fetchByMonth
         //['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`]
-        queryClient.invalidateQueries(
-          [
+        queryClient.invalidateQueries({
+          queryKey: [
             'photos',
             targetDrive?.alias,
             data?.type,
             data?.userDate &&
               `${data?.userDate.getFullYear()}-${data?.userDate.getMonth()}`,
           ],
-          { exact: false },
-        );
+          exact: false,
+        });
       },
     }),
-    remove: useMutation(removePhoto, {
+    remove: useMutation({
+      mutationFn: removePhoto,
       onMutate: toRemovePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as
@@ -276,8 +283,12 @@ const usePhoto = (targetDrive?: TargetDrive) => {
           });
       },
       onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photos', targetDrive?.alias, 'bin']);
-        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
+        queryClient.invalidateQueries({
+          queryKey: ['photos', targetDrive?.alias, 'bin'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['photos-infinite', targetDrive?.alias],
+        });
 
         if (_param?.date) addDayToLibrary({ type: 'bin', date: _param.date });
       },
@@ -285,11 +296,12 @@ const usePhoto = (targetDrive?: TargetDrive) => {
         console.error(ex);
       },
     }),
-    deleteFile: useMutation(deletePhoto, {
+    deleteFile: useMutation({
+      mutationFn: deletePhoto,
       onMutate: toRemovePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const queryData =
@@ -315,18 +327,23 @@ const usePhoto = (targetDrive?: TargetDrive) => {
           });
       },
       onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photos', targetDrive?.alias, 'bin']);
-        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
+        queryClient.invalidateQueries({
+          queryKey: ['photos', targetDrive?.alias, 'bin'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['photos-infinite', targetDrive?.alias],
+        });
       },
       onError: ex => {
         console.error(ex);
       },
     }),
-    archive: useMutation(archivePhoto, {
+    archive: useMutation({
+      mutationFn: archivePhoto,
       onMutate: toArchivePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as
@@ -360,22 +377,16 @@ const usePhoto = (targetDrive?: TargetDrive) => {
           });
       },
       onSettled: (_param, _error, data) => {
-        queryClient.invalidateQueries([
-          'photos',
-          targetDrive?.alias,
-          undefined,
-        ]); // Removed from the photos library
+        queryClient.invalidateQueries({
+          queryKey: ['photos', targetDrive?.alias, undefined],
+        }); // Removed from the photos library
 
-        queryClient.invalidateQueries([
-          'photos',
-          targetDrive?.alias,
-          'archive',
-        ]); // Added to the archive library
-        queryClient.invalidateQueries([
-          'photos-infinte',
-          targetDrive?.alias,
-          'archive',
-        ]); // Added to the archive photoPreview
+        queryClient.invalidateQueries({
+          queryKey: ['photos', targetDrive?.alias, 'archive'],
+        }); // Added to the archive library
+        queryClient.invalidateQueries({
+          queryKey: ['photos-infinte', targetDrive?.alias, 'archive'],
+        }); // Added to the archive photoPreview
 
         if (_param?.date)
           addDayToLibrary({ type: 'archive', date: _param.date });
@@ -384,11 +395,12 @@ const usePhoto = (targetDrive?: TargetDrive) => {
         console.error(ex);
       },
     }),
-    restore: useMutation(restorePhoto, {
+    restore: useMutation({
+      mutationFn: restorePhoto,
       onMutate: toRestorePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as
@@ -426,12 +438,12 @@ const usePhoto = (targetDrive?: TargetDrive) => {
       },
       onSettled: (returnVal, _data) => {
         // Clear photo queries
-        queryClient.invalidateQueries([
-          'photos',
-          targetDrive?.alias,
-          undefined,
-        ]);
-        queryClient.invalidateQueries(['photos-infinite', targetDrive?.alias]);
+        queryClient.invalidateQueries({
+          queryKey: ['photos', targetDrive?.alias, undefined],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['photos-infinite', targetDrive?.alias],
+        });
 
         // Add day to the meta file
         if (returnVal?.date)
@@ -441,7 +453,8 @@ const usePhoto = (targetDrive?: TargetDrive) => {
         console.error(ex);
       },
     }),
-    addTags: useMutation(addTags, {
+    addTags: useMutation({
+      mutationFn: addTags,
       onMutate: toAddData => {
         const queryData = queryClient.getQueryData<DriveSearchResult>([
           'photo-header',
@@ -472,26 +485,18 @@ const usePhoto = (targetDrive?: TargetDrive) => {
       },
       onSettled: (data, error, variables) => {
         variables.addTags.forEach(tag => {
-          queryClient.invalidateQueries([
-            'photos',
-            targetDrive?.alias,
-            undefined,
-            tag,
-          ]);
-          queryClient.invalidateQueries([
-            'photos-infinite',
-            targetDrive?.alias,
-            undefined,
-            tag,
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: ['photos', targetDrive?.alias, undefined, tag],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['photos-infinite', targetDrive?.alias, undefined, tag],
+          });
         });
 
         if (data?.date && variables.addTags.includes(PhotoConfig.FavoriteTag)) {
-          queryClient.invalidateQueries([
-            'photos-infinite',
-            targetDrive?.alias,
-            'favorites',
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: ['photos-infinite', targetDrive?.alias, 'favorites'],
+          });
 
           addDayToLibrary({
             type: 'favorites',
@@ -500,7 +505,8 @@ const usePhoto = (targetDrive?: TargetDrive) => {
         }
       },
     }),
-    removeTags: useMutation(removeTags, {
+    removeTags: useMutation({
+      mutationFn: removeTags,
       onMutate: toRemoveData => {
         const queryData = queryClient.getQueryData<DriveSearchResult>([
           'photo-header',
@@ -540,35 +546,25 @@ const usePhoto = (targetDrive?: TargetDrive) => {
       },
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach(tag => {
-          queryClient.invalidateQueries([
-            'photos',
-            targetDrive?.alias,
-            undefined,
-            tag,
-          ]);
-          queryClient.invalidateQueries([
-            'photos-infinite',
-            targetDrive?.alias,
-            undefined,
-            tag,
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: ['photos', targetDrive?.alias, undefined, tag],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['photos-infinite', targetDrive?.alias, undefined, tag],
+          });
         });
 
         if (variables.removeTags.includes(PhotoConfig.FavoriteTag)) {
-          queryClient.invalidateQueries([
-            'photos',
-            targetDrive?.alias,
-            'favorites',
-          ]);
-          queryClient.invalidateQueries([
-            'photos-infinite',
-            targetDrive?.alias,
-            'favorites',
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: ['photos', targetDrive?.alias, 'favorites'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['photos-infinite', targetDrive?.alias, 'favorites'],
+          });
         }
       },
     }),
-    download: useMutation(download),
+    download: useMutation({ mutationFn: download }),
   };
 };
 

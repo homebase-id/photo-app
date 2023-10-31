@@ -68,7 +68,9 @@ export const useFlatMonthsFromMeta = ({
     );
   };
 
-  return useQuery(['flat-photos', targetDrive?.alias, type], fetch, {
+  return useQuery({
+    queryKey: ['flat-photos', targetDrive?.alias, type],
+    queryFn: fetch,
     enabled: !!photoLibrary,
   });
 };
@@ -163,15 +165,19 @@ export const useSiblingsRange = ({
     return returnRange;
   };
 
-  return useQuery(
-    ['siblings-range', targetDrive?.alias, type, fromFileId, toFileId],
-    getRange,
-    {
-      enabled:
-        !!flatMonths &&
-        fromCurrentData?.currentIndex !== undefined &&
-        toCurrentData?.currentIndex !== undefined,
-      select: data => data.map(dsr => dsr.fileId),
-    },
-  );
+  return useQuery({
+    queryKey: [
+      'siblings-range',
+      targetDrive?.alias,
+      type,
+      fromFileId,
+      toFileId,
+    ],
+    queryFn: getRange,
+    enabled:
+      !!flatMonths &&
+      fromCurrentData?.currentIndex !== undefined &&
+      toCurrentData?.currentIndex !== undefined,
+    select: data => data.map(dsr => dsr.fileId),
+  });
 };

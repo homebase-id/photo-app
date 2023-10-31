@@ -35,7 +35,9 @@ const useImporter = () => {
   const [status, setStatus] = useState('idle');
   const [log, setLog] = useState('');
 
-  const { mutateAsync: doUploadToServer } = usePhoto(PhotoConfig.PhotoDrive).upload;
+  const { mutateAsync: doUploadToServer } = usePhoto(
+    PhotoConfig.PhotoDrive,
+  ).upload;
   const {
     updateDate: { mutateAsync: updateDate },
     updateMeta: { mutateAsync: updateMeta },
@@ -55,7 +57,7 @@ const useImporter = () => {
       request.onsuccess = function () {
         db = request.result;
         resolve();
-        queryClient.invalidateQueries(['status']);
+        queryClient.invalidateQueries({ queryKey: ['status'] });
       };
       request.onupgradeneeded = function () {
         db = this.result;
@@ -131,14 +133,20 @@ const useImporter = () => {
         record.status = newStatus;
         const updateRequest = store.put(record);
         updateRequest.onsuccess = resolve;
-        updateRequest.onerror = (event) => {
-          console.log(`Error updating status for uniquename: ${uniquename}`, event);
+        updateRequest.onerror = event => {
+          console.log(
+            `Error updating status for uniquename: ${uniquename}`,
+            event,
+          );
           reject('Error updating status');
         };
       };
 
-      request.onerror = (event) => {
-        console.log(`Error fetching record for uniquename: ${uniquename}`, event);
+      request.onerror = event => {
+        console.log(
+          `Error fetching record for uniquename: ${uniquename}`,
+          event,
+        );
         reject('Error fetching record');
       };
     });
@@ -169,13 +177,13 @@ const useImporter = () => {
       geoDataExif: GeoData;
       photoTakenTime: { timestamp: string; formatted: string };
       title: string;
-    }
+    },
   ) {
     try {
       const dateAsNumber = parseInt(
         `${jsonData.photoTakenTime.timestamp}${
           jsonData.photoTakenTime.timestamp.length === 10 ? '000' : ''
-        }`
+        }`,
       );
       await updateDate({
         photoFileId: fileId,
@@ -218,7 +226,7 @@ const useImporter = () => {
   async function uploadToOdinPhotos(
     fileData: File | Blob,
     fullName: string,
-    requiresConversion: boolean
+    requiresConversion: boolean,
   ) {
     const uniquename = createUniquename(fullName);
     const alreadyUploaded = await getUploadedFileGuid(uniquename);
@@ -298,7 +306,7 @@ const useImporter = () => {
             }
           }
 
-          await new Promise((resolve) => setTimeout(resolve, 0));
+          await new Promise(resolve => setTimeout(resolve, 0));
         } else {
           console.log(`Skipping, status was ${status} for ${uniquename}`);
           cursor.continue(); // Move this line here, to continue when status is not 0.
@@ -313,7 +321,10 @@ const useImporter = () => {
   // =================== HANDLE THE FILES =======================
   //
 
-  const convertToJpeg = (imageBuffer: File | Blob, fullName: string): Promise<File> => {
+  const convertToJpeg = (
+    imageBuffer: File | Blob,
+    fullName: string,
+  ): Promise<File> => {
     return new Promise((resolve, reject) => {
       const blob = new Blob([imageBuffer], { type: 'image/*' }); // creating a blob from the image buffer
       const img = new Image();
@@ -331,7 +342,7 @@ const useImporter = () => {
 
         // Get raw image data
         canvas.toBlob(
-          (blob) => {
+          blob => {
             if (!blob) {
               reject('blob is null');
               return;
@@ -342,11 +353,11 @@ const useImporter = () => {
             resolve(new File([blob], newFileName, { type: 'image/jpeg' }));
           },
           'image/jpeg',
-          1
+          1,
         );
       };
 
-      img.onerror = (error) => {
+      img.onerror = error => {
         console.log('Image loading and conversion failed.');
         console.error(error);
         reject(error);
@@ -359,9 +370,11 @@ const useImporter = () => {
 
     let requiresConversion = false;
 
-    if (vid2cvt.some((extension) => fullName.toLowerCase().endsWith(extension))) {
+    if (vid2cvt.some(extension => fullName.toLowerCase().endsWith(extension))) {
       requiresConversion = true;
-    } else if (img2cvt.some((extension) => fullName.toLowerCase().endsWith(extension))) {
+    } else if (
+      img2cvt.some(extension => fullName.toLowerCase().endsWith(extension))
+    ) {
       setStatus('... <b>converting to jpeg</b> ...');
       const jpegData = await convertToJpeg(fileData, fullName);
       fileData = jpegData; // Replace the original data with the JPEG data
@@ -380,17 +393,19 @@ const useImporter = () => {
 
   const processAFile = async (fileData: File | Blob, filename: string) => {
     // Find a mimeType
-    fileData = !fileData.type ? new Blob([fileData], { type: getMimeType(filename) }) : fileData;
+    fileData = !fileData.type
+      ? new Blob([fileData], { type: getMimeType(filename) })
+      : fileData;
 
     if (filename.toLowerCase().endsWith('.json')) {
       await processJsonFile(fileData, filename);
-    } else if (vid2cvt.some((ext) => filename.toLowerCase().endsWith(ext))) {
+    } else if (vid2cvt.some(ext => filename.toLowerCase().endsWith(ext))) {
       logString(`File ${filename} added to MP4Conversion album.\n`);
       await processMediaFile(fileData, filename);
-    } else if (img2cvt.some((ext) => filename.toLowerCase().endsWith(ext))) {
+    } else if (img2cvt.some(ext => filename.toLowerCase().endsWith(ext))) {
       logString(`Converting to jpg: ${filename}\n`);
       await processMediaFile(fileData, filename);
-    } else if (extensions.some((ext) => filename.toLowerCase().endsWith(ext))) {
+    } else if (extensions.some(ext => filename.toLowerCase().endsWith(ext))) {
       await processMediaFile(fileData, filename);
     } else {
       console.log('Invalid extension: ' + filename);
@@ -401,7 +416,7 @@ const useImporter = () => {
 
   // Handles the files the user picked in the selector
 
-  const handleFiles: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+  const handleFiles: React.ChangeEventHandler<HTMLInputElement> = async e => {
     const files = (e.target as HTMLInputElement)?.files;
 
     for (let i = 0; files && i < files.length; i++) {
@@ -414,10 +429,10 @@ const useImporter = () => {
     }
 
     setStatus(
-      'Done processing all selected files, apply JSON when you have loaded all Takeout files.'
+      'Done processing all selected files, apply JSON when you have loaded all Takeout files.',
     );
 
-    queryClient.invalidateQueries(['status']);
+    queryClient.invalidateQueries({ queryKey: ['status'] });
   };
 
   const processZipFile = async (file: File) => {
@@ -454,12 +469,14 @@ const useImporter = () => {
 
   const getMimeType = (fileName: string) => {
     const fileExt = fileName.split('.').pop();
-    return mimeTypes.find((m) => m.ext === fileExt)?.mime || 'application/octet-stream';
+    return (
+      mimeTypes.find(m => m.ext === fileExt)?.mime || 'application/octet-stream'
+    );
   };
 
   const generateGUID = () => {
     // This function generates a random GUID. Replace this with actual GUID returned from Homebase Photos.
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = (Math.random() * 16) | 0,
         v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
@@ -467,20 +484,27 @@ const useImporter = () => {
   };
 
   const logString = (s: string) => {
-    setLog((oldVal) => oldVal + s);
+    setLog(oldVal => oldVal + s);
   };
 
   const doClearStorage = () => {
-    const transactionUploadedFiles = db.transaction([UPLOADED_FILES_STORE], 'readwrite');
-    const storeUploadedFiles = transactionUploadedFiles.objectStore(UPLOADED_FILES_STORE);
+    const transactionUploadedFiles = db.transaction(
+      [UPLOADED_FILES_STORE],
+      'readwrite',
+    );
+    const storeUploadedFiles =
+      transactionUploadedFiles.objectStore(UPLOADED_FILES_STORE);
     storeUploadedFiles.clear();
 
-    const transactionJsonFiles = db.transaction([JSON_FILES_STORE], 'readwrite');
+    const transactionJsonFiles = db.transaction(
+      [JSON_FILES_STORE],
+      'readwrite',
+    );
     const storeJsonFiles = transactionJsonFiles.objectStore(JSON_FILES_STORE);
     storeJsonFiles.clear();
 
     setStatus('Local DB storage cleared.\n');
-    queryClient.invalidateQueries(['status']);
+    queryClient.invalidateQueries({ queryKey: ['status'] });
   };
 
   return { status, log, handleFiles, doClearStorage, doApplyJsons };

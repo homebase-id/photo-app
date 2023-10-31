@@ -168,26 +168,28 @@ const usePhoto = (
   };
 
   return {
-    fetch: useQuery(
-      [
+    fetch: useQuery({
+      queryKey: [
         'photo',
         targetDrive?.alias,
         fileId,
         `${size?.pixelHeight}x${size?.pixelWidth}`,
       ],
-      () => fetchPhoto({ targetDrive, fileId, size }),
-      {
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-        cacheTime: Infinity, // Never => react query will never remove the data from the cache
-        enabled: !!targetDrive && !!fileId,
-      },
-    ),
+      queryFn: () => fetchPhoto({ targetDrive, fileId, size }),
+
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      gcTime: Infinity, // Never => react query will never remove the data from the cache
+      enabled: !!targetDrive && !!fileId,
+    }),
     fromCache: (targetDrive: TargetDrive, fileId: string) => {
       const previousKeys = queryClient
         .getQueryCache()
-        .findAll(['photo', targetDrive?.alias, fileId], { exact: false })
+        .findAll({
+          queryKey: ['photo', targetDrive?.alias, fileId],
+          exact: false,
+        })
         .filter(query => query.state.status === 'success');
 
       if (previousKeys?.length) {
@@ -202,38 +204,42 @@ const usePhoto = (
         if (existingCachedImage) return existingCachedImage;
       }
     },
-    upload: useMutation(uploadNewMedia, {
+    upload: useMutation({
+      mutationFn: uploadNewMedia,
       onSuccess: async (data, variables) => {
         if (!targetDrive || !data?.fileId) return null;
         await syncHeaderFile(dotYouClient, targetDrive, data.fileId);
 
         // Need to invalidate the infinite query to update the photoPreview;
-        queryClient.invalidateQueries([
-          'photos-infinite',
-          targetDrive?.alias,
-          variables.albumKey,
-          null,
-        ]);
+        queryClient.invalidateQueries({
+          queryKey: [
+            'photos-infinite',
+            targetDrive?.alias,
+            variables.albumKey,
+            null,
+          ],
+        });
 
         // Invalidate fetchByMonth
         //['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`]
-        queryClient.invalidateQueries(
-          [
+        queryClient.invalidateQueries({
+          queryKey: [
             'photos',
             targetDrive?.alias,
             data?.type,
             data?.userDate &&
               `${data?.userDate.getFullYear()}-${data?.userDate.getMonth()}`,
           ],
-          { exact: false },
-        );
+          exact: false,
+        });
       },
     }),
-    remove: useMutation(removePhoto, {
+    remove: useMutation({
+      mutationFn: removePhoto,
       onMutate: toRemovePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as
@@ -279,11 +285,12 @@ const usePhoto = (
         console.error(ex);
       },
     }),
-    deleteFile: useMutation(deletePhoto, {
+    deleteFile: useMutation({
+      mutationFn: deletePhoto,
       onMutate: toRemovePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const queryData =
@@ -319,11 +326,12 @@ const usePhoto = (
         console.error(ex);
       },
     }),
-    archive: useMutation(archivePhoto, {
+    archive: useMutation({
+      mutationFn: archivePhoto,
       onMutate: toArchivePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as
@@ -368,11 +376,12 @@ const usePhoto = (
         console.error(ex);
       },
     }),
-    restore: useMutation(restorePhoto, {
+    restore: useMutation({
+      mutationFn: restorePhoto,
       onMutate: toRestorePhotoData => {
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach(query => {
             const queryKey = query.queryKey;
             const libraryType = queryKey[2] as
@@ -423,7 +432,8 @@ const usePhoto = (
         console.error(ex);
       },
     }),
-    addTags: useMutation(addTags, {
+    addTags: useMutation({
+      mutationFn: addTags,
       onMutate: toAddData => {
         const queryData = queryClient.getQueryData<DriveSearchResult>([
           'photo-header',
@@ -475,7 +485,8 @@ const usePhoto = (
         }
       },
     }),
-    removeTags: useMutation(removeTags, {
+    removeTags: useMutation({
+      mutationFn: removeTags,
       onMutate: toRemoveData => {
         const queryData = queryClient.getQueryData<DriveSearchResult>([
           'photo-header',

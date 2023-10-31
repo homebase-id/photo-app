@@ -1,5 +1,7 @@
 import { FC, ReactNode, useState } from 'react';
-import ConfirmDialog, { ConfirmDialogProps } from '../../Dialog/ConfirmDialog/ConfirmDialog';
+import ConfirmDialog, {
+  ConfirmDialogProps,
+} from '../../Dialog/ConfirmDialog/ConfirmDialog';
 import Arrow from '../Icons/Arrow/Arrow';
 import Check from '../Icons/Check/Check';
 import Exclamation from '../Icons/Exclamation/Exclamation';
@@ -11,7 +13,12 @@ import Shield from '../Icons/Shield/Shield';
 import Times from '../Icons/Times/Times';
 import Trash from '../Icons/Trash/Trash';
 
-export type ActionButtonState = 'loading' | 'success' | 'error' | 'idle';
+export type ActionButtonState =
+  | 'loading'
+  | 'pending'
+  | 'success'
+  | 'error'
+  | 'idle';
 
 export interface ActionButtonProps {
   children?: ReactNode;
@@ -39,10 +46,14 @@ export interface ActionButtonProps {
 
 export const mergeStates = (
   stateA: ActionButtonState,
-  stateB: ActionButtonState
+  stateB: ActionButtonState,
 ): ActionButtonState => {
   if (stateA === 'error' || stateB === 'error') {
     return 'error';
+  }
+
+  if (stateA === 'pending' || stateB === 'pending') {
+    return 'pending';
   }
 
   if (stateA === 'loading' || stateB === 'loading') {
@@ -57,7 +68,10 @@ export const mergeStates = (
     return 'success';
   }
 
-  if ((stateA === 'success' && stateB === 'idle') || (stateA === 'idle' && stateB === 'success')) {
+  if (
+    (stateA === 'success' && stateB === 'idle') ||
+    (stateA === 'idle' && stateB === 'success')
+  ) {
     return 'success';
   }
 
@@ -143,7 +157,8 @@ const ActionButton: FC<ActionButtonProps> = ({
       ? 'p-2'
       : 'px-3 py-2';
 
-  const stateClasses = state === 'loading' ? 'animate-pulse' : '';
+  const stateClasses =
+    state === 'loading' || state === 'pending' ? 'animate-pulse' : '';
 
   return (
     <>
@@ -153,10 +168,10 @@ const ActionButton: FC<ActionButtonProps> = ({
         } flex flex-row ${
           className && className.indexOf('rounded-') !== -1 ? '' : 'rounded-md'
         } text-left ${widthClasses} ${sizeClasses} ${colorClasses} ${stateClasses} ${className}`}
-        disabled={isDisabled || state === 'loading'}
+        disabled={isDisabled || state === 'loading' || state === 'pending'}
         onClick={
           confirmOptions
-            ? (e) => {
+            ? e => {
                 e.preventDefault();
                 setNeedsConfirmation(true);
                 setMouseEvent(e);
@@ -164,8 +179,7 @@ const ActionButton: FC<ActionButtonProps> = ({
               }
             : onClick
         }
-        title={title}
-      >
+        title={title}>
         {children}
         <Icon className={`my-auto ${children ? 'ml-1' : ''} h-4 w-4`} />
       </button>

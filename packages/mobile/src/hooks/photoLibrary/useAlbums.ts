@@ -12,13 +12,15 @@ const useAlbums = () => {
   };
 
   return {
-    fetch: useQuery(['albums'], () => fetchAllAlbums(), {
+    fetch: useQuery({
+      queryKey: ['albums'],
+      queryFn: () => fetchAllAlbums(),
       refetchOnMount: false,
       refetchOnWindowFocus: false,
-      cacheTime: 300000,
+      gcTime: 300000,
       enabled: isAuthenticated,
     }),
-    invalidate: () => queryClient.invalidateQueries(['albums']),
+    invalidate: () => queryClient.invalidateQueries({ queryKey: ['albums'] }),
   };
 };
 

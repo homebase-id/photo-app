@@ -24,13 +24,11 @@ export const useFileHeader = ({
     return await getFileHeader(dotYouClient, targetDrive, photoFileId);
   };
 
-  return useQuery(
-    ['photo-header', targetDrive?.alias, photoFileId],
-    () => fetchCurrent(targetDrive, photoFileId as string),
-    {
-      enabled: !!photoFileId,
-      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-      cacheTime: Infinity, // Never => react query will never remove the data from the cache
-    },
-  );
+  return useQuery({
+    queryKey: ['photo-header', targetDrive?.alias, photoFileId],
+    queryFn: () => fetchCurrent(targetDrive, photoFileId as string),
+    enabled: !!photoFileId,
+    staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+    gcTime: Infinity, // Never => react query will never remove the data from the cache
+  });
 };

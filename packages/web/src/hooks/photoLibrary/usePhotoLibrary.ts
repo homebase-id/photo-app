@@ -1,4 +1,8 @@
-import { DotYouClient, TargetDrive, UploadResult } from '@youfoundation/js-lib/core';
+import {
+  DotYouClient,
+  TargetDrive,
+  UploadResult,
+} from '@youfoundation/js-lib/core';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -23,8 +27,9 @@ const rebuildLibrary = async ({
   targetDrive: TargetDrive;
   type?: 'bin' | 'archive' | 'apps' | 'favorites';
 }) => {
-  const allPhotos = (await getPhotos(dotYouClient, targetDrive, type, undefined, 1200, undefined))
-    .results;
+  const allPhotos = (
+    await getPhotos(dotYouClient, targetDrive, type, undefined, 1200, undefined)
+  ).results;
   const metaStruc = buildMetaStructure(allPhotos);
 
   console.log('[Metadata] Rebuilding library', { type });
@@ -49,7 +54,7 @@ const usePhotoLibrary = ({
   const queryClient = useQueryClient();
 
   const fetch = async (
-    type: 'archive' | 'bin' | 'apps' | 'favorites' | undefined
+    type: 'archive' | 'bin' | 'apps' | 'favorites' | undefined,
   ): Promise<PhotoLibraryMetadata | null> => {
     if (!dotYouClient || !targetDrive) return null;
     // Get meta file from client
@@ -63,7 +68,7 @@ const usePhotoLibrary = ({
     const photoLibOnServer = await getPhotoLibrary(
       dotYouClient,
       type,
-      photoLibOnClient?.lastCursor
+      photoLibOnClient?.lastCursor,
     );
     if (photoLibOnServer) {
       // Merge with local cache
@@ -78,7 +83,9 @@ const usePhotoLibrary = ({
     }
 
     if (photoLibOnClient) {
-      console.log('[Metadata] Server has no "new" lib, local cache is up to date');
+      console.log(
+        '[Metadata] Server has no "new" lib, local cache is up to date',
+      );
       return photoLibOnClient;
     }
 
@@ -93,13 +100,22 @@ const usePhotoLibrary = ({
     setTimeout(async () => {
       const libQueries = queryClient
         .getQueryCache()
-        .findAll(['photo-library', targetDrive?.alias], { exact: false })
-        .filter((query) => query.state.status === 'success');
+        .findAll({
+          queryKey: ['photo-library', targetDrive?.alias],
+          exact: false,
+        })
+        .filter(query => query.state.status === 'success');
 
       await Promise.all(
-        libQueries.map(async (query) => {
-          const type = query.queryKey[2] as 'archive' | 'apps' | 'bin' | undefined; // Can be undefined if it's the root library
-          const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
+        libQueries.map(async query => {
+          const type = query.queryKey[2] as
+            | 'archive'
+            | 'apps'
+            | 'bin'
+            | undefined; // Can be undefined if it's the root library
+          const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(
+            query.queryKey,
+          );
           if (!libToSave) return;
 
           const saveNewVersionTag = async (uploadResult: UploadResult) => {
@@ -113,18 +129,17 @@ const usePhotoLibrary = ({
           };
 
           const fetchAndMerge = async () => {
-            const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>([
-              'photo-library',
-              targetDrive?.alias,
-              type,
-            ]);
+            const newlyMergedLib =
+              await queryClient.fetchQuery<PhotoLibraryMetadata>({
+                queryKey: ['photo-library', targetDrive?.alias, type],
+              });
 
             // TODO Should we avoid endless loops here? (Shouldn't happen, but...)
             const uploadResult = await savePhotoLibraryMetadata(
               dotYouClient,
               newlyMergedLib,
               type,
-              () => setTimeout(fetchAndMerge, 1000)
+              () => setTimeout(fetchAndMerge, 1000),
             );
             if (!uploadResult) return;
             saveNewVersionTag(uploadResult);
@@ -135,20 +150,20 @@ const usePhotoLibrary = ({
               dotYouClient,
               libToSave,
               type,
-              fetchAndMerge
+              fetchAndMerge,
             );
             if (!uploadResult) return;
             saveNewVersionTag(uploadResult);
           } catch (err) {
             console.warn(err);
           }
-        })
+        }),
       );
       // send request to the backend
       // access to latest state here
       console.log(
         '[Metadata] saved all libs to server',
-        libQueries.map((q) => q.queryKey)
+        libQueries.map(q => q.queryKey),
       );
       saveScheduled = false;
     }, 10000);
@@ -177,7 +192,7 @@ const usePhotoLibrary = ({
 
     queryClient.setQueryData<PhotoLibraryMetadata>(
       ['photo-library', targetDrive.alias, type],
-      updatedLib
+      updatedLib,
     );
 
     console.log('[Metadata] Photo count mismatch, updated count', type, date);
@@ -192,8 +207,11 @@ const usePhotoLibrary = ({
     date: Date;
   }) => {
     const photoLibOnClient =
-      queryClient.getQueryData<PhotoLibraryMetadata>(['photo-library', targetDrive?.alias, type]) ||
-      (await getPhotoLibrary(dotYouClient, type));
+      queryClient.getQueryData<PhotoLibraryMetadata>([
+        'photo-library',
+        targetDrive?.alias,
+        type,
+      ]) || (await getPhotoLibrary(dotYouClient, type));
     if (!photoLibOnClient) return;
 
     const updatedLib = addDay(photoLibOnClient, date);
@@ -201,7 +219,7 @@ const usePhotoLibrary = ({
 
     queryClient.setQueryData<PhotoLibraryMetadata>(
       ['photo-library', targetDrive?.alias, type],
-      updatedLib
+      updatedLib,
     );
 
     console.log('[Metadata] Added (to)', date, type, updatedLib);
@@ -209,16 +227,17 @@ const usePhotoLibrary = ({
   };
 
   return {
-    fetchLibrary: useQuery(['photo-library', targetDrive?.alias, type], () => fetch(type), {
+    fetchLibrary: useQuery({
+      queryKey: ['photo-library', targetDrive?.alias, type],
+      queryFn: () => fetch(type),
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-      cacheTime: Infinity, // Never => react query will never remove the data from the cache
+      gcTime: Infinity, // Never => react query will never remove the data from the cache
       enabled: !!targetDrive && !disabled,
-      onError: (err) => console.error(err),
     }),
-    updateCount: useMutation(saveNewCount),
-    addDay: useMutation(saveNewDay),
+    updateCount: useMutation({ mutationFn: saveNewCount }),
+    addDay: useMutation({ mutationFn: saveNewDay }),
   };
 };
 

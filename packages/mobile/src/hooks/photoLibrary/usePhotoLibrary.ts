@@ -110,7 +110,10 @@ export const usePhotoLibrary = ({
     setTimeout(async () => {
       const libQueries = queryClient
         .getQueryCache()
-        .findAll(['photo-library', targetDrive?.alias], { exact: false })
+        .findAll({
+          queryKey: ['photo-library', targetDrive?.alias],
+          exact: false,
+        })
         .filter(query => query.state.status === 'success');
 
       await Promise.all(
@@ -138,11 +141,9 @@ export const usePhotoLibrary = ({
 
           const fetchAndMerge = async () => {
             const newlyMergedLib =
-              await queryClient.fetchQuery<PhotoLibraryMetadata>([
-                'photo-library',
-                targetDrive?.alias,
-                type,
-              ]);
+              await queryClient.fetchQuery<PhotoLibraryMetadata>({
+                queryKey: ['photo-library', targetDrive?.alias, type],
+              });
 
             // TODO Should we avoid endless loops here? (Shouldn't happen, but...)
             const uploadResult = await savePhotoLibraryMetadata(
@@ -151,6 +152,7 @@ export const usePhotoLibrary = ({
               type,
               () => setTimeout(fetchAndMerge, 1000),
             );
+            if (!uploadResult) return;
             saveNewVersionTag(uploadResult);
           };
 
@@ -161,7 +163,7 @@ export const usePhotoLibrary = ({
               type,
               fetchAndMerge,
             );
-
+            if (!uploadResult) return;
             saveNewVersionTag(uploadResult);
           } catch (err) {
             console.warn(err);
@@ -242,17 +244,15 @@ export const usePhotoLibrary = ({
   };
 
   return {
-    fetchLibrary: useQuery(
-      ['photo-library', targetDrive?.alias, type],
-      () => fetch(type),
-      {
-        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-        cacheTime: Infinity, // Never => react query will never remove the data from the cache
-        enabled: !!targetDrive && !disabled,
-        onError: err => console.error(err),
-      },
-    ),
-    updateCount: useMutation(saveNewCount),
-    addDay: useMutation(saveNewDay),
+    fetchLibrary: useQuery({
+      queryKey: ['photo-library', targetDrive?.alias, type],
+      queryFn: () => fetch(type),
+
+      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      gcTime: Infinity, // Never => react query will never remove the data from the cache
+      enabled: !!targetDrive && !disabled,
+    }),
+    updateCount: useMutation({ mutationFn: saveNewCount }),
+    addDay: useMutation({ mutationFn: saveNewDay }),
   };
 };

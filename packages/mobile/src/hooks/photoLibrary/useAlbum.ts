@@ -37,10 +37,13 @@ export const useAlbum = (albumKey?: string) => {
   };
 
   return {
-    fetch: useQuery(['album', albumKey], () => fetch(albumKey), {
+    fetch: useQuery({
+      queryKey: ['album', albumKey],
+      queryFn: () => fetch(albumKey),
       enabled: !!albumKey && !!albums,
     }),
-    save: useMutation(save, {
+    save: useMutation({
+      mutationFn: save,
       onMutate(newAlbum) {
         const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
           'albums',
@@ -51,7 +54,8 @@ export const useAlbum = (albumKey?: string) => {
         setTimeout(() => invalidate(), 100);
       },
     }),
-    remove: useMutation(remove, {
+    remove: useMutation({
+      mutationFn: remove,
       onMutate(toRemoveAlbum) {
         const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
           'albums',
@@ -80,10 +84,12 @@ export const useAlbumThumbnail = (albumKey?: string) => {
   };
 
   return {
-    fetch: useQuery(['album-thumb', albumKey], () => fetch(albumKey), {
+    fetch: useQuery({
+      queryKey: ['album-thumb', albumKey],
+      queryFn: () => fetch(albumKey),
       enabled: !!albumKey,
     }),
     invalidateAlbumCover: (albumKey: string) =>
-      queryClient.invalidateQueries(['album-thumb', albumKey]),
+      queryClient.invalidateQueries({ queryKey: ['album-thumb', albumKey] }),
   };
 };

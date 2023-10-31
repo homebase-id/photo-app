@@ -5,13 +5,19 @@ import {
   DotYouClient,
   CursoredResult,
 } from '@youfoundation/js-lib/core';
-import { createDateObject, getPhotos } from '../../provider/photos/PhotoProvider';
+import {
+  createDateObject,
+  getPhotos,
+} from '../../provider/photos/PhotoProvider';
 import useAuth from '../auth/useAuth';
 import { useFlatMonthsFromMeta } from './usePhotoLibraryRange';
 import { useRef } from 'react';
 import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
 
-export type useInfintePhotosReturn = { results: DriveSearchResult[]; cursorState?: string };
+export type useInfintePhotosReturn = {
+  results: DriveSearchResult[];
+  cursorState?: string;
+};
 
 const PAGE_SIZE = 1000;
 
@@ -37,14 +43,17 @@ export const fetchPhotosByMonth = async ({
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
-  const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
+  const dateCursor = getQueryBatchCursorFromTime(
+    endOfMonth.getTime(),
+    beginOfMonth.getTime(),
+  );
   return await getPhotos(
     dotYouClient,
     targetDrive,
     type,
     undefined, // album
     PAGE_SIZE,
-    cursorState || dateCursor
+    cursorState || dateCursor,
   );
 };
 
@@ -63,7 +72,15 @@ const fetchPhotosByCursor = async ({
   cursorState?: string;
   direction?: 'older' | 'newer';
 }): Promise<CursoredResult<DriveSearchResult[]>> => {
-  return await getPhotos(dotYouClient, targetDrive, type, album, PAGE_SIZE, cursorState, direction);
+  return await getPhotos(
+    dotYouClient,
+    targetDrive,
+    type,
+    album,
+    PAGE_SIZE,
+    cursorState,
+    direction,
+  );
 };
 
 export const usePhotosByMonth = ({
@@ -79,9 +96,14 @@ export const usePhotosByMonth = ({
   const dotYouClient = getDotYouClient();
 
   return {
-    fetchPhotos: useInfiniteQuery(
-      ['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`],
-      async ({ pageParam }) =>
+    fetchPhotos: useInfiniteQuery({
+      queryKey: [
+        'photos',
+        targetDrive?.alias,
+        type,
+        date && `${date.getFullYear()}-${date.getMonth()}`,
+      ],
+      queryFn: async ({ pageParam }) =>
         await fetchPhotosByMonth({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
@@ -89,18 +111,18 @@ export const usePhotosByMonth = ({
           date: date as Date,
           cursorState: pageParam,
         }),
-      {
-        getNextPageParam: (lastPage) =>
-          (lastPage?.results?.length >= PAGE_SIZE && lastPage?.cursorState) ?? undefined,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        enabled: !!targetDrive && !!date,
-        onError: (err) => console.error(err),
+      initialPageParam: undefined as string | undefined,
+      getNextPageParam: lastPage =>
+        lastPage?.results?.length >= PAGE_SIZE
+          ? lastPage?.cursorState
+          : undefined,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      enabled: !!targetDrive && !!date,
 
-        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-        cacheTime: Infinity, // Never => react query will never remove the data from the cache
-      }
-    ),
+      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      gcTime: Infinity, // Never => react query will never remove the data from the cache
+    }),
   };
 };
 
@@ -124,7 +146,9 @@ export const useFlatPhotosByMonth = ({
 
   const startMonthIndex =
     flatMonths?.findIndex(
-      (flatDay) => flatDay.year === date?.getFullYear() && flatDay.month === date?.getMonth() + 1
+      flatDay =>
+        flatDay.year === date?.getFullYear() &&
+        flatDay.month === date?.getMonth() + 1,
     ) || 0;
 
   const startMonth = useRef<{ year: number; month: number }>();
@@ -132,14 +156,16 @@ export const useFlatPhotosByMonth = ({
 
   // Cache key is the starting point (first Photo month that was openend)
   return {
-    fetchPhotos: useInfiniteQuery(
-      [
+    fetchPhotos: useInfiniteQuery({
+      queryKey: [
         'flat-photos',
         targetDrive?.alias,
         type,
-        startMonth.current ? `${startMonth.current.year}-${startMonth.current.month}` : undefined,
+        startMonth.current
+          ? `${startMonth.current.year}-${startMonth.current.month}`
+          : undefined,
       ],
-      async ({ pageParam }) => {
+      queryFn: async ({ pageParam }) => {
         const pageDateParam = pageParam instanceof Date ? pageParam : undefined;
         const cursorState = pageParam instanceof Date ? undefined : pageParam;
 
@@ -148,14 +174,15 @@ export const useFlatPhotosByMonth = ({
         // (startMonth?.current
         //   ? createDateObject(startMonth.current.year, startMonth.current?.month)
         //   : new Date());
-        const currentData = await queryClient.fetchInfiniteQuery(
-          [
+        const currentData = await queryClient.fetchInfiniteQuery({
+          queryKey: [
             'photos',
             targetDrive?.alias,
             type,
             dateParam && `${dateParam.getFullYear()}-${dateParam.getMonth()}`,
           ],
-          async () =>
+          initialPageParam: undefined as string | undefined,
+          queryFn: async () =>
             await fetchPhotosByMonth({
               dotYouClient,
               targetDrive: targetDrive as TargetDrive,
@@ -163,54 +190,58 @@ export const useFlatPhotosByMonth = ({
               date: dateParam,
               cursorState: cursorState,
             }),
-          {
-            cacheTime: Infinity,
-            staleTime: Infinity,
-          }
-        );
+          gcTime: Infinity,
+          staleTime: Infinity,
+        });
 
         const currentMonthIndex =
           flatMonths?.findIndex(
-            (flatDay) =>
+            flatDay =>
               flatDay.year === dateParam?.getFullYear() &&
-              flatDay.month === dateParam?.getMonth() + 1
+              flatDay.month === dateParam?.getMonth() + 1,
           ) || 0;
 
         const nextMonth = flatMonths?.[currentMonthIndex + 1];
         const prevMonth = flatMonths?.[currentMonthIndex - 1];
 
         return {
-          results: currentData.pages.flatMap((page) => page.results),
+          results: currentData.pages.flatMap(page => page.results),
           // Pass cursorState of the last page of this month, but only if there is a next page
           cursorState:
-            currentData.pages[currentData.pages.length - 1]?.results?.length >= PAGE_SIZE
+            currentData.pages[currentData.pages.length - 1]?.results?.length >=
+            PAGE_SIZE
               ? currentData.pages[currentData.pages.length - 1].cursorState
               : undefined,
           prevMonth: prevMonth,
           nextMonth: nextMonth,
         };
       },
-      {
-        enabled: !!targetDrive && !!date,
-        getPreviousPageParam: (firstPage) => {
-          // TODO: Check if we need something special here to fetch them reverted? And support pages inside of the months (not only a page per month)
-          if (firstPage.prevMonth) {
-            return createDateObject(firstPage.prevMonth?.year, firstPage.prevMonth?.month);
-          }
-          return undefined;
-        },
-        getNextPageParam: (lastPage) => {
-          if (lastPage?.cursorState) {
-            return lastPage.cursorState;
-          } else if (lastPage.nextMonth) {
-            return createDateObject(lastPage.nextMonth?.year, lastPage.nextMonth?.month);
-          }
-          return undefined;
-        },
-        cacheTime: Infinity,
-        staleTime: Infinity,
-      }
-    ),
+      initialPageParam: undefined as string | Date | undefined,
+      enabled: !!targetDrive && !!date,
+      getPreviousPageParam: firstPage => {
+        // TODO: Check if we need something special here to fetch them reverted? And support pages inside of the months (not only a page per month)
+        if (firstPage.prevMonth) {
+          return createDateObject(
+            firstPage.prevMonth?.year,
+            firstPage.prevMonth?.month,
+          );
+        }
+        return undefined;
+      },
+      getNextPageParam: lastPage => {
+        if (lastPage?.cursorState) {
+          return lastPage.cursorState;
+        } else if (lastPage.nextMonth) {
+          return createDateObject(
+            lastPage.nextMonth?.year,
+            lastPage.nextMonth?.month,
+          );
+        }
+        return undefined;
+      },
+      gcTime: Infinity,
+      staleTime: Infinity,
+    }),
   };
 };
 
@@ -235,9 +266,15 @@ export const usePhotosInfinte = ({
     : undefined;
 
   return {
-    fetchPhotos: useInfiniteQuery(
-      ['photos-infinite', targetDrive?.alias, type, album, startFromDate?.getTime()],
-      ({ pageParam }) =>
+    fetchPhotos: useInfiniteQuery({
+      queryKey: [
+        'photos-infinite',
+        targetDrive?.alias,
+        type,
+        album,
+        startFromDate?.getTime(),
+      ],
+      queryFn: ({ pageParam }) =>
         fetchPhotosByCursor({
           dotYouClient,
           targetDrive: targetDrive as TargetDrive,
@@ -246,15 +283,16 @@ export const usePhotosInfinte = ({
           cursorState: pageParam || startFromDateCursor,
           direction: direction,
         }),
-      {
-        getNextPageParam: (lastPage) =>
-          (lastPage?.results?.length === PAGE_SIZE && lastPage?.cursorState) ?? undefined,
-        enabled: !!targetDrive && album !== 'new',
-        onError: (err) => console.error(err),
 
-        staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-        cacheTime: Infinity, // Never => react query will never remove the data from the cache
-      }
-    ),
+      initialPageParam: undefined as string | undefined,
+      getNextPageParam: lastPage =>
+        lastPage?.results?.length === PAGE_SIZE
+          ? lastPage?.cursorState
+          : undefined,
+      enabled: !!targetDrive && album !== 'new',
+
+      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      gcTime: Infinity, // Never => react query will never remove the data from the cache
+    }),
   };
 };

@@ -7,7 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 
 const useParams = (returnUrl: string) => {
   const { getAuthorizationParameters } = useYouAuthAuthorization();
-  return useQuery(['params'], () => getAuthorizationParameters(returnUrl), {
+  return useQuery({
+    queryKey: ['params'],
+    queryFn: () => getAuthorizationParameters(returnUrl),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
@@ -27,17 +29,19 @@ export const LoginBox = () => {
     <>
       {authParams ? (
         <Helmet>
-          <meta name="youauth" content={stringifyToQueryParams(authParams as any)} />
+          <meta
+            name="youauth"
+            content={stringifyToQueryParams(authParams as any)}
+          />
         </Helmet>
       ) : null}
       <iframe
         src={`${
           import.meta.env.VITE_CENTRAL_LOGIN_URL
-        }?isDarkMode=${document.documentElement.classList.contains(IS_DARK_CLASSNAME)}${
-          authParams ? `&${stringifyToQueryParams(authParams as any)}` : ''
-        }`}
-        className="h-[16rem] w-full"
-      ></iframe>
+        }?isDarkMode=${document.documentElement.classList.contains(
+          IS_DARK_CLASSNAME,
+        )}${authParams ? `&${stringifyToQueryParams(authParams as any)}` : ''}`}
+        className="h-[16rem] w-full"></iframe>
     </>
   );
 };

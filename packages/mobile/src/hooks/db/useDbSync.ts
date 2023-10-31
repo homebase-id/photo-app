@@ -60,16 +60,18 @@ const useDbSync = () => {
           );
           await invalidatePhotos();
           await invalidateFlatPhotos();
-          queryClient.invalidateQueries([
-            'photo-meta',
-            targetDrive?.alias,
-            fileNotification.header.fileId,
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: [
+              'photo-meta',
+              targetDrive?.alias,
+              fileNotification.header.fileId,
+            ],
+          });
         } else if (
           fileNotification.header.fileMetadata.appData.fileType ===
           PhotoConfig.PhotoLibraryMetadataFileType
         )
-          queryClient.invalidateQueries(['photo-library']);
+          queryClient.invalidateQueries({ queryKey: ['photo-library'] });
       }
     },
     [dotYouClient, queryClient, invalidatePhotos, invalidateFlatPhotos],

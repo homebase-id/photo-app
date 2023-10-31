@@ -19,9 +19,16 @@ const useCurrentPhoto = ({
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId });
 
   const date = fileHeader
-    ? new Date(fileHeader.fileMetadata.appData.userDate || fileHeader.fileMetadata.created)
+    ? new Date(
+        fileHeader.fileMetadata.appData.userDate ||
+          fileHeader.fileMetadata.created,
+      )
     : undefined;
-  const { data: photos } = usePhotosByMonth({ targetDrive, type, date }).fetchPhotos;
+  const { data: photos } = usePhotosByMonth({
+    targetDrive,
+    type,
+    date,
+  }).fetchPhotos;
 
   if (!photoFileId)
     return {
@@ -31,12 +38,14 @@ const useCurrentPhoto = ({
       current: undefined,
     };
 
-  const flatData = photos?.pages?.flatMap((page) => page.results);
+  const flatData = photos?.pages?.flatMap(page => page.results);
 
   return {
     dataForMonth: flatData,
     currentDate: date,
-    currentIndex: flatData?.findIndex((dsr) => stringGuidsEqual(dsr.fileId, photoFileId)),
+    currentIndex: flatData?.findIndex(dsr =>
+      stringGuidsEqual(dsr.fileId, photoFileId),
+    ),
     current: fileHeader,
   };
 };
@@ -48,15 +57,22 @@ export const useFlatMonthsFromMeta = ({
   targetDrive: TargetDrive;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
 }) => {
-  const { data: photoLibrary } = usePhotoLibrary({ targetDrive, type }).fetchLibrary;
+  const { data: photoLibrary } = usePhotoLibrary({
+    targetDrive,
+    type,
+  }).fetchLibrary;
 
   const fetch = () => {
-    return photoLibrary?.yearsWithMonths?.flatMap((year) =>
-      year.months.flatMap((month) => ({ ...month, year: year.year }))
+    return photoLibrary?.yearsWithMonths?.flatMap(year =>
+      year.months.flatMap(month => ({ ...month, year: year.year })),
     );
   };
 
-  return useQuery(['flat-photos', targetDrive?.alias, type], fetch, { enabled: !!photoLibrary });
+  return useQuery({
+    queryKey: ['flat-photos', targetDrive?.alias, type],
+    queryFn: fetch,
+    enabled: !!photoLibrary,
+  });
 };
 
 export const useSiblingsRange = ({
@@ -76,8 +92,16 @@ export const useSiblingsRange = ({
     type,
   });
 
-  const fromCurrentData = useCurrentPhoto({ targetDrive, type, photoFileId: fromFileId });
-  const toCurrentData = useCurrentPhoto({ targetDrive, type, photoFileId: toFileId });
+  const fromCurrentData = useCurrentPhoto({
+    targetDrive,
+    type,
+    photoFileId: fromFileId,
+  });
+  const toCurrentData = useCurrentPhoto({
+    targetDrive,
+    type,
+    photoFileId: toFileId,
+  });
 
   const getRange = async () => {
     if (
@@ -93,8 +117,10 @@ export const useSiblingsRange = ({
 
     // If within same month, just return in between, EASY
     if (
-      fromCurrentData.currentDate?.getFullYear() === toCurrentData.currentDate?.getFullYear() &&
-      fromCurrentData.currentDate?.getMonth() === toCurrentData.currentDate?.getMonth()
+      fromCurrentData.currentDate?.getFullYear() ===
+        toCurrentData.currentDate?.getFullYear() &&
+      fromCurrentData.currentDate?.getMonth() ===
+        toCurrentData.currentDate?.getMonth()
     ) {
       const fromIndex = fromCurrentData.currentIndex;
       const toIndex = toCurrentData.currentIndex;
@@ -106,44 +132,56 @@ export const useSiblingsRange = ({
 
     // If not, get the data with the index of those photos in the months...
     const returnRange: DriveSearchResult[] = [];
-    returnRange.push(...fromCurrentData.dataForMonth.slice(fromCurrentData.currentIndex));
-    returnRange.push(...toCurrentData.dataForMonth.slice(0, toCurrentData.currentIndex + 1));
+    returnRange.push(
+      ...fromCurrentData.dataForMonth.slice(fromCurrentData.currentIndex),
+    );
+    returnRange.push(
+      ...toCurrentData.dataForMonth.slice(0, toCurrentData.currentIndex + 1),
+    );
 
     // ... and find months in between the two
     const fromMonth = flatMonths.findIndex(
-      (flatDay) =>
+      flatDay =>
         flatDay.year === fromCurrentData.currentDate?.getFullYear() &&
-        flatDay.month === fromCurrentData.currentDate?.getMonth() + 1
+        flatDay.month === fromCurrentData.currentDate?.getMonth() + 1,
     );
 
     const toMonth = flatMonths.findIndex(
-      (flatDay) =>
+      flatDay =>
         flatDay.year === toCurrentData.currentDate?.getFullYear() &&
-        flatDay.month === toCurrentData.currentDate?.getMonth() + 1
+        flatDay.month === toCurrentData.currentDate?.getMonth() + 1,
     );
 
     const montshInBetween = flatMonths.slice(fromMonth + 1, toMonth);
     const dataFromInBetween = await Promise.all(
       montshInBetween.map(
-        async (day) =>
+        async day =>
           await fetchPhotosByMonth({
             dotYouClient,
             targetDrive,
             type,
             date: createDateObject(day.year, day.month, 1),
-          })
-      )
+          }),
+      ),
     );
-    returnRange.push(...dataFromInBetween.flatMap((data) => data.results));
+    returnRange.push(...dataFromInBetween.flatMap(data => data.results));
 
     return returnRange;
   };
 
-  return useQuery(['siblings-range', targetDrive?.alias, type, fromFileId, toFileId], getRange, {
+  return useQuery({
+    queryKey: [
+      'siblings-range',
+      targetDrive?.alias,
+      type,
+      fromFileId,
+      toFileId,
+    ],
+    queryFn: getRange,
     enabled:
       !!flatMonths &&
       fromCurrentData?.currentIndex !== undefined &&
       toCurrentData?.currentIndex !== undefined,
-    select: (data) => data.map((dsr) => dsr.fileId),
+    select: data => data.map(dsr => dsr.fileId),
   });
 };

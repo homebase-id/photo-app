@@ -1,5 +1,14 @@
-import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, ImageMetadata, DriveSearchResult } from '@youfoundation/js-lib/core';
+import {
+  InfiniteData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import {
+  TargetDrive,
+  ImageMetadata,
+  DriveSearchResult,
+} from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
 
@@ -49,7 +58,12 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   }) => {
     if (!targetDrive) return null;
 
-    return await updatePhotoMetadata(dotYouClient, targetDrive, photoFileId, newImageMetadata);
+    return await updatePhotoMetadata(
+      dotYouClient,
+      targetDrive,
+      photoFileId,
+      newImageMetadata,
+    );
   };
 
   const updatePhotoDate = async ({
@@ -62,51 +76,61 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
     if (!targetDrive) return null;
 
     addDayToLibrary({ type: undefined, date: new Date(newDate) });
-    return await updatePhoto(dotYouClient, targetDrive, photoFileId, { userDate: newDate });
+    return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
+      userDate: newDate,
+    });
   };
 
   return {
-    fetchMeta: useQuery(
-      ['photo-meta', targetDrive?.alias, fileId],
-      () => fetchPhotoMeta({ targetDrive, fileId }),
-      {
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        staleTime: Infinity,
-        enabled: !!targetDrive && !!fileId,
-      }
-    ),
-    updateMeta: useMutation(updatePhotoMeta, {
+    fetchMeta: useQuery({
+      queryKey: ['photo-meta', targetDrive?.alias, fileId],
+      queryFn: () => fetchPhotoMeta({ targetDrive, fileId }),
+
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+      enabled: !!targetDrive && !!fileId,
+    }),
+    updateMeta: useMutation({
+      mutationFn: updatePhotoMeta,
       onSuccess: (_param, _data) => {
-        queryClient.invalidateQueries(['photo-meta', targetDrive?.alias, _data.photoFileId]);
+        queryClient.invalidateQueries({
+          queryKey: ['photo-meta', targetDrive?.alias, _data.photoFileId],
+        });
       },
     }),
-    updateDate: useMutation(updatePhotoDate, {
-      onMutate: (_newData) => {
+    updateDate: useMutation({
+      mutationFn: updatePhotoDate,
+      onMutate: _newData => {
         // Remove from existing day
         queryClient
           .getQueryCache()
-          .findAll(['photos', targetDrive?.alias])
-          .forEach((query) => {
+          .findAll({ queryKey: ['photos', targetDrive?.alias] })
+          .forEach(query => {
             const queryKey = query.queryKey;
             const queryData =
-              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
+              queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(
+                queryKey,
+              );
 
             if (!queryData) return;
 
             const newQueryData: InfiniteData<useInfintePhotosReturn> = {
               ...queryData,
-              pages: queryData.pages.map((page) => {
+              pages: queryData.pages.map(page => {
                 return {
                   ...page,
                   results: page.results.filter(
-                    (dsr) => !stringGuidsEqual(dsr.fileId, _newData.photoFileId)
+                    dsr => !stringGuidsEqual(dsr.fileId, _newData.photoFileId),
                   ),
                 };
               }),
             };
 
-            queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, newQueryData);
+            queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(
+              queryKey,
+              newQueryData,
+            );
           });
 
         const queryData = queryClient.getQueryData<DriveSearchResult>([
@@ -128,7 +152,7 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
 
           queryClient.setQueryData(
             ['photo-header', targetDrive?.alias, _newData.photoFileId],
-            newQueryData
+            newQueryData,
           );
           console.log('Updated photo header', newQueryData);
         }

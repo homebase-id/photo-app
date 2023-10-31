@@ -35,10 +35,10 @@ const useVideo = (
         dotYouClient,
         videoDrive,
         videoFileId,
-        undefined,
-        'Standard',
-        runningOffset,
-        runningOffset + chunkSize,
+        {
+          chunkStart: runningOffset,
+          chunkEnd: runningOffset + chunkSize,
+        },
       );
       if (!videoFile) return localPath;
       const base64 = uint8ArrayToBase64(videoFile?.bytes);
@@ -55,15 +55,14 @@ const useVideo = (
   };
 
   return {
-    fetchVideo: useQuery(
-      ['video', videoDrive?.alias, videoFileId],
-      () => fetchVideoData(videoFileId, videoDrive),
-      {
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        enabled: !!videoFileId && videoFileId !== '',
-      },
-    ),
+    fetchVideo: useQuery({
+      queryKey: ['video', videoDrive?.alias, videoFileId],
+      queryFn: () => fetchVideoData(videoFileId, videoDrive),
+
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      enabled: !!videoFileId && videoFileId !== '',
+    }),
   };
 };
 

@@ -28,20 +28,15 @@ const useTinyThumb = (
     );
   };
 
-  return useQuery(
-    ['tinyThumb', odinId, imageFileId, imageDrive?.alias],
-    () => fetchImageData(odinId as string, imageFileId, imageDrive),
-    {
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 10, // 10min
-      cacheTime: Infinity,
-      enabled: !!imageFileId && imageFileId !== '' && !!odinId,
-      onError: error => {
-        console.error(error);
-      },
-    },
-  );
+  return useQuery({
+    queryKey: ['tinyThumb', odinId, imageFileId, imageDrive?.alias],
+    queryFn: () => fetchImageData(odinId as string, imageFileId, imageDrive),
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 10, // 10min
+    gcTime: Infinity,
+    enabled: !!imageFileId && imageFileId !== '' && !!odinId,
+  });
 };
 
 export default useTinyThumb;

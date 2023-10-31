@@ -31,12 +31,16 @@ export const useSiblingsRangeInfinte = ({
     return flatPhotos.slice(fromIndex, toIndex + 1);
   };
 
-  return useQuery(
-    ['siblings-range-infinte', targetDrive?.alias, album, fromFileId, toFileId],
-    getRange,
-    {
-      enabled: !!photos,
-      select: data => data.map(dsr => dsr.fileId),
-    },
-  );
+  return useQuery({
+    queryKey: [
+      'siblings-range-infinte',
+      targetDrive?.alias,
+      album,
+      fromFileId,
+      toFileId,
+    ],
+    queryFn: getRange,
+    enabled: !!photos,
+    select: data => data.map(dsr => dsr.fileId),
+  });
 };

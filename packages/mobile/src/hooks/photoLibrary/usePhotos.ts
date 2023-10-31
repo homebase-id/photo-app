@@ -62,27 +62,26 @@ export const usePhotosByMonth = ({
   const queryClient = useQueryClient();
 
   return {
-    fetchPhotos: useInfiniteQuery(
-      [
+    fetchPhotos: useInfiniteQuery({
+      queryKey: [
         'photos',
         targetDrive.alias,
         type,
         date && `${date.getFullYear()}-${date.getMonth()}`,
       ],
-      async ({ pageParam }) =>
+      initialPageParam: undefined as PageParam | undefined,
+      queryFn: async ({ pageParam }) =>
         await fetchPhotosByMonth({
           type,
           date: date as Date,
           pageParam,
         }),
-      {
-        getNextPageParam: lastPage =>
-          (lastPage?.results?.length >= PAGE_SIZE && lastPage?.pageParam) ??
-          undefined,
-        enabled: !!date,
-        onError: err => console.error(err),
-      },
-    ),
+      getNextPageParam: lastPage =>
+        lastPage?.results?.length >= PAGE_SIZE
+          ? lastPage?.pageParam
+          : undefined,
+      enabled: !!date,
+    }),
     invalidateQueries: (
       type?: 'archive' | 'bin' | 'apps' | 'favorites',
       date?: Date,
@@ -91,7 +90,7 @@ export const usePhotosByMonth = ({
       if (type) queryKey.push(type);
       if (date) queryKey.push(`${date.getFullYear()}-${date.getMonth()}`);
 
-      queryClient.invalidateQueries(queryKey, { exact: false });
+      queryClient.invalidateQueries({ queryKey, exact: false });
     },
   };
 };
@@ -112,8 +111,8 @@ export const useFlatPhotosFromDate = ({
   const queryClient = useQueryClient();
 
   return {
-    fetchPhotos: useInfiniteQuery(
-      [
+    fetchPhotos: useInfiniteQuery({
+      queryKey: [
         'flat-photos',
         targetDrive?.alias,
         type,
@@ -121,7 +120,7 @@ export const useFlatPhotosFromDate = ({
         ordering,
         date ? date.getTime() : undefined,
       ],
-      async ({ pageParam }) => {
+      queryFn: async ({ pageParam }) => {
         const localResults = await getPhotosLocal(
           targetDrive,
           type,
@@ -139,17 +138,16 @@ export const useFlatPhotosFromDate = ({
           },
         };
       },
-      {
-        enabled: !disabled,
 
-        getNextPageParam: lastPage =>
-          lastPage?.results?.length === PAGE_SIZE && lastPage?.pageParam
-            ? lastPage.pageParam
-            : undefined,
-        cacheTime: Infinity,
-        staleTime: Infinity,
-      },
-    ),
+      enabled: !disabled,
+      initialPageParam: undefined as { skip: number } | undefined,
+      getNextPageParam: lastPage =>
+        lastPage?.results?.length === PAGE_SIZE && lastPage?.pageParam
+          ? lastPage.pageParam
+          : undefined,
+      gcTime: Infinity,
+      staleTime: Infinity,
+    }),
     invalidateFlatPhotos: (
       album?: string,
       type?: 'archive' | 'bin' | 'apps',
@@ -157,7 +155,7 @@ export const useFlatPhotosFromDate = ({
       const queryKey = ['flat-photos', targetDrive?.alias, type];
       if (album) queryKey.push(album);
 
-      queryClient.invalidateQueries(queryKey, { exact: false });
+      queryClient.invalidateQueries({ queryKey, exact: false });
     },
   };
 };

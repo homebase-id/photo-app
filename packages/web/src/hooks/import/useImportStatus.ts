@@ -37,8 +37,12 @@ const useImportStatus = () => {
     uploadedFilesCount: number;
     jsonFilesCount: number;
   }> => {
-    const transactionUploadedFiles = db.transaction([UPLOADED_FILES_STORE], 'readonly');
-    const storeUploadedFiles = transactionUploadedFiles.objectStore(UPLOADED_FILES_STORE);
+    const transactionUploadedFiles = db.transaction(
+      [UPLOADED_FILES_STORE],
+      'readonly',
+    );
+    const storeUploadedFiles =
+      transactionUploadedFiles.objectStore(UPLOADED_FILES_STORE);
     const requestUploadedFiles = storeUploadedFiles.count();
 
     const transactionJsonFiles = db.transaction([JSON_FILES_STORE], 'readonly');
@@ -64,21 +68,25 @@ const useImportStatus = () => {
       }),
     ]).then(
       ([uploadedFilesCount, jsonFilesCount]) =>
-        ({ uploadedFilesCount, jsonFilesCount } as {
+        ({ uploadedFilesCount, jsonFilesCount }) as {
           uploadedFilesCount: number;
           jsonFilesCount: number;
-        })
+        },
     );
   };
 
   const countRowsWithStatus = (status: number): Promise<number> => {
-    const transactionUploadedFiles = db.transaction([UPLOADED_FILES_STORE], 'readonly');
-    const storeUploadedFiles = transactionUploadedFiles.objectStore(UPLOADED_FILES_STORE);
+    const transactionUploadedFiles = db.transaction(
+      [UPLOADED_FILES_STORE],
+      'readonly',
+    );
+    const storeUploadedFiles =
+      transactionUploadedFiles.objectStore(UPLOADED_FILES_STORE);
 
     let count = 0;
 
     return new Promise((resolve, reject) => {
-      storeUploadedFiles.openCursor().onsuccess = (event) => {
+      storeUploadedFiles.openCursor().onsuccess = event => {
         const cursor = (event.target as any)?.result;
         if (cursor) {
           if (cursor.value.status === status) {
@@ -96,9 +104,9 @@ const useImportStatus = () => {
     });
   };
 
-  return useQuery(
-    ['status'],
-    async () => {
+  return useQuery({
+    queryKey: ['status'],
+    queryFn: async () => {
       const { uploadedFilesCount, jsonFilesCount } = await countRowsInStores();
 
       return {
@@ -108,8 +116,8 @@ const useImportStatus = () => {
         picturesWithMeta: await countRowsWithStatus(1),
       };
     },
-    { enabled: isOpen }
-  );
+    enabled: isOpen,
+  });
 };
 
 export default useImportStatus;

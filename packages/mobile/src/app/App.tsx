@@ -56,12 +56,12 @@ export type RootStackParamList = {
 const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
-      cacheTime: Infinity,
+      gcTime: Infinity,
       retry: 0,
     },
     queries: {
       retry: 2,
-      cacheTime: 1000 * 10,
+      gcTime: 1000 * 10,
     },
   },
 });

@@ -15,35 +15,36 @@ export const useFileHeader = ({
   const { getDotYouClient } = useAuth();
   const dotYouClient = getDotYouClient();
 
-  const fetchCurrent = async (targetDrive: TargetDrive, photoFileId: string) => {
+  const fetchCurrent = async (
+    targetDrive: TargetDrive,
+    photoFileId: string,
+  ) => {
     const previousKeys = queryClient
       .getQueryCache()
-      .findAll(['photos', targetDrive?.alias], { exact: false })
-      .filter((query) => query.state.status === 'success');
+      .findAll({ queryKey: ['photos', targetDrive?.alias], exact: false })
+      .filter(query => query.state.status === 'success');
 
     for (let i = 0; i < previousKeys.length; i++) {
       const key = previousKeys[i];
-      const dataForDay = queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(
-        key.queryKey
-      );
+      const dataForDay = queryClient.getQueryData<
+        InfiniteData<useInfintePhotosReturn>
+      >(key.queryKey);
       if (!dataForDay) continue;
 
       const dsr = dataForDay?.pages
-        ?.flatMap((page) => page.results)
-        .find((dsr) => stringGuidsEqual(dsr.fileId, photoFileId));
+        ?.flatMap(page => page.results)
+        .find(dsr => stringGuidsEqual(dsr.fileId, photoFileId));
       if (dsr) return dsr;
     }
 
     return await getFileHeader(dotYouClient, targetDrive, photoFileId);
   };
 
-  return useQuery(
-    ['photo-header', targetDrive?.alias, photoFileId],
-    () => fetchCurrent(targetDrive, photoFileId as string),
-    {
-      enabled: !!photoFileId,
-      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-      cacheTime: Infinity, // Never => react query will never remove the data from the cache
-    }
-  );
+  return useQuery({
+    queryKey: ['photo-header', targetDrive?.alias, photoFileId],
+    queryFn: () => fetchCurrent(targetDrive, photoFileId as string),
+    enabled: !!photoFileId,
+    staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+    gcTime: Infinity, // Never => react query will never remove the data from the cache
+  });
 };
