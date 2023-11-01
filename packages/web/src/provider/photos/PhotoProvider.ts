@@ -139,7 +139,10 @@ const uploadNewPhoto = async (
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
       bytes,
-      { ...imageMetadata, originalFileName: newPhoto.name || undefined },
+      {
+        ...imageMetadata,
+        originalFileName: (newPhoto as File).name || undefined,
+      },
       {
         ...meta,
         type: newPhoto?.type as ImageContentType,
