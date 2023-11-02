@@ -99,7 +99,8 @@ const useFinalize = () => {
   useEffect(() => {
     // Finalize
     (async () => {
-      if (state === 'preparing') return;
+      if (state === 'preparing' || state === 'success' || state === 'loading')
+        return;
       try {
         if (url?.startsWith(FINALIZE_PATH)) {
           setState('loading');
