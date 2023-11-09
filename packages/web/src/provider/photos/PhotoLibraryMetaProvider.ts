@@ -48,7 +48,7 @@ export const getPhotoLibrary = async (
         },
         {
           maxRecords: 2,
-          includeJsonContent: true,
+          includeHeaderContent: true,
           cursor: lastCursor,
         },
       )

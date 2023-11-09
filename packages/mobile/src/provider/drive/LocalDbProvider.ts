@@ -46,10 +46,8 @@ interface HeaderRow {
   sharedSecretEncryptedKeyHeader: string;
 
   contentType: string;
-  originalRecipientList: string;
   payloadIsEncrypted: 0 | 1;
   senderOdinId: string;
-  payloadSize: number;
   versionTag: string;
   priority: number;
 
@@ -86,10 +84,8 @@ const initiate = () => {
       updated INTEGER NOT NULL,
 
       contentType TEXT NOT NULL,
-      originalRecipientList TEXT,
       payloadIsEncrypted BOOLEAN,
       senderOdinId TEXT,
-      payloadSize INTEGER NOT NULL,
       versionTag TEXT NOT NULL,
       priority INTEGER NOT NULL,
 
@@ -141,10 +137,8 @@ export const saveToLocalDb = async (
             created,
             updated,
             contentType,
-            originalRecipientList,
             payloadIsEncrypted,
             senderOdinId,
-            payloadSize,
             versionTag,
             priority,
             previewThumbnail,
@@ -161,10 +155,8 @@ export const saveToLocalDb = async (
             created=excluded.created,
             updated=excluded.updated,
             contentType=excluded.contentType,
-            originalRecipientList=excluded.originalRecipientList,
             payloadIsEncrypted=excluded.payloadIsEncrypted,
             senderOdinId=excluded.senderOdinId,
-            payloadSize=excluded.payloadSize,
             versionTag=excluded.versionTag,
             priority=excluded.priority,
             previewThumbnail=excluded.previewThumbnail,
@@ -186,10 +178,8 @@ export const saveToLocalDb = async (
             header.fileMetadata.created,
             header.fileMetadata.updated,
             header.fileMetadata.contentType,
-            header.fileMetadata.originalRecipientList?.join(','),
             header.fileMetadata.payloadIsEncrypted,
             header.fileMetadata.senderOdinId,
-            header.fileMetadata.payloadSize,
             header.fileMetadata.versionTag,
             header.priority,
             header.fileMetadata.appData.previewThumbnail
@@ -289,10 +279,8 @@ const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
       created: row.created,
       updated: row.updated,
       contentType: row.contentType,
-      originalRecipientList: row.originalRecipientList?.split(','),
       payloadIsEncrypted: row.payloadIsEncrypted === 1,
       senderOdinId: row.senderOdinId,
-      payloadSize: row.payloadSize,
       versionTag: row.versionTag,
     },
     priority: row.priority,
@@ -408,7 +396,7 @@ const syncModifed = async (
   const resultOptions: GetModifiedResultOptions = {
     maxRecords: BATCH_SIZE,
     cursor: mostRecentQueryModifiedTime,
-    includeJsonContent: true,
+    includeHeaderContent: true,
   };
 
   const response = await queryModified(
