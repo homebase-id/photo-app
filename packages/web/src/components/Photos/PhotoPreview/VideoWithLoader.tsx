@@ -1,11 +1,17 @@
 import { OdinImage, OdinVideo } from '@youfoundation/ui-lib';
 import useAuth from '../../../hooks/auth/useAuth';
-import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
+import {
+  DEFAULT_PAYLOAD_KEY,
+  EmbeddedThumb,
+  ImageSize,
+  TargetDrive,
+} from '@youfoundation/js-lib/core';
 
 export const VideoWithLoader = ({
   fileId,
   targetDrive,
   previewThumbnail,
+  lastModified,
   fit = 'cover',
   preview,
   skipChunkedPlayback,
@@ -14,6 +20,7 @@ export const VideoWithLoader = ({
   fileId: string;
   targetDrive: TargetDrive;
   previewThumbnail?: EmbeddedThumb;
+  lastModified: number | undefined;
   size?: ImageSize;
   fit?: 'cover' | 'contain';
   preview?: boolean;
@@ -31,6 +38,8 @@ export const VideoWithLoader = ({
             dotYouClient={dotYouClient}
             targetDrive={targetDrive}
             previewThumbnail={previewThumbnail}
+            fileKey={DEFAULT_PAYLOAD_KEY}
+            lastModified={lastModified}
             fileId={fileId}
             fit={fit}
             className={`absolute inset-0 h-full w-full`}
@@ -44,6 +53,8 @@ export const VideoWithLoader = ({
           dotYouClient={dotYouClient}
           targetDrive={targetDrive}
           fileId={fileId}
+          fileKey={DEFAULT_PAYLOAD_KEY}
+          lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
           className={`absolute inset-0 h-full w-full ${
             fit === 'cover' ? 'object-cover' : 'object-contain'

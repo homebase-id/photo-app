@@ -1,4 +1,8 @@
-import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
+import {
+  DEFAULT_PAYLOAD_KEY,
+  DriveSearchResult,
+  TargetDrive,
+} from '@youfoundation/js-lib/core';
 import React, { useMemo } from 'react';
 import { View, Dimensions, TouchableHighlight } from 'react-native';
 import { Text } from '../../ui/Text/Text';
@@ -159,7 +163,9 @@ export const PhotoItem = ({
           }}
           onLongPress={() => toggleSelection(photoDsr.fileId)}>
           <View>
-            {photoDsr.fileMetadata.contentType.startsWith('video/') ? (
+            {photoDsr.fileMetadata.payloads
+              .find(payload => payload.key === DEFAULT_PAYLOAD_KEY)
+              ?.contentType.startsWith('video/') ? (
               <>
                 <VideoWithLoader
                   fileId={photoDsr.fileId}

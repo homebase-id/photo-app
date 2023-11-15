@@ -1,8 +1,8 @@
 import {
   ArchivalStatus,
+  DEFAULT_PAYLOAD_KEY,
   DotYouClient,
   DriveSearchResult,
-  ImageContentType,
   ImageMetadata,
   ImageSize,
   MediaConfig,
@@ -77,11 +77,11 @@ export const getPhotos = async (
   };
 };
 
-const getPhotoExifMeta = async (bytes: Uint8Array) => {
+const getPhotoExifMeta = async (imageBlob: Blob) => {
   // Read Exif Data for the Created date of the photo itself and not the file;
   let exifData;
   try {
-    exifData = await exifr.parse(bytes);
+    exifData = await exifr.parse(imageBlob);
   } catch (ex) {
     // some photos don't have exif data, which fails the parsing
   }
@@ -122,12 +122,12 @@ const uploadNewPhoto = async (
   newPhoto: File | Blob | FileLike,
   meta?: MediaUploadMeta,
 ) => {
-  const bytes =
+  const imageBlob =
     'bytes' in newPhoto
-      ? newPhoto.bytes
-      : new Uint8Array(await newPhoto.arrayBuffer());
+      ? new Blob([newPhoto.bytes], { type: newPhoto.type })
+      : newPhoto;
   const { imageMetadata, imageUniqueId, dateTimeOriginal } =
-    await getPhotoExifMeta(bytes);
+    await getPhotoExifMeta(imageBlob);
   const userDate =
     dateTimeOriginal?.getTime() ||
     (newPhoto as File).lastModified ||
@@ -138,14 +138,13 @@ const uploadNewPhoto = async (
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
-      bytes,
+      imageBlob,
       {
         ...imageMetadata,
         originalFileName: (newPhoto as File).name || undefined,
       },
       {
         ...meta,
-        type: newPhoto?.type as ImageContentType,
         userDate,
         tag: albumKey ? [albumKey] : undefined,
         uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
@@ -176,7 +175,9 @@ const uploadNewVideo = async (
         dotYouClient,
         targetDrive,
         { requiredSecurityGroup: SecurityGroupType.Owner },
-        'bytes' in newVideo ? newVideo.bytes : newVideo,
+        'bytes' in newVideo
+          ? new Blob([newVideo.bytes], { type: newVideo.type })
+          : newVideo,
         {
           isSegmented: false,
           mimeType: newVideo.type,
@@ -196,14 +197,14 @@ const uploadNewVideo = async (
   // Segment video file
   const segmentVideoFile = (await import('@youfoundation/js-lib/helpers'))
     .segmentVideoFile;
-  const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
+  const { data: processedVideo, metadata } = await segmentVideoFile(newVideo);
 
   return {
     ...(await uploadVideo(
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
-      processedBytes,
+      processedVideo,
       metadata,
       {
         type: newVideo.type as VideoContentType,
@@ -257,8 +258,8 @@ export const updatePhoto = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: header.fileMetadata.appData.jsonContent
-          ? jsonStringify64({ ...header.fileMetadata.appData.jsonContent })
+        content: header.fileMetadata.appData.content
+          ? jsonStringify64({ ...header.fileMetadata.appData.content })
           : null,
         ...newMetaData,
         tags: newMetaData?.tag
@@ -319,8 +320,8 @@ export const updatePhotoMetadata = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: jsonStringify64({
-          ...(header.fileMetadata.appData.jsonContent || {}),
+        content: jsonStringify64({
+          ...(header.fileMetadata.appData.content || {}),
           ...newImageMetadata,
         }),
       },
@@ -350,6 +351,7 @@ export const getPhoto = async (
       dotYouClient,
       targetDrive,
       fileId,
+      DEFAULT_PAYLOAD_KEY,
       size,
       isProbablyEncrypted,
     ),
@@ -369,6 +371,7 @@ const dsrToPhoto = async (
       dotYouClient,
       targetDrive,
       dsr.fileId,
+      DEFAULT_PAYLOAD_KEY,
       size,
       isProbablyEncrypted,
     ),
