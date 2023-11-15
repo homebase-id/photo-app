@@ -46,7 +46,7 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
       if (!localHeader)
         return getPhotoMetadata(dotYouClient, targetDrive, fileId);
 
-      return localHeader.fileMetadata.appData.jsonContent as ImageMetadata;
+      return localHeader.fileMetadata.appData.content as ImageMetadata;
     };
 
     return await fetchDataPromise();

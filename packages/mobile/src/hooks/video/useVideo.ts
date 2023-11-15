@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import {
+  DEFAULT_PAYLOAD_KEY,
   DotYouClient,
   getPayloadBytes,
   TargetDrive,
@@ -35,6 +36,7 @@ const useVideo = (
         dotYouClient,
         videoDrive,
         videoFileId,
+        DEFAULT_PAYLOAD_KEY,
         {
           chunkStart: runningOffset,
           chunkEnd: runningOffset + chunkSize,
