@@ -1,5 +1,5 @@
 import {
-  ThumbSize,
+  ImageSize,
   TargetDrive,
   DriveSearchResult,
   DEFAULT_PAYLOAD_KEY,
@@ -18,10 +18,10 @@ const gridClasses = `grid grid-cols-4 gap-[0.1rem] md:gap-1 md:grid-cols-6 lg:fl
 const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow overflow-hidden`;
 const imgWrapperClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-xs lg:align-bottom`;
 
-const getAspectRatioFromThumbnails = (thumbnails: ThumbSize[]): number => {
+const getAspectRatioFromThumbnails = (thumbnails: ImageSize[]): number => {
   if (!thumbnails?.length) return 0;
 
-  const biggestThumb: ThumbSize = thumbnails.reduce((bigThumb, curThumb) => {
+  const biggestThumb: ImageSize = thumbnails.reduce((bigThumb, curThumb) => {
     if (!bigThumb || bigThumb.pixelWidth < curThumb.pixelWidth) return curThumb;
     return bigThumb;
   });

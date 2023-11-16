@@ -1,9 +1,8 @@
 import {
   DEFAULT_PAYLOAD_KEY,
   EmbeddedThumb,
-  ImageSize,
   TargetDrive,
-  ThumbSize,
+  ImageSize,
 } from '@youfoundation/js-lib/core';
 import { OdinImage } from '@youfoundation/ui-lib';
 import useAuth from '../../../hooks/auth/useAuth';
@@ -36,7 +35,7 @@ export const PhotoWithLoader = ({
       fileKey={DEFAULT_PAYLOAD_KEY}
       lastModified={lastModified}
       previewThumbnail={previewThumbnail}
-      explicitSize={size as ThumbSize}
+      explicitSize={size}
       fit={fit}
       className={className}
     />
