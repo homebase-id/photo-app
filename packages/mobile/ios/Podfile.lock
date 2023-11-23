@@ -86,6 +86,9 @@ PODS:
     - MMKVCore (~> 1.2.13)
   - MMKVCore (1.2.16)
   - OpenSSL-Universal (1.1.1100)
+  - PromisesObjC (2.3.1)
+  - PromisesSwift (2.3.1):
+    - PromisesObjC (= 2.3.1)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -386,13 +389,13 @@ PODS:
   - React-jsinspector (0.72.4)
   - React-logger (0.72.4):
     - glog
-  - react-native-cameraroll (5.7.2):
+  - react-native-cameraroll (5.10.0):
     - React-Core
   - react-native-exif (0.5.0):
     - React
-  - react-native-image-picker (5.6.0):
+  - react-native-image-picker (5.7.0):
     - React-Core
-  - react-native-image-resizer (3.0.5):
+  - react-native-image-resizer (3.0.7):
     - React-Core
   - react-native-mmkv-storage (0.9.1):
     - MMKV (= 1.2.13)
@@ -404,18 +407,19 @@ PODS:
     - React
     - React-callinvoker
     - React-Core
-  - react-native-quick-sqlite (8.0.2):
+  - react-native-quick-sqlite (8.0.6):
     - React
     - React-callinvoker
     - React-Core
-  - react-native-safe-area-context (3.3.2):
+  - react-native-safe-area-context (3.4.1):
     - React-Core
-  - react-native-video (5.2.1):
+  - react-native-video (6.0.0-beta.0):
     - React-Core
-    - react-native-video/Video (= 5.2.1)
-  - react-native-video/Video (5.2.1):
+    - react-native-video/Video (= 6.0.0-beta.0)
+  - react-native-video/Video (6.0.0-beta.0):
+    - PromisesSwift
     - React-Core
-  - react-native-webview (13.2.3):
+  - react-native-webview (13.6.2):
     - React-Core
   - React-NativeModulesApple (0.72.4):
     - hermes-engine
@@ -530,15 +534,15 @@ PODS:
   - ReactNativeFileAccess (3.0.4):
     - React-Core
     - ZIPFoundation (= 0.9.11)
-  - RNCAsyncStorage (1.19.2):
+  - RNCAsyncStorage (1.19.4):
     - React-Core
-  - RNDateTimePicker (7.3.0):
+  - RNDateTimePicker (7.6.1):
     - React-Core
-  - RNScreens (3.22.0):
+  - RNScreens (3.27.0):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
-    - React-RCTImage
-  - RNSVG (12.1.1):
-    - React
+  - RNSVG (12.5.1):
+    - React-Core
   - SocketRocket (0.6.1)
   - SSZipArchive (2.2.3)
   - Yoga (1.14.0)
@@ -601,8 +605,8 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
   - react-native-quick-crypto (from `../../../node_modules/react-native-quick-crypto`)
   - react-native-quick-sqlite (from `../../../node_modules/react-native-quick-sqlite`)
-  - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - react-native-video (from `../node_modules/react-native-video`)
+  - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
+  - react-native-video (from `../../../node_modules/react-native-video`)
   - react-native-webview (from `../../../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../../../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -646,6 +650,8 @@ SPEC REPOS:
     - MMKV
     - MMKVCore
     - OpenSSL-Universal
+    - PromisesObjC
+    - PromisesSwift
     - SocketRocket
     - SSZipArchive
     - YogaKit
@@ -714,9 +720,9 @@ EXTERNAL SOURCES:
   react-native-quick-sqlite:
     :path: "../../../node_modules/react-native-quick-sqlite"
   react-native-safe-area-context:
-    :path: "../node_modules/react-native-safe-area-context"
+    :path: "../../../node_modules/react-native-safe-area-context"
   react-native-video:
-    :path: "../node_modules/react-native-video"
+    :path: "../../../node_modules/react-native-video"
   react-native-webview:
     :path: "../../../node_modules/react-native-webview"
   React-NativeModulesApple:
@@ -790,6 +796,8 @@ SPEC CHECKSUMS:
   MMKV: aac95d817a100479445633f2b3ed8961b4ac5043
   MMKVCore: 9cfef4c48c6c46f66226fc2e4634d78490206a48
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
+  PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
+  PromisesSwift: 28dca69a9c40779916ac2d6985a0192a5cb4a265
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: c0569ecc035894e4a68baecb30fe6a7ea6e399f9
   RCTTypeSafety: e90354072c21236e0bcf1699011e39acd25fea2f
@@ -805,17 +813,17 @@ SPEC CHECKSUMS:
   React-jsiexecutor: c7f826e40fa9cab5d37cab6130b1af237332b594
   React-jsinspector: aaed4cf551c4a1c98092436518c2d267b13a673f
   React-logger: da1ebe05ae06eb6db4b162202faeafac4b435e77
-  react-native-cameraroll: 134805127580aed23403b8c2cb1548920dd77b3a
+  react-native-cameraroll: 4701ae7c3dbcd3f5e9e150ca17f250a276154b35
   react-native-exif: c43e7c18af8bfa133c79145671a0f036e413468e
-  react-native-image-picker: db60857e03d63721f19b6f4027de20429ddd9cba
-  react-native-image-resizer: 00ceb0e05586c7aadf061eea676957a6c2ec60fa
+  react-native-image-picker: 3269f75c251cdcd61ab51b911dd30d6fff8c6169
+  react-native-image-resizer: 681f7607418b97c084ba2d0999b153b103040d8a
   react-native-mmkv-storage: cfb6854594cfdc5f7383a9e464bb025417d1721c
   react-native-netinfo: fefd4e98d75cbdd6e85fc530f7111a8afdf2b0c5
   react-native-quick-crypto: 455c1b411db006dba1026a30681ececb19180187
-  react-native-quick-sqlite: 2b225dadc63b670f027111e58f6f169773f6d755
-  react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
-  react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
-  react-native-webview: b85dfe0bf95bef83e82fc354d6987c80fed5e7ad
+  react-native-quick-sqlite: e0e23b749382a85e4b57146f753de737a6c3a9e1
+  react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
+  react-native-video: e9e6fe3ab11d515bd79abd5d81e07db538943c56
+  react-native-webview: 8fc09f66a1a5b16bbe37c3878fda27d5982bb776
   React-NativeModulesApple: edb5ace14f73f4969df6e7b1f3e41bef0012740f
   React-perflogger: 496a1a3dc6737f964107cb3ddae7f9e265ddda58
   React-RCTActionSheet: 02904b932b50e680f4e26e7a686b33ebf7ef3c00
@@ -834,10 +842,10 @@ SPEC CHECKSUMS:
   React-utils: b79f2411931f9d3ea5781404dcbb2fa8a837e13a
   ReactCommon: 4b2bdcb50a3543e1c2b2849ad44533686610826d
   ReactNativeFileAccess: 4530e3be4d5069454c6c6389096d8cb78c897f2c
-  RNCAsyncStorage: f57e929cd7757f2cb3dd8186d123c09e8281a1ad
-  RNDateTimePicker: 01e6d27ba2e0931cd05049c5bff6171c3c027ea8
-  RNScreens: 68fd1060f57dd1023880bf4c05d74784b5392789
-  RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
+  RNCAsyncStorage: 3a8f7145d17cdd9f88e7b77666c94a09e4f759c8
+  RNDateTimePicker: 8fb39263b721223e095248acaf6f406d5b7f6713
+  RNScreens: 3c2d122f5e08c192e254c510b212306da97d2581
+  RNSVG: d7d7bc8229af3842c9cfc3a723c815a52cdd1105
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Yoga: 3efc43e0d48686ce2e8c60f99d4e6bd349aff981

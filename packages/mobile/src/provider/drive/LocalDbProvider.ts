@@ -140,7 +140,7 @@ export const saveToLocalDb = async (
             payloads,
             content,
             sharedSecretEncryptedKeyHeader)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(fileId) DO UPDATE SET
             archivalStatus=excluded.archivalStatus,
             dataType=excluded.dataType,
