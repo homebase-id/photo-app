@@ -18,7 +18,10 @@ import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
 import { InfoIcon } from 'native-base';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
-import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import {
+  DEFAULT_PAYLOAD_KEY,
+  DriveSearchResult,
+} from '@youfoundation/js-lib/core';
 import { useFileHeader } from '../hooks/photoLibrary/usePhotoHeader';
 import { useFlatPhotosFromDate } from '../hooks/photoLibrary/usePhotos';
 import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoader';
@@ -215,7 +218,9 @@ const InnerPhotoPreview = ({
           width: windowSize.width,
           height: windowSize.height,
         }}>
-        {item.item.fileMetadata.contentType.startsWith('video/') ? (
+        {item.item.fileMetadata.payloads
+          .find(payload => payload.key === DEFAULT_PAYLOAD_KEY)
+          ?.contentType.startsWith('video/') ? (
           <VideoWithLoader
             fileId={item.item.fileId}
             targetDrive={targetDrive}

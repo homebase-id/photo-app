@@ -10,6 +10,7 @@ import {
   AccessControlList,
   uploadImage,
   removeImage,
+  DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 
 interface ImageData {
@@ -100,6 +101,7 @@ const useImage = (
           dotYouClient,
           imageDrive,
           imageFileId,
+          DEFAULT_PAYLOAD_KEY,
           size,
           probablyEncrypted,
         ),
@@ -125,11 +127,17 @@ const useImage = (
     fileId?: string;
     versionTag?: string;
   }) => {
-    return await uploadImage(dotYouClient, targetDrive, acl, bytes, undefined, {
-      fileId,
-      versionTag,
-      type,
-    });
+    return await uploadImage(
+      dotYouClient,
+      targetDrive,
+      acl,
+      new Blob([bytes], { type }),
+      undefined,
+      {
+        fileId,
+        versionTag,
+      },
+    );
   };
 
   const removeImageFile = async ({

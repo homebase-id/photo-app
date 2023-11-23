@@ -76,15 +76,13 @@ export const saveAlbum = async (
 
   const metadata: UploadFileMetadata = {
     allowDistribution: false,
-    contentType: 'application/json',
     appData: {
       uniqueId: def.tag,
       tags: [],
       fileType: PhotoConfig.AlbumDefinitionFileType,
-      contentIsComplete: true,
-      jsonContent: payloadJson,
+      content: payloadJson,
     },
-    payloadIsEncrypted: encryptAlbums,
+    isEncrypted: encryptAlbums,
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
   };
 

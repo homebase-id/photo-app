@@ -8,18 +8,17 @@ import {
   ImageUploadResult,
   SecurityGroupType,
   UploadInstructionSet,
-  EmbeddedThumb,
   getFileHeader,
   UploadFileMetadata,
   MediaConfig,
   uploadFile,
+  ImageContentType,
+  DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 import {
-  uint8ArrayToBase64,
   getRandom16ByteArray,
   getNewId,
   jsonStringify64,
-  base64ToUint8Array,
 } from '@youfoundation/js-lib/helpers';
 import { createThumbnails } from './RNThumbnailProvider';
 import { FileSystem } from 'react-native-file-access';
@@ -34,13 +33,17 @@ export interface ImageSource {
   orientation?: number | null;
 }
 
+export interface RNMediaUploadMeta extends MediaUploadMeta {
+  type: ImageContentType;
+}
+
 export const uploadImage = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   acl: AccessControlList,
   photo: ImageSource,
   fileMetadata?: ImageMetadata,
-  uploadMeta?: MediaUploadMeta,
+  uploadMeta?: RNMediaUploadMeta,
   thumbsToGenerate?: ThumbnailInstruction[],
 ): Promise<ImageUploadResult | undefined> => {
   if (!targetDrive) throw 'Missing target drive';
@@ -61,22 +64,12 @@ export const uploadImage = async (
   };
 
   const { naturalSize, tinyThumb, additionalThumbnails } =
-    await createThumbnails(photo, uploadMeta?.type, thumbsToGenerate);
-
-  const previewThumbnail: EmbeddedThumb = {
-    pixelWidth: naturalSize.pixelWidth, // on the previewThumb we use the full pixelWidth & -height so the max size can be used
-    pixelHeight: naturalSize.pixelHeight, // on the previewThumb we use the full pixelWidth & -height so the max size can be used
-    contentType: tinyThumb.contentType,
-    content: uint8ArrayToBase64(tinyThumb.payload),
-  };
-
-  const additionalThumbs = additionalThumbnails.map(thumb => {
-    return {
-      pixelHeight: thumb.pixelHeight,
-      pixelWidth: thumb.pixelWidth,
-      contentType: thumb.contentType,
-    };
-  });
+    await createThumbnails(
+      photo,
+      DEFAULT_PAYLOAD_KEY,
+      uploadMeta?.type,
+      thumbsToGenerate,
+    );
 
   // Updating images in place is a rare thing, but if it happens there is often no versionTag, so we need to fetch it first
   let versionTag = uploadMeta?.versionTag;
@@ -90,7 +83,6 @@ export const uploadImage = async (
   const metadata: UploadFileMetadata = {
     versionTag: versionTag,
     allowDistribution: uploadMeta?.allowDistribution || false,
-    contentType: uploadMeta?.type ?? 'image/webp',
     appData: {
       tags: uploadMeta?.tag
         ? [
@@ -100,15 +92,13 @@ export const uploadImage = async (
           ]
         : [],
       uniqueId: uploadMeta?.uniqueId ?? getNewId(),
-      contentIsComplete: false,
       fileType: MediaConfig.MediaFileType,
-      jsonContent: fileMetadata ? jsonStringify64(fileMetadata) : null,
-      previewThumbnail: previewThumbnail,
-      additionalThumbnails: additionalThumbs,
+      content: fileMetadata ? jsonStringify64(fileMetadata) : null,
+      previewThumbnail: tinyThumb,
       userDate: uploadMeta?.userDate,
       archivalStatus: uploadMeta?.archivalStatus,
     },
-    payloadIsEncrypted: encrypt,
+    isEncrypted: encrypt,
     accessControlList: acl,
   };
 
@@ -119,12 +109,22 @@ export const uploadImage = async (
     dotYouClient,
     instructionSet,
     metadata,
-    base64ToUint8Array(imageData),
+    [
+      {
+        payload: imageData,
+        key: 'payload',
+      },
+    ],
     additionalThumbnails,
     encrypt,
   );
 
   if (!result) return undefined;
 
-  return { fileId: result.file.fileId, previewThumbnail, type: 'image' };
+  return {
+    fileId: result.file.fileId,
+    fileKey: DEFAULT_PAYLOAD_KEY,
+    previewThumbnail: tinyThumb,
+    type: 'image',
+  };
 };

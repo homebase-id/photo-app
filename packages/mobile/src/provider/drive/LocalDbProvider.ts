@@ -36,25 +36,22 @@ interface HeaderRow {
   archivalStatus: number;
   dataType: number;
   fileType: number;
-  contentIsComplete: 0 | 1;
 
   userDate: number;
   created: number;
   updated: number;
 
-  jsonContent: string;
+  content: string;
   sharedSecretEncryptedKeyHeader: string;
 
   contentType: string;
-  originalRecipientList: string;
-  payloadIsEncrypted: 0 | 1;
+  isEncrypted: 0 | 1;
   senderOdinId: string;
-  payloadSize: number;
   versionTag: string;
   priority: number;
 
   previewThumbnail?: string;
-  additionalThumbnails?: string;
+  payloads?: string;
 }
 
 const normalizeGuid = (guid: string) => {
@@ -79,24 +76,20 @@ const initiate = () => {
       archivalStatus INTEGER NOT NULL,
       dataType INTEGER NOT NULL,
       fileType INTEGER NOT NULL,
-      contentIsComplete BOOLEAN,
 
       userDate INTEGER,
       created INTEGER NOT NULL,
       updated INTEGER NOT NULL,
 
-      contentType TEXT NOT NULL,
-      originalRecipientList TEXT,
-      payloadIsEncrypted BOOLEAN,
+      isEncrypted BOOLEAN,
       senderOdinId TEXT,
-      payloadSize INTEGER NOT NULL,
       versionTag TEXT NOT NULL,
       priority INTEGER NOT NULL,
 
       previewThumbnail TEXT,
-      additionalThumbnails TEXT,
+      payloads TEXT,
 
-      jsonContent TEXT,
+      content TEXT,
       sharedSecretEncryptedKeyHeader TEXT
     ) WITHOUT ROWID;`,
   );
@@ -136,40 +129,34 @@ export const saveToLocalDb = async (
             archivalStatus,
             dataType,
             fileType,
-            contentIsComplete,
             userDate,
             created,
             updated,
-            contentType,
-            originalRecipientList,
-            payloadIsEncrypted,
+            isEncrypted,
             senderOdinId,
-            payloadSize,
             versionTag,
             priority,
             previewThumbnail,
-            additionalThumbnails,
-            jsonContent,
+            payloads,
+            content,
             sharedSecretEncryptedKeyHeader)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(fileId) DO UPDATE SET
             archivalStatus=excluded.archivalStatus,
             dataType=excluded.dataType,
             fileType=excluded.fileType,
-            contentIsComplete=excluded.contentIsComplete,
+
             userDate=excluded.userDate,
             created=excluded.created,
             updated=excluded.updated,
-            contentType=excluded.contentType,
-            originalRecipientList=excluded.originalRecipientList,
-            payloadIsEncrypted=excluded.payloadIsEncrypted,
+
+            isEncrypted=excluded.isEncrypted,
             senderOdinId=excluded.senderOdinId,
-            payloadSize=excluded.payloadSize,
             versionTag=excluded.versionTag,
             priority=excluded.priority,
             previewThumbnail=excluded.previewThumbnail,
-            additionalThumbnails=excluded.additionalThumbnails,
-            jsonContent=excluded.jsonContent,
+            payloads=excluded.payloads,
+            content=excluded.content,
             sharedSecretEncryptedKeyHeader=excluded.sharedSecretEncryptedKeyHeader
           WHERE excluded.updated>headers.updated;`,
           [
@@ -181,27 +168,23 @@ export const saveToLocalDb = async (
             header.fileMetadata.appData.archivalStatus,
             header.fileMetadata.appData.dataType,
             header.fileMetadata.appData.fileType,
-            header.fileMetadata.appData.contentIsComplete,
+
             header.fileMetadata.appData.userDate,
             header.fileMetadata.created,
             header.fileMetadata.updated,
-            header.fileMetadata.contentType,
-            header.fileMetadata.originalRecipientList?.join(','),
-            header.fileMetadata.payloadIsEncrypted,
+
+            header.fileMetadata.isEncrypted,
             header.fileMetadata.senderOdinId,
-            header.fileMetadata.payloadSize,
             header.fileMetadata.versionTag,
             header.priority,
             header.fileMetadata.appData.previewThumbnail
               ? jsonStringify64(header.fileMetadata.appData.previewThumbnail)
               : undefined,
-            header.fileMetadata.appData.additionalThumbnails
-              ? jsonStringify64(
-                  header.fileMetadata.appData.additionalThumbnails,
-                )
+            header.fileMetadata.payloads
+              ? jsonStringify64(header.fileMetadata.payloads)
               : undefined,
-            header.fileMetadata.appData.jsonContent
-              ? jsonStringify64(header.fileMetadata.appData.jsonContent)
+            header.fileMetadata.appData.content
+              ? jsonStringify64(header.fileMetadata.appData.content)
               : undefined,
             header.sharedSecretEncryptedKeyHeader
               ? jsonStringify64(header.sharedSecretEncryptedKeyHeader)
@@ -269,30 +252,25 @@ const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
   return {
     fileId: row.fileId,
     fileState: 'active',
+    fileSystemType: 'Standard',
     fileMetadata: {
       appData: {
         uniqueId: row.uniqueId,
         archivalStatus: row.archivalStatus,
         dataType: row.dataType,
         fileType: row.fileType,
-        contentIsComplete: row.contentIsComplete === 1,
         userDate: row.userDate,
         tags: tagRows || [],
-        jsonContent: row.jsonContent ? JSON.parse(row.jsonContent) : undefined,
+        content: row.content ? JSON.parse(row.content) : undefined,
         previewThumbnail: row.previewThumbnail
           ? JSON.parse(row.previewThumbnail)
-          : undefined,
-        additionalThumbnails: row.additionalThumbnails
-          ? JSON.parse(row.additionalThumbnails)
           : undefined,
       },
       created: row.created,
       updated: row.updated,
-      contentType: row.contentType,
-      originalRecipientList: row.originalRecipientList?.split(','),
-      payloadIsEncrypted: row.payloadIsEncrypted === 1,
+      payloads: row.payloads ? JSON.parse(row.payloads) : undefined,
+      isEncrypted: row.isEncrypted === 1,
       senderOdinId: row.senderOdinId,
-      payloadSize: row.payloadSize,
       versionTag: row.versionTag,
     },
     priority: row.priority,
@@ -408,7 +386,7 @@ const syncModifed = async (
   const resultOptions: GetModifiedResultOptions = {
     maxRecords: BATCH_SIZE,
     cursor: mostRecentQueryModifiedTime,
-    includeJsonContent: true,
+    includeHeaderContent: true,
   };
 
   const response = await queryModified(

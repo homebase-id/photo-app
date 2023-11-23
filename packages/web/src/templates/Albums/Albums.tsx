@@ -11,6 +11,7 @@ import { OdinImage } from '@youfoundation/ui-lib';
 import useAuth from '../../hooks/auth/useAuth';
 import { ImageIcon } from '../../components/ui/Icons/ImageIcon/ImageIcon';
 import ActionLink from '../../components/ui/Buttons/ActionLink';
+import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
 
 const Albums = () => {
   const { data: albums } = useAlbums().fetch;
@@ -22,7 +23,11 @@ const Albums = () => {
         icon={AlbumIcon}
         actions={
           <>
-            <ActionLink icon={Plus} type="secondary" href="/album/new" size="square">
+            <ActionLink
+              icon={Plus}
+              type="secondary"
+              href="/album/new"
+              size="square">
               {t('New album')}
             </ActionLink>
             <LoginNav />
@@ -50,6 +55,8 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
           dotYouClient={dotYouClient}
           targetDrive={PhotoConfig.PhotoDrive}
           fileId={thumb?.fileId}
+          fileKey={DEFAULT_PAYLOAD_KEY}
+          lastModified={undefined}
           fit="cover"
           className="aspect-square"
         />

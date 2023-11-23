@@ -1,4 +1,9 @@
-import { ThumbSize, TargetDrive, DriveSearchResult } from '@youfoundation/js-lib/core';
+import {
+  ImageSize,
+  TargetDrive,
+  DriveSearchResult,
+  DEFAULT_PAYLOAD_KEY,
+} from '@youfoundation/js-lib/core';
 import { useState, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';
@@ -13,10 +18,10 @@ const gridClasses = `grid grid-cols-4 gap-[0.1rem] md:gap-1 md:grid-cols-6 lg:fl
 const divClasses = `relative aspect-square lg:aspect-auto lg:h-[200px] lg:flex-grow overflow-hidden`;
 const imgWrapperClasses = `h-full w-full object-cover lg:h-[200px] lg:min-w-full lg:max-w-xs lg:align-bottom`;
 
-const getAspectRatioFromThumbnails = (thumbnails: ThumbSize[]): number => {
+const getAspectRatioFromThumbnails = (thumbnails: ImageSize[]): number => {
   if (!thumbnails?.length) return 0;
 
-  const biggestThumb: ThumbSize = thumbnails.reduce((bigThumb, curThumb) => {
+  const biggestThumb: ImageSize = thumbnails.reduce((bigThumb, curThumb) => {
     if (!bigThumb || bigThumb.pixelWidth < curThumb.pixelWidth) return curThumb;
     return bigThumb;
   });
@@ -66,7 +71,10 @@ export const PhotoDay = ({
 
   const title = useMemo(() => {
     const isDesktop = document.documentElement.clientWidth >= 1024;
-    return date.toLocaleDateString(undefined, isDesktop ? dateFormat : mobileDateFormat);
+    return date.toLocaleDateString(
+      undefined,
+      isDesktop ? dateFormat : mobileDateFormat,
+    );
   }, [date]);
 
   const photoLoaders = useMemo(() => {
@@ -76,21 +84,25 @@ export const PhotoDay = ({
       <div className={`${divClasses} relative`} key={index}>
         <div
           className={`${imgWrapperClasses} bg-white dark:bg-slate-700`}
-          style={{ height: '200px', width: `${Math.round(aspect * 200)}px` }}
-        ></div>
+          style={{
+            height: '200px',
+            width: `${Math.round(aspect * 200)}px`,
+          }}></div>
       </div>
     ));
   }, [photosCount]);
 
   return (
     <section className="pb-5" ref={wrapperRef}>
-      <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
+      <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">
+        {title}
+      </h2>
       <div className={gridClasses}>
         {!photos && photosCount ? (
           photoLoaders
         ) : (
           <>
-            {photos?.map((photoDsr) => {
+            {photos?.map(photoDsr => {
               return (
                 <PhotoItem
                   targetDrive={targetDrive}
@@ -141,31 +153,36 @@ export const PhotoItem = ({
   }
 
   // Always square previews for video's
-  const aspect = photoDsr.fileMetadata.appData.additionalThumbnails
-    ? getAspectRatioFromThumbnails(photoDsr.fileMetadata.appData.additionalThumbnails)
+  const payload = photoDsr.fileMetadata.payloads?.find(
+    payload => payload.key === DEFAULT_PAYLOAD_KEY,
+  );
+  const aspect = photoDsr.fileMetadata.appData
+    ? getAspectRatioFromThumbnails(payload?.thumbnails || [])
     : 1;
   const isChecked = photoDsr?.fileId && isSelected(photoDsr?.fileId);
 
   const doSelection = (
-    e: React.MouseEvent<HTMLElement, MouseEvent> | React.TouchEvent<HTMLElement>
+    e:
+      | React.MouseEvent<HTMLElement, MouseEvent>
+      | React.TouchEvent<HTMLElement>,
   ) => {
     if (e.shiftKey) rangeSelection(photoDsr.fileId);
     else toggleSelection(photoDsr.fileId);
   };
 
   const photoDate = new Date(
-    photoDsr.fileMetadata.appData.userDate || photoDsr.fileMetadata.created
+    photoDsr.fileMetadata.appData.userDate || photoDsr.fileMetadata.created,
   );
 
   const longPress = useLongPress(
-    (e) => {
+    e => {
       if (!e) return;
       doSelection(e);
 
       e.stopPropagation();
       return false;
     },
-    (e) => {
+    e => {
       if (!e) return;
       if (!isSelecting) {
         navigate(`photo/${photoDsr.fileId}`);
@@ -177,7 +194,7 @@ export const PhotoItem = ({
       e.stopPropagation();
       return false;
     },
-    { shouldPreventDefault: true, delay: 300 }
+    { shouldPreventDefault: true, delay: 300 },
   );
 
   const width = Math.round(aspect * 200);
@@ -198,34 +215,38 @@ export const PhotoItem = ({
   return (
     <div
       className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}
-      data-date={`${photoDate.getFullYear()}-${photoDate.getMonth() + 1}-${photoDate.getDate()}`}
-      data-unix={photoDate.getTime()}
-    >
+      data-date={`${photoDate.getFullYear()}-${
+        photoDate.getMonth() + 1
+      }-${photoDate.getDate()}`}
+      data-unix={photoDate.getTime()}>
       <Link
         // relative path so we can keep the albumkey intact
         to={`photo/${photoDsr.fileId}`}
         className="cursor-pointer"
         {...longPress}
-        onClick={(e) => {
+        onClick={e => {
           e.preventDefault();
           return false;
-        }}
-      >
+        }}>
         <div
           className={`${imgWrapperClasses} transition-transform`}
           style={{
             ...sizeStyle,
             ...transformStyle,
           }}
-          ref={wrapperRef}
-        >
+          ref={wrapperRef}>
           {isInView ? (
-            photoDsr.fileMetadata.contentType.startsWith('video/') ? (
+            photoDsr.fileMetadata.payloads
+              .find(payload => payload.key === DEFAULT_PAYLOAD_KEY)
+              ?.contentType.startsWith('video/') ? (
               <>
                 <VideoWithLoader
                   fileId={photoDsr.fileId}
                   targetDrive={targetDrive}
-                  previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
+                  lastModified={photoDsr.fileMetadata.updated}
+                  previewThumbnail={
+                    photoDsr?.fileMetadata.appData.previewThumbnail
+                  }
                   fit="cover"
                   preview={true}
                 />
@@ -237,7 +258,10 @@ export const PhotoItem = ({
               <PhotoWithLoader
                 fileId={photoDsr.fileId}
                 targetDrive={targetDrive}
-                previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
+                lastModified={photoDsr.fileMetadata.updated}
+                previewThumbnail={
+                  photoDsr?.fileMetadata.appData.previewThumbnail
+                }
                 size={{ pixelWidth: 200, pixelHeight: 200 }}
                 fit="cover"
                 className="h-full w-full"
@@ -248,21 +272,23 @@ export const PhotoItem = ({
         {isDesktop ? (
           <div className="group absolute inset-0 hidden hover:bg-opacity-50 hover:bg-gradient-to-b hover:from-[#00000080] md:block">
             <button
-              className={`pl-2 pt-2 group-hover:block ${isChecked ? 'block' : 'hidden'}`}
-              onClick={(e) => {
+              className={`pl-2 pt-2 group-hover:block ${
+                isChecked ? 'block' : 'hidden'
+              }`}
+              onClick={e => {
                 e.stopPropagation();
                 e.preventDefault();
                 doSelection(e);
               }}
-              onMouseUp={(e) => e.stopPropagation()}
-              onMouseLeave={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-            >
+              onMouseUp={e => e.stopPropagation()}
+              onMouseLeave={e => e.stopPropagation()}
+              onTouchEnd={e => e.stopPropagation()}>
               <div
                 className={`rounded-full border ${
-                  isChecked ? 'border-black bg-black' : 'border-white border-opacity-20'
-                } p-1`}
-              >
+                  isChecked
+                    ? 'border-black bg-black'
+                    : 'border-white border-opacity-20'
+                } p-1`}>
                 <SubtleCheck
                   className={`h-2 w-2 text-white opacity-0 transition-opacity md:h-5 md:w-5 ${
                     isChecked ? 'opacity-100' : 'group-hover:opacity-100'

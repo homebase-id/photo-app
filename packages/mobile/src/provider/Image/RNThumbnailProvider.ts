@@ -3,8 +3,12 @@ import {
   ImageContentType,
   ImageSize,
   ThumbnailFile,
+  EmbeddedThumb,
 } from '@youfoundation/js-lib/core';
-import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
+import {
+  base64ToUint8Array,
+  uint8ArrayToBase64,
+} from '@youfoundation/js-lib/helpers';
 import { Platform } from 'react-native';
 import { FileSystem } from 'react-native-file-access';
 import ImageResizer, {
@@ -25,23 +29,58 @@ const tinyThumbSize: ThumbnailInstruction = {
 };
 
 const svgType = 'image/svg+xml';
+const gifType = 'image/gif';
+
+const getEmbeddedThumbOfThumbnailFile = async (
+  thumbnailFile: ThumbnailFile,
+  naturalSize: ImageSize,
+): Promise<EmbeddedThumb> => {
+  return {
+    pixelWidth: naturalSize.pixelWidth, // on the previewThumb we use the full pixelWidth & -height so the max size can be used
+    pixelHeight: naturalSize.pixelHeight, // on the previewThumb we use the full pixelWidth & -height so the max size can be used
+    contentType: thumbnailFile.payload.type as ImageContentType,
+    content: uint8ArrayToBase64(
+      new Uint8Array(await thumbnailFile.payload.arrayBuffer()),
+    ),
+  };
+};
 
 export const createThumbnails = async (
   photo: ImageSource,
+  key: string,
   contentType?: ImageContentType,
   thumbSizes?: ThumbnailInstruction[],
 ): Promise<{
   naturalSize: ImageSize;
-  tinyThumb: ThumbnailFile;
+  tinyThumb: EmbeddedThumb;
   additionalThumbnails: ThumbnailFile[];
 }> => {
   if (contentType === svgType) {
     if (!photo.filepath) throw new Error('No filepath found in image source');
-    const vectorThumb = await createVectorThumbnail(photo.filepath);
+    const vectorThumb = await createVectorThumbnail(photo.filepath, key);
 
     return {
-      tinyThumb: vectorThumb.thumb,
+      tinyThumb: await getEmbeddedThumbOfThumbnailFile(
+        vectorThumb.thumb,
+        vectorThumb.naturalSize,
+      ),
       naturalSize: vectorThumb.naturalSize,
+      additionalThumbnails: [],
+    };
+  }
+
+  if (contentType === gifType) {
+    const gifThumb = await createImageThumbnail(photo, key, {
+      ...tinyThumbSize,
+      type: 'gif',
+    });
+
+    return {
+      tinyThumb: await getEmbeddedThumbOfThumbnailFile(
+        gifThumb.thumb,
+        gifThumb.naturalSize,
+      ),
+      naturalSize: gifThumb.naturalSize,
       additionalThumbnails: [],
     };
   }
@@ -49,12 +88,13 @@ export const createThumbnails = async (
   // Create a thumbnail that fits scaled into a 20 x 20 canvas
   const { naturalSize, thumb: tinyThumb } = await createImageThumbnail(
     photo,
+    key,
     tinyThumbSize,
   );
 
   const applicableThumbSizes = (thumbSizes || baseThumbSizes).reduce(
     (currArray, thumbSize) => {
-      if (tinyThumb.contentType === svgType) return currArray;
+      if (tinyThumb.payload.type === svgType) return currArray;
 
       if (
         naturalSize.pixelWidth < thumbSize.width &&
@@ -87,17 +127,22 @@ export const createThumbnails = async (
       applicableThumbSizes.map(
         async thumbSize =>
           await (
-            await createImageThumbnail(photo, thumbSize)
+            await createImageThumbnail(photo, key, thumbSize)
           ).thumb,
       ),
     )),
   ];
 
-  return { naturalSize, tinyThumb, additionalThumbnails };
+  return {
+    naturalSize,
+    tinyThumb: await getEmbeddedThumbOfThumbnailFile(tinyThumb, naturalSize),
+    additionalThumbnails,
+  };
 };
 
 const createVectorThumbnail = async (
   imageFilePath: string,
+  key: string,
 ): Promise<{ naturalSize: ImageSize; thumb: ThumbnailFile }> => {
   const imageBytes = base64ToUint8Array(
     await FileSystem.readFile(imageFilePath, 'base64'),
@@ -111,14 +156,15 @@ const createVectorThumbnail = async (
     thumb: {
       pixelWidth: 50,
       pixelHeight: 50,
-      payload: imageBytes,
-      contentType: 'image/svg+xml',
+      payload: new Blob([imageBytes], { type: svgType }),
+      key,
     },
   };
 };
 
 const createImageThumbnail = async (
   photo: ImageSource,
+  key: string,
   instruction: ThumbnailInstruction,
   format: 'webp' | 'png' | 'jpeg' = Platform.OS === 'android' ? 'webp' : 'jpeg',
 ): Promise<{ naturalSize: ImageSize; thumb: ThumbnailFile }> => {
@@ -145,6 +191,7 @@ const createImageThumbnail = async (
         pixelHeight: resizedData.height,
         payload: base64ToUint8Array(base64Bytes),
         contentType: `image/${instruction.type || format}`,
+        key,
       },
     };
   });

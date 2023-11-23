@@ -48,7 +48,7 @@ export const getPhotoLibrary = async (
         },
         {
           maxRecords: 2,
-          includeJsonContent: true,
+          includeHeaderContent: true,
           cursor: lastCursor,
         },
       )
@@ -139,7 +139,6 @@ export const savePhotoLibraryMetadata = async (
 
   const metadata: UploadFileMetadata = {
     allowDistribution: false,
-    contentType: 'application/json',
     versionTag: def.versionTag,
     appData: {
       tags:
@@ -147,11 +146,10 @@ export const savePhotoLibraryMetadata = async (
           ? [PhotoConfig.FavoriteTag]
           : [PhotoConfig.MainTag],
       fileType: PhotoConfig.PhotoLibraryMetadataFileType,
-      contentIsComplete: true,
-      jsonContent: payloadJson,
+      content: payloadJson,
       archivalStatus,
     },
-    payloadIsEncrypted: encryptPhotoLibrary,
+    isEncrypted: encryptPhotoLibrary,
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
   };
 

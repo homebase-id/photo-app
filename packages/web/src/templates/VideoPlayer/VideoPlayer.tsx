@@ -3,6 +3,7 @@ import useAuth from '../../hooks/auth/useAuth';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { OdinVideo } from '@youfoundation/ui-lib';
 import { ErrorBoundary } from '../../components/ui/Layout/ErrorBoundary/ErrorBoundary';
+import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
 
 const KILOBYTE = 1024;
 const MEGABYTE = 1024 * KILOBYTE;
@@ -20,6 +21,8 @@ const VideoPlayer = () => {
           dotYouClient={dotYouClient}
           targetDrive={targetDrive}
           fileId={photoKey}
+          fileKey={DEFAULT_PAYLOAD_KEY}
+          lastModified={undefined}
           className={`absolute inset-0 h-full w-full bg-black object-contain`}
           skipChunkedPlayback={false}
           autoPlay={true}

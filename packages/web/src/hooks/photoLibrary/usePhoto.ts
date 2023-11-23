@@ -11,6 +11,7 @@ import {
   MediaUploadMeta,
   getPayloadBytes,
   deleteFile,
+  DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import useAuth from '../auth/useAuth';
@@ -172,8 +173,9 @@ const usePhoto = (targetDrive?: TargetDrive) => {
       dotYouClient,
       targetDrive,
       dsr.fileId,
+      DEFAULT_PAYLOAD_KEY,
       {
-        keyHeader: dsr.fileMetadata.payloadIsEncrypted
+        keyHeader: dsr.fileMetadata.isEncrypted
           ? dsr.sharedSecretEncryptedKeyHeader
           : undefined,
       },

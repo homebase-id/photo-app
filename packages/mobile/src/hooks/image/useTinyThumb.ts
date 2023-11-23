@@ -4,6 +4,7 @@ import {
   TargetDrive,
   DotYouClient,
   getDecryptedThumbnailMeta,
+  DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 
 const useTinyThumb = (
@@ -24,6 +25,8 @@ const useTinyThumb = (
         dotYouClient,
         imageDrive,
         imageFileId,
+        DEFAULT_PAYLOAD_KEY,
+        'Standard',
       )) || null
     );
   };

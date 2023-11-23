@@ -1,5 +1,6 @@
 import {
   ArchivalStatus,
+  DEFAULT_PAYLOAD_KEY,
   DotYouClient,
   DriveSearchResult,
   ImageMetadata,
@@ -97,8 +98,8 @@ export const updatePhoto = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: header.fileMetadata.appData.jsonContent
-          ? jsonStringify64({ ...header.fileMetadata.appData.jsonContent })
+        content: header.fileMetadata.appData.content
+          ? jsonStringify64({ ...header.fileMetadata.appData.content })
           : null,
         ...newMetaData,
         tags: newMetaData?.tag
@@ -159,8 +160,8 @@ export const updatePhotoMetadata = async (
       ...header.fileMetadata,
       appData: {
         ...header.fileMetadata.appData,
-        jsonContent: jsonStringify64({
-          ...(header.fileMetadata.appData.jsonContent || {}),
+        content: jsonStringify64({
+          ...(header.fileMetadata.appData.content || {}),
           ...newImageMetadata,
         }),
       },
@@ -188,6 +189,7 @@ export const getPhoto = async (
       dotYouClient,
       targetDrive,
       fileId,
+      DEFAULT_PAYLOAD_KEY,
       size,
       isProbablyEncrypted,
     ),
@@ -207,6 +209,7 @@ const dsrToPhoto = async (
       dotYouClient,
       targetDrive,
       dsr.fileId,
+      DEFAULT_PAYLOAD_KEY,
       size,
       isProbablyEncrypted,
     ),
