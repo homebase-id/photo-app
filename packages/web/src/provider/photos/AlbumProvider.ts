@@ -71,7 +71,6 @@ export const saveAlbum = async (
       overwriteFileId: def.fileId || undefined,
       drive: PhotoConfig.PhotoDrive,
     },
-    transitOptions: null,
   };
 
   const metadata: UploadFileMetadata = {
