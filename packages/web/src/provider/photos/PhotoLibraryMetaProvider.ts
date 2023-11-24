@@ -134,7 +134,6 @@ export const savePhotoLibraryMetadata = async (
       overwriteFileId: def.fileId || undefined,
       drive: PhotoConfig.PhotoDrive,
     },
-    transitOptions: null,
   };
 
   const metadata: UploadFileMetadata = {
