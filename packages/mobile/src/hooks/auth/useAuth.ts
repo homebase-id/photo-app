@@ -16,6 +16,7 @@ import { logout as logoutYouauth } from '@youfoundation/js-lib/auth';
 import { useEncrtypedStorage } from './useEncryptedStorage';
 import { Platform } from 'react-native';
 import { DrivePermissionType } from '@youfoundation/js-lib/core';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const drives = [
   {
@@ -45,18 +46,9 @@ const useAuth = () => {
     'unknown' | 'anonymous' | 'authenticated'
   >(sharedSecret ? 'unknown' : 'anonymous');
 
-  const logout = useCallback(async (): Promise<void> => {
-    await logoutYouauth(getDotYouClient());
+  const queryClient = useQueryClient();
 
-    setAuthenticationState('anonymous');
-
-    setPrivateKey('');
-    setSharedSecret('');
-    setAuthToken('');
-    setIdentity('');
-  }, []);
-
-  const getDotYouClient = () => {
+  const getDotYouClient = useCallback(() => {
     if (!sharedSecret || !identity)
       return new DotYouClient({
         api: ApiType.App,
@@ -71,19 +63,25 @@ const useAuth = () => {
       identity: identity,
       headers: headers,
     });
-  };
+  }, [authToken, identity, sharedSecret]);
 
-  const { data: hasValidToken, isFetchedAfterMount } = useVerifyToken(
-    getDotYouClient(),
-  );
+  const { data: hasValidToken, isFetchedAfterMount } = useVerifyToken(getDotYouClient());
+
+  const logout = useCallback(async (): Promise<void> => {
+    await logoutYouauth(getDotYouClient());
+
+    setAuthenticationState('anonymous');
+
+    setPrivateKey('');
+    setSharedSecret('');
+    setAuthToken('');
+    setIdentity('');
+
+    queryClient.refetchQueries();
+  }, [getDotYouClient, queryClient, setAuthToken, setIdentity, setPrivateKey, setSharedSecret]);
 
   useEffect(() => {
-    if (
-      !!identity &&
-      !!sharedSecret &&
-      isFetchedAfterMount &&
-      hasValidToken !== undefined
-    ) {
+    if (!!identity && !!sharedSecret && isFetchedAfterMount && hasValidToken !== undefined) {
       setAuthenticationState(hasValidToken ? 'authenticated' : 'anonymous');
 
       if (!hasValidToken) {
@@ -138,21 +136,13 @@ export const useYouAuthAuthorization = () => {
       undefined,
       uint8ArrayToBase64(stringToUint8Array(JSON.stringify(publicKeyJwk))),
       'photos.homebase.id',
-      `${
-        Platform.OS === 'ios'
-          ? 'iOS'
-          : Platform.OS === 'android'
-          ? 'Android'
-          : Platform.OS
-      } | ${Platform.Version}`,
+      `${Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : Platform.OS} | ${
+        Platform.Version
+      }`
     );
   };
 
-  const finalizeAuthentication = async (
-    identity: string,
-    publicKey: string,
-    salt: string,
-  ) => {
+  const finalizeAuthentication = async (identity: string, publicKey: string, salt: string) => {
     if (!identity || !publicKey || !salt) {
       console.error('Missing data');
       return false;
@@ -163,17 +153,14 @@ export const useYouAuthAuthorization = () => {
         console.error('Missing key');
         return false;
       }
-      const publicKeyJwk = JSON.parse(
-        byteArrayToString(base64ToUint8Array(publicKey)),
-      );
+      const publicKeyJwk = JSON.parse(byteArrayToString(base64ToUint8Array(publicKey)));
 
-      const { clientAuthToken, sharedSecret } =
-        await finalizeAuthenticationYouAuth(
-          identity,
-          privateKeyHex,
-          publicKeyJwk,
-          salt,
-        );
+      const { clientAuthToken, sharedSecret } = await finalizeAuthenticationYouAuth(
+        identity,
+        privateKeyHex,
+        publicKeyJwk,
+        salt
+      );
 
       // Store all data in secure storage
       await setAuthToken(uint8ArrayToBase64(clientAuthToken));
