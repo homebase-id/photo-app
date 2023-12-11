@@ -1,4 +1,4 @@
-package com.homebasephoto;
+package id.homebase.photos;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
