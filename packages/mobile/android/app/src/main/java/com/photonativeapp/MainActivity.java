@@ -1,4 +1,4 @@
-package com.homebasephoto;
+package id.homebase.photos;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

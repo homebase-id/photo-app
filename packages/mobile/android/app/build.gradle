@@ -78,7 +78,7 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.homebasephoto"
+    namespace "id.homebase.photos"
     defaultConfig {
         applicationId "id.homebase.photos"
         minSdkVersion rootProject.ext.minSdkVersion
