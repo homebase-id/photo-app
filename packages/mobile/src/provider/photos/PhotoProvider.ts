@@ -81,7 +81,6 @@ export const updatePhoto = async (
         drive: targetDrive,
         storageIntent: 'metadataOnly',
       },
-      transitOptions: null,
     };
 
     const metadata: UploadFileMetadata = {
@@ -91,7 +90,7 @@ export const updatePhoto = async (
         ...header.fileMetadata.appData,
         content: header.fileMetadata.appData.content
           ? jsonStringify64({ ...header.fileMetadata.appData.content })
-          : null,
+          : undefined,
         ...newMetaData,
         tags: newMetaData?.tag
           ? [...(Array.isArray(newMetaData.tag) ? newMetaData.tag : [newMetaData.tag])]
@@ -133,7 +132,6 @@ export const updatePhotoMetadata = async (
         drive: targetDrive,
         storageIntent: 'metadataOnly',
       },
-      transitOptions: null,
     };
 
     const metadata: UploadFileMetadata = {

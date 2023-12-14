@@ -2,13 +2,11 @@ import {
   ArchivalStatus,
   DotYouClient,
   ImageContentType,
-  ImageMetadata,
-  MediaConfig,
-  MediaUploadMeta,
   SecurityGroupType,
   TargetDrive,
   ThumbnailFile,
 } from '@youfoundation/js-lib/core';
+import { ImageMetadata, MediaConfig, MediaUploadMeta } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 import { ImageSource, uploadImage } from './RNImageProvider';
 
@@ -62,13 +60,9 @@ const getPhotoExifMeta = async (photo: {
         dateTimeOriginal: undefined,
       };
 
-    const dateTimeOriginal = elaborateDateParser(
-      exifData['{Exif}'].DateTimeOriginal,
-    );
+    const dateTimeOriginal = elaborateDateParser(exifData['{Exif}'].DateTimeOriginal);
 
-    const imageUniqueId = toGuidId(
-      `${photo.filename}+${dateTimeOriginal?.getTime()}`,
-    );
+    const imageUniqueId = toGuidId(`${photo.filename}+${dateTimeOriginal?.getTime()}`);
 
     const imageMetadata: ImageMetadata | undefined = metadata
       ? {
@@ -118,9 +112,7 @@ const getMimeType = (fileName?: string) => {
   if (!fileName) return 'application/octet-stream'; // default to binary (unknown)
 
   const fileExt = fileName.split('.').pop()?.toLowerCase();
-  return (
-    mimeTypes.find(m => m.ext === fileExt)?.mime || 'application/octet-stream'
-  );
+  return mimeTypes.find((m) => m.ext === fileExt)?.mime || 'application/octet-stream';
 };
 
 const uploadNewPhoto = async (
@@ -128,13 +120,12 @@ const uploadNewPhoto = async (
   targetDrive: TargetDrive,
   albumKey: string | undefined,
   newPhoto: ImageSource,
-  meta?: MediaUploadMeta,
+  meta?: MediaUploadMeta
 ) => {
   if (!newPhoto.filepath) throw 'Missing file';
   // const photo: ImageSource = newPhoto as ImageSource;
 
-  const { imageMetadata, imageUniqueId, dateTimeOriginal } =
-    await getPhotoExifMeta(newPhoto);
+  const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(newPhoto);
   const userDate = dateTimeOriginal || new Date();
 
   const existingImages = await queryLocalDb({
@@ -164,7 +155,7 @@ const uploadNewPhoto = async (
       [
         { quality: 100, width: 500, height: 500 },
         { quality: 100, width: 2000, height: 2000 },
-      ],
+      ]
     )),
     userDate: userDate,
   };
@@ -176,7 +167,7 @@ const uploadNewVideo = async (
   albumKey: string | undefined,
   newVideo: ImageSource,
   thumb?: ThumbnailFile,
-  meta?: MediaUploadMeta,
+  meta?: MediaUploadMeta
 ) => {
   throw 'Not implemented';
 
@@ -235,7 +226,7 @@ export const uploadNew = async (
   albumKey: string | undefined,
   newFile: ImageSource,
   thumb?: ThumbnailFile,
-  meta?: MediaUploadMeta,
+  meta?: MediaUploadMeta
 ): Promise<{ fileId?: string; userDate: Date }> => {
   // return newFile.type.includes('video')
   //   ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb, meta)
@@ -254,7 +245,7 @@ export const getPhotosLocal = async (
   from?: Date,
   to?: Date,
   ordering?: 'older' | 'newer',
-  pageParam?: PageParam,
+  pageParam?: PageParam
 ) => {
   const archivalStatus: ArchivalStatus[] =
     type === 'bin'
@@ -277,15 +268,13 @@ export const getPhotosLocal = async (
         : undefined,
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
-      userDate: from
-        ? { start: from.getTime(), end: to?.getTime() }
-        : undefined,
+      userDate: from ? { start: from.getTime(), end: to?.getTime() } : undefined,
     },
     {
       sorting: 'userDate',
       ordering: ordering === 'newer' ? 'newestFirst' : 'oldestFirst',
       pageParam,
-    },
+    }
   );
 
   return searchResults;

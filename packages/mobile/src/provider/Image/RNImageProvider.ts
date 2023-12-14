@@ -2,23 +2,26 @@ import {
   DotYouClient,
   TargetDrive,
   AccessControlList,
-  ImageMetadata,
-  MediaUploadMeta,
-  ThumbnailInstruction,
-  ImageUploadResult,
   SecurityGroupType,
   UploadInstructionSet,
   getFileHeader,
   UploadFileMetadata,
-  MediaConfig,
   uploadFile,
   ImageContentType,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 import {
+  ImageMetadata,
+  MediaUploadMeta,
+  ThumbnailInstruction,
+  ImageUploadResult,
+  MediaConfig,
+} from '@youfoundation/js-lib/media';
+import {
   getRandom16ByteArray,
   getNewId,
   jsonStringify64,
+  base64ToUint8Array,
 } from '@youfoundation/js-lib/helpers';
 import { createThumbnails } from './RNThumbnailProvider';
 import { FileSystem } from 'react-native-file-access';
@@ -44,7 +47,7 @@ export const uploadImage = async (
   photo: ImageSource,
   fileMetadata?: ImageMetadata,
   uploadMeta?: RNMediaUploadMeta,
-  thumbsToGenerate?: ThumbnailInstruction[],
+  thumbsToGenerate?: ThumbnailInstruction[]
 ): Promise<ImageUploadResult | undefined> => {
   if (!targetDrive) throw 'Missing target drive';
   if (!photo.filepath) throw 'Missing filepath';
@@ -57,43 +60,36 @@ export const uploadImage = async (
   const instructionSet: UploadInstructionSet = {
     transferIv: getRandom16ByteArray(),
     storageOptions: {
-      overwriteFileId: uploadMeta?.fileId ?? null,
+      overwriteFileId: uploadMeta?.fileId,
       drive: targetDrive,
     },
-    transitOptions: uploadMeta?.transitOptions || null,
+    transitOptions: uploadMeta?.transitOptions,
   };
 
-  const { naturalSize, tinyThumb, additionalThumbnails } =
-    await createThumbnails(
-      photo,
-      DEFAULT_PAYLOAD_KEY,
-      uploadMeta?.type,
-      thumbsToGenerate,
-    );
+  const { naturalSize, tinyThumb, additionalThumbnails } = await createThumbnails(
+    photo,
+    DEFAULT_PAYLOAD_KEY,
+    uploadMeta?.type,
+    thumbsToGenerate
+  );
 
   // Updating images in place is a rare thing, but if it happens there is often no versionTag, so we need to fetch it first
   let versionTag = uploadMeta?.versionTag;
   if (!versionTag && uploadMeta?.fileId)
-    versionTag = await getFileHeader(
-      dotYouClient,
-      targetDrive,
-      uploadMeta.fileId,
-    ).then(header => header?.fileMetadata.versionTag);
+    versionTag = await getFileHeader(dotYouClient, targetDrive, uploadMeta.fileId).then(
+      (header) => header?.fileMetadata.versionTag
+    );
 
   const metadata: UploadFileMetadata = {
     versionTag: versionTag,
     allowDistribution: uploadMeta?.allowDistribution || false,
     appData: {
       tags: uploadMeta?.tag
-        ? [
-            ...(Array.isArray(uploadMeta.tag)
-              ? uploadMeta.tag
-              : [uploadMeta.tag]),
-          ]
+        ? [...(Array.isArray(uploadMeta.tag) ? uploadMeta.tag : [uploadMeta.tag])]
         : [],
       uniqueId: uploadMeta?.uniqueId ?? getNewId(),
       fileType: MediaConfig.MediaFileType,
-      content: fileMetadata ? jsonStringify64(fileMetadata) : null,
+      content: fileMetadata ? jsonStringify64(fileMetadata) : undefined,
       previewThumbnail: tinyThumb,
       userDate: uploadMeta?.userDate,
       archivalStatus: uploadMeta?.archivalStatus,
@@ -111,12 +107,12 @@ export const uploadImage = async (
     metadata,
     [
       {
-        payload: imageData,
+        payload: new Blob([base64ToUint8Array(imageData)], { type: uploadMeta?.type }),
         key: 'payload',
       },
     ],
     additionalThumbnails,
-    encrypt,
+    encrypt
   );
 
   if (!result) return undefined;

@@ -1,25 +1,18 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { InteractionManager } from 'react-native';
-import {
-  cleanupLocalDb,
-  syncHeaderFile,
-  syncLocalDb,
-} from '../../provider/drive/LocalDbProvider';
+import { cleanupLocalDb, syncHeaderFile, syncLocalDb } from '../../provider/drive/LocalDbProvider';
 import {
   ClientFileNotification,
   Disconnect,
-  MediaConfig,
   Subscribe,
   TypedConnectionNotification,
 } from '@youfoundation/js-lib/core';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  useFlatPhotosFromDate,
-  usePhotosByMonth,
-} from '../photoLibrary/usePhotos';
+import { useFlatPhotosFromDate, usePhotosByMonth } from '../photoLibrary/usePhotos';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
+import { MediaConfig } from '@youfoundation/js-lib/media';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -43,29 +36,14 @@ const useDbSync = () => {
 
   const localHandler = useCallback(
     async (notification: TypedConnectionNotification) => {
-      if (
-        ['fileAdded', 'fileDeleted', 'fileModified'].includes(
-          notification.notificationType,
-        )
-      ) {
+      if (['fileAdded', 'fileDeleted', 'fileModified'].includes(notification.notificationType)) {
         const fileNotification = notification as ClientFileNotification;
-        if (
-          fileNotification.header.fileMetadata.appData.fileType ===
-          MediaConfig.MediaFileType
-        ) {
-          await syncHeaderFile(
-            dotYouClient,
-            targetDrive,
-            fileNotification.header.fileId,
-          );
+        if (fileNotification.header.fileMetadata.appData.fileType === MediaConfig.MediaFileType) {
+          await syncHeaderFile(dotYouClient, targetDrive, fileNotification.header.fileId);
           await invalidatePhotos();
           await invalidateFlatPhotos();
           queryClient.invalidateQueries({
-            queryKey: [
-              'photo-meta',
-              targetDrive?.alias,
-              fileNotification.header.fileId,
-            ],
+            queryKey: ['photo-meta', targetDrive?.alias, fileNotification.header.fileId],
           });
         } else if (
           fileNotification.header.fileMetadata.appData.fileType ===
@@ -74,7 +52,7 @@ const useDbSync = () => {
           queryClient.invalidateQueries({ queryKey: ['photo-library'] });
       }
     },
-    [dotYouClient, queryClient, invalidatePhotos, invalidateFlatPhotos],
+    [dotYouClient, queryClient, invalidatePhotos, invalidateFlatPhotos]
   );
 
   useEffect(() => {
@@ -120,7 +98,7 @@ const useDbSync = () => {
           mostRecentQueryModifiedTime: mostRecentQueryModifiedTime
             ? parseInt(mostRecentQueryModifiedTime)
             : undefined,
-        },
+        }
       );
 
       setLastQueryBatchCursor(cursor);

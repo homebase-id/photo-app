@@ -1,19 +1,14 @@
 import {
-  ThumbnailInstruction,
   ImageContentType,
   ImageSize,
   ThumbnailFile,
   EmbeddedThumb,
 } from '@youfoundation/js-lib/core';
-import {
-  base64ToUint8Array,
-  uint8ArrayToBase64,
-} from '@youfoundation/js-lib/helpers';
+import { ThumbnailInstruction } from '@youfoundation/js-lib/media';
+import { base64ToUint8Array, uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 import { Platform } from 'react-native';
 import { FileSystem } from 'react-native-file-access';
-import ImageResizer, {
-  ResizeFormat,
-} from '@bam.tech/react-native-image-resizer';
+import ImageResizer, { ResizeFormat } from '@bam.tech/react-native-image-resizer';
 import { ImageSource } from './RNImageProvider';
 
 export const baseThumbSizes: ThumbnailInstruction[] = [
@@ -33,15 +28,13 @@ const gifType = 'image/gif';
 
 const getEmbeddedThumbOfThumbnailFile = async (
   thumbnailFile: ThumbnailFile,
-  naturalSize: ImageSize,
+  naturalSize: ImageSize
 ): Promise<EmbeddedThumb> => {
   return {
     pixelWidth: naturalSize.pixelWidth, // on the previewThumb we use the full pixelWidth & -height so the max size can be used
     pixelHeight: naturalSize.pixelHeight, // on the previewThumb we use the full pixelWidth & -height so the max size can be used
     contentType: thumbnailFile.payload.type as ImageContentType,
-    content: uint8ArrayToBase64(
-      new Uint8Array(await thumbnailFile.payload.arrayBuffer()),
-    ),
+    content: uint8ArrayToBase64(new Uint8Array(await thumbnailFile.payload.arrayBuffer())),
   };
 };
 
@@ -49,7 +42,7 @@ export const createThumbnails = async (
   photo: ImageSource,
   key: string,
   contentType?: ImageContentType,
-  thumbSizes?: ThumbnailInstruction[],
+  thumbSizes?: ThumbnailInstruction[]
 ): Promise<{
   naturalSize: ImageSize;
   tinyThumb: EmbeddedThumb;
@@ -60,10 +53,7 @@ export const createThumbnails = async (
     const vectorThumb = await createVectorThumbnail(photo.filepath, key);
 
     return {
-      tinyThumb: await getEmbeddedThumbOfThumbnailFile(
-        vectorThumb.thumb,
-        vectorThumb.naturalSize,
-      ),
+      tinyThumb: await getEmbeddedThumbOfThumbnailFile(vectorThumb.thumb, vectorThumb.naturalSize),
       naturalSize: vectorThumb.naturalSize,
       additionalThumbnails: [],
     };
@@ -76,42 +66,27 @@ export const createThumbnails = async (
     });
 
     return {
-      tinyThumb: await getEmbeddedThumbOfThumbnailFile(
-        gifThumb.thumb,
-        gifThumb.naturalSize,
-      ),
+      tinyThumb: await getEmbeddedThumbOfThumbnailFile(gifThumb.thumb, gifThumb.naturalSize),
       naturalSize: gifThumb.naturalSize,
       additionalThumbnails: [],
     };
   }
 
   // Create a thumbnail that fits scaled into a 20 x 20 canvas
-  const { naturalSize, thumb: tinyThumb } = await createImageThumbnail(
-    photo,
-    key,
-    tinyThumbSize,
-  );
+  const { naturalSize, thumb: tinyThumb } = await createImageThumbnail(photo, key, tinyThumbSize);
 
-  const applicableThumbSizes = (thumbSizes || baseThumbSizes).reduce(
-    (currArray, thumbSize) => {
-      if (tinyThumb.payload.type === svgType) return currArray;
+  const applicableThumbSizes = (thumbSizes || baseThumbSizes).reduce((currArray, thumbSize) => {
+    if (tinyThumb.payload.type === svgType) return currArray;
 
-      if (
-        naturalSize.pixelWidth < thumbSize.width &&
-        naturalSize.pixelHeight < thumbSize.height
-      )
-        return currArray;
+    if (naturalSize.pixelWidth < thumbSize.width && naturalSize.pixelHeight < thumbSize.height)
+      return currArray;
 
-      return [...currArray, thumbSize];
-    },
-    [] as ThumbnailInstruction[],
-  );
+    return [...currArray, thumbSize];
+  }, [] as ThumbnailInstruction[]);
 
   if (
     applicableThumbSizes.length !== (thumbSizes || baseThumbSizes).length &&
-    !applicableThumbSizes.some(
-      thumbSize => thumbSize.width === naturalSize.pixelWidth,
-    )
+    !applicableThumbSizes.some((thumbSize) => thumbSize.width === naturalSize.pixelWidth)
   )
     // Source image is too small for some of the requested sizes so we add the source dimensions as exact size
     applicableThumbSizes.push({
@@ -125,11 +100,8 @@ export const createThumbnails = async (
     tinyThumb,
     ...(await Promise.all(
       applicableThumbSizes.map(
-        async thumbSize =>
-          await (
-            await createImageThumbnail(photo, key, thumbSize)
-          ).thumb,
-      ),
+        async (thumbSize) => await (await createImageThumbnail(photo, key, thumbSize)).thumb
+      )
     )),
   ];
 
@@ -142,11 +114,9 @@ export const createThumbnails = async (
 
 const createVectorThumbnail = async (
   imageFilePath: string,
-  key: string,
+  key: string
 ): Promise<{ naturalSize: ImageSize; thumb: ThumbnailFile }> => {
-  const imageBytes = base64ToUint8Array(
-    await FileSystem.readFile(imageFilePath, 'base64'),
-  );
+  const imageBytes = base64ToUint8Array(await FileSystem.readFile(imageFilePath, 'base64'));
 
   return {
     naturalSize: {
@@ -166,7 +136,7 @@ const createImageThumbnail = async (
   photo: ImageSource,
   key: string,
   instruction: ThumbnailInstruction,
-  format: 'webp' | 'png' | 'jpeg' = Platform.OS === 'android' ? 'webp' : 'jpeg',
+  format: 'webp' | 'png' | 'jpeg' = Platform.OS === 'android' ? 'webp' : 'jpeg'
 ): Promise<{ naturalSize: ImageSize; thumb: ThumbnailFile }> => {
   if (!photo.filepath) throw new Error('No filepath found in image source');
 
@@ -177,8 +147,8 @@ const createImageThumbnail = async (
     format.toUpperCase() as ResizeFormat,
     instruction.quality,
     undefined,
-    undefined,
-  ).then(async resizedData => {
+    undefined
+  ).then(async (resizedData) => {
     const base64Bytes = await FileSystem.readFile(resizedData.path, 'base64');
 
     return {
@@ -189,8 +159,9 @@ const createImageThumbnail = async (
       thumb: {
         pixelWidth: resizedData.width,
         pixelHeight: resizedData.height,
-        payload: base64ToUint8Array(base64Bytes),
-        contentType: `image/${instruction.type || format}`,
+        payload: new Blob([base64ToUint8Array(base64Bytes)], {
+          type: `image/${instruction.type || format}`,
+        }),
         key,
       },
     };

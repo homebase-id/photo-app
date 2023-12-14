@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Modal, TextArea } from 'native-base';
-import { Button, View } from 'react-native';
+import { Button, TextInput, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { Colors } from '../../app/Colors';
 import { getNewId } from '@youfoundation/js-lib/helpers';
@@ -50,27 +50,34 @@ const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
         >
           {/* Name */}
           <View style={{ marginBottom: 30, width: '100%' }}>
-            <Text>Name</Text>
-            <Input
-              w="100%"
+            <Text style={{ marginBottom: 5, fontWeight: '600' }}>Name</Text>
+            <TextInput
               placeholder="Add a name"
               onChangeText={(val) => setName(val)}
               style={{
-                fontSize: 16,
+                height: 40,
+                borderWidth: 1,
+                borderColor: isDarkMode ? Colors.slate[700] : Colors.slate[300],
+                borderRadius: 4,
+                padding: 10,
+                color: isDarkMode ? Colors.white : Colors.black,
               }}
               onSubmitEditing={name ? doSaveAlbum : undefined}
             />
           </View>
           <View style={{ marginBottom: 30, width: '100%' }}>
-            <Text>Description</Text>
-            <TextArea
-              h={20}
-              w="100%"
-              autoCompleteType={'off'}
+            <Text style={{ marginBottom: 5, fontWeight: '600' }}>Description</Text>
+            <TextInput
               placeholder="Add a description"
               onChangeText={(val) => setDescription(val)}
               style={{
+                height: 70,
                 fontSize: 16,
+                borderWidth: 1,
+                borderColor: isDarkMode ? Colors.slate[700] : Colors.slate[300],
+                borderRadius: 4,
+                padding: 10,
+                color: isDarkMode ? Colors.white : Colors.black,
               }}
               onSubmitEditing={name ? doSaveAlbum : undefined}
             />

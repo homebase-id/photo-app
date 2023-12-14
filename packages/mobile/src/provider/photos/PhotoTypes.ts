@@ -1,4 +1,5 @@
-import { TargetDrive, ImageContentType, VideoContentType } from '@youfoundation/js-lib/core';
+import { TargetDrive, ImageContentType } from '@youfoundation/js-lib/core';
+import { VideoContentType } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 
 export class PhotoConfig {
