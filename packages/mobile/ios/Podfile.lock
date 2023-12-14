@@ -1,5 +1,6 @@
 PODS:
   - Base64 (1.1.2)
+  - BEMCheckBox (1.4.1)
   - boost (1.76.0)
   - CodePush (8.1.0):
     - Base64 (~> 1.1)
@@ -477,6 +478,9 @@ PODS:
     - ZIPFoundation (= 0.9.11)
   - RNCAsyncStorage (1.21.0):
     - React-Core
+  - RNCCheckbox (0.5.16):
+    - BEMCheckBox (~> 1.4)
+    - React-Core
   - RNDateTimePicker (7.6.2):
     - React-Core
   - RNInAppBrowser (3.7.0):
@@ -547,6 +551,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../../../node_modules/react-native/ReactCommon`)
   - ReactNativeFileAccess (from `../../../node_modules/react-native-file-access`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCCheckbox (from `../../../node_modules/@react-native-community/checkbox`)"
   - "RNDateTimePicker (from `../../../node_modules/@react-native-community/datetimepicker`)"
   - RNInAppBrowser (from `../../../node_modules/react-native-inappbrowser-reborn`)
   - RNScreens (from `../../../node_modules/react-native-screens`)
@@ -556,6 +561,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Base64
+    - BEMCheckBox
     - fmt
     - JWT
     - libevent
@@ -674,6 +680,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-file-access"
   RNCAsyncStorage:
     :path: "../../../node_modules/@react-native-async-storage/async-storage"
+  RNCCheckbox:
+    :path: "../../../node_modules/@react-native-community/checkbox"
   RNDateTimePicker:
     :path: "../../../node_modules/@react-native-community/datetimepicker"
   RNInAppBrowser:
@@ -687,6 +695,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
+  BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
   CodePush: 255d7607f428dcbec39085f81a206b170e01d012
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
@@ -747,6 +756,7 @@ SPEC CHECKSUMS:
   ReactCommon: 4b2bdcb50a3543e1c2b2849ad44533686610826d
   ReactNativeFileAccess: 4530e3be4d5069454c6c6389096d8cb78c897f2c
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
+  RNCCheckbox: 75255b03e604bbcc26411eb31c4cbe3e3865f538
   RNDateTimePicker: fc2e4f2795877d45e84d85659bebe627eba5c931
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNScreens: 3c5b9f4a9dcde752466854b6109b79c0e205dad3

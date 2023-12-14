@@ -1,7 +1,7 @@
 import { debounce } from 'lodash-es';
 import React, { useMemo, useRef, useState } from 'react';
 
-import { Modal, VStack } from 'native-base';
+import { Modal } from 'native-base';
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { Platform, TextInput, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
@@ -75,6 +75,7 @@ const PhotoInfo = ({
           style={{
             borderBottomWidth: 0,
             backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+            color: isDarkMode ? Colors.white : Colors.black,
           }}
         >
           Info
@@ -122,11 +123,12 @@ const PhotoInfo = ({
             style={{
               fontWeight: '600',
               marginBottom: 15,
+              color: isDarkMode ? Colors.white : Colors.black,
             }}
           >
             Details
           </Text>
-          <VStack space={3} w="100%">
+          <View style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
             {/* DateTime */}
             {current ? <PhotoDate photoDsr={current} onChange={debouncedChangeTime} /> : null}
             {photoMetadata ? (
@@ -173,7 +175,7 @@ const PhotoInfo = ({
               <Text>Unique identifier</Text>
               <Text>{current?.fileMetadata.appData.uniqueId}</Text>
             </View>
-          </VStack>
+          </View>
         </Modal.Body>
       </Modal.Content>
     </Modal>
