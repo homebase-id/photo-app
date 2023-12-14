@@ -9,14 +9,8 @@ import usePhotoSelection from '../hooks/photoLibrary/usePhotoSelection';
 type PhotosProps = NativeStackScreenProps<TabStackParamList, 'Photos'>;
 
 const PhotosPage = (_props: PhotosProps) => {
-  const {
-    toggleSelection,
-    selectRange,
-    isSelected,
-    selection,
-    clearSelection,
-    isSelecting,
-  } = usePhotoSelection();
+  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
+    usePhotoSelection();
 
   useEffect(() => {
     const unsubscribe = _props.navigation.addListener('blur', () => {
@@ -43,7 +37,6 @@ const PhotosPage = (_props: PhotosProps) => {
   );
 };
 
-// import { Fab } from 'native-base';
 // import { Camera } from '../components/ui/Icons/icons';
 // import { Colors } from '../app/Colors';
 // import { launchCamera } from 'react-native-image-picker';
