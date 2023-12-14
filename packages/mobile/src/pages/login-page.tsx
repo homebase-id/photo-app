@@ -1,14 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  TextInput,
-  View,
-  Linking,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { Button, View, Linking, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { AuthStackParamList } from '../app/App';
 import { Container } from '../components/ui/Container/Container';
@@ -23,6 +15,7 @@ import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import logo from './homebase-photos.png';
 import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
 import { useDarkMode } from '../hooks/useDarkMode';
+import { Input } from '../components/ui/Form/Input';
 
 type LoginProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -188,16 +181,10 @@ const LoginComponent = () => {
   return (
     <>
       <Text style={{ fontSize: 18 }}>Your Homebase id</Text>
-      <TextInput
+      <Input
         placeholder="Homebase id"
         style={{
           height: 40,
-          marginVertical: 12,
-          borderWidth: 1,
-          borderColor: isDarkMode ? Colors.slate[700] : Colors.slate[300],
-          borderRadius: 4,
-          padding: 10,
-          color: isDarkMode ? Colors.white : Colors.black,
         }}
         onChangeText={setOdinId}
         autoCapitalize="none"

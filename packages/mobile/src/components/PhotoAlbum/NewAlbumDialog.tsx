@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Modal } from 'native-base';
-import { Button, TextInput, View } from 'react-native';
+import { Button, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { Colors } from '../../app/Colors';
 import { getNewId } from '@youfoundation/js-lib/helpers';
 import { useAlbum } from '../../hooks/photoLibrary/useAlbum';
 import { useDarkMode } from '../../hooks/useDarkMode';
+import { Input } from '../ui/Form/Input';
 
 const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [name, setName] = useState('');
@@ -51,33 +52,19 @@ const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           {/* Name */}
           <View style={{ marginBottom: 30, width: '100%' }}>
             <Text style={{ marginBottom: 5, fontWeight: '600' }}>Name</Text>
-            <TextInput
+            <Input
               placeholder="Add a name"
               onChangeText={(val) => setName(val)}
-              style={{
-                height: 40,
-                borderWidth: 1,
-                borderColor: isDarkMode ? Colors.slate[700] : Colors.slate[300],
-                borderRadius: 4,
-                padding: 10,
-                color: isDarkMode ? Colors.white : Colors.black,
-              }}
               onSubmitEditing={name ? doSaveAlbum : undefined}
             />
           </View>
           <View style={{ marginBottom: 30, width: '100%' }}>
             <Text style={{ marginBottom: 5, fontWeight: '600' }}>Description</Text>
-            <TextInput
+            <Input
               placeholder="Add a description"
               onChangeText={(val) => setDescription(val)}
               style={{
                 height: 70,
-                fontSize: 16,
-                borderWidth: 1,
-                borderColor: isDarkMode ? Colors.slate[700] : Colors.slate[300],
-                borderRadius: 4,
-                padding: 10,
-                color: isDarkMode ? Colors.white : Colors.black,
               }}
               onSubmitEditing={name ? doSaveAlbum : undefined}
             />

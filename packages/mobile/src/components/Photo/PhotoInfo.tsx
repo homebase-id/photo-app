@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState } from 'react';
 
 import { Modal } from 'native-base';
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
-import { Platform, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../../app/Colors';
@@ -13,6 +13,7 @@ import { useDarkMode } from '../../hooks/useDarkMode';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
+import { Input } from '../ui/Form/Input';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -97,7 +98,7 @@ const PhotoInfo = ({
                 >
                   Description
                 </Text>
-                <TextInput
+                <Input
                   multiline={true}
                   placeholder="Add a description"
                   defaultValue={photoMetadata?.description}
@@ -108,12 +109,6 @@ const PhotoInfo = ({
                   }
                   style={{
                     height: 70,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: isDarkMode ? Colors.slate[700] : Colors.slate[300],
-                    borderRadius: 4,
-                    padding: 10,
-                    color: isDarkMode ? Colors.white : Colors.black,
                   }}
                 />
               </>
