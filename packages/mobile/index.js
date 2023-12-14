@@ -16,7 +16,6 @@ import 'react-native-url-polyfill/auto';
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill';
 
 if (!global.TextEncoder) global.TextEncoder = TextEncoder;
-
 if (!global.TextDecoder) global.TextDecoder = TextDecoder;
 
 // Crypto polyfill
@@ -31,11 +30,11 @@ if (!global.crypto?.subtle)
   };
 
 // Blob Polyfill
-import { default as internalBlob } from 'react-native/Libraries/Blob/Blob';
-window.Blob = internalBlob;
+import { OdinBlob } from './polyfills/OdinBlob';
+global.OdinBlob = OdinBlob;
 
 // FormData within react-native is always used by the network polyfills.. No way to polyfill without overriding the network polyfills or the direct pacakge;
-// FormData Polyfill => Done with package-update
+// FormData Polyfill => Done with patch-package
 
 // LocalStorage proper undefined marking
 global.localStorage = undefined;
