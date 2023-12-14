@@ -1,20 +1,14 @@
-import {
-  Dimensions,
-  FlatList,
-  RefreshControl,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Dimensions, FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoItem } from '../Photos/PhotoDay/PhotoDay';
 import { useEffect, useState } from 'react';
-import { Actionsheet } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import { Ellipsis } from '../ui/Icons/icons';
 import { useSiblingsRangeInfinte } from '../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
 import { useFlatPhotosFromDate } from '../../hooks/photoLibrary/usePhotos';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { useAlbum } from '../../hooks/photoLibrary/useAlbum';
+import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -32,12 +26,8 @@ const PhotoAlbum = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
-  const [selectionRangeFrom, setSelectionRangeFrom] = useState<
-    string | undefined
-  >();
-  const [selectionRangeTo, setSelectionRangeTo] = useState<
-    string | undefined
-  >();
+  const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
+  const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
   const {
     data: photos,
     hasNextPage: hasMorePhotos,
@@ -47,7 +37,7 @@ const PhotoAlbum = ({
     album: albumKey,
     ordering: 'newer',
   }).fetchPhotos;
-  const flatPhotos = photos?.pages.flatMap(page => page.results) ?? [];
+  const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 
   const [refreshing, setRefreshing] = useState(false);
   const doRefresh = async () => {
@@ -106,29 +96,27 @@ const PhotoAlbum = ({
 
   if (!flatPhotos?.length)
     return (
-      <Text style={{ padding: 5 }}>
-        {'Mmh, this looks empty... Time to add some photos?'}
-      </Text>
+      <Text style={{ padding: 5 }}>{'Mmh, this looks empty... Time to add some photos?'}</Text>
     );
 
   return (
     <View
       style={{
         margin: -1,
-      }}>
+      }}
+    >
       <FlatList
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={doRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={doRefresh} />}
         data={flatPhotos}
         key={numColums}
-        renderItem={item => (
+        renderItem={(item) => (
           <View
             key={item.item.fileId}
             style={{
               width: size,
               padding: 1,
-            }}>
+            }}
+          >
             <PhotoItem
               targetDrive={targetDrive}
               photoDsr={item.item}
@@ -155,11 +143,7 @@ export const PhotoAlbumContextToggle = ({ albumId }: { albumId: string }) => {
 
   const {
     fetch: { data: album },
-    remove: {
-      mutate: removeAlbum,
-      status: removeAlbumStatus,
-      error: removeAlbumError,
-    },
+    remove: { mutate: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
   } = useAlbum(albumId);
 
   const doRemove = () => {
@@ -175,16 +159,15 @@ export const PhotoAlbumContextToggle = ({ albumId }: { albumId: string }) => {
       <TouchableOpacity onPress={() => setIsInfoOpen(true)}>
         <Ellipsis color={'blue.400'} />
       </TouchableOpacity>
-      <Actionsheet isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)}>
-        <Actionsheet.Content>
-          <Actionsheet.Item
-            onPress={() => {
-              doRemove();
-            }}>
-            <Text>Remove</Text>
-          </Actionsheet.Item>
-        </Actionsheet.Content>
-      </Actionsheet>
+      <ActionSheet isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)}>
+        <ActionSheetItem
+          onPress={() => {
+            doRemove();
+          }}
+        >
+          <Text>Remove</Text>
+        </ActionSheetItem>
+      </ActionSheet>
     </>
   );
 };

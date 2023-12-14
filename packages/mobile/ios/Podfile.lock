@@ -483,8 +483,15 @@ PODS:
     - React-Core
   - RNDateTimePicker (7.6.2):
     - React-Core
+  - RNGestureHandler (2.14.0):
+    - RCT-Folly (= 2021.07.22.00)
+    - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
+  - RNReanimated (3.6.1):
+    - RCT-Folly (= 2021.07.22.00)
+    - React-Core
+    - ReactCommon/turbomodule/core
   - RNScreens (3.29.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
@@ -553,7 +560,9 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCCheckbox (from `../../../node_modules/@react-native-community/checkbox`)"
   - "RNDateTimePicker (from `../../../node_modules/@react-native-community/datetimepicker`)"
+  - RNGestureHandler (from `../../../node_modules/react-native-gesture-handler`)
   - RNInAppBrowser (from `../../../node_modules/react-native-inappbrowser-reborn`)
+  - RNReanimated (from `../../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../../node_modules/react-native-screens`)
   - RNSVG (from `../../../node_modules/react-native-svg`)
   - Yoga (from `../../../node_modules/react-native/ReactCommon/yoga`)
@@ -684,8 +693,12 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/@react-native-community/checkbox"
   RNDateTimePicker:
     :path: "../../../node_modules/@react-native-community/datetimepicker"
+  RNGestureHandler:
+    :path: "../../../node_modules/react-native-gesture-handler"
   RNInAppBrowser:
     :path: "../../../node_modules/react-native-inappbrowser-reborn"
+  RNReanimated:
+    :path: "../../../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../../../node_modules/react-native-screens"
   RNSVG:
@@ -758,7 +771,9 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCCheckbox: 75255b03e604bbcc26411eb31c4cbe3e3865f538
   RNDateTimePicker: fc2e4f2795877d45e84d85659bebe627eba5c931
+  RNGestureHandler: 32a01c29ecc9bb0b5bf7bc0a33547f61b4dc2741
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
+  RNReanimated: c114c031ecae76049ad03aeb0f94a2243498a88d
   RNScreens: 3c5b9f4a9dcde752466854b6109b79c0e205dad3
   RNSVG: d7d7bc8229af3842c9cfc3a723c815a52cdd1105
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17

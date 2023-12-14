@@ -1,7 +1,6 @@
 import { debounce } from 'lodash-es';
 import React, { useMemo, useRef, useState } from 'react';
 
-import { Modal } from 'native-base';
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
@@ -14,17 +13,16 @@ import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
+import { Modal } from '../ui/Modal/Modal';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const PhotoInfo = ({
   current,
-  isOpen,
   onClose,
 }: {
   current?: DriveSearchResult;
 
-  isOpen: boolean;
   onClose: () => void;
 }) => {
   const {
@@ -60,119 +58,96 @@ const PhotoInfo = ({
   );
 
   const { isDarkMode } = useDarkMode();
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} avoidKeyboard>
-      <Modal.Content
-        style={{
-          marginTop: 'auto',
-          marginBottom: 0,
-          width: '100%',
-          maxHeight: '60%',
-          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-        }}
-      >
-        <Modal.CloseButton />
-        <Modal.Header
+    <Modal onClose={onClose} title="Info">
+      <>
+        {/* Description */}
+        <View style={{ marginBottom: 30, width: '100%' }}>
+          {photoMetadata ? (
+            <>
+              <Text
+                style={{
+                  fontWeight: '600',
+                  marginBottom: 5,
+                }}
+              >
+                Description
+              </Text>
+              <Input
+                multiline={true}
+                placeholder="Add a description"
+                defaultValue={photoMetadata?.description}
+                onChangeText={(e) =>
+                  debouncedChangeDesc({
+                    target: { name: 'description', value: e },
+                  })
+                }
+                style={{
+                  height: 70,
+                }}
+              />
+            </>
+          ) : null}
+        </View>
+        <Text
           style={{
-            borderBottomWidth: 0,
-            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+            fontWeight: '600',
+            marginBottom: 15,
             color: isDarkMode ? Colors.white : Colors.black,
           }}
         >
-          Info
-        </Modal.Header>
-        <Modal.Body
-          style={{
-            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-          }}
-        >
-          {/* Description */}
-          <View style={{ marginBottom: 30, width: '100%' }}>
-            {photoMetadata ? (
-              <>
+          Details
+        </Text>
+        <View style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+          {/* DateTime */}
+          {current ? <PhotoDate photoDsr={current} onChange={debouncedChangeTime} /> : null}
+          {photoMetadata ? (
+            <>
+              {/* Capture; Camera etc... */}
+              <PhotoCaptureDetails
+                metadata={photoMetadata}
+                key={'PhotoCaptureDetails' + current?.fileId}
+              />
+              {/* Location */}
+              <PhotoGeoLocation
+                metadata={photoMetadata}
+                key={'PhotoGeoLocation' + current?.fileId}
+              />
+            </>
+          ) : null}
+          {/* Image size */}
+          <View>
+            <Text>Image size</Text>
+
+            {loadOriginal ? (
+              <Text style={{ color: isDarkMode ? Colors.white : Colors.black }}>
+                {originalSize?.pixelWidth} x {originalSize?.pixelHeight}
+              </Text>
+            ) : (
+              <View style={{ display: 'flex', flexDirection: 'row' }}>
+                <Text>
+                  {maxThumb?.pixelWidth} x {maxThumb?.pixelHeight}
+                </Text>
                 <Text
                   style={{
-                    fontWeight: '600',
-                    marginBottom: 5,
+                    marginLeft: 5,
+                    fontStyle: 'italic',
                   }}
                 >
-                  Description
+                  ({originalSize?.pixelWidth} x {originalSize?.pixelHeight} original)
                 </Text>
-                <Input
-                  multiline={true}
-                  placeholder="Add a description"
-                  defaultValue={photoMetadata?.description}
-                  onChangeText={(e) =>
-                    debouncedChangeDesc({
-                      target: { name: 'description', value: e },
-                    })
-                  }
-                  style={{
-                    height: 70,
-                  }}
-                />
-              </>
-            ) : null}
+              </View>
+            )}
           </View>
-          <Text
-            style={{
-              fontWeight: '600',
-              marginBottom: 15,
-              color: isDarkMode ? Colors.white : Colors.black,
-            }}
-          >
-            Details
-          </Text>
-          <View style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {/* DateTime */}
-            {current ? <PhotoDate photoDsr={current} onChange={debouncedChangeTime} /> : null}
-            {photoMetadata ? (
-              <>
-                {/* Capture; Camera etc... */}
-                <PhotoCaptureDetails
-                  metadata={photoMetadata}
-                  key={'PhotoCaptureDetails' + current?.fileId}
-                />
-                {/* Location */}
-                <PhotoGeoLocation
-                  metadata={photoMetadata}
-                  key={'PhotoGeoLocation' + current?.fileId}
-                />
-              </>
-            ) : null}
-            {/* Image size */}
-            <View>
-              <Text>Image size</Text>
+          {/* Unique Id */}
 
-              {loadOriginal ? (
-                <Text style={{ color: isDarkMode ? Colors.white : Colors.black }}>
-                  {originalSize?.pixelWidth} x {originalSize?.pixelHeight}
-                </Text>
-              ) : (
-                <View style={{ display: 'flex', flexDirection: 'row' }}>
-                  <Text>
-                    {maxThumb?.pixelWidth} x {maxThumb?.pixelHeight}
-                  </Text>
-                  <Text
-                    style={{
-                      marginLeft: 5,
-                      fontStyle: 'italic',
-                    }}
-                  >
-                    ({originalSize?.pixelWidth} x {originalSize?.pixelHeight} original)
-                  </Text>
-                </View>
-              )}
-            </View>
-            {/* Unique Id */}
-
-            <View>
-              <Text>Unique identifier</Text>
-              <Text>{current?.fileMetadata.appData.uniqueId}</Text>
-            </View>
+          <View>
+            <Text>Unique identifier</Text>
+            <Text>{current?.fileMetadata.appData.uniqueId}</Text>
           </View>
-        </Modal.Body>
-      </Modal.Content>
+        </View>
+      </>
     </Modal>
   );
 };

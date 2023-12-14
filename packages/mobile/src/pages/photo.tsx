@@ -309,9 +309,7 @@ const InnerPhotoPreview = ({
         </View>
       </View>
 
-      {isInfoOpen ? (
-        <PhotoInfo current={fileHeader} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
-      ) : null}
+      {isInfoOpen ? <PhotoInfo current={fileHeader} onClose={() => setIsInfoOpen(false)} /> : null}
     </View>
   );
 };

@@ -2,7 +2,6 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NativeBaseProvider } from 'native-base';
 import PhotosPage from '../pages/photos';
 import PhotoPreview from '../pages/photo';
 
@@ -15,7 +14,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { focusManager, QueryClient } from '@tanstack/react-query';
 import { Images, ImageLibrary, Cog } from '../components/ui/Icons/icons';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { PhotoAlbumContextToggle } from '../components/PhotoAlbum/PhotoAlbum';
 import { Platform } from 'react-native';
 import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
@@ -30,6 +28,7 @@ import CodePush from 'react-native-code-push';
 import useBackupOldCameraRoll from '../hooks/cameraRoll/useBackupOldCameraRoll';
 import { useDarkMode } from '../hooks/useDarkMode';
 import useAuth from '../hooks/auth/useAuth';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -87,13 +86,12 @@ let App = () => {
         persister: asyncPersist,
       }}
       onSuccess={() =>
-        queryClient
-          .resumePausedMutations()
-          .then(() => queryClient.invalidateQueries())
-      }>
-      <NativeBaseProvider>
+        queryClient.resumePausedMutations().then(() => queryClient.invalidateQueries())
+      }
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <RootStack />
-      </NativeBaseProvider>
+      </GestureHandlerRootView>
     </PersistQueryClientProvider>
   );
 };
@@ -111,11 +109,7 @@ const RootStack = () => {
           <Stack.Screen name="Authenticated" component={AuthenticatedStack} />
         ) : (
           <>
-            <Stack.Screen
-              name="Login"
-              component={LoginPage}
-              options={{ headerShown: false }}
-            />
+            <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>
@@ -131,9 +125,7 @@ const AuthenticatedStack = () => {
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
-  const albumContextMenu = (albumId: string) => (
-    <PhotoAlbumContextToggle albumId={albumId} />
-  );
+  // const albumContextMenu = (albumId: string) => <PhotoAlbumContextToggle albumId={albumId} />;
 
   if (!haveData) return <LoadingPage />;
 
@@ -147,17 +139,10 @@ const AuthenticatedStack = () => {
           color: isDarkMode ? Colors.white : Colors.black,
         },
         headerShadowVisible: false,
-      }}>
-      <Stack.Screen
-        name="Home"
-        component={TabStack}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="PhotoPreview"
-        component={PhotoPreview}
-        options={{ headerShown: false }}
-      />
+      }}
+    >
+      <Stack.Screen name="Home" component={TabStack} options={{ headerShown: false }} />
+      <Stack.Screen name="PhotoPreview" component={PhotoPreview} options={{ headerShown: false }} />
       <Stack.Screen
         name="Album"
         component={AlbumPage}
@@ -165,7 +150,7 @@ const AuthenticatedStack = () => {
           headerTitleAlign: 'center',
           headerTitle: () => albumTitle(route.params.albumId),
           headerBackTitle: 'Library',
-          headerRight: () => albumContextMenu(route.params.albumId),
+          // headerRight: () => albumContextMenu(route.params.albumId),
         })}
       />
       <Stack.Screen
@@ -173,8 +158,7 @@ const AuthenticatedStack = () => {
         component={TypePage}
         options={({ route }) => ({
           headerTitleAlign: 'center',
-          headerTitle:
-            route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
+          headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
           headerBackTitle: 'Library',
         })}
       />
@@ -203,12 +187,8 @@ const TabStack = () => {
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
           borderTopColor: isDarkMode ? Colors.gray[700] : Colors.slate[200],
         },
-        tabBarInactiveTintColor: isDarkMode
-          ? Colors.slate[500]
-          : Colors.slate[500],
-        tabBarActiveTintColor: isDarkMode
-          ? Colors.indigo[500]
-          : Colors.indigo[700],
+        tabBarInactiveTintColor: isDarkMode ? Colors.slate[500] : Colors.slate[500],
+        tabBarActiveTintColor: isDarkMode ? Colors.indigo[500] : Colors.indigo[700],
         tabBarActiveBackgroundColor: isDarkMode ? Colors.black : Colors.white,
 
         headerStyle: {
@@ -219,7 +199,8 @@ const TabStack = () => {
         },
         headerShadowVisible: false,
         tabBarShowLabel: false,
-      }}>
+      }}
+    >
       <Tab.Screen
         name="Photos"
         component={PhotosPage}
@@ -255,11 +236,7 @@ const SettingsStack = () => {
 
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Profile"
-        component={SettingsPage}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="Profile" component={SettingsPage} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };

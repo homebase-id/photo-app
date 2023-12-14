@@ -1,6 +1,5 @@
 import { GestureResponderEvent, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
-import { Actionsheet } from 'native-base';
 import { RecycleBin, Archive, OpenHearth, Times, SolidHearth } from '../ui/Icons/icons';
 import { ReactNode, useState } from 'react';
 import { Colors } from '../../app/Colors';
@@ -8,6 +7,7 @@ import usePhoto from '../../hooks/photoLibrary/usePhoto';
 import useAlbums from '../../hooks/photoLibrary/useAlbums';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
+import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -202,21 +202,23 @@ const PhotoSelection = ({
           </>
         )}
       </SelectionBar>
-      <Actionsheet isOpen={isAlbumSelectionOpen} onClose={() => setIsAlbumSelectionOpen(false)}>
-        <Actionsheet.Content>
-          {albums?.map((album) => (
-            <Actionsheet.Item
-              key={album.tag}
-              onPress={() => {
-                addSelectionToAlbum(album.tag);
-                setIsAlbumSelectionOpen(false);
-              }}
-            >
-              <Text>{album.name}</Text>
-            </Actionsheet.Item>
-          ))}
-        </Actionsheet.Content>
-      </Actionsheet>
+      <ActionSheet
+        isOpen={isAlbumSelectionOpen}
+        onClose={() => setIsAlbumSelectionOpen(false)}
+        title="Add to album"
+      >
+        {albums?.map((album) => (
+          <ActionSheetItem
+            key={album.tag}
+            onPress={() => {
+              addSelectionToAlbum(album.tag);
+              setIsAlbumSelectionOpen(false);
+            }}
+          >
+            <Text>{album.name}</Text>
+          </ActionSheetItem>
+        ))}
+      </ActionSheet>
     </>
   );
 };
