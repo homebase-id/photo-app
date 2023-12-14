@@ -12,10 +12,7 @@ import {
   queryBatch,
   queryModified,
 } from '@youfoundation/js-lib/core';
-import {
-  base64ToUint8Array,
-  jsonStringify64,
-} from '@youfoundation/js-lib/helpers';
+import { base64ToUint8Array, jsonStringify64 } from '@youfoundation/js-lib/helpers';
 import { QuickSQLite, Transaction, open } from 'react-native-quick-sqlite';
 
 export interface FileSyncOptions {
@@ -91,7 +88,7 @@ const initiate = () => {
 
       content TEXT,
       sharedSecretEncryptedKeyHeader TEXT
-    ) WITHOUT ROWID;`,
+    ) WITHOUT ROWID;`
   );
 
   // db.execute('DROP TABLE IF EXISTS tags;');
@@ -101,17 +98,14 @@ const initiate = () => {
       targetDrive TEXT NOT NULL,
       tagId TEXT NOT NULL,
       PRIMARY KEY (fileId, tagId)
-    ) WITHOUT ROWID;`,
+    ) WITHOUT ROWID;`
   );
 };
 
 initiate();
 
-export const saveToLocalDb = async (
-  targetDrive: TargetDrive,
-  headers: DriveSearchResult[],
-) => {
-  await QuickSQLite.transaction(DB_NAME, async tx => {
+export const saveToLocalDb = async (targetDrive: TargetDrive, headers: DriveSearchResult[]) => {
+  await QuickSQLite.transaction(DB_NAME, async (tx) => {
     try {
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i];
@@ -189,7 +183,7 @@ export const saveToLocalDb = async (
             header.sharedSecretEncryptedKeyHeader
               ? jsonStringify64(header.sharedSecretEncryptedKeyHeader)
               : undefined,
-          ],
+          ]
         );
 
         // we have an updated file (updated of incoming header is later than existing header), reset all tags for this file
@@ -200,18 +194,15 @@ export const saveToLocalDb = async (
 
           for (
             let j = 0;
-            header.fileMetadata.appData.tags &&
-            j < header.fileMetadata.appData.tags?.length;
+            header.fileMetadata.appData.tags && j < header.fileMetadata.appData.tags?.length;
             j++
           ) {
-            const normalizedTag = normalizeGuid(
-              header.fileMetadata.appData.tags[j],
-            );
+            const normalizedTag = normalizeGuid(header.fileMetadata.appData.tags[j]);
             await tx.executeAsync(
               `INSERT INTO tags (fileId, tagId, targetDrive)
             VALUES (?, ?, ?)
             ON CONFLICT(fileId, tagId) DO NOTHING`,
-              [normalizeGuid(header.fileId), normalizedTag, targetDrive.alias],
+              [normalizeGuid(header.fileId), normalizedTag, targetDrive.alias]
             );
           }
         }
@@ -229,19 +220,15 @@ export const saveToLocalDb = async (
   return true;
 };
 
-const removeFromLocalDb = async (
-  targetDrive: TargetDrive,
-  fileId: string,
-  tx?: Transaction,
-) => {
-  await (tx || db).executeAsync(
-    'DELETE FROM headers WHERE fileId = ? AND targetDrive = ?',
-    [normalizeGuid(fileId), targetDrive.alias],
-  );
-  await (tx || db).executeAsync(
-    'DELETE FROM tags WHERE fileId = ? AND targetDrive = ?',
-    [normalizeGuid(fileId), targetDrive.alias],
-  );
+const removeFromLocalDb = async (targetDrive: TargetDrive, fileId: string, tx?: Transaction) => {
+  await (tx || db).executeAsync('DELETE FROM headers WHERE fileId = ? AND targetDrive = ?', [
+    normalizeGuid(fileId),
+    targetDrive.alias,
+  ]);
+  await (tx || db).executeAsync('DELETE FROM tags WHERE fileId = ? AND targetDrive = ?', [
+    normalizeGuid(fileId),
+    targetDrive.alias,
+  ]);
 };
 
 const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
@@ -262,9 +249,7 @@ const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
         userDate: row.userDate,
         tags: tagRows || [],
         content: row.content ? JSON.parse(row.content) : undefined,
-        previewThumbnail: row.previewThumbnail
-          ? JSON.parse(row.previewThumbnail)
-          : undefined,
+        previewThumbnail: row.previewThumbnail ? JSON.parse(row.previewThumbnail) : undefined,
       },
       created: row.created,
       updated: row.updated,
@@ -293,11 +278,11 @@ const parseHeader = (row: HeaderRow, tagRows?: string[]): DriveSearchResult => {
 
 export const getHeaderFromLocalDb = async (
   targetDrive: TargetDrive,
-  fileId: string,
+  fileId: string
 ): Promise<DriveSearchResult | undefined> => {
   const queryResult = await db.executeAsync(
     'SELECT * FROM headers WHERE fileId = ? AND targetDrive = ?',
-    [fileId, targetDrive.alias],
+    [fileId, targetDrive.alias]
   );
 
   if (!queryResult.rows || queryResult.rows?.length === 0) return undefined;
@@ -305,7 +290,7 @@ export const getHeaderFromLocalDb = async (
   const flatHeader: HeaderRow = queryResult.rows.item(0);
   const tagsQueryResult = await db.executeAsync(
     'SELECT * FROM tags WHERE fileId = ? AND targetDrive = ?',
-    [fileId, targetDrive.alias],
+    [fileId, targetDrive.alias]
   );
 
   const tagRows: string[] = [];
@@ -318,7 +303,7 @@ export const getHeaderFromLocalDb = async (
 export const syncHeaderFile = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  fileId: string,
+  fileId: string
 ): Promise<void> => {
   const header = await getFileHeader(dotYouClient, targetDrive, fileId);
   if (header) await saveToLocalDb(targetDrive, [header]);
@@ -335,7 +320,7 @@ const syncBatch = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   queryParams: FileSyncOptions,
-  lastQueryBatchCursor: string | undefined,
+  lastQueryBatchCursor: string | undefined
 ): Promise<{ cursor: string; queryTime: number }> => {
   // QueryBatch (get all/new files)
   const mergedQueryParams: FileQueryParams = {
@@ -349,11 +334,7 @@ const syncBatch = async (
     includeMetadataHeader: true,
   };
 
-  const response = await queryBatch(
-    dotYouClient,
-    mergedQueryParams,
-    resultOptions,
-  );
+  const response = await queryBatch(dotYouClient, mergedQueryParams, resultOptions);
 
   console.log(`Batch, saving ${response.searchResults.length} rows`);
   if (!(await saveToLocalDb(targetDrive, response.searchResults)))
@@ -361,12 +342,7 @@ const syncBatch = async (
 
   // We have more results to fetch
   if (response.searchResults.length >= BATCH_SIZE)
-    return await syncBatch(
-      dotYouClient,
-      targetDrive,
-      queryParams,
-      response.cursorState,
-    );
+    return await syncBatch(dotYouClient, targetDrive, queryParams, response.cursorState);
 
   return { cursor: response.cursorState, queryTime: response.queryTime };
 };
@@ -375,7 +351,7 @@ const syncModifed = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   queryParams: FileSyncOptions,
-  mostRecentQueryModifiedTime: number | undefined,
+  mostRecentQueryModifiedTime: number | undefined
 ): Promise<{ queryTime: number }> => {
   // QueryModified (get modified files)
   const mergedQueryParams: FileQueryParams = {
@@ -389,25 +365,21 @@ const syncModifed = async (
     includeHeaderContent: true,
   };
 
-  const response = await queryModified(
-    dotYouClient,
-    mergedQueryParams,
-    resultOptions,
-  );
+  const response = await queryModified(dotYouClient, mergedQueryParams, resultOptions);
 
   console.log(`Modified, saving ${response.searchResults.length} rows`);
   // TODO: Handle deleted files
-  if (!(await saveToLocalDb(targetDrive, response.searchResults)))
+  if (
+    !(await saveToLocalDb(
+      targetDrive,
+      response.searchResults.filter((dsr) => dsr.fileState === 'active') as DriveSearchResult[]
+    ))
+  )
     throw new Error('Failed to save to db');
 
   // We have more results to fetch
   if (response.searchResults.length >= BATCH_SIZE)
-    return await syncModifed(
-      dotYouClient,
-      targetDrive,
-      queryParams,
-      response.cursor,
-    );
+    return await syncModifed(dotYouClient, targetDrive, queryParams, response.cursor);
 
   return { queryTime: response.cursor };
 };
@@ -419,7 +391,7 @@ export const syncLocalDb = async (
   pageParams: {
     lastQueryBatchCursor: string | undefined;
     mostRecentQueryModifiedTime: number | undefined;
-  },
+  }
 ): Promise<{ cursor: string; queryTime: number }> => {
   console.log('syncing from queries with', pageParams);
 
@@ -427,13 +399,13 @@ export const syncLocalDb = async (
     dotYouClient,
     targetDrive,
     queryParams,
-    pageParams.lastQueryBatchCursor,
+    pageParams.lastQueryBatchCursor
   );
   const { queryTime } = await syncModifed(
     dotYouClient,
     targetDrive,
     queryParams,
-    pageParams.mostRecentQueryModifiedTime,
+    pageParams.mostRecentQueryModifiedTime
   );
 
   return { cursor, queryTime };
@@ -452,7 +424,7 @@ interface LocalDbResultOptions {
 
 export const queryLocalDb = async (
   params: LocalDbFileQueryParams,
-  resultOptions?: LocalDbResultOptions,
+  resultOptions?: LocalDbResultOptions
 ): Promise<DriveSearchResult[]> => {
   let query = 'SELECT * FROM headers WHERE targetDrive = ?';
   const values: (string | number | number[])[] = [params.targetDrive.alias];
@@ -478,30 +450,19 @@ export const queryLocalDb = async (
     values.push(params.userDate.end);
   } else if (params.userDate && params.userDate.start) {
     if (resultOptions?.sorting === 'userDate')
-      if (resultOptions?.ordering === 'newestFirst')
-        query += ' AND userDate <= ?';
+      if (resultOptions?.ordering === 'newestFirst') query += ' AND userDate <= ?';
       else query += ' AND userDate > ?';
     values.push(params.userDate.start);
   }
 
-  if (
-    params.clientUniqueIdAtLeastOne &&
-    params.clientUniqueIdAtLeastOne.length > 0
-  ) {
+  if (params.clientUniqueIdAtLeastOne && params.clientUniqueIdAtLeastOne.length > 0) {
     query += ' AND uniqueId IN (?)';
-    values.push(
-      params.clientUniqueIdAtLeastOne
-        .map(guid => normalizeGuid(guid))
-        .join(','),
-    );
+    values.push(params.clientUniqueIdAtLeastOne.map((guid) => normalizeGuid(guid)).join(','));
   }
 
   if (params.tagsMatchAtLeastOne && params.tagsMatchAtLeastOne.length > 0) {
-    query +=
-      ' AND fileId IN (SELECT fileId FROM tags WHERE tagId IN (?) AND targetDrive = ?)';
-    values.push(
-      params.tagsMatchAtLeastOne.map(tag => normalizeGuid(tag)).join(','),
-    );
+    query += ' AND fileId IN (SELECT fileId FROM tags WHERE tagId IN (?) AND targetDrive = ?)';
+    values.push(params.tagsMatchAtLeastOne.map((tag) => normalizeGuid(tag)).join(','));
     values.push(params.targetDrive.alias);
   }
 
@@ -527,7 +488,7 @@ export const queryLocalDb = async (
     values.push(resultOptions.pageParam.skip || 0);
   }
 
-  return await db.executeAsync(query, values).then(result => {
+  return await db.executeAsync(query, values).then((result) => {
     const rows = result.rows;
     const results: DriveSearchResult[] = [];
     for (let i = 0; rows && i < rows.length; i++) {

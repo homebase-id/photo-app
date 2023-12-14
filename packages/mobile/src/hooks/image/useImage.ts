@@ -4,14 +4,12 @@ import {
   ImageSize,
   TargetDrive,
   DotYouClient,
-  getDecryptedImageUrl,
   SecurityGroupType,
   ImageContentType,
   AccessControlList,
-  uploadImage,
-  removeImage,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
+import { getDecryptedImageUrl, uploadImage, removeImage } from '@youfoundation/js-lib/media';
 
 interface ImageData {
   url: string;
@@ -25,7 +23,7 @@ const useImage = (
   imageDrive?: TargetDrive,
   size?: ImageSize,
   probablyEncrypted?: boolean,
-  naturalSize?: ImageSize,
+  naturalSize?: ImageSize
 ) => {
   const queryClient = useQueryClient();
 
@@ -33,7 +31,7 @@ const useImage = (
     odinId: string | undefined,
     imageFileId: string,
     imageDrive: TargetDrive,
-    size?: ImageSize,
+    size?: ImageSize
   ) => {
     const cachedEntries = queryClient
       .getQueryCache()
@@ -41,9 +39,9 @@ const useImage = (
         queryKey: ['image', odinId, imageDrive?.alias, imageFileId],
         exact: false,
       })
-      .filter(query => query.state.status !== 'error');
+      .filter((query) => query.state.status !== 'error');
 
-    const cachedEntriesWithSize = cachedEntries.map(entry => {
+    const cachedEntriesWithSize = cachedEntries.map((entry) => {
       const sizeParts = (entry.queryKey[4] as string)?.split('x');
       const size = sizeParts
         ? {
@@ -58,11 +56,11 @@ const useImage = (
       };
     });
 
-    if (!size) return cachedEntriesWithSize.find(entry => !entry.size);
+    if (!size) return cachedEntriesWithSize.find((entry) => !entry.size);
 
     return cachedEntriesWithSize
-      .filter(entry => !!entry.size)
-      .find(entry => {
+      .filter((entry) => !!entry.size)
+      .find((entry) => {
         if (
           entry.size &&
           entry.size.pixelHeight >= size.pixelHeight &&
@@ -78,20 +76,13 @@ const useImage = (
     imageDrive?: TargetDrive,
     size?: ImageSize,
     probablyEncrypted?: boolean,
-    naturalSize?: ImageSize,
+    naturalSize?: ImageSize
   ): Promise<ImageData | undefined> => {
     if (imageFileId === undefined || imageFileId === '' || !imageDrive) return;
 
-    const cachedEntry = checkIfWeHaveLargerCachedImage(
-      odinId,
-      imageFileId,
-      imageDrive,
-      size,
-    );
+    const cachedEntry = checkIfWeHaveLargerCachedImage(odinId, imageFileId, imageDrive, size);
     if (cachedEntry) {
-      const cachedData = queryClient.getQueryData<ImageData | undefined>(
-        cachedEntry.queryKey,
-      );
+      const cachedData = queryClient.getQueryData<ImageData | undefined>(cachedEntry.queryKey);
       if (cachedData) return cachedData;
     }
 
@@ -103,7 +94,7 @@ const useImage = (
           imageFileId,
           DEFAULT_PAYLOAD_KEY,
           size,
-          probablyEncrypted,
+          probablyEncrypted
         ),
         naturalSize: naturalSize,
       };
@@ -136,7 +127,7 @@ const useImage = (
       {
         fileId,
         versionTag,
-      },
+      }
     );
   };
 
@@ -159,43 +150,28 @@ const useImage = (
         imageFileId,
         // Rounding the cache key of the size so close enough sizes will be cached together
         size
-          ? `${Math.round(size.pixelHeight / 25) * 25}x${
-              Math.round(size?.pixelWidth / 25) * 25
-            }`
+          ? `${Math.round(size.pixelHeight / 25) * 25}x${Math.round(size?.pixelWidth / 25) * 25}`
           : undefined,
       ],
       queryFn: () =>
-        fetchImageData(
-          odinId,
-          imageFileId,
-          imageDrive,
-          size,
-          probablyEncrypted,
-          naturalSize,
-        ),
+        fetchImageData(odinId, imageFileId, imageDrive, size, probablyEncrypted, naturalSize),
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60, // 1 min
       gcTime: Infinity,
       enabled: !!imageFileId && imageFileId !== '',
     }),
-    getFromCache: (
-      odinId: string | undefined,
-      imageFileId: string,
-      imageDrive: TargetDrive,
-    ) => {
+    getFromCache: (odinId: string | undefined, imageFileId: string, imageDrive: TargetDrive) => {
       const cachedEntries = queryClient
         .getQueryCache()
         .findAll({
           queryKey: ['image', odinId, imageDrive?.alias, imageFileId],
           exact: false,
         })
-        .filter(query => query.state.status === 'success');
+        .filter((query) => query.state.status === 'success');
 
       if (cachedEntries?.length)
-        return queryClient.getQueryData<ImageData | undefined>(
-          cachedEntries[0].queryKey,
-        );
+        return queryClient.getQueryData<ImageData | undefined>(cachedEntries[0].queryKey);
     },
     save: useMutation({
       mutationFn: saveImageFile,
@@ -203,12 +179,7 @@ const useImage = (
         // Boom baby!
         if (variables.fileId)
           queryClient.invalidateQueries({
-            queryKey: [
-              'image',
-              odinId,
-              variables.targetDrive.alias,
-              variables.fileId,
-            ],
+            queryKey: ['image', odinId, variables.targetDrive.alias, variables.fileId],
           });
         else queryClient.removeQueries({ queryKey: ['image'] });
       },

@@ -1,19 +1,13 @@
 import { GestureResponderEvent, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
-import { HStack, Actionsheet } from 'native-base';
-import {
-  RecycleBin,
-  Archive,
-  OpenHearth,
-  Times,
-  SolidHearth,
-} from '../ui/Icons/icons';
+import { RecycleBin, Archive, OpenHearth, Times, SolidHearth } from '../ui/Icons/icons';
 import { ReactNode, useState } from 'react';
 import { Colors } from '../../app/Colors';
 import usePhoto from '../../hooks/photoLibrary/usePhoto';
 import useAlbums from '../../hooks/photoLibrary/useAlbums';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
+import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -46,9 +40,9 @@ const PhotoSelection = ({
 
   const removeSelection = async () => {
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         await removePhoto({ photoFileId: fileId });
-      }),
+      })
     );
 
     clearSelection();
@@ -56,9 +50,9 @@ const PhotoSelection = ({
 
   const deleteSelection = async () => {
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         await deletePhoto({ photoFileId: fileId });
-      }),
+      })
     );
 
     clearSelection();
@@ -66,9 +60,9 @@ const PhotoSelection = ({
 
   const archiveSelection = async () => {
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         await archivePhoto({ photoFileId: fileId });
-      }),
+      })
     );
 
     clearSelection();
@@ -76,9 +70,9 @@ const PhotoSelection = ({
 
   const restoreSelection = async () => {
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         await restorePhoto({ photoFileId: fileId });
-      }),
+      })
     );
 
     clearSelection();
@@ -86,13 +80,13 @@ const PhotoSelection = ({
 
   const favoriteSelection = async () => {
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         addTagsToPhoto({
           targetDrive: PhotoConfig.PhotoDrive,
           fileId: fileId,
           addTags: [PhotoConfig.FavoriteTag],
         });
-      }),
+      })
     );
 
     clearSelection();
@@ -102,13 +96,13 @@ const PhotoSelection = ({
     if (!albumTag) return;
 
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         addTagsToPhoto({
           targetDrive: PhotoConfig.PhotoDrive,
           fileId: fileId,
           addTags: [albumTag],
         });
-      }),
+      })
     );
 
     clearSelection();
@@ -118,13 +112,13 @@ const PhotoSelection = ({
     if (!albumTag) return;
 
     await Promise.all(
-      selection.map(async fileId => {
+      selection.map(async (fileId) => {
         removeTagsFromPhoto({
           targetDrive: PhotoConfig.PhotoDrive,
           fileId: fileId,
           removeTags: [albumTag],
         });
-      }),
+      })
     );
 
     clearSelection();
@@ -140,7 +134,8 @@ const PhotoSelection = ({
               flexDirection: 'row',
               gap: 2,
               alignItems: 'center',
-            }}>
+            }}
+          >
             <Times />
             <Text>{selection.length}</Text>
           </View>
@@ -150,7 +145,8 @@ const PhotoSelection = ({
           <SelectionBarButton
             onPress={async () => {
               removeSelection();
-            }}>
+            }}
+          >
             <RecycleBin />
           </SelectionBarButton>
         ) : (
@@ -162,7 +158,8 @@ const PhotoSelection = ({
           <SelectionBarButton
             onPress={async () => {
               archiveSelection();
-            }}>
+            }}
+          >
             <Archive />
           </SelectionBarButton>
         ) : null}
@@ -174,8 +171,7 @@ const PhotoSelection = ({
         ) : (
           <>
             {albumKey && albumKey === PhotoConfig.FavoriteTag ? (
-              <SelectionBarButton
-                onPress={() => removeSelectionFromAlbum(albumKey)}>
+              <SelectionBarButton onPress={() => removeSelectionFromAlbum(albumKey)}>
                 <SolidHearth />
               </SelectionBarButton>
             ) : (
@@ -185,8 +181,7 @@ const PhotoSelection = ({
             )}
             {albumKey && albumKey !== PhotoConfig.FavoriteTag ? (
               <>
-                <SelectionBarButton
-                  onPress={() => removeSelectionFromAlbum(albumKey)}>
+                <SelectionBarButton onPress={() => removeSelectionFromAlbum(albumKey)}>
                   <Text>{'Remove from album'}</Text>
                 </SelectionBarButton>
               </>
@@ -198,7 +193,8 @@ const PhotoSelection = ({
                     flexWrap: 'wrap',
                     textAlign: 'center',
                     lineHeight: 16,
-                  }}>
+                  }}
+                >
                   {'Add to album'}
                 </Text>
               </SelectionBarButton>
@@ -206,22 +202,23 @@ const PhotoSelection = ({
           </>
         )}
       </SelectionBar>
-      <Actionsheet
+      <ActionSheet
         isOpen={isAlbumSelectionOpen}
-        onClose={() => setIsAlbumSelectionOpen(false)}>
-        <Actionsheet.Content>
-          {albums?.map(album => (
-            <Actionsheet.Item
-              key={album.tag}
-              onPress={() => {
-                addSelectionToAlbum(album.tag);
-                setIsAlbumSelectionOpen(false);
-              }}>
-              <Text>{album.name}</Text>
-            </Actionsheet.Item>
-          ))}
-        </Actionsheet.Content>
-      </Actionsheet>
+        onClose={() => setIsAlbumSelectionOpen(false)}
+        title="Add to album"
+      >
+        {albums?.map((album) => (
+          <ActionSheetItem
+            key={album.tag}
+            onPress={() => {
+              addSelectionToAlbum(album.tag);
+              setIsAlbumSelectionOpen(false);
+            }}
+          >
+            <Text>{album.name}</Text>
+          </ActionSheetItem>
+        ))}
+      </ActionSheet>
     </>
   );
 };
@@ -243,16 +240,19 @@ const SelectionBar = ({ children }: { children: ReactNode }) => {
         alignItems: 'center',
         paddingHorizontal: 5,
         paddingVertical: 5,
-      }}>
-      <HStack
-        width={'100%'}
-        alignItems={'center'}
-        justifyContent={'space-between'}
+      }}
+    >
+      <View
         style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           gap: 2,
-        }}>
+        }}
+      >
         {children}
-      </HStack>
+      </View>
     </View>
   );
 };
@@ -270,9 +270,7 @@ const SelectionBarButton = ({
     <TouchableOpacity
       style={{
         borderRadius: 5,
-        backgroundColor: isDarkMode
-          ? 'rgba(0, 0, 0, 0.5)'
-          : 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)',
         paddingHorizontal: 10,
         paddingVertical: 5,
         width: 30,
@@ -282,11 +280,10 @@ const SelectionBarButton = ({
         alignItems: 'center',
         justifyContent: 'center',
       }}
-      onPress={onPress}>
+      onPress={onPress}
+    >
       {typeof children === 'string' ? (
-        <Text style={{ flexWrap: 'wrap', textAlign: 'center', lineHeight: 16 }}>
-          {children}
-        </Text>
+        <Text style={{ flexWrap: 'wrap', textAlign: 'center', lineHeight: 16 }}>{children}</Text>
       ) : (
         children
       )}

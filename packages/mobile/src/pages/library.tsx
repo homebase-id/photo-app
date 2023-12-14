@@ -6,13 +6,7 @@ import { Colors } from '../app/Colors';
 import { RootStackParamList, TabStackParamList } from '../app/App';
 import { PhotoWithLoader } from '../components/Photos/PhotoPreview/PhotoWithLoader';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import {
-  Archive,
-  Grid,
-  Plus,
-  RecycleBin,
-  SolidHearth,
-} from '../components/ui/Icons/icons';
+import { Archive, Grid, Plus, RecycleBin, SolidHearth } from '../components/ui/Icons/icons';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import NewAlbumDialog from '../components/PhotoAlbum/NewAlbumDialog';
@@ -27,48 +21,52 @@ const LibraryPage = (_props: LibraryProps) => {
   const { data: albums } = useAlbums().fetch;
 
   return (
-    <View>
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <Container>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              margin: -4,
-              paddingVertical: 15,
-            }}>
-            <TypeLink target={'favorites'} icon={<SolidHearth />}>
-              Favorites
-            </TypeLink>
-            <TypeLink target={'archive'} icon={<Archive />}>
-              Archive
-            </TypeLink>
-            <TypeLink target={'apps'} icon={<Grid />}>
-              Apps
-            </TypeLink>
-            <TypeLink target={'bin'} icon={<RecycleBin />}>
-              Bin
-            </TypeLink>
-          </View>
+    <SafeAreaView>
+      <View>
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <Container>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                margin: -4,
+                paddingVertical: 15,
+              }}
+            >
+              <TypeLink target={'favorites'} icon={<SolidHearth />}>
+                Favorites
+              </TypeLink>
+              <TypeLink target={'archive'} icon={<Archive />}>
+                Archive
+              </TypeLink>
+              <TypeLink target={'apps'} icon={<Grid />}>
+                Apps
+              </TypeLink>
+              <TypeLink target={'bin'} icon={<RecycleBin />}>
+                Bin
+              </TypeLink>
+            </View>
 
-          <Text style={{ fontSize: 18, marginBottom: 5 }}>Albums</Text>
-          <View
-            style={{
-              margin: -5,
-              paddingVertical: 4,
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-            }}>
-            {albums?.map((album, index) => {
-              return <AlbumItem album={album} key={album.fileId ?? index} />;
-            })}
-            <NewAlbumItem />
-          </View>
-        </Container>
-      </ScrollView>
-    </View>
+            <Text style={{ fontSize: 18, marginBottom: 5 }}>Albums</Text>
+            <View
+              style={{
+                margin: -5,
+                paddingVertical: 4,
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+              }}
+            >
+              {albums?.map((album, index) => {
+                return <AlbumItem album={album} key={album.fileId ?? index} />;
+              })}
+              <NewAlbumItem />
+            </View>
+          </Container>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -89,7 +87,8 @@ const TypeLink = ({
       style={{
         width: '50%',
         padding: 4,
-      }}>
+      }}
+    >
       <TouchableOpacity
         onPress={() => navigation.navigate('Type', { typeId: target })}
         style={{
@@ -102,13 +101,15 @@ const TypeLink = ({
           paddingVertical: 7,
           display: 'flex',
           flexDirection: 'row',
-        }}>
+        }}
+      >
         {icon ? icon : null}
         <Text
           style={{
             fontSize: 15,
             marginLeft: icon ? 8 : undefined,
-          }}>
+          }}
+        >
           {children}
         </Text>
       </TouchableOpacity>
@@ -127,7 +128,8 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('Album', { albumId: album.tag })}
-      style={{ width: '50%', padding: 5 }}>
+      style={{ width: '50%', padding: 5 }}
+    >
       {thumb?.fileId ? (
         <PhotoWithLoader
           targetDrive={PhotoConfig.PhotoDrive}
@@ -149,13 +151,15 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <Text
             style={{
               fontSize: 100,
               transform: [{ rotate: '45deg' }],
               color: '#f1f5f9',
-            }}>
+            }}
+          >
             +
           </Text>
         </View>
@@ -181,7 +185,8 @@ const NewAlbumItem = () => {
           width: itemWidth,
           height: itemWidth,
         }}
-        onPress={() => setIsOpen(!isOpen)}>
+        onPress={() => setIsOpen(!isOpen)}
+      >
         <View
           style={{
             width: itemWidth - 10,
@@ -191,7 +196,8 @@ const NewAlbumItem = () => {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: isDarkMode ? Colors.slate[800] : Colors.slate[200],
-          }}>
+          }}
+        >
           <Plus size={'6xl'} color={isDarkMode ? Colors.black : Colors.white} />
         </View>
       </TouchableOpacity>

@@ -6,11 +6,8 @@ import usePhotoMetadata from '../../../../hooks/photoLibrary/usePhotoMeta';
 import ActionButton from '../../../ui/Buttons/ActionButton';
 import { PhotoConfig } from '../../../../provider/photos/PhotoTypes';
 import EditDateDialog from '../../../Dialog/EditDateDialog/EditDateDialog';
-import {
-  DEFAULT_PAYLOAD_KEY,
-  DriveSearchResult,
-  ImageMetadata,
-} from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
+import { ImageMetadata } from '@youfoundation/js-lib/media';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -44,22 +41,17 @@ export const PhotoInfo = ({
   } = usePhotoMetadata(targetDrive, current?.fileId);
 
   const isVideo = current?.fileMetadata.payloads
-    .find(payload => payload.key === DEFAULT_PAYLOAD_KEY)
+    .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
     ?.contentType.startsWith('video/');
 
   const date = useMemo(() => {
     if (current?.fileMetadata.appData.userDate)
       return new Date(current.fileMetadata.appData.userDate);
 
-    if (current?.fileMetadata.created)
-      return new Date(current.fileMetadata.created);
+    if (current?.fileMetadata.created) return new Date(current.fileMetadata.created);
 
     return null;
-  }, [
-    current,
-    current?.fileMetadata.appData.userDate,
-    current?.fileMetadata.created,
-  ]);
+  }, [current, current?.fileMetadata.appData.userDate, current?.fileMetadata.created]);
 
   const onChange = useRef((e: { target: { name: string; value: string } }) => {
     current &&
@@ -69,14 +61,11 @@ export const PhotoInfo = ({
       });
   });
 
-  const debouncedChangeDesc = useMemo(
-    () => debounce(onChange.current, 1500),
-    [onChange],
-  );
+  const debouncedChangeDesc = useMemo(() => debounce(onChange.current, 1500), [onChange]);
 
   const originalSize = current?.fileMetadata.appData.previewThumbnail;
   const payload = current?.fileMetadata.payloads?.find(
-    payload => payload.key === DEFAULT_PAYLOAD_KEY,
+    (payload) => payload.key === DEFAULT_PAYLOAD_KEY
   );
   const maxThumb = payload?.thumbnails[payload?.thumbnails.length - 1];
 
@@ -96,7 +85,7 @@ export const PhotoInfo = ({
               placeholder={t('Add a description')}
               className="w-full border-b-2 py-2 focus:border-b-indigo-500 focus:outline-0 dark:bg-black"
               onChange={debouncedChangeDesc}
-              onKeyDown={e => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
             />
           </div>
 
@@ -105,9 +94,7 @@ export const PhotoInfo = ({
             <li className="flex w-full flex-row">
               <p>
                 {date?.toLocaleDateString(undefined, dateFormat)}
-                <small className="block">
-                  {date?.toLocaleTimeString(undefined, timeFormat)}
-                </small>
+                <small className="block">{date?.toLocaleTimeString(undefined, timeFormat)}</small>
               </p>
               <ActionButton
                 icon="edit"
@@ -141,8 +128,7 @@ export const PhotoInfo = ({
                       <>
                         {maxThumb?.pixelWidth} x {maxThumb?.pixelHeight}
                         <span className="ml-2 text-slate-400">
-                          ({originalSize?.pixelWidth} x{' '}
-                          {originalSize?.pixelHeight} original)
+                          ({originalSize?.pixelWidth} x {originalSize?.pixelHeight} original)
                         </span>
                       </>
                     )}
@@ -167,10 +153,7 @@ export const PhotoInfo = ({
           isOpen={isEditUserDate}
           onCancel={() => setIsEditUserDate(false)}
           onConfirm={() => setIsEditUserDate(false)}
-          defaultValue={
-            current.fileMetadata.appData.userDate ||
-            current.fileMetadata.created
-          }
+          defaultValue={current.fileMetadata.appData.userDate || current.fileMetadata.created}
         />
       )}
     </>
@@ -182,9 +165,7 @@ const PhotoCaptureDetails = ({ metadata }: { metadata: ImageMetadata }) => {
 
   const details = metadata.captureDetails;
   const fNumber = details?.fNumber ? `f/${details.fNumber}` : null;
-  const exposureTime = details?.exposureTime
-    ? `1/${1 / parseFloat(details.exposureTime)}`
-    : null;
+  const exposureTime = details?.exposureTime ? `1/${1 / parseFloat(details.exposureTime)}` : null;
   const focalLength = details?.focalLength ? `${details.focalLength}mm` : null;
   const iso = details?.iso ? `ISO${details.iso}` : null;
 
@@ -197,8 +178,8 @@ const PhotoCaptureDetails = ({ metadata }: { metadata: ImageMetadata }) => {
       ) : null}
       {details ? (
         <small className="flex w-full max-w-[12rem] flex-row justify-between">
-          <span>{fNumber}</span> <span>{exposureTime}</span>{' '}
-          <span>{focalLength}</span> <span>{iso}</span>
+          <span>{fNumber}</span> <span>{exposureTime}</span> <span>{focalLength}</span>{' '}
+          <span>{iso}</span>
         </small>
       ) : null}
     </li>

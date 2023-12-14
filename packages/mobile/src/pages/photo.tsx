@@ -16,18 +16,14 @@ import { PhotoWithLoader } from '../components/Photos/PhotoPreview/PhotoWithLoad
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
-import { InfoIcon } from 'native-base';
-import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
-import {
-  DEFAULT_PAYLOAD_KEY,
-  DriveSearchResult,
-} from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { useFileHeader } from '../hooks/photoLibrary/usePhotoHeader';
 import { useFlatPhotosFromDate } from '../hooks/photoLibrary/usePhotos';
 import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoader';
 import { useAlbum } from '../hooks/photoLibrary/useAlbum';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { PhotoConfig } from '../provider/photos/PhotoTypes';
+import { InfoIcon } from '../components/ui/Icons/icons';
 
 type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
@@ -42,12 +38,9 @@ const Photo = ({ route, navigation }: PhotoProps) => {
   const currentDate = useMemo(
     () =>
       fileHeader
-        ? new Date(
-            fileHeader?.fileMetadata.appData.userDate ||
-              fileHeader?.fileMetadata.created,
-          )
+        ? new Date(fileHeader?.fileMetadata.appData.userDate || fileHeader?.fileMetadata.created)
         : undefined,
-    [fileHeader],
+    [fileHeader]
   );
 
   if (!currentDate || !fileHeader) return null;
@@ -67,12 +60,7 @@ interface PhotoLibPreviewProps extends PhotoProps {
   fileHeader: DriveSearchResult;
 }
 
-const PhotoPreview = ({
-  currentDate,
-  fileHeader,
-  route,
-  navigation,
-}: PhotoLibPreviewProps) => {
+const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPreviewProps) => {
   const { typeId, albumId } = route.params;
   const isAlbumView = albumId || typeId === 'favorites';
 
@@ -84,8 +72,7 @@ const PhotoPreview = ({
     hasNextPage: hasOlderPage,
     isFetched: hasFetchedOlderPhotos,
   } = useFlatPhotosFromDate({
-    album:
-      albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
+    album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
     date: currentDate,
     disabled: !currentDate && !isAlbumView && !album,
     ordering: 'newer',
@@ -97,26 +84,17 @@ const PhotoPreview = ({
     hasNextPage: hasNewerPage,
     isFetched: hasFetchedNewerPhotos,
   } = useFlatPhotosFromDate({
-    album:
-      albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
+    album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
     date: currentDate,
     disabled: !currentDate && !isAlbumView && !album,
     ordering: 'older',
   }).fetchPhotos;
 
-  const flatNewerPhotos =
-    newerPhotos?.pages.flatMap(page => page.results) || [];
-  const flatOlderPhotos =
-    olderPhotos?.pages.flatMap(page => page.results) || [];
+  const flatNewerPhotos = newerPhotos?.pages.flatMap((page) => page.results) || [];
+  const flatOlderPhotos = olderPhotos?.pages.flatMap((page) => page.results) || [];
 
   // The Flatlists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
-  if (
-    !hasFetchedOlderPhotos ||
-    !olderPhotos ||
-    !hasFetchedNewerPhotos ||
-    !newerPhotos
-  )
-    return null;
+  if (!hasFetchedOlderPhotos || !olderPhotos || !hasFetchedNewerPhotos || !newerPhotos) return null;
 
   return (
     <InnerPhotoPreview
@@ -173,10 +151,7 @@ const InnerPhotoPreview = ({
 
   const baseFlatListProps = {
     onStartReachedThreshold: 0,
-    getItemLayout: (
-      data: ArrayLike<DriveSearchResult> | null | undefined,
-      index: number,
-    ) => ({
+    getItemLayout: (data: ArrayLike<DriveSearchResult> | null | undefined, index: number) => ({
       length: windowSize.width,
       offset: windowSize.width * index,
       index,
@@ -206,7 +181,7 @@ const InnerPhotoPreview = ({
         viewableItems[0]?.item?.fileMetadata?.created;
       if (timestamp) setActiveDate(new Date(timestamp));
     },
-    [],
+    []
   );
 
   const renderItem = useCallback(
@@ -217,9 +192,10 @@ const InnerPhotoPreview = ({
         style={{
           width: windowSize.width,
           height: windowSize.height,
-        }}>
+        }}
+      >
         {item.item.fileMetadata.payloads
-          .find(payload => payload.key === DEFAULT_PAYLOAD_KEY)
+          .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
           ?.contentType.startsWith('video/') ? (
           <VideoWithLoader
             fileId={item.item.fileId}
@@ -247,7 +223,7 @@ const InnerPhotoPreview = ({
         )}
       </Pressable>
     ),
-    [showHeader, windowSize.height, windowSize.width],
+    [showHeader, windowSize.height, windowSize.width]
   );
 
   // Both the FlatLists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
@@ -267,7 +243,8 @@ const InnerPhotoPreview = ({
           key="left"
           style={{
             display: isGoingLeft && hasNewer ? 'flex' : 'none',
-          }}>
+          }}
+        >
           {newerPhotos && newerPhotos.length ? (
             <FlatList
               {...baseFlatListProps}
@@ -300,7 +277,8 @@ const InnerPhotoPreview = ({
           key="right"
           style={{
             display: isGoingLeft && hasNewer ? 'none' : 'flex',
-          }}>
+          }}
+        >
           {olderPhotos && olderPhotos.length ? (
             <FlatList
               {...baseFlatListProps}
@@ -331,13 +309,7 @@ const InnerPhotoPreview = ({
         </View>
       </View>
 
-      {isInfoOpen ? (
-        <PhotoInfo
-          current={fileHeader}
-          isOpen={isInfoOpen}
-          onClose={() => setIsInfoOpen(false)}
-        />
-      ) : null}
+      {isInfoOpen ? <PhotoInfo current={fileHeader} onClose={() => setIsInfoOpen(false)} /> : null}
     </View>
   );
 };
@@ -364,11 +336,13 @@ const PreviewHeader = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-      }}>
+      }}
+    >
       <Text
         style={{
           fontWeight: '500',
-        }}>
+        }}
+      >
         {currentDate?.toLocaleDateString(undefined, {
           year: 'numeric',
           month: 'long',
@@ -394,9 +368,7 @@ const PreviewHeader = ({
     />
   );
   const headerRight = () => (
-    <TouchableOpacity
-      onPress={() => setIsInfoOpen(true)}
-      style={{ padding: 5 }}>
+    <TouchableOpacity onPress={() => setIsInfoOpen(true)} style={{ padding: 5 }}>
       <InfoIcon color={'blue.400'} />
     </TouchableOpacity>
   );
@@ -411,7 +383,8 @@ const PreviewHeader = ({
         opacity: showHeader ? 1 : 0,
         paddingVertical: 3,
         zIndex: 10,
-      }}>
+      }}
+    >
       <Header
         headerStyle={{
           backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],

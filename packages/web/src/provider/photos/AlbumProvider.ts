@@ -10,43 +10,38 @@ import {
   UploadInstructionSet,
 } from '@youfoundation/js-lib/core';
 import { AlbumDefinition, PhotoConfig } from './PhotoTypes';
-import {
-  getRandom16ByteArray,
-  jsonStringify64,
-} from '@youfoundation/js-lib/helpers';
+import { getRandom16ByteArray, jsonStringify64 } from '@youfoundation/js-lib/helpers';
 
 const encryptAlbums = true;
 
-export const getAllAlbums = async (
-  dotYouClient: DotYouClient,
-): Promise<AlbumDefinition[]> => {
+export const getAllAlbums = async (dotYouClient: DotYouClient): Promise<AlbumDefinition[]> => {
   const batch = await queryBatch(
     dotYouClient,
     {
       targetDrive: PhotoConfig.PhotoDrive,
       fileType: [PhotoConfig.AlbumDefinitionFileType],
     },
-    { maxRecords: 1000, includeMetadataHeader: true },
+    { maxRecords: 1000, includeMetadataHeader: true }
   );
 
   return (
     await Promise.all(
-      batch.searchResults.map(async dsr => {
+      batch.searchResults.map(async (dsr) => {
         return await dsrToAlbumDefinition(dotYouClient, dsr);
-      }),
+      })
     )
   ).filter(Boolean) as AlbumDefinition[];
 };
 
 const dsrToAlbumDefinition = async (
   dotYouClient: DotYouClient,
-  dsr: DriveSearchResult,
+  dsr: DriveSearchResult
 ): Promise<AlbumDefinition | null> => {
   const payload = await getContentFromHeaderOrPayload<AlbumDefinition>(
     dotYouClient,
     PhotoConfig.PhotoDrive,
     dsr,
-    true,
+    true
   );
   if (!payload) return null;
   return {
@@ -55,10 +50,7 @@ const dsrToAlbumDefinition = async (
   };
 };
 
-export const saveAlbum = async (
-  dotYouClient: DotYouClient,
-  def: AlbumDefinition,
-) => {
+export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition) => {
   const payloadJson: string = jsonStringify64({
     ...def,
     acl: undefined,
@@ -85,25 +77,13 @@ export const saveAlbum = async (
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
   };
 
-  uploadFile(
-    dotYouClient,
-    instruct,
-    metadata,
-    undefined,
-    undefined,
-    encryptAlbums,
-  );
+  uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptAlbums);
 };
 
 export const removeAlbumDefintion = async (
   dotYouClient: DotYouClient,
-  albumDef: AlbumDefinition,
+  albumDef: AlbumDefinition
 ) => {
   if (albumDef.fileId)
-    return await deleteFile(
-      dotYouClient,
-      PhotoConfig.PhotoDrive,
-      albumDef.fileId,
-      encryptAlbums,
-    );
+    return await deleteFile(dotYouClient, PhotoConfig.PhotoDrive, albumDef.fileId);
 };

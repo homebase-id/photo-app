@@ -3,23 +3,22 @@ import {
   DEFAULT_PAYLOAD_KEY,
   DotYouClient,
   DriveSearchResult,
-  ImageMetadata,
   ImageSize,
-  MediaConfig,
-  MediaUploadMeta,
   TargetDrive,
   UploadFileMetadata,
   UploadInstructionSet,
-  getDecryptedImageMetadata,
-  getDecryptedImageUrl,
   getFileHeader,
   queryBatch,
   uploadHeader,
 } from '@youfoundation/js-lib/core';
 import {
-  getRandom16ByteArray,
-  jsonStringify64,
-} from '@youfoundation/js-lib/helpers';
+  ImageMetadata,
+  MediaConfig,
+  MediaUploadMeta,
+  getDecryptedImageMetadata,
+  getDecryptedImageUrl,
+} from '@youfoundation/js-lib/media';
+import { getRandom16ByteArray, jsonStringify64 } from '@youfoundation/js-lib/helpers';
 
 import { PhotoConfig, PhotoFile } from './PhotoTypes';
 
@@ -30,7 +29,7 @@ export const getPhotos = async (
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
-  ordering?: 'older' | 'newer',
+  ordering?: 'older' | 'newer'
 ) => {
   const archivalStatus: ArchivalStatus[] =
     type === 'bin'
@@ -47,11 +46,7 @@ export const getPhotos = async (
     dotYouClient,
     {
       targetDrive: targetDrive,
-      tagsMatchAll: album
-        ? [album]
-        : type === 'favorites'
-        ? [PhotoConfig.FavoriteTag]
-        : undefined,
+      tagsMatchAll: album ? [album] : type === 'favorites' ? [PhotoConfig.FavoriteTag] : undefined,
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
@@ -61,7 +56,7 @@ export const getPhotos = async (
       includeMetadataHeader: false,
       sorting: 'userDate',
       ordering: ordering === 'newer' ? 'oldestFirst' : 'newestFirst',
-    },
+    }
   );
 
   return {
@@ -74,13 +69,9 @@ export const updatePhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   photoFileId: string,
-  newMetaData: MediaUploadMeta,
+  newMetaData: MediaUploadMeta
 ) => {
-  const header = await getFileHeader<ImageMetadata>(
-    dotYouClient,
-    targetDrive,
-    photoFileId,
-  );
+  const header = await getFileHeader<ImageMetadata>(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
     const instructionSet: UploadInstructionSet = {
@@ -90,7 +81,6 @@ export const updatePhoto = async (
         drive: targetDrive,
         storageIntent: 'metadataOnly',
       },
-      transitOptions: null,
     };
 
     const metadata: UploadFileMetadata = {
@@ -100,14 +90,10 @@ export const updatePhoto = async (
         ...header.fileMetadata.appData,
         content: header.fileMetadata.appData.content
           ? jsonStringify64({ ...header.fileMetadata.appData.content })
-          : null,
+          : undefined,
         ...newMetaData,
         tags: newMetaData?.tag
-          ? [
-              ...(Array.isArray(newMetaData.tag)
-                ? newMetaData.tag
-                : [newMetaData.tag]),
-            ]
+          ? [...(Array.isArray(newMetaData.tag) ? newMetaData.tag : [newMetaData.tag])]
           : header.fileMetadata.appData.tags,
       },
     };
@@ -116,16 +102,14 @@ export const updatePhoto = async (
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
-      metadata,
+      metadata
     );
 
     if (!uploadResult) return;
     return {
       fileId: uploadResult.file.fileId,
       date: new Date(
-        newMetaData.userDate ||
-          header.fileMetadata.appData.userDate ||
-          header.fileMetadata.created,
+        newMetaData.userDate || header.fileMetadata.appData.userDate || header.fileMetadata.created
       ),
       tags: header.fileMetadata.appData.tags,
     };
@@ -136,13 +120,9 @@ export const updatePhotoMetadata = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   photoFileId: string,
-  newImageMetadata: ImageMetadata,
+  newImageMetadata: ImageMetadata
 ) => {
-  const header = await getFileHeader<ImageMetadata>(
-    dotYouClient,
-    targetDrive,
-    photoFileId,
-  );
+  const header = await getFileHeader<ImageMetadata>(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
     const instructionSet: UploadInstructionSet = {
@@ -152,7 +132,6 @@ export const updatePhotoMetadata = async (
         drive: targetDrive,
         storageIntent: 'metadataOnly',
       },
-      transitOptions: null,
     };
 
     const metadata: UploadFileMetadata = {
@@ -171,7 +150,7 @@ export const updatePhotoMetadata = async (
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
-      metadata,
+      metadata
     );
   }
 };
@@ -181,7 +160,7 @@ export const getPhoto = async (
   targetDrive: TargetDrive,
   fileId: string,
   size?: ImageSize,
-  isProbablyEncrypted?: boolean,
+  isProbablyEncrypted?: boolean
 ): Promise<PhotoFile> => {
   return {
     fileId: fileId,
@@ -191,7 +170,7 @@ export const getPhoto = async (
       fileId,
       DEFAULT_PAYLOAD_KEY,
       size,
-      isProbablyEncrypted,
+      isProbablyEncrypted
     ),
   };
 };
@@ -201,7 +180,7 @@ const dsrToPhoto = async (
   targetDrive: TargetDrive,
   dsr: DriveSearchResult,
   size?: ImageSize,
-  isProbablyEncrypted?: boolean,
+  isProbablyEncrypted?: boolean
 ): Promise<PhotoFile> => {
   return {
     fileId: dsr.fileId,
@@ -211,7 +190,7 @@ const dsrToPhoto = async (
       dsr.fileId,
       DEFAULT_PAYLOAD_KEY,
       size,
-      isProbablyEncrypted,
+      isProbablyEncrypted
     ),
   };
 };
@@ -219,14 +198,14 @@ const dsrToPhoto = async (
 export const getPhotoMetadata = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  fileId: string,
+  fileId: string
 ): Promise<ImageMetadata | null> =>
   await getDecryptedImageMetadata(dotYouClient, targetDrive, fileId);
 
 export const getAlbumThumbnail = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  albumTag: string,
+  albumTag: string
 ): Promise<PhotoFile | null> => {
   const archivalStatus: ArchivalStatus[] =
     albumTag === 'bin'
@@ -247,7 +226,7 @@ export const getAlbumThumbnail = async (
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
-    { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false },
+    { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }
   );
 
   if (!reponse.searchResults || reponse.searchResults.length === 0) return null;

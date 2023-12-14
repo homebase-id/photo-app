@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Input, Modal, TextArea } from 'native-base';
 import { Button, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
-import { Colors } from '../../app/Colors';
 import { getNewId } from '@youfoundation/js-lib/helpers';
 import { useAlbum } from '../../hooks/photoLibrary/useAlbum';
-import { useDarkMode } from '../../hooks/useDarkMode';
+import { Input } from '../ui/Form/Input';
+import { Modal } from '../ui/Modal/Modal';
 
 const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [name, setName] = useState('');
@@ -19,65 +18,31 @@ const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     onClose();
   };
 
-  const { isDarkMode } = useDarkMode();
-
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} avoidKeyboard>
-      <Modal.Content
-        style={{
-          marginTop: 'auto',
-          marginBottom: 0,
-          width: '100%',
-          maxHeight: '60%',
-          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-        }}
-      >
-        <Modal.CloseButton />
-        <Modal.Header
+    <Modal onClose={onClose} title="New album">
+      {/* Name */}
+      <View style={{ marginBottom: 30, width: '100%' }}>
+        <Text style={{ marginBottom: 5, fontWeight: '600' }}>Name</Text>
+        <Input
+          placeholder="Add a name"
+          onChangeText={(val) => setName(val)}
+          onSubmitEditing={name ? doSaveAlbum : undefined}
+        />
+      </View>
+      <View style={{ marginBottom: 30, width: '100%' }}>
+        <Text style={{ marginBottom: 5, fontWeight: '600' }}>Description</Text>
+        <Input
+          placeholder="Add a description"
+          onChangeText={(val) => setDescription(val)}
           style={{
-            borderBottomWidth: 0,
-            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+            height: 70,
           }}
-        >
-          New Album
-        </Modal.Header>
-        <Modal.Body
-          style={{
-            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-          }}
-        >
-          {/* Name */}
-          <View style={{ marginBottom: 30, width: '100%' }}>
-            <Text>Name</Text>
-            <Input
-              w="100%"
-              placeholder="Add a name"
-              onChangeText={(val) => setName(val)}
-              style={{
-                fontSize: 16,
-              }}
-              onSubmitEditing={name ? doSaveAlbum : undefined}
-            />
-          </View>
-          <View style={{ marginBottom: 30, width: '100%' }}>
-            <Text>Description</Text>
-            <TextArea
-              h={20}
-              w="100%"
-              autoCompleteType={'off'}
-              placeholder="Add a description"
-              onChangeText={(val) => setDescription(val)}
-              style={{
-                fontSize: 16,
-              }}
-              onSubmitEditing={name ? doSaveAlbum : undefined}
-            />
-          </View>
-          <Button title="Create" onPress={doSaveAlbum} />
-        </Modal.Body>
-      </Modal.Content>
+          onSubmitEditing={name ? doSaveAlbum : undefined}
+        />
+      </View>
+      <Button title="Create" onPress={doSaveAlbum} />
     </Modal>
   );
 };

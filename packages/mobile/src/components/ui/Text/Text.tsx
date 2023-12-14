@@ -1,16 +1,8 @@
 import React from 'react';
-import { Text } from 'native-base';
-import {
-  ITextProps,
-  InterfaceTextProps,
-} from 'native-base/lib/typescript/components/primitives/Text/types';
+
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { Colors } from '../../../app/Colors';
-import { TextStyle } from 'react-native';
-
-interface TextProps extends Omit<InterfaceTextProps<ITextProps>, 'style'> {
-  style?: TextStyle;
-}
+import { Text, TextProps } from 'react-native';
 
 const OurText = (props: TextProps) => {
   const { isDarkMode } = useDarkMode();
@@ -18,7 +10,7 @@ const OurText = (props: TextProps) => {
 
   return (
     <Text
-      style={{ color: isDarkMode ? Colors.white : Colors.black, ...style }}
+      style={{ color: isDarkMode ? Colors.white : Colors.black, ...((style as any) || {}) }}
       {...rest}
     />
   );
