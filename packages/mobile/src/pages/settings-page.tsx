@@ -153,7 +153,7 @@ const SettingsPage = (_props: SettingsProps) => {
             onPress={() => {
               Alert.alert(
                 'Delete your account?',
-                'Your account is much more than only this app. If you want to remove your account, you can do so by going to your owner console, and requesting accoutn deletion from there.',
+                'Your account is much more than only this app. If you want to remove your account, you can do so by going to your owner console, and requesting account deletion from there.',
                 [
                   {
                     text: 'Open owner console',

@@ -19,34 +19,6 @@ type BlobOptions = any;
  * regarding explicit deallocation. Refer to the `close()`
  * method for further details.
  *
- * Example usage in a React component:
- *
- *   class WebSocketImage extends React.Component {
- *      state = {blob: null};
- *      componentDidMount() {
- *        let ws = this.ws = new WebSocket(...);
- *        ws.binaryType = 'blob';
- *        ws.onmessage = (event) => {
- *          if (this.state.blob) {
- *            this.state.blob.close();
- *          }
- *          this.setState({blob: event.data});
- *        };
- *      }
- *      componentUnmount() {
- *        if (this.state.blob) {
- *          this.state.blob.close();
- *        }
- *        this.ws.close();
- *      }
- *      render() {
- *        if (!this.state.blob) {
- *          return <View />;
- *        }
- *        return <Image source={{uri: URL.createObjectURL(this.state.blob)}} />;
- *      }
- *   }
- *
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob
  */
 import { getNewId, uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
@@ -63,8 +35,6 @@ export class OdinBlob {
    * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
    */
   constructor(parts: Array<Blob | string | Uint8Array> = [], options?: BlobOptions) {
-    console.log('OdinBlob constructor');
-    // const BlobManager = require('react-native/Libraries/Blob/BlobManager');
     if (Array.isArray(parts) && parts.length === 1 && parts[0] instanceof Uint8Array) {
       const id = getNewId();
       this.data = {
@@ -82,7 +52,6 @@ export class OdinBlob {
       // See getFileInputStream in RequestBodyUtil.class within RN for more info
       this.uri = `file://${localPath}`;
     } else throw new Error('Unsupported Blob constructor arguments');
-    // this.data = BlobManager.createFromParts(parts, options)?.data;
   }
 
   /*
@@ -101,43 +70,6 @@ export class OdinBlob {
 
     return this._data;
   }
-
-  // slice(start?: number, end?: number): Blob {
-  //   const BlobManager = require('react-native/Libraries/Blob/BlobManager');
-  //   let { offset, size } = this.data;
-
-  //   if (start && typeof start === 'number') {
-  //     if (start > size)
-  //       // $FlowFixMe[reassign-const]
-  //       start = size;
-
-  //     offset += start;
-  //     size -= start;
-
-  //     if (typeof end === 'number') {
-  //       if (end < 0)
-  //         // $FlowFixMe[reassign-const]
-  //         end = this.size + end;
-
-  //       if (end > this.size)
-  //         // $FlowFixMe[reassign-const]
-  //         end = this.size;
-
-  //       size = end - start;
-  //     }
-  //   }
-  //   return BlobManager.createFromOptions({
-  //     blobId: this.data.blobId,
-  //     offset,
-  //     size,
-  //     /* Since `blob.slice()` creates a new view onto the same binary
-  //      * data as the original blob, we should re-use the same collector
-  //      * object so that the underlying resource gets deallocated when
-  //      * the last view into the data is released, not the first.
-  //      */
-  //     __collector: this.data.__collector,
-  //   });
-  // }
 
   /**
    * This method is in the standard, but not actually implemented by
@@ -174,5 +106,3 @@ export class OdinBlob {
     return this.data.type || '';
   }
 }
-
-// module.exports = OdinBlob;
