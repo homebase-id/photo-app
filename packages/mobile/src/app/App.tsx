@@ -78,6 +78,7 @@ let App = () => {
   useAppState(onAppStateChange);
   useOnlineManager();
 
+  console.log('blob', window.OdinBlob);
   return (
     <PersistQueryClientProvider
       client={queryClient}
