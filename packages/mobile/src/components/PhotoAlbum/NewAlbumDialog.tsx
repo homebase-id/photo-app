@@ -31,7 +31,7 @@ const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           onSubmitEditing={name ? doSaveAlbum : undefined}
         />
       </View>
-      <View style={{ marginBottom: 30, width: '100%' }}>
+      <View style={{ width: '100%' }}>
         <Text style={{ marginBottom: 5, fontWeight: '600' }}>Description</Text>
         <Input
           placeholder="Add a description"
@@ -39,6 +39,7 @@ const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           style={{
             height: 70,
           }}
+          multiline={true}
           onSubmitEditing={name ? doSaveAlbum : undefined}
         />
       </View>

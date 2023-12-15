@@ -48,9 +48,8 @@ const PhotoInfo = ({
     }
   );
 
-  const debouncedChangeDesc = useMemo(() => debounce(onChange.current, 1500), [onChange]);
-
-  const debouncedChangeTime = useMemo(() => debounce(onChange.current, 1500), [onChange]);
+  const debouncedChangeDesc = useMemo(() => debounce(onChange.current, 1000), [onChange]);
+  const debouncedChangeTime = useMemo(() => debounce(onChange.current, 1000), [onChange]);
 
   const originalSize = current?.fileMetadata.appData.previewThumbnail;
   const maxThumb = getLargestThumbOfPayload(

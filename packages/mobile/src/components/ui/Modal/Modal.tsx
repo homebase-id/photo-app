@@ -20,9 +20,6 @@ export const Modal = ({
   const { isDarkMode } = useDarkMode();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  // variables
-  const snapPoints = useMemo(() => ['50%', '75%'], []);
-
   // // callbacks
   // const handleSheetChanges = useCallback((index: number) => {
   //   console.log('handleSheetChanges', index);
@@ -44,13 +41,11 @@ export const Modal = ({
       >
         <BottomSheetModal
           ref={bottomSheetRef}
-          index={1}
-          snapPoints={snapPoints}
-          // onChange={handleSheetChanges}
+          enableDynamicSizing={true}
           onDismiss={onClose}
           backgroundStyle={{ backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}
         >
-          <BottomSheetScrollView>
+          <BottomSheetScrollView style={{ flex: 1 }}>
             <View
               style={{
                 paddingHorizontal: 10,
