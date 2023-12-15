@@ -1,12 +1,20 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  StyleProp,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 
 import { version as appVersion } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
-import { Download, Profile, Sync, Times, Upload } from '../components/ui/Icons/icons';
+import { Download, Profile, RecycleBin, Sync, Times, Upload } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
@@ -141,6 +149,42 @@ const SettingsPage = (_props: SettingsProps) => {
               Clear local data
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                'Delete your account?',
+                'Your account is much more than only this app. If you want to remove your account, you can do so by going to your owner console, and requesting accoutn deletion from there.',
+                [
+                  {
+                    text: 'Open owner console',
+                    onPress: () =>
+                      Linking.openURL(`https://${getIdentity()}/owner/settings/delete`),
+                  },
+                  {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                ]
+              );
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingVertical: 12,
+              width: '100%',
+            }}
+          >
+            <RecycleBin size={'lg'} />
+            <Text
+              style={{
+                marginLeft: 16,
+              }}
+            >
+              Delete my account
+            </Text>
+          </TouchableOpacity>
           <CheckForUpdates
             style={{
               alignItems: 'center',
@@ -154,6 +198,7 @@ const SettingsPage = (_props: SettingsProps) => {
     </SafeAreaView>
   );
 };
+
 const getVersionInfo = async () => {
   const update = await codePush.getUpdateMetadata();
 
