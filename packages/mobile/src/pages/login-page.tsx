@@ -1,6 +1,14 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { Button, View, Linking, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  Button,
+  View,
+  Linking,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { AuthStackParamList } from '../app/App';
 import { Container } from '../components/ui/Container/Container';
@@ -209,8 +217,26 @@ const LoginComponent = () => {
           gap: 5,
         }}
       >
-        <TouchableOpacity onPress={() => Linking.openURL('https://homebase.id')}>
-          <Text style={{ textDecorationLine: 'underline' }}>Homebase.id</Text>
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              "Don't have an account yet?",
+              'Your account is much more than just this app. You own your account. Find out more about Homebase and create your account.',
+              [
+                {
+                  text: 'Homebase.id',
+                  onPress: () => Linking.openURL('https://homebase.id'),
+                },
+                {
+                  text: 'Cancel',
+                  onPress: () => console.log('Cancel Pressed'),
+                  style: 'cancel',
+                },
+              ]
+            );
+          }}
+        >
+          <Text style={{ textDecorationLine: 'underline' }}>Don't have an account?</Text>
         </TouchableOpacity>
       </View>
     </>
