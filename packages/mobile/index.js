@@ -31,7 +31,7 @@ if (!global.crypto?.subtle)
 
 // Blob Polyfill
 import { OdinBlob } from './polyfills/OdinBlob';
-global.OdinBlob = OdinBlob;
+global.CustomBlob = OdinBlob;
 
 // FormData within react-native is always used by the network polyfills.. No way to polyfill without overriding the network polyfills or the direct pacakge;
 // FormData Polyfill => Done with patch-package

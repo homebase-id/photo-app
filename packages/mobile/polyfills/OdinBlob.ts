@@ -80,8 +80,6 @@ export class OdinBlob {
       // We need to convert to a cached file on the system, as RN is dumb that way... It can't handle blobs in a data uri, as it will always load it as a bitmap... 🤷
       // See getFileInputStream in RequestBodyUtil.class within RN for more info
       this.uri = `file://${localPath}`;
-
-      console.log('new OdinBlob', this.uri, this._data);
     } else throw new Error('Unsupported Blob constructor arguments');
     // this.data = BlobManager.createFromParts(parts, options)?.data;
   }
