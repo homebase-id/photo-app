@@ -98,7 +98,6 @@ const SettingsPage = (_props: SettingsProps) => {
               <CheckBox
                 value={syncFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
-                onChange={() => setSyncFromCameraRoll(!syncFromCameraRoll)}
                 aria-label="Sync with your camera roll"
               />
             </View>
@@ -125,7 +124,6 @@ const SettingsPage = (_props: SettingsProps) => {
               <CheckBox
                 value={backupFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
-                onChange={() => setBackupFromCameraRoll(!backupFromCameraRoll)}
                 aria-label="Backup your camera roll"
               />
             </View>
