@@ -228,7 +228,14 @@ const LoginComponent = () => {
               [
                 {
                   text: 'Homebase.id',
-                  onPress: () => Linking.openURL('https://homebase.id'),
+                  onPress: async () => {
+                    if (await InAppBrowser.isAvailable())
+                      await InAppBrowser.open('https://homebase.id', {
+                        enableUrlBarHiding: false,
+                        enableDefaultShare: false,
+                      });
+                    else Linking.openURL('https://homebase.id');
+                  },
                 },
                 {
                   text: 'Cancel',

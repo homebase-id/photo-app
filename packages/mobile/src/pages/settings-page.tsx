@@ -22,6 +22,7 @@ import useDbSync from '../hooks/db/useDbSync';
 import codePush from 'react-native-code-push';
 import useAuth from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
@@ -155,8 +156,14 @@ const SettingsPage = (_props: SettingsProps) => {
                 [
                   {
                     text: 'Open owner console',
-                    onPress: () =>
-                      Linking.openURL(`https://${getIdentity()}/owner/settings/delete`),
+                    onPress: async () => {
+                      if (await InAppBrowser.isAvailable())
+                        await InAppBrowser.open(`https://${getIdentity()}/owner/settings/delete`, {
+                          enableUrlBarHiding: false,
+                          enableDefaultShare: false,
+                        });
+                      else Linking.openURL(`https://${getIdentity()}/owner/settings/delete`);
+                    },
                   },
                   {
                     text: 'Cancel',
