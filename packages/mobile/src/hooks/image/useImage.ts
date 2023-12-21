@@ -10,6 +10,7 @@ import {
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 import { getDecryptedImageUrl, uploadImage, removeImage } from '@youfoundation/js-lib/media';
+import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 interface ImageData {
   url: string;
@@ -122,7 +123,7 @@ const useImage = (
       dotYouClient,
       targetDrive,
       acl,
-      new Blob([bytes], { type }),
+      new OdinBlob([bytes], { type }) as any as Blob,
       undefined,
       {
         fileId,

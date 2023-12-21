@@ -154,7 +154,7 @@ const uploadNewPhoto = async (
       },
       [
         { quality: 100, width: 500, height: 500 },
-        { quality: 100, width: 2000, height: 2000 },
+        // { quality: 100, width: 2000, height: 2000 },
       ]
     )),
     userDate: userDate,

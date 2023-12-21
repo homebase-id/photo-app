@@ -25,6 +25,7 @@ import {
 } from '@youfoundation/js-lib/helpers';
 import { createThumbnails } from './RNThumbnailProvider';
 import { FileSystem } from 'react-native-file-access';
+import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 export interface ImageSource {
   filename?: string | null;
@@ -100,15 +101,17 @@ export const uploadImage = async (
 
   // Read payload
   const imageData = await FileSystem.readFile(photo.filepath, 'base64');
-
+  console.log('going to upload');
   const result = await uploadFile(
     dotYouClient,
     instructionSet,
     metadata,
     [
       {
-        payload: new Blob([base64ToUint8Array(imageData)], { type: uploadMeta?.type }),
-        key: 'payload',
+        payload: new OdinBlob([base64ToUint8Array(imageData)], {
+          type: uploadMeta?.type,
+        }) as any as Blob,
+        key: DEFAULT_PAYLOAD_KEY,
       },
     ],
     additionalThumbnails,

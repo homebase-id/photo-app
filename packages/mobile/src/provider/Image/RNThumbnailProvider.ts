@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
 import { FileSystem } from 'react-native-file-access';
 import ImageResizer, { ResizeFormat } from '@bam.tech/react-native-image-resizer';
 import { ImageSource } from './RNImageProvider';
+import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 export const baseThumbSizes: ThumbnailInstruction[] = [
   { quality: 75, width: 250, height: 250 },
@@ -126,7 +127,7 @@ const createVectorThumbnail = async (
     thumb: {
       pixelWidth: 50,
       pixelHeight: 50,
-      payload: new Blob([imageBytes], { type: svgType }),
+      payload: new OdinBlob([imageBytes], { type: svgType }) as any as Blob,
       key,
     },
   };
@@ -159,9 +160,9 @@ const createImageThumbnail = async (
       thumb: {
         pixelWidth: resizedData.width,
         pixelHeight: resizedData.height,
-        payload: new Blob([base64ToUint8Array(base64Bytes)], {
+        payload: new OdinBlob([base64ToUint8Array(base64Bytes)], {
           type: `image/${instruction.type || format}`,
-        }),
+        }) as any as Blob,
         key,
       },
     };
