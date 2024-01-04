@@ -10,7 +10,7 @@ import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
 
 const ONE_MINUTE = 60000;
-const ONE_HOUR = ONE_MINUTE * 60;
+const FIVE_MINUTES = ONE_MINUTE * 5;
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -60,7 +60,7 @@ const useSyncFromCameraRoll = () => {
         dotYouClient,
         targetDrive,
         undefined,
-        fileData.node.image,
+        fileData.node.image
       );
       await addDayToLibrary({ date: uploadResult.userDate });
     }
@@ -78,10 +78,10 @@ const useSyncFromCameraRoll = () => {
       // Only one to start/run per startup;
       if (isFetching.current || isFinished.current) return;
 
-      // Only sync when last sync was more than 1 hour ago
+      // Only sync when last sync was more than 5 minutes ago
       if (
         lastCameraRollSyncTimeAsInt &&
-        new Date().getTime() - lastCameraRollSyncTimeAsInt < ONE_HOUR
+        new Date().getTime() - lastCameraRollSyncTimeAsInt < FIVE_MINUTES
       )
         return;
 
@@ -95,8 +95,7 @@ const useSyncFromCameraRoll = () => {
       isFetching.current = false;
       isFinished.current = true;
 
-      if (!earliestSyncTime)
-        setEarliestSyncTime(lastCameraRollSyncTimeAsInt.toString());
+      if (!earliestSyncTime) setEarliestSyncTime(lastCameraRollSyncTimeAsInt.toString());
 
       setLastCameraRollSyncTime(new Date().getTime().toString());
     }, 5000);

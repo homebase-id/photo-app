@@ -26,6 +26,14 @@ import InAppBrowser from 'react-native-inappbrowser-reborn';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
+const dateFormat: Intl.DateTimeFormatOptions = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+};
+
 const SettingsPage = (_props: SettingsProps) => {
   const { logout, getIdentity } = useAuth();
   const { cleanup } = useDbSync();
@@ -34,6 +42,7 @@ const SettingsPage = (_props: SettingsProps) => {
     setSyncFromCameraRoll,
     backupFromCameraRoll,
     setBackupFromCameraRoll,
+    lastCameraRollSyncTime,
   } = useKeyValueStorage();
 
   const doLogout = async () => {
@@ -88,13 +97,35 @@ const SettingsPage = (_props: SettingsProps) => {
             }}
           >
             <Sync size={'lg'} />
-            <Text
-              style={{
-                marginLeft: 16,
-              }}
-            >
-              Sync with your Camera roll
-            </Text>
+            <View style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Text
+                style={{
+                  marginLeft: 16,
+                }}
+              >
+                Sync with your Camera roll
+              </Text>
+              {syncFromCameraRoll ? (
+                <Text
+                  style={{
+                    marginLeft: 16,
+                    opacity: 0.5,
+                  }}
+                >
+                  {lastCameraRollSyncTime ? (
+                    <>
+                      Last sync:{' '}
+                      {new Date(parseInt(lastCameraRollSyncTime)).toLocaleString(
+                        undefined,
+                        dateFormat
+                      )}
+                    </>
+                  ) : (
+                    'Last sync: not synced yet'
+                  )}
+                </Text>
+              ) : null}
+            </View>
             <View style={{ marginLeft: 'auto' }}>
               <CheckBox
                 value={syncFromCameraRoll}
