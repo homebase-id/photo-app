@@ -17,7 +17,6 @@ const useAlbums = () => {
       queryFn: () => fetchAllAlbums(),
       refetchOnMount: false,
       refetchOnWindowFocus: false,
-      gcTime: 300000,
       enabled: isAuthenticated,
     }),
     invalidate: () => queryClient.invalidateQueries({ queryKey: ['albums'] }),

@@ -1,9 +1,6 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
-import {
-  PageParam,
-  getPhotosLocal,
-} from '../../provider/Image/RNPhotoProvider';
+import { PageParam, getPhotosLocal } from '../../provider/Image/RNPhotoProvider';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 
 export type useInfintePhotosReturn = {
@@ -40,7 +37,7 @@ export const fetchPhotosByMonth = async ({
     beginOfMonth,
     endOfMonth,
     'newer',
-    pageParam,
+    pageParam
   );
 
   return {
@@ -76,16 +73,11 @@ export const usePhotosByMonth = ({
           date: date as Date,
           pageParam,
         }),
-      getNextPageParam: lastPage =>
-        lastPage?.results?.length >= PAGE_SIZE
-          ? lastPage?.pageParam
-          : undefined,
+      getNextPageParam: (lastPage) =>
+        lastPage?.results?.length >= PAGE_SIZE ? lastPage?.pageParam : undefined,
       enabled: !!date,
     }),
-    invalidateQueries: (
-      type?: 'archive' | 'bin' | 'apps' | 'favorites',
-      date?: Date,
-    ) => {
+    invalidateQueries: (type?: 'archive' | 'bin' | 'apps' | 'favorites', date?: Date) => {
       const queryKey = ['photos', targetDrive.alias];
       if (type) queryKey.push(type);
       if (date) queryKey.push(`${date.getFullYear()}-${date.getMonth()}`);
@@ -128,7 +120,7 @@ export const useFlatPhotosFromDate = ({
           date,
           undefined,
           ordering || 'newer',
-          { skip: pageParam?.skip || 0, take: PAGE_SIZE },
+          { skip: pageParam?.skip || 0, take: PAGE_SIZE }
         );
 
         return {
@@ -141,17 +133,14 @@ export const useFlatPhotosFromDate = ({
 
       enabled: !disabled,
       initialPageParam: undefined as { skip: number } | undefined,
-      getNextPageParam: lastPage =>
+      getNextPageParam: (lastPage) =>
         lastPage?.results?.length === PAGE_SIZE && lastPage?.pageParam
           ? lastPage.pageParam
           : undefined,
-      gcTime: Infinity,
-      staleTime: Infinity,
+      gcTime: Infinity, // Never refetch, unless specified explicitly
+      staleTime: Infinity, // Never refetch, unless specified explicitly
     }),
-    invalidateFlatPhotos: (
-      album?: string,
-      type?: 'archive' | 'bin' | 'apps',
-    ) => {
+    invalidateFlatPhotos: (album?: string, type?: 'archive' | 'bin' | 'apps') => {
       const queryKey = ['flat-photos', targetDrive?.alias, type];
       if (album) queryKey.push(album);
 

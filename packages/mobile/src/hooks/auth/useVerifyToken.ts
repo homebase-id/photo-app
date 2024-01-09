@@ -21,6 +21,7 @@ const useVerifyToken = (dotYouClient: DotYouClient) => {
     queryFn: fetchData,
     refetchOnMount: false,
     staleTime: MINUTE_IN_MS * 10,
+    gcTime: MINUTE_IN_MS * 10,
     enabled: !!sharedSecret && !!identity,
   });
 };
