@@ -1,8 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  removeAlbumDefintion,
-  saveAlbum,
-} from '../../provider/photos/AlbumProvider';
+import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
 import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
 import useAuth from '../auth/useAuth';
 import useAlbums from './useAlbums';
@@ -20,7 +17,7 @@ const useAlbum = (albumKey?: string) => {
   const fetch = async (albumKey?: string) => {
     if (!albumKey) return null;
 
-    return albums?.find(album => album.tag === albumKey) || null;
+    return albums?.find((album) => album.tag === albumKey) || null;
   };
 
   const save = async (album: AlbumDefinition) => {
@@ -38,34 +35,30 @@ const useAlbum = (albumKey?: string) => {
       queryKey: ['album', albumKey],
       queryFn: () => fetch(albumKey),
       enabled: !!albumKey && !!albums,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     }),
     save: useMutation({
       mutationFn: save,
       onMutate(newAlbum) {
-        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
-          'albums',
-        ]);
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
         queryClient.setQueryData(['albums'], [...(prevAlbums || []), newAlbum]);
       },
-      onSettled() {
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['albums'] });
-        }, 100);
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['albums'] });
       },
     }),
     remove: useMutation({
       mutationFn: remove,
       onMutate(toRemoveAlbum) {
-        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
-          'albums',
-        ]);
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
         queryClient.setQueryData(
           ['albums'],
           [
-            ...(prevAlbums?.filter(
-              album => !stringGuidsEqual(album.tag, toRemoveAlbum.tag),
-            ) || []),
-          ],
+            ...(prevAlbums?.filter((album) => !stringGuidsEqual(album.tag, toRemoveAlbum.tag)) ||
+              []),
+          ]
         );
       },
     }),
@@ -75,6 +68,7 @@ const useAlbum = (albumKey?: string) => {
 export const useAlbumThumbnail = (albumKey?: string) => {
   const { getDotYouClient } = useAuth();
   const dotYouClient = getDotYouClient();
+  const queryClient = useQueryClient();
 
   const fetch = async (albumKey?: string) => {
     if (!albumKey) return null;
@@ -87,8 +81,11 @@ export const useAlbumThumbnail = (albumKey?: string) => {
       queryFn: () => fetch(albumKey),
       refetchOnMount: false,
       refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 60 * 24, // 24 hours
       enabled: !!albumKey,
     }),
+    invalidateAlbumCover: (albumKey: string) =>
+      queryClient.invalidateQueries({ queryKey: ['album-thumb', albumKey] }),
   };
 };
 

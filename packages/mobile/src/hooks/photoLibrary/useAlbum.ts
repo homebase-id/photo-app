@@ -3,10 +3,7 @@ import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
 import useAlbums from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import {
-  removeAlbumDefintion,
-  saveAlbum,
-} from '../../provider/photos/AlbumProvider';
+import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
 import useAuth from '../auth/useAuth';
 
 export const useAlbum = (albumKey?: string) => {
@@ -23,7 +20,7 @@ export const useAlbum = (albumKey?: string) => {
   const fetch = async (albumKey?: string) => {
     if (!albumKey) return null;
 
-    return albums?.find(album => album.tag === albumKey) || null;
+    return albums?.find((album) => album.tag === albumKey) || null;
   };
 
   const save = async (album: AlbumDefinition) => {
@@ -45,28 +42,23 @@ export const useAlbum = (albumKey?: string) => {
     save: useMutation({
       mutationFn: save,
       onMutate(newAlbum) {
-        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
-          'albums',
-        ]);
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
         queryClient.setQueryData(['albums'], [...(prevAlbums || []), newAlbum]);
       },
-      onSettled() {
+      onSettled: () => {
         setTimeout(() => invalidate(), 100);
       },
     }),
     remove: useMutation({
       mutationFn: remove,
       onMutate(toRemoveAlbum) {
-        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
-          'albums',
-        ]);
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
         queryClient.setQueryData(
           ['albums'],
           [
-            ...(prevAlbums?.filter(
-              album => !stringGuidsEqual(album.tag, toRemoveAlbum.tag),
-            ) || []),
-          ],
+            ...(prevAlbums?.filter((album) => !stringGuidsEqual(album.tag, toRemoveAlbum.tag)) ||
+              []),
+          ]
         );
       },
     }),

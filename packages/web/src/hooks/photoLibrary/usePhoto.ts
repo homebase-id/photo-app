@@ -16,10 +16,13 @@ import { FileLike, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTyp
 import { useInfintePhotosReturn } from './usePhotos';
 import usePhotoLibrary from './usePhotoLibrary';
 import { MediaUploadMeta } from '@youfoundation/js-lib/media';
+import { useAlbumThumbnail } from './useAlbum';
 
 const usePhoto = (targetDrive?: TargetDrive) => {
   const queryClient = useQueryClient();
   const { getDotYouClient } = useAuth();
+
+  const invalidateAlbumCover = useAlbumThumbnail().invalidateAlbumCover;
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
@@ -416,6 +419,7 @@ const usePhoto = (targetDrive?: TargetDrive) => {
           queryClient.invalidateQueries({
             queryKey: ['photos-infinite', targetDrive?.alias, undefined, tag],
           });
+          invalidateAlbumCover(tag);
         });
 
         if (data?.date && variables.addTags.includes(PhotoConfig.FavoriteTag)) {

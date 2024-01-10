@@ -75,7 +75,7 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
 
       refetchOnMount: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      staleTime: 1000 * 60 * 5, // 5 minutes
       enabled: !!targetDrive && !!fileId,
     }),
     updateMeta: useMutation({
