@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
 import useAuth from '../../hooks/auth/useAuth';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { OdinVideo } from '@youfoundation/ui-lib';
 import { ErrorBoundary } from '../../components/ui/Layout/ErrorBoundary/ErrorBoundary';
 import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
+import { PhotoConfig } from 'photo-app-common';
 
 const KILOBYTE = 1024;
 const MEGABYTE = 1024 * KILOBYTE;

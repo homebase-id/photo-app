@@ -8,11 +8,11 @@ import {
 } from '@youfoundation/js-lib/core';
 import { ImageMetadata, MediaConfig, MediaUploadMeta } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
-import { ImageSource, uploadImage } from './RNImageProvider';
+import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
 import { queryLocalDb } from '../drive/LocalDbProvider';
-import { PhotoConfig } from '../photos/PhotoTypes';
+import { PhotoConfig } from 'photo-app-common';
 
 const elaborateDateParser = (dateString: string) => {
   try {

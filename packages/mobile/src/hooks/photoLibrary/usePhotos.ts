@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
-import { PageParam, getPhotosLocal } from '../../provider/Image/RNPhotoProvider';
+import { PageParam, getPhotosLocal } from '../../provider/photos/RNPhotoProvider';
 import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 
 export type useInfintePhotosReturn = {

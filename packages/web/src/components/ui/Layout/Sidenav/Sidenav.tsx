@@ -4,9 +4,7 @@ import { getVersion } from '../../../../helpers/common';
 import { t } from '../../../../helpers/i18n/dictionary';
 import useAuth from '../../../../hooks/auth/useAuth';
 import useOutsideTrigger from '../../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
-import useAlbums from '../../../../hooks/photoLibrary/useAlbums';
 import useDarkMode from '../../../../hooks/useDarkMode';
-import { AlbumDefinition } from '../../../../provider/photos/PhotoTypes';
 import Archive from '../../Icons/Archive/Archive';
 import Arrow, { ArrowDown } from '../../Icons/Arrow/Arrow';
 import Bars from '../../Icons/Bars/Bars';
@@ -17,11 +15,11 @@ import Person from '../../Icons/Person/Person';
 import Times from '../../Icons/Times/Times';
 import Trash from '../../Icons/Trash/Trash';
 import { MiniDarkModeToggle } from '../DarkModeToggle/DarkModeToggle';
-import { useAlbumThumbnail } from '../../../../hooks/photoLibrary/useAlbum';
 import Plus from '../../Icons/Plus/Plus';
 import Grid from '../../Icons/Grid/Grid';
 import AlbumIcon from '../../Icons/Album/Album';
 import Upload from '../../Icons/Upload/Upload';
+import { AlbumDefinition, useAlbumThumbnail, useAlbums } from 'photo-app-common';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -193,8 +191,9 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
 };
 
 const AlbumsNavItem = () => {
+  const dotYouClient = useAuth().getDotYouClient();
   const [isOpen, setIsOpen] = useState(true);
-  const { data: albums } = useAlbums().fetch;
+  const { data: albums } = useAlbums(dotYouClient).fetch;
 
   return (
     <>
@@ -225,9 +224,9 @@ const AlbumsNavItem = () => {
 
       {isOpen ? (
         <div className={''}>
-          {albums?.slice(0, 5)?.map((album, index) => (
-            <AlbumNavItem album={album} key={album.fileId ?? index} />
-          ))}
+          {albums
+            ?.slice(0, 5)
+            ?.map((album, index) => <AlbumNavItem album={album} key={album.fileId ?? index} />)}
           {albums && albums?.length > 5 ? (
             <NavItem label={t('View all')} icon={Arrow} to={`/albums`} end={true} />
           ) : (
@@ -242,7 +241,8 @@ const AlbumsNavItem = () => {
 };
 
 const AlbumNavItem = ({ album }: { album: AlbumDefinition }) => {
-  const { data: thumb } = useAlbumThumbnail(album.tag).fetch;
+  const dotYouClient = useAuth().getDotYouClient();
+  const { data: thumb } = useAlbumThumbnail(dotYouClient, album.tag).fetch;
 
   return (
     <NavLink

@@ -1,39 +1,36 @@
 import { useQueryClient, InfiniteData, useQuery } from '@tanstack/react-query';
 import { TargetDrive, getFileHeader } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import useAuth from '../auth/useAuth';
+import { DotYouClient } from '@youfoundation/js-lib/core';
 import { useInfintePhotosReturn } from './usePhotos';
 
 export const useFileHeader = ({
+  dotYouClient,
   targetDrive,
   photoFileId,
 }: {
+  dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   photoFileId?: string;
 }) => {
   const queryClient = useQueryClient();
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
 
-  const fetchCurrent = async (
-    targetDrive: TargetDrive,
-    photoFileId: string,
-  ) => {
+  const fetchCurrent = async (targetDrive: TargetDrive, photoFileId: string) => {
     const previousKeys = queryClient
       .getQueryCache()
       .findAll({ queryKey: ['photos', targetDrive?.alias], exact: false })
-      .filter(query => query.state.status === 'success');
+      .filter((query) => query.state.status === 'success');
 
     for (let i = 0; i < previousKeys.length; i++) {
       const key = previousKeys[i];
-      const dataForDay = queryClient.getQueryData<
-        InfiniteData<useInfintePhotosReturn>
-      >(key.queryKey);
+      const dataForDay = queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(
+        key.queryKey
+      );
       if (!dataForDay) continue;
 
       const dsr = dataForDay?.pages
-        ?.flatMap(page => page.results)
-        .find(dsr => stringGuidsEqual(dsr.fileId, photoFileId));
+        ?.flatMap((page) => page.results)
+        .find((dsr) => stringGuidsEqual(dsr.fileId, photoFileId));
       if (dsr) return dsr;
     }
 

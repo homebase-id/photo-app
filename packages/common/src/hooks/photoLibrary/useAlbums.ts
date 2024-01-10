@@ -1,11 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAllAlbums } from '../../provider/photos/AlbumProvider';
-import useAuth from '../auth/useAuth';
+import { DotYouClient } from '@youfoundation/js-lib/core';
 
-const useAlbums = () => {
-  const { getDotYouClient, isAuthenticated } = useAuth();
-  const dotYouClient = getDotYouClient();
-
+export const useAlbums = (dotYouClient: DotYouClient) => {
   const fetchAllAlbums = async () => {
     return await getAllAlbums(dotYouClient);
   };
@@ -17,9 +14,6 @@ const useAlbums = () => {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 5, // 5 minutes
-      enabled: isAuthenticated,
     }),
   };
 };
-
-export default useAlbums;

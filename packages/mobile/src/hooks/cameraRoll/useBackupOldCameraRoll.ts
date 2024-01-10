@@ -1,7 +1,7 @@
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 
 import { useRef, useState } from 'react';
-import { uploadNew } from '../../provider/Image/RNPhotoProvider';
+import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { InteractionManager, Platform } from 'react-native';
 
 import { usePhotoLibrary } from '../photoLibrary/usePhotoLibrary';
@@ -29,9 +29,7 @@ const useBackupOldCameraRoll = () => {
     setEarliestSyncTime,
   } = useKeyValueStorage();
 
-  const [cursor, setCursor] = useState<string | undefined>(
-    cameraRollBackupCursor || undefined,
-  );
+  const [cursor, setCursor] = useState<string | undefined>(cameraRollBackupCursor || undefined);
 
   if (!earliestSyncTime) setEarliestSyncTime(new Date().getTime().toString());
   const earliestSyncTimeAsInt = earliestSyncTime
@@ -60,7 +58,7 @@ const useBackupOldCameraRoll = () => {
         dotYouClient,
         targetDrive,
         undefined,
-        fileData.node.image,
+        fileData.node.image
       );
       await addDayToLibrary({ date: uploadResult.userDate });
     }

@@ -24,7 +24,8 @@
     "react-dom": "^18.2.0",
     "react-helmet-async": "2.0.3",
     "react-router-dom": "^6.10.0",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "photo-app-common": "*"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.7",

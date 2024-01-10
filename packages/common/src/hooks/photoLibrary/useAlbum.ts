@@ -1,18 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
 import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
-import useAuth from '../auth/useAuth';
-import useAlbums from './useAlbums';
+import { DotYouClient } from '@youfoundation/js-lib/core';
+import { useAlbums } from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
-const useAlbum = (albumKey?: string) => {
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
-
+export const useAlbum = (dotYouClient: DotYouClient, albumKey?: string) => {
   const queryClient = useQueryClient();
 
-  const { data: albums } = useAlbums().fetch;
+  const { data: albums } = useAlbums(dotYouClient).fetch;
 
   const fetch = async (albumKey?: string) => {
     if (!albumKey) return null;
@@ -65,9 +62,7 @@ const useAlbum = (albumKey?: string) => {
   };
 };
 
-export const useAlbumThumbnail = (albumKey?: string) => {
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
+export const useAlbumThumbnail = (dotYouClient: DotYouClient, albumKey?: string) => {
   const queryClient = useQueryClient();
 
   const fetch = async (albumKey?: string) => {
@@ -88,5 +83,3 @@ export const useAlbumThumbnail = (albumKey?: string) => {
       queryClient.invalidateQueries({ queryKey: ['album-thumb', albumKey] }),
   };
 };
-
-export default useAlbum;

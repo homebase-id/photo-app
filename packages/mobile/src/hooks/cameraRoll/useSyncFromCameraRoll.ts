@@ -1,7 +1,7 @@
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 
 import { useRef, useState } from 'react';
-import { uploadNew } from '../../provider/Image/RNPhotoProvider';
+import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { InteractionManager, Platform } from 'react-native';
 
 import { usePhotoLibrary } from '../photoLibrary/usePhotoLibrary';

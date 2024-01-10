@@ -2,7 +2,7 @@ import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/r
 import { TargetDrive, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import useAuth from '../auth/useAuth';
+import { DotYouClient } from '@youfoundation/js-lib/core';
 
 import {
   getPhotoMetadata,
@@ -10,15 +10,17 @@ import {
   updatePhotoMetadata,
 } from '../../provider/photos/PhotoProvider';
 import { useInfintePhotosReturn } from './usePhotos';
-import usePhotoLibrary from './usePhotoLibrary';
+import { usePhotoLibrary } from './usePhotoLibrary';
 
-const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
-  const { getDotYouClient } = useAuth();
-
-  const dotYouClient = getDotYouClient();
+export const usePhotoMetadata = (
+  dotYouClient: DotYouClient,
+  targetDrive?: TargetDrive,
+  fileId?: string
+) => {
   const queryClient = useQueryClient();
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+    dotYouClient,
     targetDrive: targetDrive,
     disabled: true,
   }).addDay;
@@ -142,5 +144,3 @@ const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
     }),
   };
 };
-
-export default usePhotoMetadata;

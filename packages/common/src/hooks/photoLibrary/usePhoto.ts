@@ -9,27 +9,25 @@ import {
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import useAuth from '../auth/useAuth';
+import { DotYouClient } from '@youfoundation/js-lib/core';
 
 import { getPhotoMetadata, updatePhoto, uploadNew } from '../../provider/photos/PhotoProvider';
 import { FileLike, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { useInfintePhotosReturn } from './usePhotos';
-import usePhotoLibrary from './usePhotoLibrary';
+import { usePhotoLibrary } from './usePhotoLibrary';
 import { MediaUploadMeta } from '@youfoundation/js-lib/media';
 import { useAlbumThumbnail } from './useAlbum';
 
-const usePhoto = (targetDrive?: TargetDrive) => {
+export const usePhoto = (dotYouClient: DotYouClient, targetDrive?: TargetDrive) => {
   const queryClient = useQueryClient();
-  const { getDotYouClient } = useAuth();
 
-  const invalidateAlbumCover = useAlbumThumbnail().invalidateAlbumCover;
+  const invalidateAlbumCover = useAlbumThumbnail(dotYouClient).invalidateAlbumCover;
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
   }).addDay;
-
-  const dotYouClient = getDotYouClient();
 
   const uploadNewMedia = async ({
     newPhoto,
@@ -490,5 +488,3 @@ const usePhoto = (targetDrive?: TargetDrive) => {
     download: useMutation({ mutationFn: download }),
   };
 };
-
-export default usePhoto;
