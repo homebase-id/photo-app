@@ -8,12 +8,7 @@ const OfflineMessage = () => {
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   const netInfo = useNetInfo();
-  if (
-    isDismissed ||
-    !netInfo ||
-    (netInfo.isConnected && netInfo.isInternetReachable)
-  )
-    return null;
+  if (isDismissed || !netInfo || netInfo.isConnected) return null;
 
   return (
     <View
@@ -27,7 +22,8 @@ const OfflineMessage = () => {
         paddingHorizontal: 2,
         flexDirection: 'row',
         zIndex: 100,
-      }}>
+      }}
+    >
       <Text style={{ fontWeight: '600' }}>You're offline</Text>
       <Text>, experience will be limited</Text>
       <TouchableOpacity
@@ -36,7 +32,8 @@ const OfflineMessage = () => {
           marginLeft: 'auto',
           flexDirection: 'row',
           alignItems: 'center',
-        }}>
+        }}
+      >
         <Times />
         <Text style={{ fontWeight: '600', marginLeft: 5 }}>Dismiss</Text>
       </TouchableOpacity>
