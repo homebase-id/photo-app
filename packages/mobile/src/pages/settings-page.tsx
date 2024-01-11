@@ -10,8 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
-
-import { version as appVersion } from '../../package.json';
+import { getVersion, getBuildNumber } from 'react-native-device-info';
 
 import { SettingsStackParamList } from '../app/App';
 import { Download, Profile, RecycleBin, Sync, Times, Upload } from '../components/ui/Icons/icons';
@@ -236,6 +235,7 @@ const SettingsPage = (_props: SettingsProps) => {
 };
 
 const getVersionInfo = async () => {
+  const appVersion = `${getVersion()} (${getBuildNumber()})`;
   const update = await codePush.getUpdateMetadata();
 
   if (!update) return `v${appVersion}`;
