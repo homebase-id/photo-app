@@ -12,6 +12,7 @@ const targetDrive = PhotoConfig.PhotoDrive;
 
 const useBackupOldCameraRoll = () => {
   const { backupFromCameraRoll } = useKeyValueStorage();
+
   const dotYouClient = useAuth().getDotYouClient();
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     dotYouClient,

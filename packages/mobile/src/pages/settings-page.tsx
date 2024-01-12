@@ -34,14 +34,15 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 };
 
 const SettingsPage = (_props: SettingsProps) => {
+  const navigate = _props.navigation.navigate;
   const { logout, getIdentity } = useAuth();
   const queryClient = useQueryClient();
 
   const {
     syncFromCameraRoll,
-    setSyncFromCameraRoll,
-    backupFromCameraRoll,
-    setBackupFromCameraRoll,
+    // setSyncFromCameraRoll,
+    // backupFromCameraRoll,
+    // setBackupFromCameraRoll,
     lastCameraRollSyncTime,
   } = useKeyValueStorage();
 
@@ -86,7 +87,7 @@ const SettingsPage = (_props: SettingsProps) => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setSyncFromCameraRoll(!syncFromCameraRoll)}
+            onPress={() => navigate('SyncDetails')}
             style={{
               display: 'flex',
               flexDirection: 'row',
@@ -102,7 +103,7 @@ const SettingsPage = (_props: SettingsProps) => {
                   marginLeft: 16,
                 }}
               >
-                Sync with your Camera roll
+                Sync your Camera roll
               </Text>
               {syncFromCameraRoll ? (
                 <Text
@@ -130,11 +131,11 @@ const SettingsPage = (_props: SettingsProps) => {
                 value={syncFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
                 aria-label="Sync with your camera roll"
-                onValueChange={(newVal) => setSyncFromCameraRoll(newVal)}
+                disabled={syncFromCameraRoll}
               />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => setBackupFromCameraRoll(!backupFromCameraRoll)}
             style={{
               display: 'flex',
@@ -160,7 +161,7 @@ const SettingsPage = (_props: SettingsProps) => {
                 onValueChange={(newVal) => setBackupFromCameraRoll(newVal)}
               />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => doClearLocalData()}
             style={{

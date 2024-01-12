@@ -13,7 +13,7 @@ const FIVE_MINUTES = ONE_MINUTE * 5;
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
-const useSyncFromCameraRoll = () => {
+export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const { syncFromCameraRoll } = useKeyValueStorage();
   const dotYouClient = useAuth().getDotYouClient();
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
@@ -23,7 +23,6 @@ const useSyncFromCameraRoll = () => {
   }).addDay;
 
   const isFetching = useRef<boolean>(false);
-  const isFinished = useRef<boolean>(false);
 
   const [cursor, setCursor] = useState<string | undefined>(undefined);
 
@@ -71,35 +70,43 @@ const useSyncFromCameraRoll = () => {
     return photos.page_info.has_next_page;
   };
 
-  InteractionManager.runAfterInteractions(async () => {
-    if (!syncFromCameraRoll) return;
+  const doSync = async () => {
+    // Only one to run at the same time;
+    if (isFetching.current) return;
 
-    setTimeout(async () => {
-      // Only one to start/run per startup;
-      if (isFetching.current || isFinished.current) return;
+    isFetching.current = true;
 
-      // Only sync when last sync was more than 5 minutes ago
-      if (
-        lastCameraRollSyncTimeAsInt &&
-        new Date().getTime() - lastCameraRollSyncTimeAsInt < FIVE_MINUTES
-      )
-        return;
+    console.log('Syncing.. The camera roll');
+    while (await fetchAndUpload()) isFetching.current = false;
+  };
 
-      isFetching.current = true;
+  // Only auto sync when last sync was more than 5 minutes ago
+  const runCheckAutoSync = async () => {
+    if (
+      lastCameraRollSyncTimeAsInt &&
+      new Date().getTime() - lastCameraRollSyncTimeAsInt < FIVE_MINUTES
+    )
+      return;
 
-      console.log('fetching...');
-      while (await fetchAndUpload()) console.log('fetching next...');
+    await doSync();
 
-      console.log('finished');
+    if (!earliestSyncTime) setEarliestSyncTime(lastCameraRollSyncTimeAsInt.toString());
+    setLastCameraRollSyncTime(new Date().getTime().toString());
+  };
 
-      isFetching.current = false;
-      isFinished.current = true;
+  if (enabledAutoSync)
+    // Auto sync (trigger check to sync after 5 seconds); After which it will sync at a max of once per 5 minutes):
+    InteractionManager.runAfterInteractions(async () => {
+      if (!syncFromCameraRoll) return;
 
-      if (!earliestSyncTime) setEarliestSyncTime(lastCameraRollSyncTimeAsInt.toString());
+      // Check for sync every minute
+      setInterval(
+        async () => {
+          runCheckAutoSync();
+        },
+        1000 * 60 * 1
+      );
+    });
 
-      setLastCameraRollSyncTime(new Date().getTime().toString());
-    }, 5000);
-  });
+  return { forceSync: doSync };
 };
-
-export default useSyncFromCameraRoll;

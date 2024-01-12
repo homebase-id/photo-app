@@ -23,8 +23,9 @@ import { useOnlineManager } from '../hooks/offline/useOnlineManager';
 import AlbumPage, { AlbumTitle } from '../pages/album';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SettingsPage from '../pages/settings-page';
+import SyncDetailsPage from '../pages/sync-details-page';
 import TypePage from '../pages/type';
-import useSyncFromCameraRoll from '../hooks/cameraRoll/useSyncFromCameraRoll';
+import { useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import CodePush from 'react-native-code-push';
 import useBackupOldCameraRoll from '../hooks/cameraRoll/useBackupOldCameraRoll';
 import { useDarkMode } from '../hooks/useDarkMode';
@@ -139,7 +140,7 @@ const RootStack = () => {
 };
 
 const AuthenticatedStack = () => {
-  useSyncFromCameraRoll();
+  useSyncFromCameraRoll(true);
   useBackupOldCameraRoll();
   const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -238,6 +239,7 @@ const TabStack = () => {
         component={SettingsStack}
         options={{
           tabBarIcon: settingsIcon,
+          headerShown: false,
         }}
       />
     </Tab.Navigator>
@@ -246,6 +248,8 @@ const TabStack = () => {
 
 export type SettingsStackParamList = {
   Profile: undefined;
+  SyncDetails: undefined;
+  // BackupDetails: undefined;
 };
 
 const SettingsStack = () => {
@@ -253,7 +257,16 @@ const SettingsStack = () => {
 
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Profile" component={SettingsPage} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="Profile"
+        component={SettingsPage}
+        options={{ headerShown: true, headerTitle: 'Settings' }}
+      />
+      <Stack.Screen
+        name="SyncDetails"
+        component={SyncDetailsPage}
+        options={{ headerBackTitle: 'Settings', headerTitle: 'Synchronization' }}
+      />
     </Stack.Navigator>
   );
 };
