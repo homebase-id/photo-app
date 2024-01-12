@@ -7,6 +7,7 @@ import { Ellipsis } from '../ui/Icons/icons';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 import { useAlbum, usePhotosInfinte, useSiblingsRangeInfinte, PhotoConfig } from 'photo-app-common';
 import useAuth from '../../hooks/auth/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -24,6 +25,7 @@ const PhotoAlbum = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
+  const queryClient = useQueryClient();
   const dotYouClient = useAuth().getDotYouClient();
 
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
@@ -44,6 +46,8 @@ const PhotoAlbum = ({
   const [refreshing, setRefreshing] = useState(false);
   const doRefresh = async () => {
     setRefreshing(true);
+
+    queryClient.invalidateQueries();
 
     // Refetch photos;
     await refetchPhotos();

@@ -13,6 +13,7 @@ import {
   PhotoMetaDay,
 } from 'photo-app-common';
 import useAuth from '../../hooks/auth/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -38,6 +39,7 @@ const PhotoLibrary = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
+  const queryClient = useQueryClient();
   const dotYouClient = useAuth().getDotYouClient();
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
@@ -80,6 +82,8 @@ const PhotoLibrary = ({
   const [refreshing, setRefreshing] = useState(false);
   const doRefresh = async () => {
     setRefreshing(true);
+
+    queryClient.invalidateQueries();
 
     // Refetch library;
     await refetchLibrary();

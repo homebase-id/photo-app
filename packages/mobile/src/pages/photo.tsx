@@ -265,7 +265,7 @@ const InnerPhotoPreview = ({
                 width: windowSize.width,
               }}
               onStartReached={() => {
-                setIsGoingLeft(false);
+                hasOlder && setIsGoingLeft(false);
                 newerFlatListRef.current?.scrollToIndex({
                   index: hasOlder ? 1 : 0,
                   animated: false,
@@ -294,12 +294,12 @@ const InnerPhotoPreview = ({
               initialScrollIndex={hasNewer ? 1 : 0}
               ref={olderFlatListRef as any}
               style={{
-                // backgroundColor: 'red',
+                backgroundColor: 'red',
                 height: windowSize.height,
                 width: windowSize.width,
               }}
               onStartReached={() => {
-                setIsGoingLeft(true);
+                hasNewer && setIsGoingLeft(true);
                 olderFlatListRef.current?.scrollToIndex({
                   index: hasNewer ? 1 : 0,
                   animated: false,
