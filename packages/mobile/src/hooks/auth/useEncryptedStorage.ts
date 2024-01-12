@@ -100,12 +100,7 @@ export const useKeyValueStorage = () => {
     setMostRecentQueryModifiedTime,
 
     syncFromCameraRoll: syncFromCameraRoll === '1',
-    setSyncFromCameraRoll: (value: boolean) => {
-      setLastCameraRollSyncTime('');
-      setEarliestSyncTime('');
-      setSyncFromCameraRoll(value ? '1' : '0');
-    },
-
+    setSyncFromCameraRoll: (value: boolean) => setSyncFromCameraRoll(value ? '1' : '0'),
     backupFromCameraRoll: backupFromCameraRoll === '1',
     setBackupFromCameraRoll: (value: boolean) => {
       setCameraRollBackupCursor('');

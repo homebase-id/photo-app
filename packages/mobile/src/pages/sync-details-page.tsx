@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Alert, Button, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 
@@ -21,16 +21,22 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 
 const SyncDetailsPage = (_props: SettingsProps) => {
   const [syncNowState, setSyncNowState] = React.useState<'idle' | 'pending' | 'finished'>('idle');
+  const [pendingCount, setPendingCount] = React.useState<number | null>(null);
 
   const { setSyncFromCameraRoll, syncFromCameraRoll, lastCameraRollSyncTime } =
     useKeyValueStorage();
-  const { forceSync } = useSyncFromCameraRoll(false);
+  const { forceSync, getWhatsPending } = useSyncFromCameraRoll(false);
 
   const doSyncNow = async () => {
     setSyncNowState('pending');
     await forceSync();
     setSyncNowState('finished');
   };
+  const lastSyncAsInt = lastCameraRollSyncTime ? parseInt(lastCameraRollSyncTime || '') : null;
+
+  useEffect(() => {
+    (async () => setPendingCount(await getWhatsPending()))();
+  }, [getWhatsPending]);
 
   return (
     <SafeAreaView>
@@ -38,41 +44,52 @@ const SyncDetailsPage = (_props: SettingsProps) => {
         <View style={{ display: 'flex', flexDirection: 'column' }}>
           {syncFromCameraRoll ? (
             <>
-              <Text
+              <View
                 style={{
                   marginLeft: 16,
                   marginTop: 16,
                   opacity: 0.5,
+                  flexDirection: 'column',
+                  gap: 4,
                 }}
               >
-                {syncNowState === 'idle' ? (
-                  <>
-                    {lastCameraRollSyncTime ? (
-                      <>
-                        Last sync:{' '}
-                        {new Date(parseInt(lastCameraRollSyncTime)).toLocaleString(
-                          undefined,
-                          dateFormat
-                        )}
-                      </>
-                    ) : (
-                      'Last sync: did not sync yet'
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {syncNowState === 'pending'
-                      ? 'syncing'
-                      : syncNowState === 'finished'
-                      ? 'Last sync: Just now'
-                      : null}
-                  </>
-                )}
-              </Text>
+                <Text>
+                  {syncNowState === 'idle' ? (
+                    <>
+                      {lastSyncAsInt ? (
+                        <>
+                          Last sync: {new Date(lastSyncAsInt).toLocaleString(undefined, dateFormat)}
+                        </>
+                      ) : (
+                        'Last sync: did not sync yet'
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {syncNowState === 'pending'
+                        ? 'syncing'
+                        : syncNowState === 'finished'
+                        ? 'Last sync: Just now'
+                        : null}
+                    </>
+                  )}
+                </Text>
+                <Text>
+                  {pendingCount === 0
+                    ? 'All your photos are safe and secure on your identity'
+                    : `Pending: ${pendingCount}`}
+                </Text>
+              </View>
 
-              <Button title="Sync now" onPress={doSyncNow} />
-
-              <View style={{ marginTop: 'auto' }}>
+              <View
+                style={{
+                  marginTop: 'auto',
+                  paddingTop: 50,
+                  flexDirection: 'row-reverse',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Button title="Sync now" onPress={doSyncNow} />
                 <Button
                   title="Disable"
                   onPress={() =>

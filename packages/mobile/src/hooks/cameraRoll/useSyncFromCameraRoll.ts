@@ -1,8 +1,8 @@
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { uploadNew } from '../../provider/photos/RNPhotoProvider';
-import { InteractionManager, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
@@ -27,20 +27,15 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
 
   // last synced time
-  const {
-    lastCameraRollSyncTime,
-    setLastCameraRollSyncTime,
-    earliestSyncTime,
-    setEarliestSyncTime,
-  } = useKeyValueStorage();
+  const { lastCameraRollSyncTime, setLastCameraRollSyncTime } = useKeyValueStorage();
   const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
     ? parseInt(lastCameraRollSyncTime)
-    : new Date().getTime();
+    : undefined;
 
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
       first: 50,
-      fromTime: lastCameraRollSyncTimeAsInt,
+      fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
       after: cursor,
     });
 
@@ -70,6 +65,16 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     return photos.page_info.has_next_page;
   };
 
+  const getWhatsPending = async () => {
+    const photos = await CameraRoll.getPhotos({
+      first: 50,
+      fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
+      after: cursor,
+    });
+
+    return photos.edges.length;
+  };
+
   const doSync = async () => {
     // Only one to run at the same time;
     if (isFetching.current) return;
@@ -77,7 +82,11 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     isFetching.current = true;
 
     console.log('Syncing.. The camera roll');
-    while (await fetchAndUpload()) isFetching.current = false;
+    while (await fetchAndUpload()) {}
+
+    setLastCameraRollSyncTime(new Date().getTime().toString());
+
+    isFetching.current = false;
   };
 
   // Only auto sync when last sync was more than 5 minutes ago
@@ -89,24 +98,14 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       return;
 
     await doSync();
-
-    if (!earliestSyncTime) setEarliestSyncTime(lastCameraRollSyncTimeAsInt.toString());
-    setLastCameraRollSyncTime(new Date().getTime().toString());
   };
 
-  if (enabledAutoSync)
-    // Auto sync (trigger check to sync after 5 seconds); After which it will sync at a max of once per 5 minutes):
-    InteractionManager.runAfterInteractions(async () => {
-      if (!syncFromCameraRoll) return;
+  useEffect(() => {
+    if (syncFromCameraRoll && enabledAutoSync) {
+      const interval = setInterval(() => runCheckAutoSync(), 1000 * 60 * 1);
+      return () => clearInterval(interval);
+    }
+  }, [syncFromCameraRoll, enabledAutoSync]);
 
-      // Check for sync every minute
-      setInterval(
-        async () => {
-          runCheckAutoSync();
-        },
-        1000 * 60 * 1
-      );
-    });
-
-  return { forceSync: doSync };
+  return { forceSync: doSync, getWhatsPending };
 };

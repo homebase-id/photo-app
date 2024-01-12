@@ -55,6 +55,8 @@ const SettingsPage = (_props: SettingsProps) => {
     console.log('Local data cleared');
   };
 
+  const lastSyncAsInt = lastCameraRollSyncTime ? parseInt(lastCameraRollSyncTime || '') : null;
+
   return (
     <SafeAreaView>
       <Container>
@@ -112,14 +114,8 @@ const SettingsPage = (_props: SettingsProps) => {
                     opacity: 0.5,
                   }}
                 >
-                  {lastCameraRollSyncTime ? (
-                    <>
-                      Last sync:{' '}
-                      {new Date(parseInt(lastCameraRollSyncTime)).toLocaleString(
-                        undefined,
-                        dateFormat
-                      )}
-                    </>
+                  {lastSyncAsInt ? (
+                    <>Last sync: {new Date(lastSyncAsInt).toLocaleString(undefined, dateFormat)}</>
                   ) : (
                     'Last sync: not synced yet'
                   )}
