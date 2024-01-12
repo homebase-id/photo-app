@@ -294,7 +294,7 @@ const InnerPhotoPreview = ({
               initialScrollIndex={hasNewer ? 1 : 0}
               ref={olderFlatListRef as any}
               style={{
-                backgroundColor: 'red',
+                // backgroundColor: 'red',
                 height: windowSize.height,
                 width: windowSize.width,
               }}
