@@ -155,6 +155,7 @@ const AuthenticatedStack = () => {
         headerTitleStyle: {
           color: isDarkMode ? Colors.white : Colors.black,
         },
+        headerTintColor: isDarkMode ? Colors.white : Colors.black,
         headerShadowVisible: false,
       }}
     >
