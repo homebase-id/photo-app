@@ -13,7 +13,10 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { focusManager, QueryClient } from '@tanstack/react-query';
 import { Images, ImageLibrary, Cog } from '../components/ui/Icons/icons';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import {
+  PersistQueryClientOptions,
+  PersistQueryClientProvider,
+} from '@tanstack/react-query-persist-client';
 import { Platform } from 'react-native';
 import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
@@ -58,15 +61,38 @@ const queryClient = new QueryClient({
     },
     queries: {
       retry: 2,
-      gcTime: 1000 * 60, // 1 minute
+      gcTime: Infinity,
     },
   },
 });
 
-const asyncPersist = createAsyncStoragePersister({
+const asyncPersister = createAsyncStoragePersister({
   storage: AsyncStorage,
   throttleTime: 1000,
 });
+
+// Explicit includes to avoid persisting media items, or large data in general
+const INCLUDED_QUERY_KEYS = [
+  'album',
+  'album-thumb',
+  'albums',
+  'photo-header',
+  'photo-library',
+  'photo-meta',
+  'photos',
+  'photos-infinite',
+];
+
+const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
+  maxAge: Infinity,
+  persister: asyncPersister,
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query) => {
+      const { queryKey } = query;
+      return INCLUDED_QUERY_KEYS.some((key) => queryKey.includes(key));
+    },
+  },
+};
 
 const onAppStateChange = (status: string) => {
   if (Platform.OS !== 'web') focusManager.setFocused(status === 'active');
@@ -79,10 +105,7 @@ let App = () => {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{
-        maxAge: Infinity,
-        persister: asyncPersist,
-      }}
+      persistOptions={persistOptions}
       onSuccess={() =>
         queryClient.resumePausedMutations().then(() => queryClient.invalidateQueries())
       }
@@ -116,16 +139,12 @@ const RootStack = () => {
 };
 
 const AuthenticatedStack = () => {
-  // const { haveData } = useDbSync();
   useSyncFromCameraRoll();
   useBackupOldCameraRoll();
   const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
-  // const albumContextMenu = (albumId: string) => <PhotoAlbumContextToggle albumId={albumId} />;
-
-  // if (!haveData) return <LoadingPage />;
 
   return (
     <Stack.Navigator
@@ -148,7 +167,6 @@ const AuthenticatedStack = () => {
           headerTitleAlign: 'center',
           headerTitle: () => albumTitle(route.params.albumId),
           headerBackTitle: 'Library',
-          // headerRight: () => albumContextMenu(route.params.albumId),
         })}
       />
       <Stack.Screen

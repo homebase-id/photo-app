@@ -61,6 +61,8 @@ const INCLUDED_QUERY_KEYS = [
   'photo-header',
   'photo-library',
   'photo-meta',
+  'photos',
+  'photos-infinite',
 ];
 const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   maxAge: Infinity,

@@ -34,7 +34,6 @@ export const useAlbum = (dotYouClient: DotYouClient, albumKey?: string) => {
       enabled: !!albumKey && !!albums,
       staleTime: 1000 * 60 * 5, // 5 minutes
       refetchOnMount: false,
-      refetchOnWindowFocus: false,
     }),
     save: useMutation({
       mutationFn: save,
@@ -75,8 +74,7 @@ export const useAlbumThumbnail = (dotYouClient: DotYouClient, albumKey?: string)
       queryKey: ['album-thumb', albumKey],
       queryFn: () => fetch(albumKey),
       refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 60 * 24, // 24 hours
+      staleTime: 1000 * 60 * 60 * 1, // 1 hours
       enabled: !!albumKey,
     }),
     invalidateAlbumCover: (albumKey: string) =>

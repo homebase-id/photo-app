@@ -130,6 +130,7 @@ const SettingsPage = (_props: SettingsProps) => {
                 value={syncFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
                 aria-label="Sync with your camera roll"
+                onValueChange={(newVal) => setSyncFromCameraRoll(newVal)}
               />
             </View>
           </TouchableOpacity>
@@ -156,6 +157,7 @@ const SettingsPage = (_props: SettingsProps) => {
                 value={backupFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
                 aria-label="Backup your camera roll"
+                onValueChange={(newVal) => setBackupFromCameraRoll(newVal)}
               />
             </View>
           </TouchableOpacity>

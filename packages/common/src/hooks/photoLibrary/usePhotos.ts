@@ -101,11 +101,8 @@ export const usePhotosByMonth = ({
       getNextPageParam: (lastPage) =>
         lastPage?.results?.length >= PAGE_SIZE ? lastPage?.cursorState : undefined,
       refetchOnMount: false,
-      refetchOnWindowFocus: false,
       enabled: !!targetDrive && !!date,
-
-      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-      gcTime: Infinity, // Never => react query will never remove the data from the cache
+      staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
     }),
     invalidateQueries: (type?: 'archive' | 'bin' | 'apps' | 'favorites') => {
       queryClient.invalidateQueries({
@@ -177,8 +174,7 @@ export const useFlatPhotosByMonth = ({
               date: dateParam,
               cursorState: cursorState,
             }),
-          gcTime: Infinity,
-          staleTime: Infinity,
+          gcTime: 1000 * 60 * 60 * 1, // 1 hour
         });
 
         const currentMonthIndex =
@@ -220,7 +216,7 @@ export const useFlatPhotosByMonth = ({
         return undefined;
       },
       gcTime: Infinity,
-      staleTime: Infinity,
+      staleTime: 1000 * 60 * 60 * 1, // 1h
     }),
   };
 };
@@ -273,8 +269,7 @@ export const usePhotosInfinte = ({
         lastPage?.results?.length === PAGE_SIZE ? lastPage?.cursorState : undefined,
       enabled: !!targetDrive && album !== 'new' && !disabled,
 
-      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
-      gcTime: Infinity, // Never => react query will never remove the data from the cache
+      staleTime: 1000 * 60 * 10, //10min
     }),
     invalidatePhotosInfinite: (album?: string, type?: 'archive' | 'bin' | 'apps') => {
       const queryKey = ['photos-infinite', targetDrive?.alias, type];
