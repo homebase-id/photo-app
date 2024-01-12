@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
 import { PhotoConfig, usePhotoLibrary } from 'photo-app-common';
+import { hasAndroidPermission } from './permissionHelper';
 
 const ONE_MINUTE = 60000;
 const FIVE_MINUTES = ONE_MINUTE * 5;
@@ -81,7 +82,14 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
     isFetching.current = true;
 
-    console.log('Syncing.. The camera roll');
+    console.log(
+      'Syncing.. The camera roll from:',
+      lastCameraRollSyncTimeAsInt || new Date().getTime()
+    );
+    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
+      console.log('No permission to sync camera roll');
+      return;
+    }
     while (await fetchAndUpload()) {}
 
     setLastCameraRollSyncTime(new Date().getTime().toString());
