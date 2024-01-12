@@ -9,6 +9,7 @@ import { createDateObject, getPhotos } from '../../provider/photos/PhotoProvider
 import { useFlatMonthsFromMeta } from './usePhotoLibraryRange';
 import { useRef } from 'react';
 import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
+import { PhotoConfig } from '../../provider';
 
 export type useInfintePhotosReturn = {
   results: DriveSearchResult[];
@@ -79,6 +80,7 @@ export const usePhotosByMonth = ({
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
   date?: Date;
 }) => {
+  const queryClient = useQueryClient();
   return {
     fetchPhotos: useInfiniteQuery({
       queryKey: [
@@ -105,6 +107,12 @@ export const usePhotosByMonth = ({
       staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
       gcTime: Infinity, // Never => react query will never remove the data from the cache
     }),
+    invalidateQueries: (type?: 'archive' | 'bin' | 'apps' | 'favorites') => {
+      queryClient.invalidateQueries({
+        queryKey: ['photos', PhotoConfig.PhotoDrive.alias, type],
+        exact: false,
+      });
+    },
   };
 };
 
@@ -224,6 +232,7 @@ export const usePhotosInfinte = ({
   type,
   startFromDate,
   direction,
+  disabled,
 }: {
   dotYouClient: DotYouClient;
   targetDrive?: TargetDrive;
@@ -231,14 +240,24 @@ export const usePhotosInfinte = ({
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
   startFromDate?: Date;
   direction?: 'older' | 'newer';
+  disabled?: boolean;
 }) => {
+  const queryClient = useQueryClient();
+
   const startFromDateCursor = startFromDate
     ? getQueryBatchCursorFromTime(startFromDate.getTime())
     : undefined;
 
   return {
     fetchPhotos: useInfiniteQuery({
-      queryKey: ['photos-infinite', targetDrive?.alias, type, album, startFromDate?.getTime()],
+      queryKey: [
+        'photos-infinite',
+        targetDrive?.alias,
+        type,
+        album,
+        startFromDate?.getTime(),
+        direction,
+      ],
       queryFn: ({ pageParam }) =>
         fetchPhotosByCursor({
           dotYouClient,
@@ -252,10 +271,16 @@ export const usePhotosInfinte = ({
       initialPageParam: undefined as string | undefined,
       getNextPageParam: (lastPage) =>
         lastPage?.results?.length === PAGE_SIZE ? lastPage?.cursorState : undefined,
-      enabled: !!targetDrive && album !== 'new',
+      enabled: !!targetDrive && album !== 'new' && !disabled,
 
       staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
       gcTime: Infinity, // Never => react query will never remove the data from the cache
     }),
+    invalidatePhotosInfinite: (album?: string, type?: 'archive' | 'bin' | 'apps') => {
+      const queryKey = ['photos-infinite', targetDrive?.alias, type];
+      if (album) queryKey.push(album);
+
+      queryClient.invalidateQueries({ queryKey, exact: false });
+    },
   };
 };

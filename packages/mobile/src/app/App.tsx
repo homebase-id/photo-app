@@ -19,10 +19,8 @@ import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
 import AlbumPage, { AlbumTitle } from '../pages/album';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import LoadingPage from '../pages/loading-page';
 import SettingsPage from '../pages/settings-page';
 import TypePage from '../pages/type';
-import useDbSync from '../hooks/db/useDbSync';
 import useSyncFromCameraRoll from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import CodePush from 'react-native-code-push';
 import useBackupOldCameraRoll from '../hooks/cameraRoll/useBackupOldCameraRoll';
@@ -118,7 +116,7 @@ const RootStack = () => {
 };
 
 const AuthenticatedStack = () => {
-  const { haveData } = useDbSync();
+  // const { haveData } = useDbSync();
   useSyncFromCameraRoll();
   useBackupOldCameraRoll();
   const { isDarkMode } = useDarkMode();
@@ -127,7 +125,7 @@ const AuthenticatedStack = () => {
   const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
   // const albumContextMenu = (albumId: string) => <PhotoAlbumContextToggle albumId={albumId} />;
 
-  if (!haveData) return <LoadingPage />;
+  // if (!haveData) return <LoadingPage />;
 
   return (
     <Stack.Navigator

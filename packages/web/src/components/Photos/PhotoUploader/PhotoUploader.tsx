@@ -11,6 +11,7 @@ import Check from '../../ui/Icons/Check/Check';
 import Loader from '../../ui/Icons/Loader/Loader';
 import { FileLike, usePhoto, PhotoConfig } from 'photo-app-common';
 import useAuth from '../../../hooks/auth/useAuth';
+import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 
 const kiloBytes = 1024;
 const megaBytes = kiloBytes * 1024;
@@ -60,7 +61,7 @@ const Uploader = ({
     status: uploadStatus,
     reset: resetUpload,
     error: uploadError,
-  } = usePhoto(dotYouClient, PhotoConfig.PhotoDrive).upload;
+  } = useWebPhoto(dotYouClient, PhotoConfig.PhotoDrive).upload;
 
   // Window level paste handler
   useEffect(() => {

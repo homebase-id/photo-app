@@ -32,14 +32,9 @@ export const usePhotoMetadata = (
     targetDrive?: TargetDrive;
     fileId?: string;
   }) => {
-    if (!targetDrive || !fileId) {
-      return null;
-    }
+    if (!targetDrive || !fileId) return null;
 
-    const fetchDataPromise = () => {
-      return getPhotoMetadata(dotYouClient, targetDrive, fileId);
-    };
-
+    const fetchDataPromise = () => getPhotoMetadata(dotYouClient, targetDrive, fileId);
     return await fetchDataPromise();
   };
 

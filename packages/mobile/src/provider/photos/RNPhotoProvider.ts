@@ -11,8 +11,7 @@ import { toGuidId } from '@youfoundation/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
-import { queryLocalDb } from '../drive/LocalDbProvider';
-import { PhotoConfig } from 'photo-app-common';
+import { PhotoConfig, getPhotoByUniqueId } from 'photo-app-common';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -128,10 +127,7 @@ const uploadNewPhoto = async (
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(newPhoto);
   const userDate = dateTimeOriginal || new Date();
 
-  const existingImages = await queryLocalDb({
-    targetDrive,
-    clientUniqueIdAtLeastOne: [imageUniqueId],
-  });
+  const existingImages = await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId);
   // Image already exists, we skip it
   if (existingImages.length > 0) {
     const result = existingImages[0];
@@ -236,46 +232,4 @@ export const uploadNew = async (
 export type PageParam = {
   skip?: number;
   take: number;
-};
-
-export const getPhotosLocal = async (
-  targetDrive: TargetDrive,
-  type: 'bin' | 'archive' | 'apps' | 'favorites' | undefined,
-  album: string | undefined,
-  from?: Date,
-  to?: Date,
-  ordering?: 'older' | 'newer',
-  pageParam?: PageParam
-) => {
-  const archivalStatus: ArchivalStatus[] =
-    type === 'bin'
-      ? [2]
-      : type === 'archive'
-      ? [1]
-      : type === 'apps'
-      ? [3]
-      : album || type === 'favorites'
-      ? [0, 1, 3]
-      : [0];
-
-  const searchResults = await queryLocalDb(
-    {
-      targetDrive: targetDrive,
-      tagsMatchAtLeastOne: album
-        ? [album]
-        : type === 'favorites'
-        ? [PhotoConfig.FavoriteTag]
-        : undefined,
-      fileType: [MediaConfig.MediaFileType],
-      archivalStatus: archivalStatus,
-      userDate: from ? { start: from.getTime(), end: to?.getTime() } : undefined,
-    },
-    {
-      sorting: 'userDate',
-      ordering: ordering === 'newer' ? 'newestFirst' : 'oldestFirst',
-      pageParam,
-    }
-  );
-
-  return searchResults;
 };

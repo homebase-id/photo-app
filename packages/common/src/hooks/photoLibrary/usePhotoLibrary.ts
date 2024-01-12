@@ -12,6 +12,7 @@ import {
 } from '../../provider/photos/PhotoLibraryMetaProvider';
 
 let saveScheduled = false;
+const isDebug = false;
 
 const rebuildLibrary = async ({
   dotYouClient,
@@ -26,7 +27,7 @@ const rebuildLibrary = async ({
     .results;
   const metaStruc = buildMetaStructure(allPhotos);
 
-  console.log('[Metadata] Rebuilding library', { type });
+  isDebug && console.debug('[Metadata] Rebuilding library', { type });
 
   // Store meta file on server (No need to await, it doesn't need to be on the server already to be used)
   savePhotoLibraryMetadata(dotYouClient, metaStruc, type);
@@ -68,16 +69,16 @@ export const usePhotoLibrary = ({
       // Merge with local cache
       if (photoLibOnClient) {
         const mergedLib = mergeLibrary(photoLibOnServer, photoLibOnClient);
-        console.log('[Metadata] get merged lib', mergedLib, { type });
+        isDebug && console.debug('[Metadata] get merged lib', mergedLib, { type });
         return mergedLib;
       }
 
-      console.log('[Metadata] get lib from server', photoLibOnServer, { type });
+      isDebug && console.debug('[Metadata] get lib from server', photoLibOnServer, { type });
       return photoLibOnServer;
     }
 
     if (photoLibOnClient) {
-      console.log('[Metadata] Server has no "new" lib, local cache is up to date');
+      isDebug && console.debug('[Metadata] Server has no "new" lib, local cache is up to date');
       return photoLibOnClient;
     }
 
@@ -146,10 +147,11 @@ export const usePhotoLibrary = ({
       );
       // send request to the backend
       // access to latest state here
-      console.log(
-        '[Metadata] saved all libs to server',
-        libQueries.map((q) => q.queryKey)
-      );
+      isDebug &&
+        console.debug(
+          '[Metadata] saved all libs to server',
+          libQueries.map((q) => q.queryKey)
+        );
       saveScheduled = false;
     }, 10000);
   };
@@ -180,7 +182,7 @@ export const usePhotoLibrary = ({
       updatedLib
     );
 
-    console.log('[Metadata] Photo count mismatch, updated count', type, date);
+    isDebug && console.debug('[Metadata] Photo count mismatch, updated count', type, date);
     debouncedSaveOfLibs();
   };
 
@@ -204,7 +206,7 @@ export const usePhotoLibrary = ({
       updatedLib
     );
 
-    console.log('[Metadata] Added (to)', date, type, updatedLib);
+    isDebug && console.debug('[Metadata] Added (to)', date, type, updatedLib);
     debouncedSaveOfLibs();
   };
 

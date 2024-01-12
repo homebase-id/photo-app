@@ -17,21 +17,23 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
-import { useFileHeader } from '../hooks/photoLibrary/usePhotoHeader';
-import { useFlatPhotosFromDate } from '../hooks/photoLibrary/usePhotos';
+
 import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoader';
-import { useAlbum } from '../hooks/photoLibrary/useAlbum';
+
 import { useDarkMode } from '../hooks/useDarkMode';
-import { PhotoConfig } from '../provider/photos/PhotoTypes';
 import { InfoIcon } from '../components/ui/Icons/icons';
+import { PhotoConfig, useAlbum, useFileHeader, usePhotosInfinte } from 'photo-app-common';
+import useAuth from '../hooks/auth/useAuth';
 
 type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const Photo = ({ route, navigation }: PhotoProps) => {
+  const dotYouClient = useAuth().getDotYouClient();
   const { photoId: fileId } = route.params;
 
   const { data: fileHeader } = useFileHeader({
+    dotYouClient,
     targetDrive,
     photoFileId: fileId,
   });
@@ -61,21 +63,25 @@ interface PhotoLibPreviewProps extends PhotoProps {
 }
 
 const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPreviewProps) => {
+  const dotYouClient = useAuth().getDotYouClient();
+
   const { typeId, albumId } = route.params;
   const isAlbumView = albumId || typeId === 'favorites';
 
-  const { data: album } = useAlbum(albumId).fetch;
+  const { data: album } = useAlbum(dotYouClient, albumId).fetch;
 
   const {
     data: olderPhotos,
     fetchNextPage: fetchOlderPage,
     hasNextPage: hasOlderPage,
     isFetched: hasFetchedOlderPhotos,
-  } = useFlatPhotosFromDate({
+  } = usePhotosInfinte({
+    targetDrive,
+    dotYouClient,
     album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
-    date: currentDate,
+    startFromDate: currentDate,
     disabled: !currentDate && !isAlbumView && !album,
-    ordering: 'newer',
+    direction: 'older',
   }).fetchPhotos;
 
   const {
@@ -83,11 +89,13 @@ const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPr
     fetchNextPage: fetchNewerPage,
     hasNextPage: hasNewerPage,
     isFetched: hasFetchedNewerPhotos,
-  } = useFlatPhotosFromDate({
+  } = usePhotosInfinte({
+    targetDrive,
+    dotYouClient,
     album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
-    date: currentDate,
+    startFromDate: currentDate,
     disabled: !currentDate && !isAlbumView && !album,
-    ordering: 'older',
+    direction: 'newer',
   }).fetchPhotos;
 
   const flatNewerPhotos = newerPhotos?.pages.flatMap((page) => page.results) || [];
@@ -140,7 +148,7 @@ const InnerPhotoPreview = ({
   fetchNewerPage: () => void;
 }) => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [isGoingLeft, setIsGoingLeft] = useState(false);
+  const [isGoingLeft, setIsGoingLeft] = useState(true);
   const [activeDate, setActiveDate] = useState(currentDate);
 
   const windowSize = Dimensions.get('window');
@@ -291,7 +299,6 @@ const InnerPhotoPreview = ({
                 width: windowSize.width,
               }}
               onStartReached={() => {
-                console.log('start reached');
                 setIsGoingLeft(true);
                 olderFlatListRef.current?.scrollToIndex({
                   index: hasNewer ? 1 : 0,

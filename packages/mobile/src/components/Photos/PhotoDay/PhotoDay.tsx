@@ -1,8 +1,4 @@
-import {
-  DEFAULT_PAYLOAD_KEY,
-  DriveSearchResult,
-  TargetDrive,
-} from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
 import React, { useMemo } from 'react';
 import { View, Dimensions, TouchableHighlight } from 'react-native';
 import { Text } from '../../ui/Text/Text';
@@ -52,9 +48,7 @@ export const PhotoDay = ({
   const title = useMemo(() => {
     return date.toLocaleDateString(
       undefined,
-      date.getFullYear() === new Date().getFullYear()
-        ? thisYearMobileDateFormat
-        : mobileDateFormat,
+      date.getFullYear() === new Date().getFullYear() ? thisYearMobileDateFormat : mobileDateFormat
     );
   }, [date]);
 
@@ -64,7 +58,7 @@ export const PhotoDay = ({
   return (
     <View style={{ paddingBottom: 15 }}>
       <Container>
-        <Text fontSize={'sm'}>{title}</Text>
+        <Text>{title}</Text>
       </Container>
       <View
         style={{
@@ -72,16 +66,18 @@ export const PhotoDay = ({
           margin: -1,
           flexDirection: 'row',
           flexWrap: 'wrap',
-        }}>
+        }}
+      >
         {photos
-          ? photos?.map(photoDsr => {
+          ? photos?.map((photoDsr) => {
               return (
                 <View
                   key={photoDsr.fileId}
                   style={{
                     width: size,
                     padding: 1,
-                  }}>
+                  }}
+                >
                   <PhotoItem
                     targetDrive={targetDrive}
                     photoDsr={photoDsr}
@@ -130,7 +126,7 @@ export const PhotoItem = ({
   const isChecked = photoDsr?.fileId && isSelected(photoDsr?.fileId);
 
   const photoDate = new Date(
-    photoDsr.fileMetadata.appData.userDate || photoDsr.fileMetadata.created,
+    photoDsr.fileMetadata.appData.userDate || photoDsr.fileMetadata.created
   );
 
   return (
@@ -141,16 +137,16 @@ export const PhotoItem = ({
             ? Colors.indigo[900]
             : Colors.indigo[200]
           : undefined,
-      }}>
+      }}
+    >
       <View
         style={{
           transform: isChecked ? [{ scale: 0.9 }] : [{ scale: 1 }],
           aspectRatio: 1,
         }}
-        data-date={`${photoDate.getFullYear()}-${
-          photoDate.getMonth() + 1
-        }-${photoDate.getDate()}`}
-        data-unix={photoDate.getTime()}>
+        data-date={`${photoDate.getFullYear()}-${photoDate.getMonth() + 1}-${photoDate.getDate()}`}
+        data-unix={photoDate.getTime()}
+      >
         <TouchableHighlight
           onPress={() => {
             if (!isSelecting)
@@ -161,18 +157,17 @@ export const PhotoItem = ({
               });
             else toggleSelection(photoDsr.fileId);
           }}
-          onLongPress={() => toggleSelection(photoDsr.fileId)}>
+          onLongPress={() => toggleSelection(photoDsr.fileId)}
+        >
           <View>
             {photoDsr.fileMetadata.payloads
-              .find(payload => payload.key === DEFAULT_PAYLOAD_KEY)
+              .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
               ?.contentType.startsWith('video/') ? (
               <>
                 <VideoWithLoader
                   fileId={photoDsr.fileId}
                   targetDrive={targetDrive}
-                  previewThumbnail={
-                    photoDsr?.fileMetadata.appData.previewThumbnail
-                  }
+                  previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
                   imageSize={{
                     width: size,
                     height: size,
@@ -186,9 +181,7 @@ export const PhotoItem = ({
               <PhotoWithLoader
                 fileId={photoDsr.fileId}
                 targetDrive={targetDrive}
-                previewThumbnail={
-                  photoDsr?.fileMetadata.appData.previewThumbnail
-                }
+                previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
                 fit="cover"
                 imageSize={{
                   width: size,

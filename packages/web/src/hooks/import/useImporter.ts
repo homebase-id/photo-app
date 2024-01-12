@@ -1,9 +1,9 @@
 import JSZip from 'jszip';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { usePhoto, PhotoConfig, usePhotoMetadata } from 'photo-app-common';
-import { DotYouClient } from '@youfoundation/js-lib/core';
+import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
 import useAuth from '../auth/useAuth';
+import { useWebPhoto } from '../photoLibrary/useWebPhoto';
 
 const DB_NAME = 'OdinPhotosDatabase';
 const UPLOADED_FILES_STORE = 'uploadedFiles';
@@ -37,7 +37,10 @@ const useImporter = () => {
 
   const dotYouClient = useAuth().getDotYouClient();
 
-  const { mutateAsync: doUploadToServer } = usePhoto(dotYouClient, PhotoConfig.PhotoDrive).upload;
+  const { mutateAsync: doUploadToServer } = useWebPhoto(
+    dotYouClient,
+    PhotoConfig.PhotoDrive
+  ).upload;
   const {
     updateDate: { mutateAsync: updateDate },
     updateMeta: { mutateAsync: updateMeta },

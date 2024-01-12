@@ -18,11 +18,11 @@ import { Download, Profile, RecycleBin, Sync, Times, Upload } from '../component
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
-import useDbSync from '../hooks/db/useDbSync';
 import codePush from 'react-native-code-push';
 import useAuth from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
+import { useQueryClient } from '@tanstack/react-query';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
@@ -36,7 +36,8 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 
 const SettingsPage = (_props: SettingsProps) => {
   const { logout, getIdentity } = useAuth();
-  const { cleanup } = useDbSync();
+  const queryClient = useQueryClient();
+
   const {
     syncFromCameraRoll,
     setSyncFromCameraRoll,
@@ -46,12 +47,11 @@ const SettingsPage = (_props: SettingsProps) => {
   } = useKeyValueStorage();
 
   const doLogout = async () => {
-    await cleanup();
     logout();
   };
 
   const doClearLocalData = async () => {
-    await cleanup();
+    queryClient.removeQueries();
     console.log('Local data cleared');
   };
 
