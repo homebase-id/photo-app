@@ -321,8 +321,8 @@ const App = () => {
       arrayBuffer.fileStart = offset;
       offset = mp4File.appendBuffer(arrayBuffer);
     }
-    log(`Bytes read: ${totalBytesRead}`);
     mp4File.flush();
+    log(`Bytes read: ${totalBytesRead}`);
 
     setFragmentedVideoUri(destinationUri);
     setLatestVideoUri(destinationUri);
