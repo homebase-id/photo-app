@@ -77,6 +77,11 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   };
 
   const doSync = async () => {
+    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
+      console.log('No permission to sync camera roll');
+      return;
+    }
+
     // Only one to run at the same time;
     if (isFetching.current) return;
 
@@ -86,10 +91,6 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       'Syncing.. The camera roll from:',
       lastCameraRollSyncTimeAsInt || new Date().getTime()
     );
-    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
-      console.log('No permission to sync camera roll');
-      return;
-    }
     while (await fetchAndUpload()) {}
 
     setLastCameraRollSyncTime(new Date().getTime().toString());

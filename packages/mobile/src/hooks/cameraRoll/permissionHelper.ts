@@ -2,7 +2,8 @@ import { PermissionsAndroid, Platform } from 'react-native';
 
 export const hasAndroidPermission = async () => {
   const getCheckPermissionPromise = () => {
-    if (typeof Platform.Version >= 33)
+    if (Platform.Version >= 33) {
+      console.log('checking  34');
       return Promise.all([
         PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES),
         PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO),
@@ -10,14 +11,14 @@ export const hasAndroidPermission = async () => {
         ([hasReadMediaImagesPermission, hasReadMediaVideoPermission]) =>
           hasReadMediaImagesPermission && hasReadMediaVideoPermission
       );
-    else return PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+    } else return PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
   };
 
   const hasPermission = await getCheckPermissionPromise();
   if (hasPermission) return true;
 
   const getRequestPermissionPromise = () => {
-    if (typeof Platform.Version >= 33)
+    if (Platform.Version >= 33)
       return PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
         PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,

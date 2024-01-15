@@ -8,6 +8,7 @@ import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import { useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
+import { hasAndroidPermission } from '../hooks/cameraRoll/permissionHelper';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
@@ -37,6 +38,12 @@ const SyncDetailsPage = (_props: SettingsProps) => {
   useEffect(() => {
     (async () => setPendingCount(await getWhatsPending()))();
   }, [getWhatsPending]);
+
+  useEffect(() => {
+    (async () => {
+      hasAndroidPermission();
+    })();
+  }, []);
 
   return (
     <SafeAreaView>
