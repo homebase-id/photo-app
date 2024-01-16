@@ -11,7 +11,7 @@ import {
   createEccPair,
   getRegistrationParams as getRegistrationParamsYouAuth,
   finalizeAuthentication as finalizeAuthenticationYouAuth,
-} from '../../provider/auth/AuthenticationProvider';
+} from '../../provider/auth/RNAuthenticationProvider';
 import { logout as logoutYouauth } from '@youfoundation/js-lib/auth';
 import { useEncrtypedStorage } from './useEncryptedStorage';
 import { Platform } from 'react-native';

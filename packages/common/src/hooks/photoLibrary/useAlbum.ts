@@ -1,29 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
 import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
-import useAlbums from './useAlbums';
+import { DotYouClient } from '@youfoundation/js-lib/core';
+import { useAlbums } from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import {
-  removeAlbumDefintion,
-  saveAlbum,
-} from '../../provider/photos/AlbumProvider';
-import useAuth from '../auth/useAuth';
 
-export const useAlbum = (albumKey?: string) => {
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
-
+export const useAlbum = (dotYouClient: DotYouClient, albumKey?: string) => {
   const queryClient = useQueryClient();
 
-  const {
-    fetch: { data: albums },
-    invalidate,
-  } = useAlbums();
+  const { data: albums } = useAlbums(dotYouClient).fetch;
 
   const fetch = async (albumKey?: string) => {
     if (!albumKey) return null;
 
-    return albums?.find(album => album.tag === albumKey) || null;
+    return albums?.find((album) => album.tag === albumKey) || null;
   };
 
   const save = async (album: AlbumDefinition) => {
@@ -41,41 +32,36 @@ export const useAlbum = (albumKey?: string) => {
       queryKey: ['album', albumKey],
       queryFn: () => fetch(albumKey),
       enabled: !!albumKey && !!albums,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnMount: false,
     }),
     save: useMutation({
       mutationFn: save,
       onMutate(newAlbum) {
-        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
-          'albums',
-        ]);
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
         queryClient.setQueryData(['albums'], [...(prevAlbums || []), newAlbum]);
       },
-      onSettled() {
-        setTimeout(() => invalidate(), 100);
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['albums'] });
       },
     }),
     remove: useMutation({
       mutationFn: remove,
       onMutate(toRemoveAlbum) {
-        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>([
-          'albums',
-        ]);
+        const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
         queryClient.setQueryData(
           ['albums'],
           [
-            ...(prevAlbums?.filter(
-              album => !stringGuidsEqual(album.tag, toRemoveAlbum.tag),
-            ) || []),
-          ],
+            ...(prevAlbums?.filter((album) => !stringGuidsEqual(album.tag, toRemoveAlbum.tag)) ||
+              []),
+          ]
         );
       },
     }),
   };
 };
 
-export const useAlbumThumbnail = (albumKey?: string) => {
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
+export const useAlbumThumbnail = (dotYouClient: DotYouClient, albumKey?: string) => {
   const queryClient = useQueryClient();
 
   const fetch = async (albumKey?: string) => {
@@ -87,6 +73,8 @@ export const useAlbumThumbnail = (albumKey?: string) => {
     fetch: useQuery({
       queryKey: ['album-thumb', albumKey],
       queryFn: () => fetch(albumKey),
+      refetchOnMount: false,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hours
       enabled: !!albumKey,
     }),
     invalidateAlbumCover: (albumKey: string) =>

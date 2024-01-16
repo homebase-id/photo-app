@@ -5,13 +5,14 @@ import { RootStackParamList } from '../app/App';
 import PhotoAlbum from '../components/PhotoAlbum/PhotoAlbum';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
-import usePhotoSelection from '../hooks/photoLibrary/usePhotoSelection';
-import { useAlbum } from '../hooks/photoLibrary/useAlbum';
+import { useAlbum, usePhotoSelection } from 'photo-app-common';
+import useAuth from '../hooks/auth/useAuth';
 
 type AlbumProps = NativeStackScreenProps<RootStackParamList, 'Album'>;
 
 export const AlbumTitle = ({ albumId }: { albumId: string }) => {
-  const { data: album } = useAlbum(albumId).fetch;
+  const dotYouClient = useAuth().getDotYouClient();
+  const { data: album } = useAlbum(dotYouClient, albumId).fetch;
 
   return <Text>{album?.name || 'An album'}</Text>;
 };
@@ -19,14 +20,8 @@ export const AlbumTitle = ({ albumId }: { albumId: string }) => {
 const AlbumPage = ({ navigation, route }: AlbumProps) => {
   const { albumId } = route.params;
 
-  const {
-    toggleSelection,
-    selectRange,
-    isSelected,
-    selection,
-    clearSelection,
-    isSelecting,
-  } = usePhotoSelection();
+  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
+    usePhotoSelection();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {

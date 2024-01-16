@@ -8,23 +8,25 @@ import Image from '../../components/ui/Icons/Image/Image';
 import Upload from '../../components/ui/Icons/Upload/Upload';
 import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
-import useAlbum from '../../hooks/photoLibrary/useAlbum';
-import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
 import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/ErrorNotification';
 import PhotoAlbum from '../../components/Photos/PhotoAlbum/PhotoAlbum';
 import AlbumIcon from '../../components/ui/Icons/Album/Album';
+import { useAlbum, usePhotoSelection } from 'photo-app-common';
+import useAuth from '../../hooks/auth/useAuth';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
 const Photos = () => {
+  const dotYouClient = useAuth().getDotYouClient();
+
   const [isFileSelectorOpen, setFileSelectorOpen] = useState(false);
   const { photoKey, albumKey } = useParams();
   const {
     fetch: { data: album },
     remove: { mutate: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
-  } = useAlbum(albumKey);
+  } = useAlbum(dotYouClient, albumKey);
 
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();

@@ -51,7 +51,7 @@ export const uploadImage = async (
   thumbsToGenerate?: ThumbnailInstruction[]
 ): Promise<ImageUploadResult | undefined> => {
   if (!targetDrive) throw 'Missing target drive';
-  if (!photo.filepath) throw 'Missing filepath';
+  if (!photo.filepath && !photo.uri) throw 'Missing filepath';
 
   const encrypt = !(
     acl.requiredSecurityGroup === SecurityGroupType.Anonymous ||
@@ -67,7 +67,7 @@ export const uploadImage = async (
     transitOptions: uploadMeta?.transitOptions,
   };
 
-  const { naturalSize, tinyThumb, additionalThumbnails } = await createThumbnails(
+  const { tinyThumb, additionalThumbnails } = await createThumbnails(
     photo,
     DEFAULT_PAYLOAD_KEY,
     uploadMeta?.type,
@@ -100,8 +100,7 @@ export const uploadImage = async (
   };
 
   // Read payload
-  const imageData = await FileSystem.readFile(photo.filepath, 'base64');
-  console.log('going to upload');
+  const imageData = await FileSystem.readFile((photo.filepath || photo.uri) as string, 'base64');
   const result = await uploadFile(
     dotYouClient,
     instructionSet,

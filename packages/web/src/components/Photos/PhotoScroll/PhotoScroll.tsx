@@ -1,7 +1,6 @@
+import { createDateObject, usePhotoLibrary, PhotoConfig } from 'photo-app-common';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import { createDateObject } from '../../../provider/photos/PhotoProvider';
+import useAuth from '../../../hooks/auth/useAuth';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -17,6 +16,7 @@ const PhotoScroll = ({
   onJumpInTime: (time: { year: number; month: number }) => void;
   onScroll?: (scrollPercentage: number) => void;
 }) => {
+  const dotYouClient = useAuth().getDotYouClient();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollBarSize, setScrollBarSize] = useState(0);
   const [overlayData, setOverlayData] = useState<{ year: number; month: number } | undefined>(
@@ -35,6 +35,7 @@ const PhotoScroll = ({
   const [mouseDown, setMouseDown] = useState(false);
 
   const { data: photoLib } = usePhotoLibrary({
+    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     type: type,
   }).fetchLibrary;

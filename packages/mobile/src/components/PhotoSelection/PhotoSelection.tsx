@@ -3,11 +3,10 @@ import { Text } from '../ui/Text/Text';
 import { RecycleBin, Archive, OpenHearth, Times, SolidHearth } from '../ui/Icons/icons';
 import { ReactNode, useState } from 'react';
 import { Colors } from '../../app/Colors';
-import usePhoto from '../../hooks/photoLibrary/usePhoto';
-import useAlbums from '../../hooks/photoLibrary/useAlbums';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
+import { useAlbums, usePhoto, PhotoConfig } from 'photo-app-common';
+import useAuth from '../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -24,6 +23,7 @@ const PhotoSelection = ({
   albumKey?: string;
   type?: 'bin' | 'archive' | 'apps';
 }) => {
+  const dotYouClient = useAuth().getDotYouClient();
   const [isAlbumSelectionOpen, setIsAlbumSelectionOpen] = useState(false);
 
   const {
@@ -33,8 +33,8 @@ const PhotoSelection = ({
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
-  } = usePhoto(targetDrive);
-  const { data: albums } = useAlbums().fetch;
+  } = usePhoto(dotYouClient, targetDrive);
+  const { data: albums } = useAlbums(dotYouClient).fetch;
 
   if (!isSelecting) return null;
 

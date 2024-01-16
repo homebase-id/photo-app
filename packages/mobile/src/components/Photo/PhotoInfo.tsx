@@ -7,13 +7,13 @@ import { Text } from '../ui/Text/Text';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../../app/Colors';
 import { Pencil } from '../ui/Icons/icons';
-import usePhotoMetadata from '../../hooks/photoLibrary/usePhotoMeta';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
+import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
+import useAuth from '../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -25,11 +25,12 @@ const PhotoInfo = ({
 
   onClose: () => void;
 }) => {
+  const dotYouClient = useAuth().getDotYouClient();
   const {
     fetchMeta: { data: photoMetadata },
     updateMeta: { mutate: updatePhotoMeta },
     updateDate: { mutate: updateDate },
-  } = usePhotoMetadata(targetDrive, current?.fileId);
+  } = usePhotoMetadata(dotYouClient, targetDrive, current?.fileId);
   const loadOriginal = false;
 
   const onChange = useRef(

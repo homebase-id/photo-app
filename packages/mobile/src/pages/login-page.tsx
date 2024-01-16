@@ -153,7 +153,7 @@ const LoginComponent = () => {
 
   useEffect(() => setInvalid(false), [odinId]);
 
-  const onLogin = async () => {
+  const doLogin = async () => {
     if (!odinId) {
       setInvalid(true);
       return;
@@ -200,7 +200,7 @@ const LoginComponent = () => {
         onChangeText={setOdinId}
         autoCapitalize="none"
         autoCorrect={false}
-        onSubmitEditing={onLogin}
+        onSubmitEditing={doLogin}
       />
 
       {invalid ? <Text style={{ color: Colors.red[500] }}>Invalid homebase id</Text> : null}
@@ -209,7 +209,7 @@ const LoginComponent = () => {
         <Text style={{ color: Colors.red[500] }}>Something went wrong, please try again</Text>
       ) : null}
 
-      <Button title="Login" disabled={!odinId} onPress={onLogin} />
+      <Button title="Login" disabled={!odinId} onPress={doLogin} />
 
       <View
         style={{

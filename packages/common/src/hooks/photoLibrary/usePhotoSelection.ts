@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const usePhotoSelection = () => {
+export const usePhotoSelection = () => {
   const [selection, setSelection] = useState<string[]>([]);
 
   const isSelected = (fileId: string) => selection.indexOf(fileId) !== -1;
@@ -26,5 +26,3 @@ const usePhotoSelection = () => {
     isSelecting,
   };
 };
-
-export default usePhotoSelection;

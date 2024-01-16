@@ -10,15 +10,15 @@ import { Archive, Grid, Plus, RecycleBin, SolidHearth } from '../components/ui/I
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import NewAlbumDialog from '../components/PhotoAlbum/NewAlbumDialog';
-import useAlbums from '../hooks/photoLibrary/useAlbums';
-import { useAlbumThumbnail } from '../hooks/photoLibrary/useAlbum';
 import { useDarkMode } from '../hooks/useDarkMode';
-import { AlbumDefinition, PhotoConfig } from '../provider/photos/PhotoTypes';
+import { AlbumDefinition, PhotoConfig, useAlbumThumbnail, useAlbums } from 'photo-app-common';
+import useAuth from '../hooks/auth/useAuth';
 
 type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 
 const LibraryPage = (_props: LibraryProps) => {
-  const { data: albums } = useAlbums().fetch;
+  const dotYouClient = useAuth().getDotYouClient();
+  const { data: albums } = useAlbums(dotYouClient).fetch;
 
   return (
     <SafeAreaView>
@@ -118,8 +118,9 @@ const TypeLink = ({
 };
 
 const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
+  const dotYouClient = useAuth().getDotYouClient();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { data: thumb } = useAlbumThumbnail(album.tag).fetch;
+  const { data: thumb } = useAlbumThumbnail(dotYouClient, album.tag).fetch;
 
   const windowWidth = Dimensions.get('window').width;
   const itemsPerRow = windowWidth > 500 ? 4 : 2;

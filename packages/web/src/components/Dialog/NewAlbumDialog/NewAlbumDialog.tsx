@@ -3,7 +3,6 @@ import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
-import useAlbum from '../../../hooks/photoLibrary/useAlbum';
 import usePortal from '../../../hooks/portal/usePortal';
 import Input from '../../Form/Input';
 import Label from '../../Form/Label';
@@ -12,6 +11,8 @@ import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotificati
 import ActionButton from '../../ui/Buttons/ActionButton';
 import DialogWrapper from '../../ui/Dialog/DialogWrapper';
 import Plus from '../../ui/Icons/Plus/Plus';
+import { useAlbum } from 'photo-app-common';
+import useAuth from '../../../hooks/auth/useAuth';
 
 const NewAlbumDialog = ({
   isOpen,
@@ -29,7 +30,12 @@ const NewAlbumDialog = ({
 
   const navigate = useNavigate();
 
-  const { mutateAsync: saveAlbum, status: saveStatus, error: saveError } = useAlbum().save;
+  const dotYouClient = useAuth().getDotYouClient();
+  const {
+    mutateAsync: saveAlbum,
+    status: saveStatus,
+    error: saveError,
+  } = useAlbum(dotYouClient).save;
 
   const doSaveAlbum = async () => {
     const newTag = getNewId();

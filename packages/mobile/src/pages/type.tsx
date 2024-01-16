@@ -4,21 +4,15 @@ import { RootStackParamList } from '../app/App';
 import PhotoLibrary from '../components/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
-import usePhotoSelection from '../hooks/photoLibrary/usePhotoSelection';
-import { PhotoConfig } from '../provider/photos/PhotoTypes';
+
+import { usePhotoSelection, PhotoConfig } from 'photo-app-common';
 
 type TypeProps = NativeStackScreenProps<RootStackParamList, 'Type'>;
 
 const TypePage = ({ navigation, route }: TypeProps) => {
   const { typeId } = route.params;
-  const {
-    toggleSelection,
-    selectRange,
-    isSelected,
-    selection,
-    clearSelection,
-    isSelecting,
-  } = usePhotoSelection();
+  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
+    usePhotoSelection();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {

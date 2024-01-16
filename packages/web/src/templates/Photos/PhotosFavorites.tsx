@@ -3,14 +3,13 @@ import PhotoLibrary from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
 import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
-import usePhotoSelection from '../../hooks/photoLibrary/usePhotoSelection';
 import { Suspense, lazy, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { SolidHeart } from '../../components/ui/Icons/Heart/Heart';
 import Uploader from '../../components/Photos/PhotoUploader/PhotoUploader';
 import ActionButton from '../../components/ui/Buttons/ActionButton';
 import Upload from '../../components/ui/Icons/Upload/Upload';
+import { PhotoConfig, usePhotoSelection } from 'photo-app-common';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 

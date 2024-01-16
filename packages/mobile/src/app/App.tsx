@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import PhotosPage from '../pages/photos';
 import PhotoPreview from '../pages/photo';
 
@@ -13,36 +13,37 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { focusManager, QueryClient } from '@tanstack/react-query';
 import { Images, ImageLibrary, Cog } from '../components/ui/Icons/icons';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import {
+  PersistQueryClientOptions,
+  PersistQueryClientProvider,
+} from '@tanstack/react-query-persist-client';
 import { Platform } from 'react-native';
 import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
 import AlbumPage, { AlbumTitle } from '../pages/album';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import LoadingPage from '../pages/loading-page';
 import SettingsPage from '../pages/settings-page';
+import SyncDetailsPage from '../pages/sync-details-page';
 import TypePage from '../pages/type';
-import useDbSync from '../hooks/db/useDbSync';
-import useSyncFromCameraRoll from '../hooks/cameraRoll/useSyncFromCameraRoll';
+import { useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import CodePush from 'react-native-code-push';
-import useBackupOldCameraRoll from '../hooks/cameraRoll/useBackupOldCameraRoll';
 import { useDarkMode } from '../hooks/useDarkMode';
 import useAuth from '../hooks/auth/useAuth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export type AuthStackParamList = {
   Login: undefined;
-  Authenticated: undefined;
+  Authenticated: { logout: () => void };
 };
 
 export type TabStackParamList = {
   Photos: undefined;
   Library: undefined;
-  Settings: undefined;
+  Settings: { logout: () => void };
 };
 
 export type RootStackParamList = {
-  Home: undefined;
+  Home: { logout: () => void };
   PhotoPreview: {
     photoId: string;
     albumId?: string;
@@ -60,15 +61,38 @@ const queryClient = new QueryClient({
     },
     queries: {
       retry: 2,
-      gcTime: 1000 * 60, // 1 minute
+      gcTime: Infinity,
     },
   },
 });
 
-const asyncPersist = createAsyncStoragePersister({
+const asyncPersister = createAsyncStoragePersister({
   storage: AsyncStorage,
   throttleTime: 1000,
 });
+
+// Explicit includes to avoid persisting media items, or large data in general
+const INCLUDED_QUERY_KEYS = [
+  'album',
+  'album-thumb',
+  'albums',
+  'photo-header',
+  'photo-library',
+  'photo-meta',
+  'photos',
+  'photos-infinite',
+];
+
+const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
+  maxAge: Infinity,
+  persister: asyncPersister,
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query) => {
+      const { queryKey } = query;
+      return INCLUDED_QUERY_KEYS.some((key) => queryKey.includes(key));
+    },
+  },
+};
 
 const onAppStateChange = (status: string) => {
   if (Platform.OS !== 'web') focusManager.setFocused(status === 'active');
@@ -81,10 +105,7 @@ let App = () => {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{
-        maxAge: Infinity,
-        persister: asyncPersist,
-      }}
+      persistOptions={persistOptions}
       onSuccess={() =>
         queryClient.resumePausedMutations().then(() => queryClient.invalidateQueries())
       }
@@ -102,11 +123,24 @@ const RootStack = () => {
   const Stack = createNativeStackNavigator<AuthStackParamList>();
   const { isAuthenticated } = useAuth();
 
+  // const [isLoggedOut, setisLoggedOut] = React.useState(false);
+  // useEffect(() => {
+  //   if (isLoggedOut) setisLoggedOut(false);
+  // }, [isLoggedOut]);
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="Authenticated" component={AuthenticatedStack} />
+          <Stack.Screen
+            name="Authenticated"
+            component={AuthenticatedStack}
+            initialParams={{
+              logout: () => {
+                //
+              },
+            }}
+          />
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
@@ -117,17 +151,14 @@ const RootStack = () => {
   );
 };
 
-const AuthenticatedStack = () => {
-  const { haveData } = useDbSync();
-  useSyncFromCameraRoll();
-  useBackupOldCameraRoll();
+type AuthenticatedProps = NativeStackScreenProps<AuthStackParamList, 'Authenticated'>;
+const AuthenticatedStack = (props: AuthenticatedProps) => {
+  useSyncFromCameraRoll(true);
+  // useBackupOldCameraRoll();
   const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
-  // const albumContextMenu = (albumId: string) => <PhotoAlbumContextToggle albumId={albumId} />;
-
-  if (!haveData) return <LoadingPage />;
 
   return (
     <Stack.Navigator
@@ -138,10 +169,16 @@ const AuthenticatedStack = () => {
         headerTitleStyle: {
           color: isDarkMode ? Colors.white : Colors.black,
         },
+        headerTintColor: isDarkMode ? Colors.white : Colors.black,
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="Home" component={TabStack} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="Home"
+        component={TabStack}
+        initialParams={{ logout: props.route.params.logout }}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="PhotoPreview" component={PhotoPreview} options={{ headerShown: false }} />
       <Stack.Screen
         name="Album"
@@ -150,7 +187,6 @@ const AuthenticatedStack = () => {
           headerTitleAlign: 'center',
           headerTitle: () => albumTitle(route.params.albumId),
           headerBackTitle: 'Library',
-          // headerRight: () => albumContextMenu(route.params.albumId),
         })}
       />
       <Stack.Screen
@@ -172,7 +208,8 @@ type TabIconProps = {
   size: number;
 };
 
-const TabStack = () => {
+type TabStackProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
+const TabStack = ({ route }: TabStackProps) => {
   const { isDarkMode } = useDarkMode();
   const Tab = createBottomTabNavigator<TabStackParamList>();
 
@@ -219,8 +256,10 @@ const TabStack = () => {
       <Tab.Screen
         name="Settings"
         component={SettingsStack}
+        initialParams={{ logout: route.params.logout }}
         options={{
           tabBarIcon: settingsIcon,
+          headerShown: false,
         }}
       />
     </Tab.Navigator>
@@ -228,15 +267,40 @@ const TabStack = () => {
 };
 
 export type SettingsStackParamList = {
-  Profile: undefined;
+  Profile: { logout: () => void };
+  SyncDetails: undefined;
+  // BackupDetails: undefined;
 };
 
-const SettingsStack = () => {
+type SettingsStackProps = NativeStackScreenProps<TabStackParamList, 'Settings'>;
+const SettingsStack = (props: SettingsStackProps) => {
+  const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Profile" component={SettingsPage} options={{ headerShown: false }} />
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+        },
+        headerTitleStyle: {
+          color: isDarkMode ? Colors.white : Colors.black,
+        },
+        headerTintColor: isDarkMode ? Colors.white : Colors.black,
+        headerShadowVisible: false,
+      }}
+    >
+      <Stack.Screen
+        name="Profile"
+        component={SettingsPage}
+        initialParams={{ logout: props.route.params.logout }}
+        options={{ headerShown: true, headerTitle: 'Settings' }}
+      />
+      <Stack.Screen
+        name="SyncDetails"
+        component={SyncDetailsPage}
+        options={{ headerBackTitle: 'Settings', headerTitle: 'Synchronization' }}
+      />
     </Stack.Navigator>
   );
 };

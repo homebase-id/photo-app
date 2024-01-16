@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
-import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import Arrow, { ArrowLeft } from '../../ui/Icons/Arrow/Arrow';
 import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
@@ -11,6 +9,9 @@ import { ActionGroup } from '../../ui/Buttons/ActionGroup';
 import Info from '../../ui/Icons/Info/Info';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { PhotoConfig, usePhoto } from 'photo-app-common';
+import useAuth from '../../../hooks/auth/useAuth';
+import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -35,6 +36,7 @@ export const PhotoActions = ({
   loadOriginal: boolean;
   setLoadOriginal: (loadOriginal: boolean) => void;
 }) => {
+  const dotYouClient = useAuth().getDotYouClient();
   const navigate = useNavigate();
 
   const {
@@ -43,8 +45,10 @@ export const PhotoActions = ({
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
+  } = usePhoto(dotYouClient, targetDrive);
+  const {
     download: { mutateAsync: downloadPhoto },
-  } = usePhoto(targetDrive);
+  } = useWebPhoto(dotYouClient, targetDrive);
 
   const isFavorite = current?.fileMetadata.appData.tags?.some((tag) =>
     stringGuidsEqual(tag, PhotoConfig.FavoriteTag)

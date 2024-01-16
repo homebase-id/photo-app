@@ -1,12 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { t } from '../../../helpers/i18n/dictionary';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoDay/PhotoDay';
-import { usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
-import { useSiblingsRangeInfinte } from '../../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
+import { usePhotosInfinte, PhotoConfig, useSiblingsRangeInfinte } from 'photo-app-common';
+import useAuth from '../../../hooks/auth/useAuth';
 
 const gridClasses = `grid grid-cols-4 md:grid-cols-6 lg:flex lg:flex-row gap-[0.1rem] md:gap-1 `;
 const PhotoAlbum = ({
@@ -24,24 +23,24 @@ const PhotoAlbum = ({
   isSelecting?: boolean;
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
-  const [selectionRangeFrom, setSelectionRangeFrom] = useState<
-    string | undefined
-  >();
-  const [selectionRangeTo, setSelectionRangeTo] = useState<
-    string | undefined
-  >();
+  const dotYouClient = useAuth().getDotYouClient();
+
+  const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
+  const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
   const {
     data: photos,
     hasNextPage: hasMorePhotos,
     fetchNextPage,
     isFetchingNextPage,
   } = usePhotosInfinte({
+    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
   }).fetchPhotos;
-  const flatPhotos = photos?.pages.flatMap(page => page.results) ?? [];
+  const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 
   const { data: selection } = useSiblingsRangeInfinte({
+    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
     fromFileId: selectionRangeFrom,
@@ -109,11 +108,7 @@ const PhotoAlbum = ({
       return;
     }
 
-    if (
-      lastItem.index >= chunkedPhotos?.length - 1 &&
-      hasMorePhotos &&
-      !isFetchingNextPage
-    ) {
+    if (lastItem.index >= chunkedPhotos?.length - 1 && hasMorePhotos && !isFetchingNextPage) {
       console.log('fetchNextPage');
       fetchNextPage();
     }
@@ -137,14 +132,15 @@ const PhotoAlbum = ({
         </p>
         {setFileSelectorOpen && (
           <ActionButton
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
               setFileSelectorOpen && setFileSelectorOpen(true);
 
               return false;
             }}
             type="primary"
-            className="ml-2">
+            className="ml-2"
+          >
             {t('Add')}
           </ActionButton>
         )}
@@ -159,16 +155,16 @@ const PhotoAlbum = ({
           className="relative w-full select-none"
           style={{
             height: virtualizer.getTotalSize(),
-          }}>
+          }}
+        >
           <div
             className="absolute left-0 top-0 w-full"
             style={{
-              transform: `translateY(${
-                items[0]?.start - virtualizer.options.scrollMargin
-              }px)`,
-            }}>
+              transform: `translateY(${items[0]?.start - virtualizer.options.scrollMargin}px)`,
+            }}
+          >
             <div className="flex flex-col gap-[0.1rem] md:gap-1">
-              {items.map(virtualRow => {
+              {items.map((virtualRow) => {
                 const isLoaderRow = virtualRow.index > flatPhotos.length - 1;
                 if (isLoaderRow) {
                   return hasMorePhotos || isFetchingNextPage ? (
@@ -184,7 +180,8 @@ const PhotoAlbum = ({
                   <div
                     ref={virtualizer.measureElement}
                     key={virtualRow.index}
-                    data-index={virtualRow.index}>
+                    data-index={virtualRow.index}
+                  >
                     <PhotoGroup
                       photos={photos}
                       targetDrive={PhotoConfig.PhotoDrive}
@@ -224,7 +221,7 @@ const PhotoGroup = ({
 }) => {
   return (
     <div className={gridClasses}>
-      {photos?.map(photoDsr => (
+      {photos?.map((photoDsr) => (
         <PhotoItem
           targetDrive={targetDrive}
           photoDsr={photoDsr}
@@ -236,9 +233,7 @@ const PhotoGroup = ({
         />
       ))}
       {/* This div fills up the space of the last row */}
-      {photos?.length < rowSize ? (
-        <div className="hidden flex-grow-[999] lg:block"></div>
-      ) : null}
+      {photos?.length < rowSize ? <div className="hidden flex-grow-[999] lg:block"></div> : null}
     </div>
   );
 };

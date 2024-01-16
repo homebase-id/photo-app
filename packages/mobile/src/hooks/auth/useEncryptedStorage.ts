@@ -19,17 +19,17 @@ export const useEncrtypedStorage = () => {
   const [authToken, setAuthToken] = useMMKVStorage(
     APP_AUTH_TOKEN,
     storage,
-    '', //'3oYQrbm/PUGypaFr01PFuVhcfKSU56klPGr+X+u5oT4D',
+    '' //'3oYQrbm/PUGypaFr01PFuVhcfKSU56klPGr+X+u5oT4D',
   );
   const [sharedSecret, setSharedSecret] = useMMKVStorage(
     APP_SHARED_SECRET,
     storage,
-    '', //'OMuqKgQgcbB8uQHzuGORmA==',
+    '' //'OMuqKgQgcbB8uQHzuGORmA==',
   );
   const [identity, setIdentity] = useMMKVStorage(
     IDENTITY,
     storage,
-    '', //'samwisegamgee.me',
+    '' //'samwisegamgee.me',
   );
 
   return {
@@ -45,58 +45,54 @@ export const useEncrtypedStorage = () => {
 };
 
 export const useKeyValueStorage = () => {
-  const [earliestSyncTime, setEarliestSyncTime] = useMMKVStorage(
-    EARLIEST_SYNC_TIME,
-    storage,
-    '',
-  );
+  const [earliestSyncTime, setEarliestSyncTime] = useMMKVStorage(EARLIEST_SYNC_TIME, storage, '');
 
+  // Sync
   const [lastCameraRollSyncTime, setLastCameraRollSyncTime] = useMMKVStorage(
     LAST_SYNC_TIME,
     storage,
-    '',
+    ''
   );
-
-  const [cameraRollBackupCursor, setCameraRollBackupCursor] = useMMKVStorage(
-    LAST_BACKUP_CURSOR,
-    storage,
-    '',
-  );
-
-  const [lastQueryBatchCursor, setLastQueryBatchCursor] = useMMKVStorage(
-    LAST_QUERY_BATCH_CURSOR,
-    storage,
-    '',
-  );
-  const [mostRecentQueryModifiedTime, setMostRecentQueryModifiedTime] =
-    useMMKVStorage(MOST_RECENT_QUERY_MODIFIED_TIME, storage, '');
 
   const [syncFromCameraRoll, setSyncFromCameraRoll] = useMMKVStorage(
     SYNC_FROM_CAMERA_ROLL,
     storage,
-    '1',
+    '1'
+  );
+
+  // Backup
+  const [cameraRollBackupCursor, setCameraRollBackupCursor] = useMMKVStorage(
+    LAST_BACKUP_CURSOR,
+    storage,
+    ''
   );
 
   const [backupFromCameraRoll, setBackupFromCameraRoll] = useMMKVStorage(
     BACKUP_FROM_CAMERA_ROLL,
     storage,
-    '0',
+    '0'
+  );
+
+  // DB Sync
+  const [lastQueryBatchCursor, setLastQueryBatchCursor] = useMMKVStorage(
+    LAST_QUERY_BATCH_CURSOR,
+    storage,
+    ''
+  );
+  const [mostRecentQueryModifiedTime, setMostRecentQueryModifiedTime] = useMMKVStorage(
+    MOST_RECENT_QUERY_MODIFIED_TIME,
+    storage,
+    ''
   );
 
   return {
     earliestSyncTime: earliestSyncTime.length ? earliestSyncTime : null,
     setEarliestSyncTime,
-    lastCameraRollSyncTime: lastCameraRollSyncTime.length
-      ? lastCameraRollSyncTime
-      : null,
+    lastCameraRollSyncTime: lastCameraRollSyncTime.length ? lastCameraRollSyncTime : null,
     setLastCameraRollSyncTime,
-    cameraRollBackupCursor: cameraRollBackupCursor.length
-      ? cameraRollBackupCursor
-      : null,
+    cameraRollBackupCursor: cameraRollBackupCursor.length ? cameraRollBackupCursor : null,
     setCameraRollBackupCursor,
-    lastQueryBatchCursor: lastQueryBatchCursor.length
-      ? lastQueryBatchCursor
-      : null,
+    lastQueryBatchCursor: lastQueryBatchCursor.length ? lastQueryBatchCursor : null,
     setLastQueryBatchCursor,
     mostRecentQueryModifiedTime: mostRecentQueryModifiedTime.length
       ? mostRecentQueryModifiedTime
@@ -104,13 +100,7 @@ export const useKeyValueStorage = () => {
     setMostRecentQueryModifiedTime,
 
     syncFromCameraRoll: syncFromCameraRoll === '1',
-    setSyncFromCameraRoll: (value: boolean) => {
-      setLastCameraRollSyncTime('');
-      setEarliestSyncTime('');
-      if (!value) setBackupFromCameraRoll('0');
-      setSyncFromCameraRoll(value ? '1' : '0');
-    },
-
+    setSyncFromCameraRoll: (value: boolean) => setSyncFromCameraRoll(value ? '1' : '0'),
     backupFromCameraRoll: backupFromCameraRoll === '1',
     setBackupFromCameraRoll: (value: boolean) => {
       setCameraRollBackupCursor('');

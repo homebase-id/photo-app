@@ -1,18 +1,16 @@
 import {
-  ArchivalStatus,
   DotYouClient,
   ImageContentType,
   SecurityGroupType,
   TargetDrive,
   ThumbnailFile,
 } from '@youfoundation/js-lib/core';
-import { ImageMetadata, MediaConfig, MediaUploadMeta } from '@youfoundation/js-lib/media';
+import { ImageMetadata, MediaUploadMeta } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
-import { ImageSource, uploadImage } from './RNImageProvider';
+import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
-import { queryLocalDb } from '../drive/LocalDbProvider';
-import { PhotoConfig } from '../photos/PhotoTypes';
+import { getPhotoByUniqueId } from 'photo-app-common';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -37,26 +35,22 @@ const elaborateDateParser = (dateString: string) => {
 
 const getPhotoExifMeta = async (photo: {
   filepath?: string | null;
+  uri?: string | null;
   filename?: string | null;
 }): Promise<{
   imageMetadata: ImageMetadata | undefined;
   imageUniqueId: string;
   dateTimeOriginal: undefined | Date;
-}> => {
-  if (!photo.filepath)
-    return {
-      imageMetadata: undefined,
-      imageUniqueId: '',
-      dateTimeOriginal: undefined,
-    };
+} | null> => {
+  if (!photo.filepath || !photo.uri) return null;
 
-  return Exif.getExif(photo.filepath).then((metadata: any) => {
+  return Exif.getExif(photo.filepath || photo.uri).then((metadata: any) => {
     const exifData = metadata.exif;
 
     if (!exifData || !exifData['{Exif}'])
       return {
         imageMetadata: undefined,
-        imageUniqueId: undefined,
+        imageUniqueId: photo?.filename || undefined,
         dateTimeOriginal: undefined,
       };
 
@@ -122,16 +116,20 @@ const uploadNewPhoto = async (
   newPhoto: ImageSource,
   meta?: MediaUploadMeta
 ) => {
-  if (!newPhoto.filepath) throw 'Missing file';
   // const photo: ImageSource = newPhoto as ImageSource;
 
-  const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(newPhoto);
+  const exif = await getPhotoExifMeta(newPhoto);
+
+  const { imageMetadata, imageUniqueId, dateTimeOriginal } = exif || {
+    imageMetadata: undefined,
+    imageUniqueId: undefined,
+    dateTimeOriginal: undefined,
+  };
   const userDate = dateTimeOriginal || new Date();
 
-  const existingImages = await queryLocalDb({
-    targetDrive,
-    clientUniqueIdAtLeastOne: [imageUniqueId],
-  });
+  const existingImages = imageUniqueId
+    ? await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId)
+    : [];
   // Image already exists, we skip it
   if (existingImages.length > 0) {
     const result = existingImages[0];
@@ -236,46 +234,4 @@ export const uploadNew = async (
 export type PageParam = {
   skip?: number;
   take: number;
-};
-
-export const getPhotosLocal = async (
-  targetDrive: TargetDrive,
-  type: 'bin' | 'archive' | 'apps' | 'favorites' | undefined,
-  album: string | undefined,
-  from?: Date,
-  to?: Date,
-  ordering?: 'older' | 'newer',
-  pageParam?: PageParam
-) => {
-  const archivalStatus: ArchivalStatus[] =
-    type === 'bin'
-      ? [2]
-      : type === 'archive'
-      ? [1]
-      : type === 'apps'
-      ? [3]
-      : album || type === 'favorites'
-      ? [0, 1, 3]
-      : [0];
-
-  const searchResults = await queryLocalDb(
-    {
-      targetDrive: targetDrive,
-      tagsMatchAtLeastOne: album
-        ? [album]
-        : type === 'favorites'
-        ? [PhotoConfig.FavoriteTag]
-        : undefined,
-      fileType: [MediaConfig.MediaFileType],
-      archivalStatus: archivalStatus,
-      userDate: from ? { start: from.getTime(), end: to?.getTime() } : undefined,
-    },
-    {
-      sorting: 'userDate',
-      ordering: ordering === 'newer' ? 'newestFirst' : 'oldestFirst',
-      pageParam,
-    }
-  );
-
-  return searchResults;
 };

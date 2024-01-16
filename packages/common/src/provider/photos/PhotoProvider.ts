@@ -18,7 +18,7 @@ import {
   getDecryptedImageMetadata,
   getDecryptedImageUrl,
 } from '@youfoundation/js-lib/media';
-import { getRandom16ByteArray, jsonStringify64 } from '@youfoundation/js-lib/helpers';
+import { jsonStringify64, getRandom16ByteArray } from '@youfoundation/js-lib/helpers';
 
 import { PhotoConfig, PhotoFile } from './PhotoTypes';
 
@@ -146,6 +146,8 @@ export const updatePhotoMetadata = async (
       },
     };
 
+    console.log({ oldHeader: header, newHeader: metadata });
+
     return await uploadHeader(
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
@@ -173,6 +175,27 @@ export const getPhoto = async (
       isProbablyEncrypted
     ),
   };
+};
+
+export const getPhotoByUniqueId = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  uniqueId: string
+) => {
+  const reponse = await queryBatch(
+    dotYouClient,
+    {
+      targetDrive: targetDrive,
+      clientUniqueIdAtLeastOne: [uniqueId],
+      fileType: [MediaConfig.MediaFileType],
+    },
+    {
+      maxRecords: 5,
+      includeMetadataHeader: false,
+    }
+  );
+
+  return reponse?.searchResults;
 };
 
 const dsrToPhoto = async (
@@ -229,7 +252,9 @@ export const getAlbumThumbnail = async (
     { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }
   );
 
-  if (!reponse.searchResults || reponse.searchResults.length === 0) return null;
+  if (!reponse.searchResults || reponse.searchResults.length === 0) {
+    return null;
+  }
 
   return dsrToPhoto(dotYouClient, targetDrive, reponse.searchResults[0], {
     pixelWidth: 50,

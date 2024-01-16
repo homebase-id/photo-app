@@ -8,7 +8,7 @@ const OfflineMessage = () => {
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   const netInfo = useNetInfo();
-  if (isDismissed || !netInfo || netInfo.isConnected) return null;
+  if (isDismissed || !netInfo || netInfo.isConnected === null || netInfo.isConnected) return null;
 
   return (
     <View

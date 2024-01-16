@@ -50,8 +50,8 @@ export const createThumbnails = async (
   additionalThumbnails: ThumbnailFile[];
 }> => {
   if (contentType === svgType) {
-    if (!photo.filepath) throw new Error('No filepath found in image source');
-    const vectorThumb = await createVectorThumbnail(photo.filepath, key);
+    if (!photo.filepath && !photo.uri) throw new Error('No filepath found in image source');
+    const vectorThumb = await createVectorThumbnail((photo.filepath || photo.uri) as string, key);
 
     return {
       tinyThumb: await getEmbeddedThumbOfThumbnailFile(vectorThumb.thumb, vectorThumb.naturalSize),
@@ -139,10 +139,10 @@ const createImageThumbnail = async (
   instruction: ThumbnailInstruction,
   format: 'webp' | 'png' | 'jpeg' = Platform.OS === 'android' ? 'webp' : 'jpeg'
 ): Promise<{ naturalSize: ImageSize; thumb: ThumbnailFile }> => {
-  if (!photo.filepath) throw new Error('No filepath found in image source');
+  if (!photo.filepath && !photo.uri) throw new Error('No filepath found in image source');
 
   return ImageResizer.createResizedImage(
-    photo.filepath,
+    (photo.filepath || photo.uri) as string,
     instruction.width,
     instruction.height,
     format.toUpperCase() as ResizeFormat,
