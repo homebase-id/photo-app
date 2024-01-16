@@ -1,17 +1,16 @@
 import {
-  ArchivalStatus,
   DotYouClient,
   ImageContentType,
   SecurityGroupType,
   TargetDrive,
   ThumbnailFile,
 } from '@youfoundation/js-lib/core';
-import { ImageMetadata, MediaConfig, MediaUploadMeta } from '@youfoundation/js-lib/media';
+import { ImageMetadata, MediaUploadMeta } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
-import { PhotoConfig, getPhotoByUniqueId } from 'photo-app-common';
+import { getPhotoByUniqueId } from 'photo-app-common';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -51,7 +50,7 @@ const getPhotoExifMeta = async (photo: {
     if (!exifData || !exifData['{Exif}'])
       return {
         imageMetadata: undefined,
-        imageUniqueId: undefined,
+        imageUniqueId: photo?.filename || undefined,
         dateTimeOriginal: undefined,
       };
 

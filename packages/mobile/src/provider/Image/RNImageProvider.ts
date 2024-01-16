@@ -67,7 +67,7 @@ export const uploadImage = async (
     transitOptions: uploadMeta?.transitOptions,
   };
 
-  const { naturalSize, tinyThumb, additionalThumbnails } = await createThumbnails(
+  const { tinyThumb, additionalThumbnails } = await createThumbnails(
     photo,
     DEFAULT_PAYLOAD_KEY,
     uploadMeta?.type,

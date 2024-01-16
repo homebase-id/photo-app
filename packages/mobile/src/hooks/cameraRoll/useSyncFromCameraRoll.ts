@@ -38,7 +38,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       first: 50,
       fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
       after: cursor,
-      include: ['imageSize'],
+      include: ['imageSize', 'filename'],
     });
 
     try {
