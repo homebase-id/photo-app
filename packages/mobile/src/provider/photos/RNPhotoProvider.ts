@@ -36,20 +36,16 @@ const elaborateDateParser = (dateString: string) => {
 
 const getPhotoExifMeta = async (photo: {
   filepath?: string | null;
+  uri?: string | null;
   filename?: string | null;
 }): Promise<{
   imageMetadata: ImageMetadata | undefined;
   imageUniqueId: string;
   dateTimeOriginal: undefined | Date;
-}> => {
-  if (!photo.filepath)
-    return {
-      imageMetadata: undefined,
-      imageUniqueId: '',
-      dateTimeOriginal: undefined,
-    };
+} | null> => {
+  if (!photo.filepath || !photo.uri) return null;
 
-  return Exif.getExif(photo.filepath).then((metadata: any) => {
+  return Exif.getExif(photo.filepath || photo.uri).then((metadata: any) => {
     const exifData = metadata.exif;
 
     if (!exifData || !exifData['{Exif}'])
@@ -121,13 +117,20 @@ const uploadNewPhoto = async (
   newPhoto: ImageSource,
   meta?: MediaUploadMeta
 ) => {
-  if (!newPhoto.filepath) throw 'Missing file';
   // const photo: ImageSource = newPhoto as ImageSource;
 
-  const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(newPhoto);
+  const exif = await getPhotoExifMeta(newPhoto);
+
+  const { imageMetadata, imageUniqueId, dateTimeOriginal } = exif || {
+    imageMetadata: undefined,
+    imageUniqueId: undefined,
+    dateTimeOriginal: undefined,
+  };
   const userDate = dateTimeOriginal || new Date();
 
-  const existingImages = await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId);
+  const existingImages = imageUniqueId
+    ? await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId)
+    : [];
   // Image already exists, we skip it
   if (existingImages.length > 0) {
     const result = existingImages[0];

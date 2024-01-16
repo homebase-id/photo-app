@@ -74,7 +74,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                   ) : (
                     <>
                       {syncNowState === 'pending'
-                        ? 'syncing'
+                        ? 'Syncing...'
                         : syncNowState === 'finished'
                         ? 'Last sync: Just now'
                         : null}
@@ -100,7 +100,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                 <Button
                   title="Disable"
                   onPress={() =>
-                    Alert.alert('Disable sync?', "You're existing photos will not be removed", [
+                    Alert.alert('Disable sync?', 'Your existing photos will not be removed', [
                       {
                         text: 'Disable',
                         onPress: () => setSyncFromCameraRoll(false),

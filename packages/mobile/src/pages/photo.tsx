@@ -372,6 +372,7 @@ const PreviewHeader = ({
       onPress={() => goBack()}
       label={backTitle}
       labelVisible={false}
+      tintColor={isDarkMode ? Colors.white : Colors.black}
     />
   );
   const headerRight = () => (

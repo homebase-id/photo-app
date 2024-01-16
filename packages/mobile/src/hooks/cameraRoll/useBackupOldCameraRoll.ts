@@ -7,6 +7,7 @@ import { InteractionManager, Platform } from 'react-native';
 import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
 import { PhotoConfig, usePhotoLibrary } from 'photo-app-common';
+import { hasAndroidPermission } from './permissionHelper';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -38,10 +39,16 @@ const useBackupOldCameraRoll = () => {
     : new Date().getTime();
 
   const fetchAndUpload = async () => {
+    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
+      console.log('No permission to backup camera roll');
+      return;
+    }
+
     const photos = await CameraRoll.getPhotos({
       first: 50,
       toTime: earliestSyncTimeAsInt,
       after: cursor,
+      include: ['imageSize'],
     });
 
     // Regular loop to have the photos uploaded sequentially
@@ -52,7 +59,10 @@ const useBackupOldCameraRoll = () => {
           ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, true)
           : photo;
 
-      if (!fileData?.node?.image?.filepath) return undefined;
+      if (!fileData?.node?.image) {
+        console.warn('Gotten image without imageData', fileData?.node?.image);
+        return undefined;
+      }
 
       // Upload new always checkf if it already exists
       const uploadResult = await uploadNew(
@@ -64,7 +74,7 @@ const useBackupOldCameraRoll = () => {
       await addDayToLibrary({ date: uploadResult.userDate });
     }
 
-    console.log(`synced ${photos.edges.length} photos`);
+    console.log(`Backed up ${photos.edges.length} photos`);
 
     setCursor(photos.page_info.end_cursor);
     setCameraRollBackupCursor(photos.page_info.end_cursor || '');

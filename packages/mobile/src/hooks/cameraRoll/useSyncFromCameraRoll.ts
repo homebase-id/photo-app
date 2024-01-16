@@ -38,32 +38,47 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       first: 50,
       fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
       after: cursor,
+      include: ['imageSize'],
     });
 
-    // Regular loop to have the photos uploaded sequentially
-    for (let i = 0; i < photos.edges.length; i++) {
-      const photo = photos.edges[i];
-      const fileData =
-        Platform.OS === 'ios'
-          ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, true)
-          : photo;
+    try {
+      // Regular loop to have the photos uploaded sequentially
+      for (let i = 0; i < photos.edges.length; i++) {
+        const photo = photos.edges[i];
+        const fileData =
+          Platform.OS === 'ios'
+            ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, {
+                convertHeicImages: true,
+              })
+            : photo;
 
-      if (!fileData?.node?.image?.filepath) return undefined;
+        if (!fileData?.node?.image) {
+          console.warn('Gotten image without imageData', fileData?.node?.image);
+          return undefined;
+        }
 
-      // Upload new always checkf if it already exists
-      const uploadResult = await uploadNew(
-        dotYouClient,
-        targetDrive,
-        undefined,
-        fileData.node.image
-      );
-      await addDayToLibrary({ date: uploadResult.userDate });
+        // Upload new always checkf if it already exists
+        const uploadResult = await uploadNew(
+          dotYouClient,
+          targetDrive,
+          undefined,
+          fileData.node.image
+        );
+
+        await addDayToLibrary({ date: uploadResult.userDate });
+      }
+    } catch (e) {
+      console.error('failed to sync', e);
+      throw e;
     }
 
     console.log(`synced ${photos.edges.length} photos`);
 
     setCursor(photos.page_info.end_cursor);
-    return photos.page_info.has_next_page;
+    const hasMoreWork = photos.page_info.has_next_page;
+    if (!hasMoreWork) setLastCameraRollSyncTime(new Date().getTime().toString());
+
+    return hasMoreWork;
   };
 
   const getWhatsPending = async () => {
@@ -92,8 +107,6 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       lastCameraRollSyncTimeAsInt || new Date().getTime()
     );
     while (await fetchAndUpload()) {}
-
-    setLastCameraRollSyncTime(new Date().getTime().toString());
 
     isFetching.current = false;
   };

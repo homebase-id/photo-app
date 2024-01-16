@@ -141,7 +141,7 @@ const RootStack = () => {
 
 const AuthenticatedStack = () => {
   useSyncFromCameraRoll(true);
-  useBackupOldCameraRoll();
+  // useBackupOldCameraRoll();
   const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -253,10 +253,22 @@ export type SettingsStackParamList = {
 };
 
 const SettingsStack = () => {
+  const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+        },
+        headerTitleStyle: {
+          color: isDarkMode ? Colors.white : Colors.black,
+        },
+        headerTintColor: isDarkMode ? Colors.white : Colors.black,
+        headerShadowVisible: false,
+      }}
+    >
       <Stack.Screen
         name="Profile"
         component={SettingsPage}
