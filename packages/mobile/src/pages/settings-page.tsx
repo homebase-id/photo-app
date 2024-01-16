@@ -36,7 +36,8 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 
 const SettingsPage = (_props: SettingsProps) => {
   const navigate = _props.navigation.navigate;
-  const logoutUi = _props.route.params.logout;
+  const [logoutPending, setLogoutPending] = useState(false);
+  // const logoutUi = _props.route.params.logout;
   const { logout, getIdentity } = useAuth();
   const queryClient = useQueryClient();
 
@@ -49,7 +50,8 @@ const SettingsPage = (_props: SettingsProps) => {
   } = useKeyValueStorage();
 
   const doLogout = async () => {
-    logoutUi();
+    // logoutUi();
+    setLogoutPending(true);
     logout();
   };
 
@@ -90,6 +92,7 @@ const SettingsPage = (_props: SettingsProps) => {
             >
               Logout
             </Text>
+            {logoutPending ? <ActivityIndicator style={{ marginLeft: 'auto' }} /> : null}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigate('SyncDetails')}

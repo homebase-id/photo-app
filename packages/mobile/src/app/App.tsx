@@ -123,22 +123,23 @@ const RootStack = () => {
   const Stack = createNativeStackNavigator<AuthStackParamList>();
   const { isAuthenticated } = useAuth();
 
-  const [isLoggedOut, setisLoggedOut] = React.useState(false);
-  useEffect(() => {
-    if (isLoggedOut)
-      setTimeout(() => {
-        setisLoggedOut(false);
-      }, 1000);
-  }, [isLoggedOut]);
+  // const [isLoggedOut, setisLoggedOut] = React.useState(false);
+  // useEffect(() => {
+  //   if (isLoggedOut) setisLoggedOut(false);
+  // }, [isLoggedOut]);
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated && !isLoggedOut ? (
+        {isAuthenticated ? (
           <Stack.Screen
             name="Authenticated"
             component={AuthenticatedStack}
-            initialParams={{ logout: () => setisLoggedOut(true) }}
+            initialParams={{
+              logout: () => {
+                //
+              },
+            }}
           />
         ) : (
           <>
