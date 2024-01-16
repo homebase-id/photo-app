@@ -1,8 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  InteractionManager,
   Linking,
   StyleProp,
   TouchableOpacity,
@@ -246,9 +247,9 @@ const getVersionInfo = async () => {
 export const VersionInfo = () => {
   const [version, setVersion] = useState<string>('');
 
-  useEffect(() => {
+  InteractionManager.runAfterInteractions(() => {
     getVersionInfo().then((v) => setVersion(v));
-  }, []);
+  });
 
   return <Text style={{ paddingTop: 10 }}>{version}</Text>;
 };
