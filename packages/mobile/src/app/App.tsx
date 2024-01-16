@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import PhotosPage from '../pages/photos';
 import PhotoPreview from '../pages/photo';
 
@@ -27,24 +27,23 @@ import SyncDetailsPage from '../pages/sync-details-page';
 import TypePage from '../pages/type';
 import { useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import CodePush from 'react-native-code-push';
-import useBackupOldCameraRoll from '../hooks/cameraRoll/useBackupOldCameraRoll';
 import { useDarkMode } from '../hooks/useDarkMode';
 import useAuth from '../hooks/auth/useAuth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export type AuthStackParamList = {
   Login: undefined;
-  Authenticated: undefined;
+  Authenticated: { logout: () => void };
 };
 
 export type TabStackParamList = {
   Photos: undefined;
   Library: undefined;
-  Settings: undefined;
+  Settings: { logout: () => void };
 };
 
 export type RootStackParamList = {
-  Home: undefined;
+  Home: { logout: () => void };
   PhotoPreview: {
     photoId: string;
     albumId?: string;
@@ -124,11 +123,23 @@ const RootStack = () => {
   const Stack = createNativeStackNavigator<AuthStackParamList>();
   const { isAuthenticated } = useAuth();
 
+  const [isLoggedOut, setisLoggedOut] = React.useState(false);
+  useEffect(() => {
+    if (isLoggedOut)
+      setTimeout(() => {
+        setisLoggedOut(false);
+      }, 1000);
+  }, [isLoggedOut]);
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <Stack.Screen name="Authenticated" component={AuthenticatedStack} />
+        {isAuthenticated && !isLoggedOut ? (
+          <Stack.Screen
+            name="Authenticated"
+            component={AuthenticatedStack}
+            initialParams={{ logout: () => setisLoggedOut(true) }}
+          />
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
@@ -139,7 +150,8 @@ const RootStack = () => {
   );
 };
 
-const AuthenticatedStack = () => {
+type AuthenticatedProps = NativeStackScreenProps<AuthStackParamList, 'Authenticated'>;
+const AuthenticatedStack = (props: AuthenticatedProps) => {
   useSyncFromCameraRoll(true);
   // useBackupOldCameraRoll();
   const { isDarkMode } = useDarkMode();
@@ -160,7 +172,12 @@ const AuthenticatedStack = () => {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="Home" component={TabStack} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="Home"
+        component={TabStack}
+        initialParams={{ logout: props.route.params.logout }}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="PhotoPreview" component={PhotoPreview} options={{ headerShown: false }} />
       <Stack.Screen
         name="Album"
@@ -190,7 +207,8 @@ type TabIconProps = {
   size: number;
 };
 
-const TabStack = () => {
+type TabStackProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
+const TabStack = ({ route }: TabStackProps) => {
   const { isDarkMode } = useDarkMode();
   const Tab = createBottomTabNavigator<TabStackParamList>();
 
@@ -237,6 +255,7 @@ const TabStack = () => {
       <Tab.Screen
         name="Settings"
         component={SettingsStack}
+        initialParams={{ logout: route.params.logout }}
         options={{
           tabBarIcon: settingsIcon,
           headerShown: false,
@@ -247,12 +266,13 @@ const TabStack = () => {
 };
 
 export type SettingsStackParamList = {
-  Profile: undefined;
+  Profile: { logout: () => void };
   SyncDetails: undefined;
   // BackupDetails: undefined;
 };
 
-const SettingsStack = () => {
+type SettingsStackProps = NativeStackScreenProps<TabStackParamList, 'Settings'>;
+const SettingsStack = (props: SettingsStackProps) => {
   const { isDarkMode } = useDarkMode();
   const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -272,6 +292,7 @@ const SettingsStack = () => {
       <Stack.Screen
         name="Profile"
         component={SettingsPage}
+        initialParams={{ logout: props.route.params.logout }}
         options={{ headerShown: true, headerTitle: 'Settings' }}
       />
       <Stack.Screen

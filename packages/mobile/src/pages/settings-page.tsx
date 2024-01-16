@@ -14,7 +14,7 @@ import { Text } from '../components/ui/Text/Text';
 import { getVersion, getBuildNumber } from 'react-native-device-info';
 
 import { SettingsStackParamList } from '../app/App';
-import { Download, Profile, RecycleBin, Sync, Times, Upload } from '../components/ui/Icons/icons';
+import { Download, Profile, RecycleBin, Sync, Times } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
@@ -36,6 +36,7 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 
 const SettingsPage = (_props: SettingsProps) => {
   const navigate = _props.navigation.navigate;
+  const logoutUi = _props.route.params.logout;
   const { logout, getIdentity } = useAuth();
   const queryClient = useQueryClient();
 
@@ -48,6 +49,7 @@ const SettingsPage = (_props: SettingsProps) => {
   } = useKeyValueStorage();
 
   const doLogout = async () => {
+    logoutUi();
     logout();
   };
 
