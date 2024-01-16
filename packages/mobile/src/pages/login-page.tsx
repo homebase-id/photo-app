@@ -20,7 +20,7 @@ import { doCheckIdentity } from '../hooks/checkIdentity/useCheckIdentity';
 import { CheckForUpdates, VersionInfo } from './settings-page';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
-import logo from './homebase-photos.png';
+import logo from '../assets/homebase-photos.png';
 import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
 import { Input } from '../components/ui/Form/Input';
 
