@@ -7,6 +7,7 @@ import MP4Box from 'mp4box';
 import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
 import { btoa, atob } from 'react-native-quick-base64';
 import uuid from 'react-native-uuid';
+import { FFmpegKit, FFmpegKitConfig, SessionState } from 'ffmpeg-kit-react-native';
 
 //
 
@@ -93,7 +94,7 @@ const App = () => {
       return;
     }
 
-    log(`Compressong ${source}`);
+    log(`Compressing ${source}`);
 
     const start = new Date().getTime();
 
@@ -115,7 +116,7 @@ const App = () => {
   };
 
   //
-  // Fragmenting
+  // MP4Box Fragmenting
   //
 
   type ExtendedBuffer = ArrayBuffer & { fileStart?: number };
@@ -139,7 +140,7 @@ const App = () => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const buildInitSegments = (mp4File: any, mp4Info: any) => {
+  const mp4boxBuildInitSegments = (mp4File: any, mp4Info: any) => {
     let i;
     let trak;
 
@@ -178,7 +179,7 @@ const App = () => {
 
   //
 
-  const handleFragment = async (): Promise<void> => {
+  const mp4boxHandleFragment = async (): Promise<void> => {
     let mp4Info: Mp4Info | undefined;
     const source = latestVideoUri;
 
@@ -280,7 +281,7 @@ const App = () => {
         if (!tracksToRead.some((trck) => !trck)) {
           console.debug('without offsets: ', metadata.segmentMap);
 
-          const finalMetaBytes = new Uint8Array(buildInitSegments(mp4File, mp4Info));
+          const finalMetaBytes = new Uint8Array(mp4boxBuildInitSegments(mp4File, mp4Info));
           const metaOffset = finalMetaBytes.length;
           metadata.segmentMap = [
             { offset: 0, samples: 0 },
@@ -326,6 +327,55 @@ const App = () => {
 
     setFragmentedVideoUri(destinationUri);
     setLatestVideoUri(destinationUri);
+  };
+
+  //
+  // ffmpeg Fragmenting
+  //
+  const ffmpegHandleFragment = async (): Promise<void> => {
+    const source = latestVideoUri;
+
+    if ((await RNFS.exists(source)) === false) {
+      log(`Not found ${source}`);
+      return;
+    }
+
+    const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
+    const destinationUri = `${dirPath}/fragmented-${uuid.v4()}.mp4`;
+
+    log(`Fragmenting ${source}`);
+    //const command = `-i ${source} -vf scale=-1:1280 -c:v mpeg4 -b:v 3000k -c:a aac -b:a 128k ${destinationUri}`;
+    // const command = `-i ${source} -c copy -movflags frag_keyframe+empty_moov ${destinationUri}`;
+    // const command = `-i ${source} -c copy -movflags +faststart+frag_keyframe ${destinationUri}`;
+    // const command = `-i ${source} -c copy -movflags +empty_moov+frag_keyframe+omit_tfhd_offset ${destinationUri}`;
+    // const command = `-i ${source} -c copy -movflags +faststart+frag_keyframe+omit_tfhd_offset ${destinationUri}`;
+
+    // THIS SEEMS TO WORK
+    const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+
+    log(command);
+
+    const start = new Date().getTime();
+    try {
+      const session = await FFmpegKit.execute(command);
+      const state = await session.getState();
+      const returnCode = await session.getReturnCode();
+      const failStackTrace = await session.getFailStackTrace();
+      const output = await session.getOutput();
+
+      log(`FFmpeg process exited with state ${state} and rc ${returnCode}`);
+      log(output);
+
+      if (state === SessionState.FAILED || !returnCode.isValueSuccess()) {
+        log('Command failed. Please check output for the details.');
+      } else {
+        log(`Fragmented in ${(new Date().getTime() - start) / 1000}s`);
+        setFragmentedVideoUri(destinationUri);
+        setLatestVideoUri(destinationUri);
+      }
+    } catch (error) {
+      log(`FFmpeg process failed with error: ${error}`);
+    }
   };
 
   //
@@ -377,7 +427,12 @@ const App = () => {
           <Button title="Reset" onPress={() => handleReset()} />
           <Button title="Load" onPress={() => handleLoad()} />
           {latestVideoUri && <Button title="Compress" onPress={() => handleCompress()} />}
-          {latestVideoUri && <Button title="Fragment" onPress={() => handleFragment()} />}
+          {latestVideoUri && (
+            <Button title="Fragment (mp4box)" onPress={() => mp4boxHandleFragment()} />
+          )}
+          {latestVideoUri && (
+            <Button title="Fragment (ffmpeg)" onPress={() => ffmpegHandleFragment()} />
+          )}
           {latestVideoUri && <Button title="Upload" onPress={() => handleUpload()} />}
         </View>
         <ScrollView style={styles.scrollView} ref={scrollViewRef}>
