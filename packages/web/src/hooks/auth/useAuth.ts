@@ -17,6 +17,7 @@ import {
   throwAwayTheECCKey,
 } from '@youfoundation/js-lib/auth';
 import { DrivePermissionType } from '@youfoundation/js-lib/core';
+import { REACT_QUERY_CACHE_KEY } from '../../app/App';
 
 export const drives = [
   {
@@ -49,6 +50,7 @@ const useAuth = () => {
 
     localStorage.removeItem(APP_SHARED_SECRET);
     localStorage.removeItem(APP_AUTH_TOKEN);
+    localStorage.removeItem(REACT_QUERY_CACHE_KEY);
     setAuthenticationState('anonymous');
 
     navigate('/');

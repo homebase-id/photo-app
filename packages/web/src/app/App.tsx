@@ -47,6 +47,7 @@ const queryClient = new QueryClient({
   },
 });
 
+export const REACT_QUERY_CACHE_KEY = 'PHOTO_REACT_QUERY_OFFLINE_CACHE';
 const localStoragePersister = createSyncStoragePersister({
   storage: window.localStorage,
   retry: removeOldestQuery,
