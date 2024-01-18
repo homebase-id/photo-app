@@ -21,8 +21,7 @@ npm run android
 ## Deploy release build to android
 
 ```
-./gradlew clean build
-./gradlew assembleRelease
+./gradlew clean assembleRelease
 adb install app/build/outputs/apk/release/app-release.apk
 ```
 
@@ -47,14 +46,14 @@ Now you can login with `frodo.dotyou.cloud`.
 - react-native-ffmpeg
 - react-native-compressor
 
-## IOS Video Libraries
+## IOS Video Libraries (for reference)
 
 - AVFoundation
 - FFmpeg
 - MobileFFmpeg / MobileVLCKit
 - GPUImage
 
-## Android Video Libraries
+## Android Video Libraries (for reference)
 
 - FFmpeg for Android
 - MediaCodec API
