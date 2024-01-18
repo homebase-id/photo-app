@@ -195,7 +195,7 @@ const App = () => {
 
     const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
 
-    const destinationUri = `file://${dirPath}/fragmented-${uuid.v4()}.mp4`;
+    const destinationUri = `file://${dirPath}/mp4box-fragmented-${uuid.v4()}.mp4`;
 
     const start = new Date().getTime();
 
@@ -341,21 +341,17 @@ const App = () => {
     }
 
     const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
-    const destinationUri = `${dirPath}/fragmented-${uuid.v4()}.mp4`;
+
+    const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
+    const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${uuid.v4()}.mp4`;
 
     log(`Fragmenting ${source}`);
-    //const command = `-i ${source} -vf scale=-1:1280 -c:v mpeg4 -b:v 3000k -c:a aac -b:a 128k ${destinationUri}`;
-    // const command = `-i ${source} -c copy -movflags frag_keyframe+empty_moov ${destinationUri}`;
-    // const command = `-i ${source} -c copy -movflags +faststart+frag_keyframe ${destinationUri}`;
-    // const command = `-i ${source} -c copy -movflags +empty_moov+frag_keyframe+omit_tfhd_offset ${destinationUri}`;
-    // const command = `-i ${source} -c copy -movflags +faststart+frag_keyframe+omit_tfhd_offset ${destinationUri}`;
-
-    // THIS SEEMS TO WORK
     const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
 
     log(command);
 
     const start = new Date().getTime();
+
     try {
       const session = await FFmpegKit.execute(command);
       const state = await session.getState();
@@ -409,13 +405,14 @@ const App = () => {
         log(`Uploaded as: ${destinationName}`);
         // RNFS.unlink(source);
       } else {
-        log('Upload failed');
+        log(`Upload failed: ${response.status}`);
       }
     } catch (error) {
       if (error instanceof Error) {
         log(`Error: ${error.message}`);
+        console.log('Error:', error);
       } else {
-        log('Upload Failed');
+        log('Upload failed (unknown error)');
       }
     }
   };
@@ -425,15 +422,17 @@ const App = () => {
       <View style={styles.container}>
         <View style={styles.buttonRow}>
           <Button title="Reset" onPress={() => handleReset()} />
-          <Button title="Load" onPress={() => handleLoad()} />
-          {latestVideoUri && <Button title="Compress" onPress={() => handleCompress()} />}
+          <Button title="Load" onPress={async () => await handleLoad()} />
           {latestVideoUri && (
-            <Button title="Fragment (mp4box)" onPress={() => mp4boxHandleFragment()} />
+            <Button title="Compress" onPress={async () => await handleCompress()} />
           )}
           {latestVideoUri && (
-            <Button title="Fragment (ffmpeg)" onPress={() => ffmpegHandleFragment()} />
+            <Button title="Fragment (mp4box)" onPress={async () => await mp4boxHandleFragment()} />
           )}
-          {latestVideoUri && <Button title="Upload" onPress={() => handleUpload()} />}
+          {latestVideoUri && (
+            <Button title="Fragment (ffmpeg)" onPress={async () => await ffmpegHandleFragment()} />
+          )}
+          {latestVideoUri && <Button title="Upload" onPress={async () => await handleUpload()} />}
         </View>
         <ScrollView style={styles.scrollView} ref={scrollViewRef}>
           <Text style={styles.text}>{logText}</Text>
@@ -500,7 +499,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   text: {
-    // Style your text here
+    color: '#000',
   },
 });
 
