@@ -124,10 +124,6 @@ const App = () => {
     setIsBusy(false);
   };
 
-  //
-  // MP4Box Fragmenting
-  //
-
   type ExtendedBuffer = ArrayBuffer & { fileStart?: number };
   interface Mp4Info {
     isFragmented: boolean;
@@ -147,6 +143,70 @@ const App = () => {
     timescale: number;
     brands: string[];
   }
+
+  //
+  // MP4Box Info
+  //
+  const handleGetMp4boxInfo = async (): Promise<void> => {
+    setIsBusy(true);
+
+    let mp4Info: Mp4Info | undefined;
+    const source = latestVideoUri;
+
+    if ((await RNFS.exists(source)) === false) {
+      log(`Not found ${source}`);
+      return;
+    }
+
+    log(`Getting info on ${source}`);
+
+    const MB = 1024 * 1024;
+    const MB_PER_CHUNK = 5 * MB;
+
+    const start = new Date().getTime();
+
+    const stat = await RNFS.stat(source);
+    log(`Source file size: ${stat.size}`);
+
+    const mp4File = MP4Box.createFile(true);
+
+    mp4File.onError = function (e: Error) {
+      log(e);
+    };
+
+    mp4File.onReady = function (info: Mp4Info) {
+      mp4Info = info;
+      log(info);
+    };
+
+    const readChunkSize = 8192;
+    let offset = 0;
+    let totalBytesRead = 0;
+
+    while (offset < stat.size) {
+      const bytesToRead = Math.min(readChunkSize, stat.size - offset);
+
+      const base64String = await RNFS.read(source, bytesToRead, offset, 'base64');
+      const rawString = atob(base64String);
+      const arrayBuffer = new ArrayBuffer(rawString.length) as ExtendedBuffer;
+      const byteArray = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < rawString.length; i++) {
+        byteArray[i] = rawString.charCodeAt(i);
+      }
+      totalBytesRead += rawString.length;
+
+      arrayBuffer.fileStart = offset;
+      offset = mp4File.appendBuffer(arrayBuffer);
+    }
+    mp4File.flush();
+    log(`Bytes read: ${totalBytesRead}`);
+
+    setIsBusy(false);
+  };
+
+  //
+  // MP4Box Fragmenting
+  //
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mp4boxBuildInitSegments = (mp4File: any, mp4Info: any) => {
@@ -444,6 +504,13 @@ const App = () => {
         <View style={styles.buttonRow}>
           <Button title="Reset" disabled={isBusy} onPress={() => handleReset()} />
           <Button title="Load" disabled={isBusy} onPress={async () => await handleLoad()} />
+          {latestVideoUri && (
+            <Button
+              title="Get Info"
+              disabled={isBusy}
+              onPress={async () => await handleGetMp4boxInfo()}
+            />
+          )}
           {latestVideoUri && (
             <Button
               title="Compress"
