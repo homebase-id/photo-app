@@ -17,6 +17,7 @@ const App = () => {
   const [compressedVideoUri, setCompressedVideoUri] = useState('');
   const [fragmentedVideoUri, setFragmentedVideoUri] = useState('');
   const [latestVideoUri, setLatestVideoUri] = useState('');
+  const [isBusy, setIsBusy] = useState(false);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -67,6 +68,8 @@ const App = () => {
   //
 
   const handleLoad = async (): Promise<void> => {
+    setIsBusy(true);
+
     const options: ImageLibraryOptions = {
       mediaType: 'video',
     };
@@ -80,6 +83,8 @@ const App = () => {
       setInputVideoUri(videoUri);
       setLatestVideoUri(videoUri);
     }
+
+    setIsBusy(false);
   };
 
   //
@@ -87,6 +92,8 @@ const App = () => {
   //
 
   const handleCompress = async (): Promise<void> => {
+    setIsBusy(true);
+
     const source = latestVideoUri;
 
     if ((await RNFS.exists(source)) === false) {
@@ -113,6 +120,8 @@ const App = () => {
     log(`Compressed video: ${result}`);
     setCompressedVideoUri(result);
     setLatestVideoUri(result);
+
+    setIsBusy(false);
   };
 
   //
@@ -180,6 +189,8 @@ const App = () => {
   //
 
   const mp4boxHandleFragment = async (): Promise<void> => {
+    setIsBusy(true);
+
     let mp4Info: Mp4Info | undefined;
     const source = latestVideoUri;
 
@@ -327,12 +338,16 @@ const App = () => {
 
     setFragmentedVideoUri(destinationUri);
     setLatestVideoUri(destinationUri);
+
+    setIsBusy(false);
   };
 
   //
   // ffmpeg Fragmenting
   //
   const ffmpegHandleFragment = async (): Promise<void> => {
+    setIsBusy(true);
+
     const source = latestVideoUri;
 
     if ((await RNFS.exists(source)) === false) {
@@ -372,12 +387,16 @@ const App = () => {
     } catch (error) {
       log(`FFmpeg process failed with error: ${error}`);
     }
+
+    setIsBusy(false);
   };
 
   //
   // Uploading
   //
   const handleUpload = async (): Promise<void> => {
+    setIsBusy(true);
+
     const source = latestVideoUri;
 
     if ((await RNFS.exists(source)) === false) {
@@ -415,24 +434,40 @@ const App = () => {
         log('Upload failed (unknown error)');
       }
     }
+
+    setIsBusy(false);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.buttonRow}>
-          <Button title="Reset" onPress={() => handleReset()} />
-          <Button title="Load" onPress={async () => await handleLoad()} />
+          <Button title="Reset" disabled={isBusy} onPress={() => handleReset()} />
+          <Button title="Load" disabled={isBusy} onPress={async () => await handleLoad()} />
           {latestVideoUri && (
-            <Button title="Compress" onPress={async () => await handleCompress()} />
+            <Button
+              title="Compress"
+              disabled={isBusy}
+              onPress={async () => await handleCompress()}
+            />
           )}
           {latestVideoUri && (
-            <Button title="Fragment (mp4box)" onPress={async () => await mp4boxHandleFragment()} />
+            <Button
+              title="Fragment (mp4box)"
+              disabled={isBusy}
+              onPress={async () => await mp4boxHandleFragment()}
+            />
           )}
           {latestVideoUri && (
-            <Button title="Fragment (ffmpeg)" onPress={async () => await ffmpegHandleFragment()} />
+            <Button
+              title="Fragment (ffmpeg)"
+              disabled={isBusy}
+              onPress={async () => await ffmpegHandleFragment()}
+            />
           )}
-          {latestVideoUri && <Button title="Upload" onPress={async () => await handleUpload()} />}
+          {latestVideoUri && (
+            <Button title="Upload" disabled={isBusy} onPress={async () => await handleUpload()} />
+          )}
         </View>
         <ScrollView style={styles.scrollView} ref={scrollViewRef}>
           <Text style={styles.text}>{logText}</Text>
