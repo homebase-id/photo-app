@@ -421,7 +421,12 @@ const App = () => {
     const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${uuid.v4()}.mp4`;
 
     log(`Fragmenting ${source}`);
-    const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+
+    // empty_moov
+    // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+
+    // faststart
+    const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
 
     log(command);
 
