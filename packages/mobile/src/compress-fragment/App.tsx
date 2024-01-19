@@ -486,10 +486,12 @@ const App = () => {
 
     // empty_moov
     // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
-    const command = `-i ${source} -c copy -movflags +frag_keyframe+default_base_moof+empty_moov ${destinationUri}`;
 
     // faststart (this doesn't work in firefox)
     // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
+
+    // MDN docs (https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#fragmenting)
+    const command = `-i ${source} -c:v copy -c:a copy -movflags frag_keyframe+empty_moov+default_base_moof ${destinationUri}`;
 
     log(command);
 
