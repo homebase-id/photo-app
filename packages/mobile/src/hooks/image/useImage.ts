@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ImageSize,
   TargetDrive,
-  DotYouClient,
   SecurityGroupType,
   ImageContentType,
   AccessControlList,
@@ -11,6 +10,7 @@ import {
 } from '@youfoundation/js-lib/core';
 import { getDecryptedImageUrl, uploadImage, removeImage } from '@youfoundation/js-lib/media';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
+import { useDotYouClientContext } from 'photo-app-common';
 
 interface ImageData {
   url: string;
@@ -18,7 +18,6 @@ interface ImageData {
 }
 
 const useImage = (
-  dotYouClient: DotYouClient,
   odinId?: string,
   imageFileId?: string | undefined,
   imageDrive?: TargetDrive,
@@ -26,6 +25,7 @@ const useImage = (
   probablyEncrypted?: boolean,
   naturalSize?: ImageSize
 ) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const checkIfWeHaveLargerCachedImage = (

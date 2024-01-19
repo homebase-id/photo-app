@@ -1,27 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  DEFAULT_PAYLOAD_KEY,
-  DotYouClient,
-  getPayloadBytes,
-  TargetDrive,
-} from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, getPayloadBytes, TargetDrive } from '@youfoundation/js-lib/core';
 import { uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
+import { useDotYouClientContext } from 'photo-app-common';
 import { Dirs, FileSystem } from 'react-native-file-access';
 
 const chunkSize = 7 * 1024 * 1024;
 
-const useVideo = (
-  dotYouClient: DotYouClient,
+const useVideo = (videoFileId?: string | undefined, videoDrive?: TargetDrive) => {
+  const dotYouClient = useDotYouClientContext();
 
-  videoFileId?: string | undefined,
-  videoDrive?: TargetDrive,
-) => {
-  const fetchVideoData = async (
-    videoFileId: string | undefined,
-    videoDrive?: TargetDrive,
-  ) => {
-    if (videoFileId === undefined || videoFileId === '' || !videoDrive)
-      return null;
+  const fetchVideoData = async (videoFileId: string | undefined, videoDrive?: TargetDrive) => {
+    if (videoFileId === undefined || videoFileId === '' || !videoDrive) return null;
 
     // Check if we have the video file locally already
     const localPath = Dirs.CacheDir + `/${videoFileId}.mp4`;
@@ -40,13 +29,12 @@ const useVideo = (
         {
           chunkStart: runningOffset,
           chunkEnd: runningOffset + chunkSize,
-        },
+        }
       );
       if (!videoFile) return localPath;
       const base64 = uint8ArrayToBase64(videoFile?.bytes);
 
-      if (runningOffset === 0)
-        await FileSystem.writeFile(localPath, base64, 'base64');
+      if (runningOffset === 0) await FileSystem.writeFile(localPath, base64, 'base64');
       else await FileSystem.appendFile(localPath, base64, 'base64');
 
       if (videoFile.bytes.length < chunkSize) break;

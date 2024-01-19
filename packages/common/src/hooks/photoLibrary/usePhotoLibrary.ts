@@ -10,6 +10,7 @@ import {
   savePhotoLibraryMetadata,
   updateCount,
 } from '../../provider/photos/PhotoLibraryMetaProvider';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
 let saveScheduled = false;
 const isDebug = false;
@@ -36,16 +37,15 @@ const rebuildLibrary = async ({
 };
 
 export const usePhotoLibrary = ({
-  dotYouClient,
   targetDrive,
   type,
   disabled,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive?: TargetDrive;
   type?: 'bin' | 'archive' | 'apps' | 'favorites';
   disabled?: boolean;
 }) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const fetch = async (

@@ -5,15 +5,19 @@ import Plus from '../../components/ui/Icons/Plus/Plus';
 import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
 import { OdinImage } from '@youfoundation/ui-lib';
-import useAuth from '../../hooks/auth/useAuth';
 import { ImageIcon } from '../../components/ui/Icons/ImageIcon/ImageIcon';
 import ActionLink from '../../components/ui/Buttons/ActionLink';
 import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
-import { AlbumDefinition, PhotoConfig, useAlbumThumbnail, useAlbums } from 'photo-app-common';
+import {
+  AlbumDefinition,
+  PhotoConfig,
+  useAlbumThumbnail,
+  useAlbums,
+  useDotYouClientContext,
+} from 'photo-app-common';
 
 const Albums = () => {
-  const dotYouClient = useAuth().getDotYouClient();
-  const { data: albums } = useAlbums(dotYouClient).fetch;
+  const { data: albums } = useAlbums().fetch;
 
   return (
     <>
@@ -38,8 +42,8 @@ const Albums = () => {
 };
 
 const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-  const { data: thumb } = useAlbumThumbnail(dotYouClient, album.tag).fetch;
+  const dotYouClient = useDotYouClientContext();
+  const { data: thumb } = useAlbumThumbnail(album.tag).fetch;
 
   return (
     <Link to={`/album/${album.tag}`} className="relative">

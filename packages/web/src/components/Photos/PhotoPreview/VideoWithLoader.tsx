@@ -1,11 +1,11 @@
 import { OdinImage, OdinVideo } from '@youfoundation/ui-lib';
-import useAuth from '../../../hooks/auth/useAuth';
 import {
   DEFAULT_PAYLOAD_KEY,
   EmbeddedThumb,
   ImageSize,
   TargetDrive,
 } from '@youfoundation/js-lib/core';
+import { useDotYouClientContext } from 'photo-app-common';
 
 export const VideoWithLoader = ({
   fileId,
@@ -27,8 +27,7 @@ export const VideoWithLoader = ({
   skipChunkedPlayback?: boolean;
   className?: string;
 }) => {
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
+  const dotYouClient = useDotYouClientContext();
 
   return (
     <div className={className || 'relative h-full w-full'} data-file={fileId}>

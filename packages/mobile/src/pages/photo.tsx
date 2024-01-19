@@ -29,11 +29,9 @@ type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const Photo = ({ route, navigation }: PhotoProps) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const { photoId: fileId } = route.params;
 
   const { data: fileHeader } = useFileHeader({
-    dotYouClient,
     targetDrive,
     photoFileId: fileId,
   });
@@ -63,12 +61,10 @@ interface PhotoLibPreviewProps extends PhotoProps {
 }
 
 const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPreviewProps) => {
-  const dotYouClient = useAuth().getDotYouClient();
-
   const { typeId, albumId } = route.params;
   const isAlbumView = albumId || typeId === 'favorites';
 
-  const { data: album } = useAlbum(dotYouClient, albumId).fetch;
+  const { data: album } = useAlbum(albumId).fetch;
 
   const {
     data: olderPhotos,
@@ -77,7 +73,6 @@ const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPr
     isFetched: hasFetchedOlderPhotos,
   } = usePhotosInfinte({
     targetDrive,
-    dotYouClient,
     album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
     startFromDate: currentDate,
     disabled: !currentDate && !isAlbumView && !album,
@@ -91,7 +86,6 @@ const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPr
     isFetched: hasFetchedNewerPhotos,
   } = usePhotosInfinte({
     targetDrive,
-    dotYouClient,
     album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
     startFromDate: currentDate,
     disabled: !currentDate && !isAlbumView && !album,

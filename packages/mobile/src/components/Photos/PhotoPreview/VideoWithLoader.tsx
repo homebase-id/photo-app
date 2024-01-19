@@ -34,7 +34,6 @@ export const VideoWithLoader = memo(
   }) => {
     const [loadVideo, setLoadVideo] = useState(false);
     const { getDotYouClient } = useAuth();
-    const dotYouClient = getDotYouClient();
 
     return (
       <View
@@ -46,7 +45,6 @@ export const VideoWithLoader = memo(
       >
         {!loadVideo ? (
           <OdinImage
-            dotYouClient={dotYouClient}
             targetDrive={targetDrive}
             fileId={fileId}
             previewThumbnail={previewThumbnail}
@@ -63,7 +61,6 @@ export const VideoWithLoader = memo(
           ) : (
             <>
               <OdinImage
-                dotYouClient={dotYouClient}
                 targetDrive={targetDrive}
                 fileId={fileId}
                 previewThumbnail={previewThumbnail}
@@ -170,14 +167,9 @@ const OdinVideoWeb = ({ fileId }: { fileId: string }) => {
 
 const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
   const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
 
   // Hook to download the video
-  const { data: videoUrl, isFetched } = useVideo(
-    dotYouClient,
-    fileId,
-    PhotoConfig.PhotoDrive
-  ).fetchVideo;
+  const { data: videoUrl, isFetched } = useVideo(fileId, PhotoConfig.PhotoDrive).fetchVideo;
 
   // Loading
   if (!isFetched)

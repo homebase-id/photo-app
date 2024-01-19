@@ -10,13 +10,8 @@ import useAuth from '../../hooks/auth/useAuth';
 const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const dotYouClient = useAuth().getDotYouClient();
 
-  const {
-    mutateAsync: saveAlbum,
-    status: saveStatus,
-    error: saveError,
-  } = useAlbum(dotYouClient).save;
+  const { mutateAsync: saveAlbum, status: saveStatus, error: saveError } = useAlbum().save;
 
   const doSaveAlbum = async () => {
     const newTag = getNewId();

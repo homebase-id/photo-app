@@ -35,16 +35,11 @@ const useImporter = () => {
   const [status, setStatus] = useState('idle');
   const [log, setLog] = useState('');
 
-  const dotYouClient = useAuth().getDotYouClient();
-
-  const { mutateAsync: doUploadToServer } = useWebPhoto(
-    dotYouClient,
-    PhotoConfig.PhotoDrive
-  ).upload;
+  const { mutateAsync: doUploadToServer } = useWebPhoto(PhotoConfig.PhotoDrive).upload;
   const {
     updateDate: { mutateAsync: updateDate },
     updateMeta: { mutateAsync: updateMeta },
-  } = usePhotoMetadata(dotYouClient, PhotoConfig.PhotoDrive);
+  } = usePhotoMetadata(PhotoConfig.PhotoDrive);
 
   const queryClient = useQueryClient();
 

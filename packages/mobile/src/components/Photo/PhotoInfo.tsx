@@ -12,7 +12,7 @@ import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
-import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
+import { PhotoConfig, useDotYouClientContext, usePhotoMetadata } from 'photo-app-common';
 import useAuth from '../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
@@ -25,12 +25,11 @@ const PhotoInfo = ({
 
   onClose: () => void;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const {
     fetchMeta: { data: photoMetadata },
     updateMeta: { mutate: updatePhotoMeta },
     updateDate: { mutate: updateDate },
-  } = usePhotoMetadata(dotYouClient, targetDrive, current?.fileId);
+  } = usePhotoMetadata(targetDrive, current?.fileId);
   const loadOriginal = false;
 
   const onChange = useRef(

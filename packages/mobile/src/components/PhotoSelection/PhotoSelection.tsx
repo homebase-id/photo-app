@@ -6,7 +6,6 @@ import { Colors } from '../../app/Colors';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 import { useAlbums, usePhoto, PhotoConfig } from 'photo-app-common';
-import useAuth from '../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -23,7 +22,6 @@ const PhotoSelection = ({
   albumKey?: string;
   type?: 'bin' | 'archive' | 'apps';
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const [isAlbumSelectionOpen, setIsAlbumSelectionOpen] = useState(false);
 
   const {
@@ -33,8 +31,8 @@ const PhotoSelection = ({
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
-  } = usePhoto(dotYouClient, targetDrive);
-  const { data: albums } = useAlbums(dotYouClient).fetch;
+  } = usePhoto(targetDrive);
+  const { data: albums } = useAlbums().fetch;
 
   if (!isSelecting) return null;
 

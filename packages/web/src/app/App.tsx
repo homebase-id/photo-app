@@ -38,6 +38,7 @@ const VideoPlayer = lazy(() => import('../templates/VideoPlayer/VideoPlayer'));
 const AUTH_PATH = '/auth';
 
 import './App.css';
+import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,7 +88,9 @@ function App() {
           path=""
           element={
             <RootRoute>
-              <Outlet />
+              <DotYouClientProvider>
+                <Outlet />
+              </DotYouClientProvider>
             </RootRoute>
           }
         >

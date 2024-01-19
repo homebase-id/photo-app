@@ -6,25 +6,24 @@ import { usePhotoLibrary } from './usePhotoLibrary';
 import { createDateObject } from '../../provider/photos/PhotoProvider';
 import { DotYouClient } from '@youfoundation/js-lib/core';
 import { useFileHeader } from './usePhotoHeader';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
 const useCurrentPhoto = ({
-  dotYouClient,
   targetDrive,
   type,
   photoFileId,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
   photoFileId?: string;
 }) => {
-  const { data: fileHeader } = useFileHeader({ dotYouClient, targetDrive, photoFileId });
+  const dotYouClient = useDotYouClientContext();
+  const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId });
 
   const date = fileHeader
     ? new Date(fileHeader.fileMetadata.appData.userDate || fileHeader.fileMetadata.created)
     : undefined;
   const { data: photos } = usePhotosByMonth({
-    dotYouClient,
     targetDrive,
     type,
     date,
@@ -49,16 +48,13 @@ const useCurrentPhoto = ({
 };
 
 export const useFlatMonthsFromMeta = ({
-  dotYouClient,
   targetDrive,
   type,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
 }) => {
   const { data: photoLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive,
     type,
   }).fetchLibrary;
@@ -77,32 +73,28 @@ export const useFlatMonthsFromMeta = ({
 };
 
 export const useSiblingsRange = ({
-  dotYouClient,
   targetDrive,
   type,
   fromFileId,
   toFileId,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
   fromFileId?: string;
   toFileId?: string;
 }) => {
+  const dotYouClient = useDotYouClientContext();
   const { data: flatMonths } = useFlatMonthsFromMeta({
-    dotYouClient,
     targetDrive,
     type,
   });
 
   const fromCurrentData = useCurrentPhoto({
-    dotYouClient,
     targetDrive,
     type,
     photoFileId: fromFileId,
   });
   const toCurrentData = useCurrentPhoto({
-    dotYouClient,
     targetDrive,
     type,
     photoFileId: toFileId,

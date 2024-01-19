@@ -6,7 +6,6 @@ import Archive from '../../ui/Icons/Archive/Archive';
 import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
 import { usePhoto, PhotoConfig, useAlbums } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 
 const PhotoSelection = ({
   selection,
@@ -21,7 +20,6 @@ const PhotoSelection = ({
   albumKey?: string;
   type?: 'bin' | 'archive' | 'apps';
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const {
     remove: { mutateAsync: removePhoto },
     deleteFile: { mutateAsync: deletePhoto },
@@ -29,8 +27,8 @@ const PhotoSelection = ({
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
-  } = usePhoto(dotYouClient, PhotoConfig.PhotoDrive);
-  const { data: albums } = useAlbums(dotYouClient).fetch;
+  } = usePhoto(PhotoConfig.PhotoDrive);
+  const { data: albums } = useAlbums().fetch;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

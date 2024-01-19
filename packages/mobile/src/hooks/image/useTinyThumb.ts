@@ -1,14 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { TargetDrive, DotYouClient, DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
+import { TargetDrive, DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
 import { getDecryptedThumbnailMeta } from '@youfoundation/js-lib/media';
+import { useDotYouClientContext } from 'photo-app-common';
 
-const useTinyThumb = (
-  dotYouClient: DotYouClient,
-  odinId?: string,
-  imageFileId?: string,
-  imageDrive?: TargetDrive
-) => {
+const useTinyThumb = (odinId?: string, imageFileId?: string, imageDrive?: TargetDrive) => {
+  const dotYouClient = useDotYouClientContext();
   const fetchImageData = async (odinId: string, imageFileId?: string, imageDrive?: TargetDrive) => {
     if (imageFileId === undefined || imageFileId === '' || !imageDrive) return;
 

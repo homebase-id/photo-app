@@ -6,13 +6,11 @@ import PhotoAlbum from '../components/PhotoAlbum/PhotoAlbum';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { useAlbum, usePhotoSelection } from 'photo-app-common';
-import useAuth from '../hooks/auth/useAuth';
 
 type AlbumProps = NativeStackScreenProps<RootStackParamList, 'Album'>;
 
 export const AlbumTitle = ({ albumId }: { albumId: string }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-  const { data: album } = useAlbum(dotYouClient, albumId).fetch;
+  const { data: album } = useAlbum(albumId).fetch;
 
   return <Text>{album?.name || 'An album'}</Text>;
 };

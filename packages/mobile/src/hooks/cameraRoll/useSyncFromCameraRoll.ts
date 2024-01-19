@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { Platform } from 'react-native';
 
-import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
-import { PhotoConfig, usePhotoLibrary } from 'photo-app-common';
+import { PhotoConfig, useDotYouClientContext, usePhotoLibrary } from 'photo-app-common';
 import { hasAndroidPermission } from './permissionHelper';
 
 const ONE_MINUTE = 60000;
@@ -16,9 +15,8 @@ const targetDrive = PhotoConfig.PhotoDrive;
 
 export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const { syncFromCameraRoll } = useKeyValueStorage();
-  const dotYouClient = useAuth().getDotYouClient();
+  const dotYouClient = useDotYouClientContext();
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
   }).addDay;

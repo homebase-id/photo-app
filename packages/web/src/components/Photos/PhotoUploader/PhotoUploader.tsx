@@ -55,13 +55,12 @@ const Uploader = ({
     ]);
   };
 
-  const dotYouClient = useAuth().getDotYouClient();
   const {
     mutate: doUploadToServer,
     status: uploadStatus,
     reset: resetUpload,
     error: uploadError,
-  } = useWebPhoto(dotYouClient, PhotoConfig.PhotoDrive).upload;
+  } = useWebPhoto(PhotoConfig.PhotoDrive).upload;
 
   // Window level paste handler
   useEffect(() => {

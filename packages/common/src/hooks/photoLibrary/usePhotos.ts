@@ -10,6 +10,7 @@ import { useFlatMonthsFromMeta } from './usePhotoLibraryRange';
 import { useRef } from 'react';
 import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
 import { PhotoConfig } from '../../provider';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
 export type useInfintePhotosReturn = {
   results: DriveSearchResult[];
@@ -70,16 +71,15 @@ const fetchPhotosByCursor = async ({
 };
 
 export const usePhotosByMonth = ({
-  dotYouClient,
   targetDrive,
   type,
   date,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive?: TargetDrive;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
   date?: Date;
 }) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
   return {
     fetchPhotos: useInfiniteQuery({
@@ -114,20 +114,18 @@ export const usePhotosByMonth = ({
 };
 
 export const useFlatPhotosByMonth = ({
-  dotYouClient,
   targetDrive,
   type,
   date,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
   date?: Date;
 }) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const { data: flatMonths } = useFlatMonthsFromMeta({
-    dotYouClient,
     targetDrive,
     type,
   });
@@ -222,7 +220,6 @@ export const useFlatPhotosByMonth = ({
 };
 
 export const usePhotosInfinte = ({
-  dotYouClient,
   targetDrive,
   album,
   type,
@@ -230,7 +227,6 @@ export const usePhotosInfinte = ({
   direction,
   disabled,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive?: TargetDrive;
   album?: string;
   type?: 'archive' | 'bin' | 'apps' | 'favorites';
@@ -238,6 +234,7 @@ export const usePhotosInfinte = ({
   direction?: 'older' | 'newer';
   disabled?: boolean;
 }) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const startFromDateCursor = startFromDate
