@@ -7,7 +7,13 @@ import MP4Box from 'mp4box';
 import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
 import { btoa, atob } from 'react-native-quick-base64';
 import uuid from 'react-native-uuid';
-import { FFmpegKit, FFmpegKitConfig, SessionState } from 'ffmpeg-kit-react-native';
+import {
+  FFmpegKit,
+  FFmpegKitConfig,
+  FFprobeSession,
+  LogRedirectionStrategy,
+  SessionState,
+} from 'ffmpeg-kit-react-native';
 
 //
 
@@ -200,6 +206,62 @@ const App = () => {
     }
     mp4File.flush();
     log(`Bytes read: ${totalBytesRead}`);
+
+    setIsBusy(false);
+  };
+
+  //
+  // FFMPEG Info
+  //
+
+  const handleGetFfmpegInfo = async (): Promise<void> => {
+    setIsBusy(true);
+
+    const source = latestVideoUri;
+
+    if ((await RNFS.exists(source)) === false) {
+      log(`Not found ${source}`);
+      return;
+    }
+
+    const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
+
+    const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
+    const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${uuid.v4()}.mp4`;
+
+    log(`Probing ${source}`);
+
+    // probe
+    const command = `-v error -show_format -show_streams ${source}`;
+
+    log(command);
+    const start = new Date().getTime();
+
+    FFprobeSession.create(
+      FFmpegKitConfig.parseArguments(command),
+      async (session) => {
+        const state = await session.getState();
+        const returnCode = await session.getReturnCode();
+        const failStackTrace = await session.getFailStackTrace();
+
+        const output = await session.getOutput();
+
+        log(`FFmpeg process exited with state ${state} and rc ${returnCode}`);
+        log(output);
+
+        if (state === SessionState.FAILED || !returnCode.isValueSuccess()) {
+          log('Command failed. Please check output for the details.');
+        } else {
+          log(`Probed in ${(new Date().getTime() - start) / 1000}s`);
+        }
+      },
+      undefined,
+      LogRedirectionStrategy.NEVER_PRINT_LOGS
+    ).then((session) => {
+      FFmpegKitConfig.asyncFFprobeExecute(session);
+
+      // listFFprobeSessions();
+    });
 
     setIsBusy(false);
   };
@@ -423,10 +485,10 @@ const App = () => {
     log(`Fragmenting ${source}`);
 
     // empty_moov
-    // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+    const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
 
-    // faststart
-    const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
+    // faststart (this doesn't work in firefox)
+    // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
 
     log(command);
 
@@ -511,9 +573,16 @@ const App = () => {
           <Button title="Load" disabled={isBusy} onPress={async () => await handleLoad()} />
           {latestVideoUri && (
             <Button
-              title="Get Info"
+              title="Info (mp4box)"
               disabled={isBusy}
               onPress={async () => await handleGetMp4boxInfo()}
+            />
+          )}
+          {latestVideoUri && (
+            <Button
+              title="Info (ffmpeg)"
+              disabled={isBusy}
+              onPress={async () => await handleGetFfmpegInfo()}
             />
           )}
           {latestVideoUri && (
