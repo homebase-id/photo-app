@@ -485,7 +485,8 @@ const App = () => {
     log(`Fragmenting ${source}`);
 
     // empty_moov
-    const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+    // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+    const command = `-i ${source} -c copy -movflags +frag_keyframe+default_base_moof+empty_moov ${destinationUri}`;
 
     // faststart (this doesn't work in firefox)
     // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
