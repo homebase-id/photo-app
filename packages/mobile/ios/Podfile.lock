@@ -338,7 +338,7 @@ PODS:
   - React-jsinspector (0.72.4)
   - React-logger (0.72.4):
     - glog
-  - react-native-cameraroll (5.10.0):
+  - react-native-cameraroll (7.3.0):
     - React-Core
   - react-native-compressor (1.8.23):
     - RCT-Folly (= 2021.07.22.00)
@@ -507,7 +507,7 @@ PODS:
   - RNScreens (3.29.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - RNSVG (12.5.1):
+  - RNSVG (14.1.0):
     - React-Core
   - SocketRocket (0.6.1)
   - SSZipArchive (2.2.3)
@@ -766,7 +766,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: c7f826e40fa9cab5d37cab6130b1af237332b594
   React-jsinspector: aaed4cf551c4a1c98092436518c2d267b13a673f
   React-logger: da1ebe05ae06eb6db4b162202faeafac4b435e77
-  react-native-cameraroll: 4701ae7c3dbcd3f5e9e150ca17f250a276154b35
+  react-native-cameraroll: 5282b6b4451cfed2afa19b9088d4b1e5f2bf9d88
   react-native-compressor: d30f0cf83afec95099fb109919a58d484e00051a
   react-native-exif: c43e7c18af8bfa133c79145671a0f036e413468e
   react-native-image-picker: 3269f75c251cdcd61ab51b911dd30d6fff8c6169
@@ -805,7 +805,7 @@ SPEC CHECKSUMS:
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNReanimated: c114c031ecae76049ad03aeb0f94a2243498a88d
   RNScreens: 3c5b9f4a9dcde752466854b6109b79c0e205dad3
-  RNSVG: d7d7bc8229af3842c9cfc3a723c815a52cdd1105
+  RNSVG: ba3e7232f45e34b7b47e74472386cf4e1a676d0a
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Yoga: 3efc43e0d48686ce2e8c60f99d4e6bd349aff981
