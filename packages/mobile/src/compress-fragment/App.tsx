@@ -156,7 +156,6 @@ const App = () => {
   const handleGetMp4boxInfo = async (): Promise<void> => {
     setIsBusy(true);
 
-    let mp4Info: Mp4Info | undefined;
     const source = latestVideoUri;
 
     if ((await RNFS.exists(source)) === false) {
@@ -165,9 +164,6 @@ const App = () => {
     }
 
     log(`Getting info on ${source}`);
-
-    const MB = 1024 * 1024;
-    const MB_PER_CHUNK = 5 * MB;
 
     const start = new Date().getTime();
 
@@ -181,7 +177,6 @@ const App = () => {
     };
 
     mp4File.onReady = function (info: Mp4Info) {
-      mp4Info = info;
       log(info);
     };
 
@@ -206,6 +201,7 @@ const App = () => {
     }
     mp4File.flush();
     log(`Bytes read: ${totalBytesRead}`);
+    log(`Done in ${(new Date().getTime() - start) / 1000}s`);
 
     setIsBusy(false);
   };
@@ -213,7 +209,8 @@ const App = () => {
   //
   // FFMPEG Info
   //
-
+  // https://github.com/arthenica/ffmpeg-kit-test/blob/main/react-native/test-app-npm/src/command-tab.js#L71
+  //
   const handleGetFfmpegInfo = async (): Promise<void> => {
     setIsBusy(true);
 
@@ -223,11 +220,6 @@ const App = () => {
       log(`Not found ${source}`);
       return;
     }
-
-    const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
-
-    const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
-    const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${uuid.v4()}.mp4`;
 
     log(`Probing ${source}`);
 
@@ -259,7 +251,6 @@ const App = () => {
       LogRedirectionStrategy.NEVER_PRINT_LOGS
     ).then((session) => {
       FFmpegKitConfig.asyncFFprobeExecute(session);
-
       // listFFprobeSessions();
     });
 
@@ -465,7 +456,9 @@ const App = () => {
   };
 
   //
-  // ffmpeg Fragmenting
+  // FFMPEG Fragmenting
+  //
+  // https://github.com/arthenica/ffmpeg-kit-test/blob/main/react-native/test-app-npm/src/command-tab.js#L44
   //
   const ffmpegHandleFragment = async (): Promise<void> => {
     setIsBusy(true);
@@ -484,14 +477,15 @@ const App = () => {
 
     log(`Fragmenting ${source}`);
 
-    // empty_moov
+    // MDN docs (https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#fragmenting)
+    // FFMPEG fragmenting: https://ffmpeg.org/ffmpeg-formats.html#Fragmentation
+    const command = `-i ${source} -c:v copy -c:a copy -movflags frag_keyframe+empty_moov+default_base_moof ${destinationUri}`;
+
+    // empty_moov (older version of the above)
     // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
 
     // faststart (this doesn't work in firefox)
     // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
-
-    // MDN docs (https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#fragmenting)
-    const command = `-i ${source} -c:v copy -c:a copy -movflags frag_keyframe+empty_moov+default_base_moof ${destinationUri}`;
 
     log(command);
 
