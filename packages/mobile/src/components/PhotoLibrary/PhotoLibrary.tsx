@@ -40,12 +40,10 @@ const PhotoLibrary = ({
   isSelecting?: boolean;
 }) => {
   const queryClient = useQueryClient();
-  const dotYouClient = useAuth().getDotYouClient();
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
 
   const { data: selection } = useSiblingsRange({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     type,
     fromFileId: selectionRangeFrom,
@@ -73,11 +71,10 @@ const PhotoLibrary = ({
   }, [selection, selectRange, selectionRangeFrom, selectionRangeTo]);
 
   const { data: photoLibrary, refetch: refetchLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: targetDrive,
     type,
   }).fetchLibrary;
-  const invalidatePhotos = usePhotosByMonth({ dotYouClient }).invalidateQueries;
+  const invalidatePhotos = usePhotosByMonth({}).invalidateQueries;
 
   const [refreshing, setRefreshing] = useState(false);
   const doRefresh = async () => {
@@ -144,7 +141,6 @@ export const PhotoMonth = memo(
     isSelected: (fileId: string) => boolean;
     isSelecting?: boolean;
   }) => {
-    const dotYouClient = useAuth().getDotYouClient();
     const { year, month } = monthMeta;
 
     const monthInDateObj = createDateObject(year, month, 1);
@@ -155,14 +151,12 @@ export const PhotoMonth = memo(
       fetchNextPage,
       isFetchingNextPage,
     } = usePhotosByMonth({
-      dotYouClient,
       targetDrive,
       type,
       date: monthInDateObj,
     }).fetchPhotos;
 
     const { mutate: updateCount } = usePhotoLibrary({
-      dotYouClient,
       targetDrive: targetDrive,
       type,
       disabled: true,

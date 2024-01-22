@@ -191,9 +191,8 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
 };
 
 const AlbumsNavItem = () => {
-  const dotYouClient = useAuth().getDotYouClient();
   const [isOpen, setIsOpen] = useState(true);
-  const { data: albums } = useAlbums(dotYouClient).fetch;
+  const { data: albums } = useAlbums().fetch;
 
   return (
     <>
@@ -241,8 +240,7 @@ const AlbumsNavItem = () => {
 };
 
 const AlbumNavItem = ({ album }: { album: AlbumDefinition }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-  const { data: thumb } = useAlbumThumbnail(dotYouClient, album.tag).fetch;
+  const { data: thumb } = useAlbumThumbnail(album.tag).fetch;
 
   return (
     <NavLink

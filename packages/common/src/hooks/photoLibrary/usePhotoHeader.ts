@@ -1,18 +1,17 @@
 import { useQueryClient, InfiniteData, useQuery } from '@tanstack/react-query';
 import { TargetDrive, getFileHeader } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import { DotYouClient } from '@youfoundation/js-lib/core';
 import { useInfintePhotosReturn } from './usePhotos';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
 export const useFileHeader = ({
-  dotYouClient,
   targetDrive,
   photoFileId,
 }: {
-  dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
   photoFileId?: string;
 }) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const fetchCurrent = async (targetDrive: TargetDrive, photoFileId: string) => {

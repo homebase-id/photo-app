@@ -26,7 +26,6 @@ const PhotoAlbum = ({
   isSelecting?: boolean;
 }) => {
   const queryClient = useQueryClient();
-  const dotYouClient = useAuth().getDotYouClient();
 
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
@@ -37,7 +36,6 @@ const PhotoAlbum = ({
     isFetchingNextPage,
     refetch: refetchPhotos,
   } = usePhotosInfinte({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
   }).fetchPhotos;
@@ -55,7 +53,6 @@ const PhotoAlbum = ({
   };
 
   const { data: selection } = useSiblingsRangeInfinte({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
     fromFileId: selectionRangeFrom,
@@ -145,15 +142,13 @@ const PhotoAlbum = ({
 };
 
 export const PhotoAlbumContextToggle = ({ albumId }: { albumId: string }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const navigation = useNavigation();
 
   const {
     fetch: { data: album },
     remove: { mutate: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
-  } = useAlbum(dotYouClient, albumId);
+  } = useAlbum(albumId);
 
   const doRemove = () => {
     if (!album) return;

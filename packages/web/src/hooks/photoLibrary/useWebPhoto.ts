@@ -6,17 +6,22 @@ import {
   getPayloadBytes,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
-import { DotYouClient } from '@youfoundation/js-lib/core';
 
 import { MediaUploadMeta } from '@youfoundation/js-lib/media';
-import { usePhotoLibrary, PhotoConfig, FileLike, getPhotoMetadata } from 'photo-app-common';
+import {
+  usePhotoLibrary,
+  PhotoConfig,
+  FileLike,
+  getPhotoMetadata,
+  useDotYouClientContext,
+} from 'photo-app-common';
 import { uploadNew } from '../../provider/photos/WebPhotoProvider';
 
-export const useWebPhoto = (dotYouClient: DotYouClient, targetDrive?: TargetDrive) => {
+export const useWebPhoto = (targetDrive?: TargetDrive) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
   }).addDay;

@@ -5,7 +5,7 @@ import {
   ImageSize,
 } from '@youfoundation/js-lib/core';
 import { OdinImage } from '@youfoundation/ui-lib';
-import useAuth from '../../../hooks/auth/useAuth';
+import { useDotYouClientContext } from 'photo-app-common';
 
 export const PhotoWithLoader = ({
   fileId,
@@ -24,8 +24,7 @@ export const PhotoWithLoader = ({
   fit?: 'cover' | 'contain';
   className?: string;
 }) => {
-  const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
+  const dotYouClient = useDotYouClientContext();
 
   return (
     <OdinImage

@@ -13,14 +13,15 @@ import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { useInfintePhotosReturn } from './usePhotos';
 import { usePhotoLibrary } from './usePhotoLibrary';
 import { useAlbumThumbnail } from './useAlbum';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
-export const usePhoto = (dotYouClient: DotYouClient, targetDrive?: TargetDrive) => {
+export const usePhoto = (targetDrive?: TargetDrive) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const invalidateAlbumCover = useAlbumThumbnail(dotYouClient).invalidateAlbumCover;
+  const invalidateAlbumCover = useAlbumThumbnail().invalidateAlbumCover;
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
   }).addDay;

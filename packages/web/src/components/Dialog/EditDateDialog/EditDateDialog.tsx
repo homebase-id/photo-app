@@ -9,7 +9,6 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import DialogWrapper from '../../ui/Dialog/DialogWrapper';
 import Pencil from '../../ui/Icons/Pencil/Pencil';
 import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -32,10 +31,9 @@ const EditDateDialog = ({
   const formRef = useRef<HTMLFormElement>(null);
 
   const [date, setDate] = useState<number>(defaultValue);
-  const dotYouClient = useAuth().getDotYouClient();
   const {
     updateDate: { mutate: updateDate, status: saveStatus, error: saveError },
-  } = usePhotoMetadata(dotYouClient, targetDrive, fileId);
+  } = usePhotoMetadata(targetDrive, fileId);
 
   const doSaveDate = async () => {
     // date

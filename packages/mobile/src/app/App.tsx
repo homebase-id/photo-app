@@ -30,6 +30,7 @@ import CodePush from 'react-native-code-push';
 import { useDarkMode } from '../hooks/useDarkMode';
 import useAuth from '../hooks/auth/useAuth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -110,9 +111,11 @@ let App = () => {
         queryClient.resumePausedMutations().then(() => queryClient.invalidateQueries())
       }
     >
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <RootStack />
-      </GestureHandlerRootView>
+      <DotYouClientProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <RootStack />
+        </GestureHandlerRootView>
+      </DotYouClientProvider>
     </PersistQueryClientProvider>
   );
 };

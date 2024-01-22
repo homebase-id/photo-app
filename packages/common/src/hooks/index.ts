@@ -1,3 +1,5 @@
+export * from './auth/useDotYouClientContext';
+
 export * from './photoLibrary/useAlbum';
 export * from './photoLibrary/usePhoto';
 export * from './photoLibrary/usePhotoLibrary';

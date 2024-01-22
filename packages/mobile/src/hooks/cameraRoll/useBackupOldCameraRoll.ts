@@ -4,19 +4,17 @@ import { useRef, useState } from 'react';
 import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { InteractionManager, Platform } from 'react-native';
 
-import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
-import { PhotoConfig, usePhotoLibrary } from 'photo-app-common';
+import { PhotoConfig, useDotYouClientContext, usePhotoLibrary } from 'photo-app-common';
 import { hasAndroidPermission } from './permissionHelper';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const useBackupOldCameraRoll = () => {
   const { backupFromCameraRoll } = useKeyValueStorage();
+  const dotYouClient = useDotYouClientContext();
 
-  const dotYouClient = useAuth().getDotYouClient();
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
   }).addDay;
@@ -56,7 +54,7 @@ const useBackupOldCameraRoll = () => {
       const photo = photos.edges[i];
       const fileData =
         Platform.OS === 'ios'
-          ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, true)
+          ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, { convertHeicImages: true })
           : photo;
 
       if (!fileData?.node?.image) {

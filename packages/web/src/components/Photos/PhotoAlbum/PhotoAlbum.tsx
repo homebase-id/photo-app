@@ -5,7 +5,6 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoDay/PhotoDay';
 import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
 import { usePhotosInfinte, PhotoConfig, useSiblingsRangeInfinte } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 
 const gridClasses = `grid grid-cols-4 md:grid-cols-6 lg:flex lg:flex-row gap-[0.1rem] md:gap-1 `;
 const PhotoAlbum = ({
@@ -23,8 +22,6 @@ const PhotoAlbum = ({
   isSelecting?: boolean;
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
   const {
@@ -33,14 +30,12 @@ const PhotoAlbum = ({
     fetchNextPage,
     isFetchingNextPage,
   } = usePhotosInfinte({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
   }).fetchPhotos;
   const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 
   const { data: selection } = useSiblingsRangeInfinte({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
     fromFileId: selectionRangeFrom,

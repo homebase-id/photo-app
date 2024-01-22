@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAllAlbums } from '../../provider/photos/AlbumProvider';
-import { DotYouClient } from '@youfoundation/js-lib/core';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
-export const useAlbums = (dotYouClient: DotYouClient) => {
+export const useAlbums = () => {
+  const dotYouClient = useDotYouClientContext();
   const fetchAllAlbums = async () => {
     return await getAllAlbums(dotYouClient);
   };

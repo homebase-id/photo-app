@@ -37,13 +37,10 @@ const PhotoLibrary = ({
   isSelecting?: boolean;
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
 
   const { data: selection } = useSiblingsRange({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     type,
     fromFileId: selectionRangeFrom,
@@ -77,7 +74,6 @@ const PhotoLibrary = ({
   }, [isSelecting]);
 
   const { data: photoLibrary } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     type,
   }).fetchLibrary;
@@ -213,8 +209,6 @@ export const PhotoMonth = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { year, month } = monthMeta;
 
@@ -225,14 +219,12 @@ export const PhotoMonth = ({
     hasNextPage,
     fetchNextPage,
   } = usePhotosByMonth({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     type,
     date: monthInDateObj,
   }).fetchPhotos;
 
   const { mutate: updateCount } = usePhotoLibrary({
-    dotYouClient,
     targetDrive: PhotoConfig.PhotoDrive,
     type,
     disabled: true,

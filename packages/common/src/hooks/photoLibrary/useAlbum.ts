@@ -5,11 +5,13 @@ import { DotYouClient } from '@youfoundation/js-lib/core';
 import { useAlbums } from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
-export const useAlbum = (dotYouClient: DotYouClient, albumKey?: string) => {
+export const useAlbum = (albumKey?: string) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const { data: albums } = useAlbums(dotYouClient).fetch;
+  const { data: albums } = useAlbums().fetch;
 
   const fetch = async (albumKey?: string) => {
     if (!albumKey) return null;
@@ -61,7 +63,8 @@ export const useAlbum = (dotYouClient: DotYouClient, albumKey?: string) => {
   };
 };
 
-export const useAlbumThumbnail = (dotYouClient: DotYouClient, albumKey?: string) => {
+export const useAlbumThumbnail = (albumKey?: string) => {
+  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const fetch = async (albumKey?: string) => {

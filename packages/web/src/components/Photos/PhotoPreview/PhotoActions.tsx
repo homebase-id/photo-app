@@ -36,7 +36,6 @@ export const PhotoActions = ({
   loadOriginal: boolean;
   setLoadOriginal: (loadOriginal: boolean) => void;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const navigate = useNavigate();
 
   const {
@@ -45,10 +44,10 @@ export const PhotoActions = ({
     restore: { mutateAsync: restorePhoto },
     addTags: { mutateAsync: addTagsToPhoto },
     removeTags: { mutateAsync: removeTagsFromPhoto },
-  } = usePhoto(dotYouClient, targetDrive);
+  } = usePhoto(targetDrive);
   const {
     download: { mutateAsync: downloadPhoto },
-  } = useWebPhoto(dotYouClient, targetDrive);
+  } = useWebPhoto(targetDrive);
 
   const isFavorite = current?.fileMetadata.appData.tags?.some((tag) =>
     stringGuidsEqual(tag, PhotoConfig.FavoriteTag)

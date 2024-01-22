@@ -12,7 +12,6 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import DialogWrapper from '../../ui/Dialog/DialogWrapper';
 import Plus from '../../ui/Icons/Plus/Plus';
 import { useAlbum } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 
 const NewAlbumDialog = ({
   isOpen,
@@ -29,13 +28,7 @@ const NewAlbumDialog = ({
   const formRef = useRef<HTMLFormElement>(null);
 
   const navigate = useNavigate();
-
-  const dotYouClient = useAuth().getDotYouClient();
-  const {
-    mutateAsync: saveAlbum,
-    status: saveStatus,
-    error: saveError,
-  } = useAlbum(dotYouClient).save;
+  const { mutateAsync: saveAlbum, status: saveStatus, error: saveError } = useAlbum().save;
 
   const doSaveAlbum = async () => {
     const newTag = getNewId();

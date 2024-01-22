@@ -18,9 +18,7 @@ const PhotoPreview = (props: {
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const { data: fileHeader } = useFileHeader({
-    dotYouClient,
     targetDrive,
     photoFileId: props.fileId,
   });
@@ -42,7 +40,6 @@ const PhotoLibPreview = ({
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -67,7 +64,6 @@ const PhotoLibPreview = ({
     fetchPreviousPage: fetchNewerPage,
     isFetchingPreviousPage: isFetchingNewerPage,
   } = useFlatPhotosByMonth({
-    dotYouClient,
     targetDrive,
     type,
     date: currentDate,
@@ -138,7 +134,6 @@ const PhotoAlbumPreview = ({
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -155,7 +150,6 @@ const PhotoAlbumPreview = ({
     hasNextPage: hasOlderPage,
     isFetchingNextPage: isFetchingOlderPage,
   } = usePhotosInfinte({
-    dotYouClient,
     targetDrive,
     album: albumKey,
     type,

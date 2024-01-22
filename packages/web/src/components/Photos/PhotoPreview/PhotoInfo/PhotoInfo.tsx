@@ -34,13 +34,11 @@ export const PhotoInfo = ({
   setIsInfoOpen: (infoOpen: boolean) => void;
   loadOriginal: boolean;
 }) => {
-  const dotYouClient = useAuth().getDotYouClient();
-
   const [isEditUserDate, setIsEditUserDate] = useState(false);
   const {
     fetchMeta: { data: photoMetadata },
     updateMeta: { mutate: updatePhotoMeta },
-  } = usePhotoMetadata(dotYouClient, targetDrive, current?.fileId);
+  } = usePhotoMetadata(targetDrive, current?.fileId);
 
   const isVideo = current?.fileMetadata.payloads
     .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
