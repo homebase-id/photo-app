@@ -6,7 +6,7 @@ import Uploader from '../../components/Photos/PhotoUploader/PhotoUploader';
 import ActionButton from '../../components/ui/Buttons/ActionButton';
 import Image from '../../components/ui/Icons/Image/Image';
 import Upload from '../../components/ui/Icons/Upload/Upload';
-import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
+import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
