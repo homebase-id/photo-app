@@ -1,7 +1,5 @@
+import { createDateObject, usePhotoLibrary, PhotoConfig } from 'photo-app-common';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
-import { createDateObject } from '../../../provider/photos/PhotoProvider';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'short',

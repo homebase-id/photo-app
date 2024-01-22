@@ -1,13 +1,11 @@
 import { useEffect } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
-import useAlbums from '../../../hooks/photoLibrary/useAlbums';
-import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import ActionButtonWithOptions from '../../ui/Buttons/ActionButtonWithOptions';
 import Archive from '../../ui/Icons/Archive/Archive';
 import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
+import { usePhoto, PhotoConfig, useAlbums } from 'photo-app-common';
 
 const PhotoSelection = ({
   selection,

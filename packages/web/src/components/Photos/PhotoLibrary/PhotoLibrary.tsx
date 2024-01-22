@@ -1,15 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { t } from '../../../helpers/i18n/dictionary';
-import { PhotoConfig, PhotoMetaDay } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import PhotoScroll from '../PhotoScroll/PhotoScroll';
 import { PhotoDay } from '../PhotoDay/PhotoDay';
-import usePhotoLibrary from '../../../hooks/photoLibrary/usePhotoLibrary';
-import { createDateObject } from '../../../provider/photos/PhotoProvider';
-import { useSiblingsRange } from '../../../hooks/photoLibrary/usePhotoLibraryRange';
-import { usePhotosByMonth } from '../../../hooks/photoLibrary/usePhotos';
-
+import {
+  useSiblingsRange,
+  PhotoConfig,
+  usePhotoLibrary,
+  createDateObject,
+  usePhotosByMonth,
+  PhotoMetaDay,
+} from 'photo-app-common';
+import useAuth from '../../../hooks/auth/useAuth';
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
   year: 'numeric',
@@ -34,12 +37,8 @@ const PhotoLibrary = ({
   isSelecting?: boolean;
   setFileSelectorOpen?: (isOpen: boolean) => void;
 }) => {
-  const [selectionRangeFrom, setSelectionRangeFrom] = useState<
-    string | undefined
-  >();
-  const [selectionRangeTo, setSelectionRangeTo] = useState<
-    string | undefined
-  >();
+  const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
+  const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
 
   const { data: selection } = useSiblingsRange({
     targetDrive: PhotoConfig.PhotoDrive,
@@ -79,8 +78,8 @@ const PhotoLibrary = ({
     type,
   }).fetchLibrary;
 
-  const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap(year =>
-    year.months.map(month => ({ year: year.year, ...month })),
+  const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
+    year.months.map((month) => ({ year: year.year, ...month }))
   );
 
   /// Virtual scrolling
@@ -110,14 +109,15 @@ const PhotoLibrary = ({
         </p>
         {setFileSelectorOpen && (
           <ActionButton
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
               setFileSelectorOpen && setFileSelectorOpen(true);
 
               return false;
             }}
             type="primary"
-            className="ml-2">
+            className="ml-2"
+          >
             {t('Add')}
           </ActionButton>
         )}
@@ -132,15 +132,15 @@ const PhotoLibrary = ({
           className="relative w-full select-none"
           style={{
             height: virtualizer.getTotalSize(),
-          }}>
+          }}
+        >
           <div
             className="absolute left-0 top-0 w-full"
             style={{
-              transform: `translateY(${
-                items[0]?.start - virtualizer.options.scrollMargin
-              }px)`,
-            }}>
-            {items.map(virtualRow => {
+              transform: `translateY(${items[0]?.start - virtualizer.options.scrollMargin}px)`,
+            }}
+          >
+            {items.map((virtualRow) => {
               const isFinalRow = virtualRow.index > monthsToShow.length - 1;
               if (isFinalRow)
                 return (
@@ -148,7 +148,8 @@ const PhotoLibrary = ({
                     className="pt-5 italic opacity-50"
                     key={virtualRow.key}
                     data-index={virtualRow.index}
-                    ref={virtualizer.measureElement}>
+                    ref={virtualizer.measureElement}
+                  >
                     {t('No more photos')}
                   </div>
                 );
@@ -157,7 +158,8 @@ const PhotoLibrary = ({
                 <div
                   key={virtualRow.key}
                   data-index={virtualRow.index}
-                  ref={virtualizer.measureElement}>
+                  ref={virtualizer.measureElement}
+                >
                   <PhotoMonth
                     monthMeta={monthsToShow[virtualRow.index]}
                     type={type}
@@ -174,16 +176,14 @@ const PhotoLibrary = ({
       </div>
       <PhotoScroll
         type={type}
-        onJumpInTime={time => {
-          const target = monthsToShow.findIndex(month => {
+        onJumpInTime={(time) => {
+          const target = monthsToShow.findIndex((month) => {
             return month.year === time.year && month.month === time.month;
           });
           virtualizer.scrollToIndex(target, { align: 'start' });
         }}
-        onScroll={scrollPercentage => {
-          virtualizer.scrollToOffset(
-            scrollPercentage * virtualizer.getTotalSize(),
-          );
+        onScroll={(scrollPercentage) => {
+          virtualizer.scrollToOffset(scrollPercentage * virtualizer.getTotalSize());
         }}
       />
     </>
@@ -231,8 +231,8 @@ export const PhotoMonth = ({
   }).updateCount;
 
   const photos = useMemo(
-    () => photosInfinte?.pages?.flatMap(page => page.results),
-    [photosInfinte, photosInfinte?.pages],
+    () => photosInfinte?.pages?.flatMap((page) => page.results),
+    [photosInfinte, photosInfinte?.pages]
   );
 
   useEffect(() => {
@@ -253,10 +253,10 @@ export const PhotoMonth = ({
     () =>
       photos?.reduce((days, photo) => {
         const dateNumber = new Date(
-          photo.fileMetadata.appData.userDate || photo.fileMetadata.created,
+          photo.fileMetadata.appData.userDate || photo.fileMetadata.created
         ).getDate();
 
-        const dayIndex = days.findIndex(metaDay => metaDay.day === dateNumber);
+        const dayIndex = days.findIndex((metaDay) => metaDay.day === dateNumber);
         if (dayIndex === -1) {
           days.push({
             day: dateNumber,
@@ -268,26 +268,18 @@ export const PhotoMonth = ({
 
         return days;
       }, [] as PhotoMetaDay[]) || [],
-    [photos],
+    [photos]
   );
 
   const title = useMemo(() => {
     return year === new Date().getFullYear()
-      ? createDateObject(year, month).toLocaleDateString(
-          undefined,
-          thisYearMonthFormat,
-        )
-      : createDateObject(year, month).toLocaleDateString(
-          undefined,
-          monthFormat,
-        );
+      ? createDateObject(year, month).toLocaleDateString(undefined, thisYearMonthFormat)
+      : createDateObject(year, month).toLocaleDateString(undefined, monthFormat);
   }, [monthMeta]);
 
   return (
     <div ref={wrapperRef}>
-      {monthMeta.photosThisMonth >= 1 ? (
-        <h1 className="text-2xl">{title}</h1>
-      ) : null}
+      {monthMeta.photosThisMonth >= 1 ? <h1 className="text-2xl">{title}</h1> : null}
 
       {photosFetched ? (
         days.map((day, index) => {
@@ -298,10 +290,9 @@ export const PhotoMonth = ({
             <PhotoDay
               date={dayInDateObj}
               photos={
-                photos?.filter(photo => {
+                photos?.filter((photo) => {
                   const photoDate = new Date(
-                    photo.fileMetadata.appData.userDate ||
-                      photo.fileMetadata.created,
+                    photo.fileMetadata.appData.userDate || photo.fileMetadata.created
                   );
 
                   return photoDate.getDate() === day.day;
@@ -313,9 +304,7 @@ export const PhotoMonth = ({
               rangeSelection={rangeSelection}
               isSelected={isSelected}
               isSelecting={isSelecting}
-              setIsInView={
-                lastDay && hasNextPage ? () => fetchNextPage() : undefined
-              }
+              setIsInView={lastDay && hasNextPage ? () => fetchNextPage() : undefined}
             />
           );
         })
@@ -341,7 +330,8 @@ const PhotoMonthLoading = ({ photosCount }: { photosCount: number }) => {
           style={{
             height: '200px',
             width: `${Math.round(aspect * 200)}px`,
-          }}></div>
+          }}
+        ></div>
       </div>
     ));
   }, [photosCount]);

@@ -4,11 +4,10 @@ import { PhotoItem } from '../Photos/PhotoDay/PhotoDay';
 import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Ellipsis } from '../ui/Icons/icons';
-import { useSiblingsRangeInfinte } from '../../hooks/photoLibrary/usePhotoLibraryRangeInfinte';
-import { useFlatPhotosFromDate } from '../../hooks/photoLibrary/usePhotos';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
-import { useAlbum } from '../../hooks/photoLibrary/useAlbum';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
+import { useAlbum, usePhotosInfinte, useSiblingsRangeInfinte, PhotoConfig } from 'photo-app-common';
+import useAuth from '../../hooks/auth/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -26,22 +25,27 @@ const PhotoAlbum = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
+  const queryClient = useQueryClient();
+
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
   const {
     data: photos,
     hasNextPage: hasMorePhotos,
     fetchNextPage,
+    isFetchingNextPage,
     refetch: refetchPhotos,
-  } = useFlatPhotosFromDate({
+  } = usePhotosInfinte({
+    targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
-    ordering: 'newer',
   }).fetchPhotos;
   const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 
   const [refreshing, setRefreshing] = useState(false);
   const doRefresh = async () => {
     setRefreshing(true);
+
+    queryClient.invalidateQueries();
 
     // Refetch photos;
     await refetchPhotos();
@@ -131,7 +135,7 @@ const PhotoAlbum = ({
           </View>
         )}
         numColumns={numColums}
-        onEndReached={() => hasMorePhotos && fetchNextPage()}
+        onEndReached={() => hasMorePhotos && !isFetchingNextPage && fetchNextPage()}
       />
     </View>
   );

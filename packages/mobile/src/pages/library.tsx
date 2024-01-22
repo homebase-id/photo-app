@@ -10,10 +10,9 @@ import { Archive, Grid, Plus, RecycleBin, SolidHearth } from '../components/ui/I
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import NewAlbumDialog from '../components/PhotoAlbum/NewAlbumDialog';
-import useAlbums from '../hooks/photoLibrary/useAlbums';
-import { useAlbumThumbnail } from '../hooks/photoLibrary/useAlbum';
 import { useDarkMode } from '../hooks/useDarkMode';
-import { AlbumDefinition, PhotoConfig } from '../provider/photos/PhotoTypes';
+import { AlbumDefinition, PhotoConfig, useAlbumThumbnail, useAlbums } from 'photo-app-common';
+import useAuth from '../hooks/auth/useAuth';
 
 type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 

@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
-import { useFlatPhotosByMonth, usePhotosInfinte } from '../../../hooks/photoLibrary/usePhotos';
-import { useFileHeader } from '../../../hooks/photoLibrary/usePhotoHeader';
 import { PhotoActions } from './PhotoActions';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
 import PhotoPreviewSlider from './PhotoPreviewSlider';
+import {
+  PhotoConfig,
+  useFileHeader,
+  useFlatPhotosByMonth,
+  usePhotosInfinte,
+} from 'photo-app-common';
+import useAuth from '../../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
@@ -14,7 +18,10 @@ const PhotoPreview = (props: {
   type?: 'archive' | 'apps' | 'bin' | 'favorites';
   urlPrefix?: string;
 }) => {
-  const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId: props.fileId });
+  const { data: fileHeader } = useFileHeader({
+    targetDrive,
+    photoFileId: props.fileId,
+  });
 
   if (props.albumKey) return <PhotoAlbumPreview {...props} dsr={fileHeader || undefined} />;
   else return <PhotoLibPreview {...props} dsr={fileHeader || undefined} />;
@@ -142,7 +149,12 @@ const PhotoAlbumPreview = ({
     fetchNextPage: fetchOlderPage,
     hasNextPage: hasOlderPage,
     isFetchingNextPage: isFetchingOlderPage,
-  } = usePhotosInfinte({ targetDrive, album: albumKey, type, direction: 'newer' }).fetchPhotos;
+  } = usePhotosInfinte({
+    targetDrive,
+    album: albumKey,
+    type,
+    direction: 'newer',
+  }).fetchPhotos;
 
   const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
 

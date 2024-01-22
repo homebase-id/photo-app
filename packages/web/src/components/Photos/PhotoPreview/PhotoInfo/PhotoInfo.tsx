@@ -2,12 +2,12 @@ import { debounce } from 'lodash-es';
 import Times from '../../../ui/Icons/Times/Times';
 import { useState, useMemo, useRef } from 'react';
 import { t } from '../../../../helpers/i18n/dictionary';
-import usePhotoMetadata from '../../../../hooks/photoLibrary/usePhotoMeta';
 import ActionButton from '../../../ui/Buttons/ActionButton';
-import { PhotoConfig } from '../../../../provider/photos/PhotoTypes';
 import EditDateDialog from '../../../Dialog/EditDateDialog/EditDateDialog';
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
+import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
+import useAuth from '../../../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 

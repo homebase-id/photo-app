@@ -1,19 +1,19 @@
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 
 import { useRef, useState } from 'react';
-import { uploadNew } from '../../provider/Image/RNPhotoProvider';
+import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { InteractionManager, Platform } from 'react-native';
 
-import { usePhotoLibrary } from '../photoLibrary/usePhotoLibrary';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
-import useAuth from '../auth/useAuth';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
+import { PhotoConfig, useDotYouClientContext, usePhotoLibrary } from 'photo-app-common';
+import { hasAndroidPermission } from './permissionHelper';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const useBackupOldCameraRoll = () => {
   const { backupFromCameraRoll } = useKeyValueStorage();
-  const dotYouClient = useAuth().getDotYouClient();
+  const dotYouClient = useDotYouClientContext();
+
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
@@ -29,9 +29,7 @@ const useBackupOldCameraRoll = () => {
     setEarliestSyncTime,
   } = useKeyValueStorage();
 
-  const [cursor, setCursor] = useState<string | undefined>(
-    cameraRollBackupCursor || undefined,
-  );
+  const [cursor, setCursor] = useState<string | undefined>(cameraRollBackupCursor || undefined);
 
   if (!earliestSyncTime) setEarliestSyncTime(new Date().getTime().toString());
   const earliestSyncTimeAsInt = earliestSyncTime
@@ -39,10 +37,16 @@ const useBackupOldCameraRoll = () => {
     : new Date().getTime();
 
   const fetchAndUpload = async () => {
+    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
+      console.log('No permission to backup camera roll');
+      return;
+    }
+
     const photos = await CameraRoll.getPhotos({
       first: 50,
       toTime: earliestSyncTimeAsInt,
       after: cursor,
+      include: ['imageSize'],
     });
 
     // Regular loop to have the photos uploaded sequentially
@@ -50,22 +54,25 @@ const useBackupOldCameraRoll = () => {
       const photo = photos.edges[i];
       const fileData =
         Platform.OS === 'ios'
-          ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, true)
+          ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, { convertHeicImages: true })
           : photo;
 
-      if (!fileData?.node?.image?.filepath) return undefined;
+      if (!fileData?.node?.image) {
+        console.warn('Gotten image without imageData', fileData?.node?.image);
+        return undefined;
+      }
 
       // Upload new always checkf if it already exists
       const uploadResult = await uploadNew(
         dotYouClient,
         targetDrive,
         undefined,
-        fileData.node.image,
+        fileData.node.image
       );
       await addDayToLibrary({ date: uploadResult.userDate });
     }
 
-    console.log(`synced ${photos.edges.length} photos`);
+    console.log(`Backed up ${photos.edges.length} photos`);
 
     setCursor(photos.page_info.end_cursor);
     setCameraRollBackupCursor(photos.page_info.end_cursor || '');

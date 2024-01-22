@@ -1,11 +1,6 @@
 import { EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
 import React, { memo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Platform, TouchableOpacity, View } from 'react-native';
 import { OdinImage } from './PhotoWithLoader';
 import { Colors } from '../../../app/Colors';
 import WebView from 'react-native-webview';
@@ -14,7 +9,7 @@ import { Play } from '../../ui/Icons/icons';
 import Video from 'react-native-video';
 import useVideo from '../../../hooks/video/useVideo';
 import useAuth from '../../../hooks/auth/useAuth';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
+import { PhotoConfig } from 'photo-app-common';
 
 // Memo to performance optimize the FlatList
 export const VideoWithLoader = memo(
@@ -39,7 +34,6 @@ export const VideoWithLoader = memo(
   }) => {
     const [loadVideo, setLoadVideo] = useState(false);
     const { getDotYouClient } = useAuth();
-    const dotYouClient = getDotYouClient();
 
     return (
       <View
@@ -47,10 +41,10 @@ export const VideoWithLoader = memo(
           backgroundColor: Colors.black,
           ...imageSize,
           position: 'relative',
-        }}>
+        }}
+      >
         {!loadVideo ? (
           <OdinImage
-            dotYouClient={dotYouClient}
             targetDrive={targetDrive}
             fileId={fileId}
             previewThumbnail={previewThumbnail}
@@ -67,7 +61,6 @@ export const VideoWithLoader = memo(
           ) : (
             <>
               <OdinImage
-                dotYouClient={dotYouClient}
                 targetDrive={targetDrive}
                 fileId={fileId}
                 previewThumbnail={previewThumbnail}
@@ -88,7 +81,8 @@ export const VideoWithLoader = memo(
                   flex: 1,
                   alignItems: 'center',
                   justifyContent: 'center',
-                }}>
+                }}
+              >
                 <TouchableOpacity
                   onPress={() => setLoadVideo(true)}
                   style={{
@@ -97,7 +91,8 @@ export const VideoWithLoader = memo(
                     borderWidth: 1,
                     borderColor: 'white',
                     backgroundColor: 'rgba(255,255,255,0.2)',
-                  }}>
+                  }}
+                >
                   <Play size={'xl'} color={Colors.white} />
                 </TouchableOpacity>
               </View>
@@ -106,7 +101,7 @@ export const VideoWithLoader = memo(
         ) : null}
       </View>
     );
-  },
+  }
 );
 
 const OdinVideo = ({ fileId }: { fileId: string }) => {
@@ -155,16 +150,16 @@ const OdinVideoWeb = ({ fileId }: { fileId: string }) => {
         style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}
         allowsInlineMediaPlayback={true}
         allowsProtectedMedia={true}
-        onError={syntheticEvent => {
+        onError={(syntheticEvent) => {
           console.log('onerror');
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView error: ', nativeEvent);
         }}
-        onHttpError={syntheticEvent => {
+        onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView error: ', nativeEvent);
         }}
-        onMessage={_data => console.log(_data.nativeEvent.data)}
+        onMessage={(_data) => console.log(_data.nativeEvent.data)}
       />
     </TouchableWithoutFeedback>
   );
@@ -172,14 +167,9 @@ const OdinVideoWeb = ({ fileId }: { fileId: string }) => {
 
 const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
   const { getDotYouClient } = useAuth();
-  const dotYouClient = getDotYouClient();
 
   // Hook to download the video
-  const { data: videoUrl, isFetched } = useVideo(
-    dotYouClient,
-    fileId,
-    PhotoConfig.PhotoDrive,
-  ).fetchVideo;
+  const { data: videoUrl, isFetched } = useVideo(fileId, PhotoConfig.PhotoDrive).fetchVideo;
 
   // Loading
   if (!isFetched)
@@ -194,7 +184,8 @@ const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
           left: 0,
           bottom: 0,
           right: 0,
-        }}>
+        }}
+      >
         <ActivityIndicator size="large" />
       </View>
     );
@@ -206,7 +197,7 @@ const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
   return (
     <Video
       source={{ uri: videoUrl }}
-      onError={e => console.error(e)}
+      onError={(e) => console.error(e)}
       style={{
         position: 'absolute',
         top: 0,

@@ -7,9 +7,8 @@ import Label from '../../Form/Label';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import DialogWrapper from '../../ui/Dialog/DialogWrapper';
-import usePhotoMetadata from '../../../hooks/photoLibrary/usePhotoMeta';
-import { PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import Pencil from '../../ui/Icons/Pencil/Pencil';
+import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 

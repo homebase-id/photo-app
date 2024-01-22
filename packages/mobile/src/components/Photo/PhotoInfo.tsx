@@ -7,13 +7,13 @@ import { Text } from '../ui/Text/Text';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../../app/Colors';
 import { Pencil } from '../ui/Icons/icons';
-import usePhotoMetadata from '../../hooks/photoLibrary/usePhotoMeta';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
+import { PhotoConfig, useDotYouClientContext, usePhotoMetadata } from 'photo-app-common';
+import useAuth from '../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 

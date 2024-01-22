@@ -3,11 +3,9 @@ import { Text } from '../ui/Text/Text';
 import { RecycleBin, Archive, OpenHearth, Times, SolidHearth } from '../ui/Icons/icons';
 import { ReactNode, useState } from 'react';
 import { Colors } from '../../app/Colors';
-import usePhoto from '../../hooks/photoLibrary/usePhoto';
-import useAlbums from '../../hooks/photoLibrary/useAlbums';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
+import { useAlbums, usePhoto, PhotoConfig } from 'photo-app-common';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 

@@ -1,17 +1,17 @@
 import { useParams } from 'react-router-dom';
 import useAuth from '../../hooks/auth/useAuth';
-import { PhotoConfig } from '../../provider/photos/PhotoTypes';
 import { OdinVideo } from '@youfoundation/ui-lib';
 import { ErrorBoundary } from '../../components/ui/Layout/ErrorBoundary/ErrorBoundary';
 import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
+import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
 
 const KILOBYTE = 1024;
 const MEGABYTE = 1024 * KILOBYTE;
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const VideoPlayer = () => {
-  const { getDotYouClient, getIdentity } = useAuth();
-  const dotYouClient = getDotYouClient();
+  const { getIdentity } = useAuth();
+  const dotYouClient = useDotYouClientContext();
   const { photoKey } = useParams();
 
   return (

@@ -1,13 +1,7 @@
-import {
-  DEFAULT_PAYLOAD_KEY,
-  ImageContentType,
-  ThumbnailFile,
-} from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, ThumbnailFile } from '@youfoundation/js-lib/core';
 import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
-import usePhoto from '../../../hooks/photoLibrary/usePhoto';
-import { FileLike, PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 import { t } from '../../../helpers/i18n/dictionary';
@@ -15,6 +9,9 @@ import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Check from '../../ui/Icons/Check/Check';
 import Loader from '../../ui/Icons/Loader/Loader';
+import { FileLike, usePhoto, PhotoConfig } from 'photo-app-common';
+import useAuth from '../../../hooks/auth/useAuth';
+import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 
 const kiloBytes = 1024;
 const megaBytes = kiloBytes * 1024;
@@ -33,9 +30,7 @@ const Uploader = ({
   const [failedFiles, setFailedFiles] = useState<(File | FileLike)[]>([]);
   const [uploadQueue, setUploadQueue] = useState<(File | FileLike)[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentVideoThumb, setCurrentVideoThumb] = useState<
-    ThumbnailFile | undefined
-  >();
+  const [currentVideoThumb, setCurrentVideoThumb] = useState<ThumbnailFile | undefined>();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -54,9 +49,9 @@ const Uploader = ({
   };
 
   const addToUploadQueue = (newFiles: (File | FileLike)[]) => {
-    setUploadQueue(prevVal => [
+    setUploadQueue((prevVal) => [
       ...prevVal,
-      ...newFiles.filter(f => !prevVal.find(val => val.name === f.name)),
+      ...newFiles.filter((f) => !prevVal.find((val) => val.name === f.name)),
     ]);
   };
 
@@ -65,7 +60,7 @@ const Uploader = ({
     status: uploadStatus,
     reset: resetUpload,
     error: uploadError,
-  } = usePhoto(PhotoConfig.PhotoDrive).upload;
+  } = useWebPhoto(PhotoConfig.PhotoDrive).upload;
 
   // Window level paste handler
   useEffect(() => {
@@ -130,8 +125,7 @@ const Uploader = ({
         newPhoto: currentFile,
         albumKey: albumKey,
         meta: {
-          archivalStatus:
-            isPin || type === 'apps' ? 3 : type === 'archive' ? 1 : 0,
+          archivalStatus: isPin || type === 'apps' ? 3 : type === 'archive' ? 1 : 0,
         },
         thumb: currentVideoThumb,
       });
@@ -140,8 +134,7 @@ const Uploader = ({
         newPhoto: currentFile,
         albumKey: albumKey,
         meta: {
-          archivalStatus:
-            isPin || type === 'apps' ? 3 : type === 'archive' ? 1 : 0,
+          archivalStatus: isPin || type === 'apps' ? 3 : type === 'archive' ? 1 : 0,
         },
       });
     }
@@ -151,7 +144,7 @@ const Uploader = ({
     if (uploadStatus === 'success') {
       doNext();
     } else if (uploadStatus === 'error') {
-      setFailedFiles(oldFiles => [...oldFiles, currentFile]);
+      setFailedFiles((oldFiles) => [...oldFiles, currentFile]);
       doNext();
     }
   }, [uploadStatus]);
@@ -162,7 +155,7 @@ const Uploader = ({
     <section className={`${hasFiles ? 'mb-1' : ''}`}>
       <input
         ref={inputRef}
-        onChange={e => {
+        onChange={(e) => {
           if (e.target.files) addToUploadQueue(Array.from(e.target.files));
         }}
         name="file-select"
@@ -181,20 +174,13 @@ const Uploader = ({
                 <div className="absolute inset-0 animate-pulse bg-slate-200"></div>
                 <CurrentFile
                   file={currentFile}
-                  setThumb={(thumb: ThumbnailFile) =>
-                    setCurrentVideoThumb(thumb)
-                  }
+                  setThumb={(thumb: ThumbnailFile) => setCurrentVideoThumb(thumb)}
                 />
               </div>
             ) : null}
             <div className={`${currentFile ? 'w-1/2' : ''} py-4 pl-8 pr-4`}>
               <div className="absolute right-2 top-2 flex flex-row-reverse">
-                <ActionButton
-                  icon={Times}
-                  size="square"
-                  type="mute"
-                  onClick={doCancelQueue}
-                />
+                <ActionButton icon={Times} size="square" type="mute" onClick={doCancelQueue} />
               </div>
               {isFinished ? (
                 <>
@@ -245,20 +231,18 @@ const CurrentFile = ({
   const url = useMemo(
     () =>
       window.URL.createObjectURL(
-        'bytes' in file ? new Blob([file.bytes], { type: file.type }) : file,
+        'bytes' in file ? new Blob([file.bytes], { type: file.type }) : file
       ),
-    [file],
+    [file]
   );
 
   const grabThumb = async (video: HTMLVideoElement) => {
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas
-      .getContext('2d')
-      ?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob(async blob => {
+    canvas.toBlob(async (blob) => {
       if (!blob) return;
 
       // create object url from blob
@@ -274,16 +258,13 @@ const CurrentFile = ({
   };
 
   return !isVideo ? (
-    <img
-      src={url}
-      className={`relative aspect-square h-full w-full object-cover`}
-    />
+    <img src={url} className={`relative aspect-square h-full w-full object-cover`} />
   ) : file?.size < 512 * megaBytes ? (
     <video
       src={url}
       onCanPlay={() => url && URL.revokeObjectURL(url)}
-      onLoadedMetadata={e => (e.currentTarget.currentTime = 1)}
-      onSeeked={e => grabThumb(e.currentTarget)}
+      onLoadedMetadata={(e) => (e.currentTarget.currentTime = 1)}
+      onSeeked={(e) => grabThumb(e.currentTarget)}
       className={`relative aspect-square h-full w-full object-cover`}
     />
   ) : (

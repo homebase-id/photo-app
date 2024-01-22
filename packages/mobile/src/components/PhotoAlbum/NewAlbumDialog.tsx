@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Button, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { getNewId } from '@youfoundation/js-lib/helpers';
-import { useAlbum } from '../../hooks/photoLibrary/useAlbum';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
+import { useAlbum } from 'photo-app-common';
+import useAuth from '../../hooks/auth/useAuth';
 
 const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [name, setName] = useState('');

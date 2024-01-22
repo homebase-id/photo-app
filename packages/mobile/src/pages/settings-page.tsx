@@ -1,8 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  InteractionManager,
   Linking,
   StyleProp,
   TouchableOpacity,
@@ -13,15 +14,15 @@ import { Text } from '../components/ui/Text/Text';
 import { getVersion, getBuildNumber } from 'react-native-device-info';
 
 import { SettingsStackParamList } from '../app/App';
-import { Download, Profile, RecycleBin, Sync, Times, Upload } from '../components/ui/Icons/icons';
+import { Download, Profile, RecycleBin, Sync, Times } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
-import useDbSync from '../hooks/db/useDbSync';
 import codePush from 'react-native-code-push';
 import useAuth from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
+import { useQueryClient } from '@tanstack/react-query';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
@@ -34,25 +35,32 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 };
 
 const SettingsPage = (_props: SettingsProps) => {
+  const navigate = _props.navigation.navigate;
+  const [logoutPending, setLogoutPending] = useState(false);
+  // const logoutUi = _props.route.params.logout;
   const { logout, getIdentity } = useAuth();
-  const { cleanup } = useDbSync();
+  const queryClient = useQueryClient();
+
   const {
     syncFromCameraRoll,
-    setSyncFromCameraRoll,
-    backupFromCameraRoll,
-    setBackupFromCameraRoll,
+    // setSyncFromCameraRoll,
+    // backupFromCameraRoll,
+    // setBackupFromCameraRoll,
     lastCameraRollSyncTime,
   } = useKeyValueStorage();
 
   const doLogout = async () => {
-    await cleanup();
+    // logoutUi();
+    setLogoutPending(true);
     logout();
   };
 
   const doClearLocalData = async () => {
-    await cleanup();
+    queryClient.removeQueries();
     console.log('Local data cleared');
   };
+
+  const lastSyncAsInt = lastCameraRollSyncTime ? parseInt(lastCameraRollSyncTime || '') : null;
 
   return (
     <SafeAreaView>
@@ -84,9 +92,10 @@ const SettingsPage = (_props: SettingsProps) => {
             >
               Logout
             </Text>
+            {logoutPending ? <ActivityIndicator style={{ marginLeft: 'auto' }} /> : null}
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setSyncFromCameraRoll(!syncFromCameraRoll)}
+            onPress={() => navigate('SyncDetails')}
             style={{
               display: 'flex',
               flexDirection: 'row',
@@ -102,7 +111,7 @@ const SettingsPage = (_props: SettingsProps) => {
                   marginLeft: 16,
                 }}
               >
-                Sync with your Camera roll
+                Sync your Camera roll
               </Text>
               {syncFromCameraRoll ? (
                 <Text
@@ -111,14 +120,8 @@ const SettingsPage = (_props: SettingsProps) => {
                     opacity: 0.5,
                   }}
                 >
-                  {lastCameraRollSyncTime ? (
-                    <>
-                      Last sync:{' '}
-                      {new Date(parseInt(lastCameraRollSyncTime)).toLocaleString(
-                        undefined,
-                        dateFormat
-                      )}
-                    </>
+                  {lastSyncAsInt ? (
+                    <>Last sync: {new Date(lastSyncAsInt).toLocaleString(undefined, dateFormat)}</>
                   ) : (
                     'Last sync: not synced yet'
                   )}
@@ -130,10 +133,11 @@ const SettingsPage = (_props: SettingsProps) => {
                 value={syncFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
                 aria-label="Sync with your camera roll"
+                disabled={syncFromCameraRoll}
               />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => setBackupFromCameraRoll(!backupFromCameraRoll)}
             style={{
               display: 'flex',
@@ -156,9 +160,10 @@ const SettingsPage = (_props: SettingsProps) => {
                 value={backupFromCameraRoll}
                 style={{ marginLeft: 'auto' }}
                 aria-label="Backup your camera roll"
+                onValueChange={(newVal) => setBackupFromCameraRoll(newVal)}
               />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => doClearLocalData()}
             style={{
@@ -247,9 +252,9 @@ const getVersionInfo = async () => {
 export const VersionInfo = () => {
   const [version, setVersion] = useState<string>('');
 
-  useEffect(() => {
+  InteractionManager.runAfterInteractions(() => {
     getVersionInfo().then((v) => setVersion(v));
-  }, []);
+  });
 
   return <Text style={{ paddingTop: 10 }}>{version}</Text>;
 };

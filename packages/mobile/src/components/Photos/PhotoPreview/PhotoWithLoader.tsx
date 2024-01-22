@@ -1,15 +1,9 @@
-import {
-  DotYouClient,
-  EmbeddedThumb,
-  ImageSize,
-  TargetDrive,
-} from '@youfoundation/js-lib/core';
+import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
 import React, { memo, useMemo } from 'react';
 import ImageZoom from 'react-native-image-pan-zoom';
 import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
 import useImage from '../../../hooks/image/useImage';
 import useTinyThumb from '../../../hooks/image/useTinyThumb';
-import useAuth from '../../../hooks/auth/useAuth';
 
 // Memo to performance optimize the FlatList
 export const PhotoWithLoader = memo(
@@ -30,12 +24,8 @@ export const PhotoWithLoader = memo(
     enableZoom: boolean;
     onClick?: () => void;
   }) => {
-    const { getDotYouClient } = useAuth();
-    const dotYouClient = getDotYouClient();
-
     return (
       <OdinImage
-        dotYouClient={dotYouClient}
         targetDrive={targetDrive}
         fileId={fileId}
         previewThumbnail={previewThumbnail}
@@ -45,11 +35,10 @@ export const PhotoWithLoader = memo(
         onClick={onClick}
       />
     );
-  },
+  }
 );
 
 export interface OdinImageProps {
-  dotYouClient: DotYouClient;
   odinId?: string;
   targetDrive: TargetDrive;
   fileId: string | undefined;
@@ -65,7 +54,6 @@ export interface OdinImageProps {
 }
 
 export const OdinImage = ({
-  dotYouClient,
   odinId,
   targetDrive,
   fileId,
@@ -81,13 +69,9 @@ export const OdinImage = ({
 }: OdinImageProps) => {
   const loadSize = {
     pixelHeight:
-      (imageSize?.height
-        ? Math.round(imageSize?.height * (enableZoom ? 3 : 1))
-        : undefined) || 800,
+      (imageSize?.height ? Math.round(imageSize?.height * (enableZoom ? 3 : 1)) : undefined) || 800,
     pixelWidth:
-      (imageSize?.width
-        ? Math.round(imageSize?.width * (enableZoom ? 3 : 1))
-        : undefined) || 800,
+      (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 3 : 1)) : undefined) || 800,
   };
 
   const embeddedThumbUrl = useMemo(() => {
@@ -96,19 +80,14 @@ export const OdinImage = ({
     return `data:${previewThumbnail.contentType};base64,${previewThumbnail.content}`;
   }, [previewThumbnail]);
 
-  const { getFromCache } = useImage(dotYouClient);
+  const { getFromCache } = useImage();
   const cachedImage = useMemo(
     () => (fileId ? getFromCache(odinId, fileId, targetDrive) : undefined),
-    [fileId, getFromCache, odinId, targetDrive],
+    [fileId, getFromCache, odinId, targetDrive]
   );
   const skipTiny = !!previewThumbnail || !!cachedImage;
 
-  const { data: tinyThumb } = useTinyThumb(
-    dotYouClient,
-    odinId,
-    !skipTiny ? fileId : undefined,
-    targetDrive,
-  );
+  const { data: tinyThumb } = useTinyThumb(odinId, !skipTiny ? fileId : undefined, targetDrive);
   const previewUrl = cachedImage?.url || embeddedThumbUrl || tinyThumb?.url;
 
   const naturalSize: ImageSize | undefined = tinyThumb
@@ -121,20 +100,20 @@ export const OdinImage = ({
   const {
     fetch: { data: imageData },
   } = useImage(
-    dotYouClient,
     odinId,
     loadSize !== undefined ? fileId : undefined,
     targetDrive,
     avoidPayload ? { pixelHeight: 200, pixelWidth: 200 } : loadSize,
     probablyEncrypted,
-    naturalSize,
+    naturalSize
   );
 
   return (
     <View
       style={{
         position: 'relative',
-      }}>
+      }}
+    >
       {/* Blurry image */}
       {previewUrl ? (
         <Image
@@ -164,7 +143,8 @@ export const OdinImage = ({
             ...imageSize,
             justifyContent: 'center',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <ActivityIndicator style={{}} size="large" />
         </View>
       ) : null}
@@ -226,7 +206,8 @@ const ZoomableImage = ({
       imageHeight={imageSize.height}
       minScal={1}
       onClick={onClick}
-      maxScale={maxScale}>
+      maxScale={maxScale}
+    >
       {innerImage}
     </ImageZoom>
   );
