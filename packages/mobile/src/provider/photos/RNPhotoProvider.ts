@@ -5,12 +5,14 @@ import {
   TargetDrive,
   ThumbnailFile,
 } from '@youfoundation/js-lib/core';
-import { ImageMetadata, MediaUploadMeta } from '@youfoundation/js-lib/media';
+import { ImageMetadata, MediaUploadMeta, VideoContentType } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
 import { getPhotoByUniqueId } from 'photo-app-common';
+import { uploadVideo } from '../Image/RNVideoProvider';
+import { processVideo } from '../Image/RNVideoProviderSegmenter';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -47,12 +49,13 @@ const getPhotoExifMeta = async (photo: {
   return Exif.getExif(photo.filepath || photo.uri).then((metadata: any) => {
     const exifData = metadata.exif;
 
-    if (!exifData || !exifData['{Exif}'])
+    if (!exifData || !exifData['{Exif}']) {
       return {
         imageMetadata: undefined,
         imageUniqueId: photo?.filename || undefined,
         dateTimeOriginal: undefined,
       };
+    }
 
     const dateTimeOriginal = elaborateDateParser(exifData['{Exif}'].DateTimeOriginal);
 
@@ -167,55 +170,28 @@ const uploadNewVideo = async (
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ) => {
-  throw 'Not implemented';
+  const userDate = newVideo.date || meta?.userDate || new Date().getTime();
 
-  // const userDate = (newVideo as File).lastModified || new Date().getTime();
+  // Segment video file
+  const { video: processedMedia, metadata } = await processVideo(newVideo);
 
-  // // if video is tiny enough (less than 10MB), don't segment just upload
-  // if (newVideo.size < 10000000 || 'bytes' in newVideo)
-  //   return {
-  //     ...(await uploadVideo(
-  //       dotYouClient,
-  //       targetDrive,
-  //       { requiredSecurityGroup: SecurityGroupType.Owner },
-  //       'bytes' in newVideo ? newVideo.bytes : newVideo,
-  //       {
-  //         isSegmented: false,
-  //         mimeType: newVideo.type,
-  //         fileSize: newVideo.size,
-  //       },
-  //       {
-  //         ...meta,
-  //         type: newVideo.type as VideoContentType,
-  //         tag: albumKey ? [albumKey] : undefined,
-  //         userDate,
-  //         thumb: thumb,
-  //       },
-  //     )),
-  //     userDate: new Date(userDate),
-  //   };
-
-  // // Segment video file
-  // const segmentVideoFile = (await import('@youfoundation/js-lib/helpers'))
-  //   .segmentVideoFile;
-  // const { bytes: processedBytes, metadata } = await segmentVideoFile(newVideo);
-
-  // return {
-  //   ...(await uploadVideo(
-  //     dotYouClient,
-  //     targetDrive,
-  //     { requiredSecurityGroup: SecurityGroupType.Owner },
-  //     processedBytes,
-  //     metadata,
-  //     {
-  //       type: newVideo.type as VideoContentType,
-  //       tag: albumKey ? [albumKey] : undefined,
-  //       userDate,
-  //       thumb: thumb,
-  //     },
-  //   )),
-  //   userDate: new Date(userDate),
-  // };
+  return {
+    ...(await uploadVideo(
+      dotYouClient,
+      targetDrive,
+      { requiredSecurityGroup: SecurityGroupType.Owner },
+      processedMedia,
+      metadata,
+      {
+        ...meta,
+        type: newVideo.type as VideoContentType,
+        tag: albumKey ? [albumKey] : undefined,
+        userDate: userDate,
+        // thumb: thumb,
+      }
+    )),
+    userDate: new Date(userDate),
+  };
 };
 
 export const uploadNew = async (
@@ -226,9 +202,9 @@ export const uploadNew = async (
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ): Promise<{ fileId?: string; userDate: Date }> => {
-  // return newFile.type.includes('video')
-  //   ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb, meta)
-  return uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile, meta);
+  return newFile.type?.includes('video')
+    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb, meta)
+    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile, meta);
 };
 
 export type PageParam = {
