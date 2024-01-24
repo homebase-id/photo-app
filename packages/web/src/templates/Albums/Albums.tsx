@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import AlbumIcon from '../../components/ui/Icons/Album/Album';
 import Plus from '../../components/ui/Icons/Plus/Plus';
-import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
+import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
 import { OdinImage } from '@youfoundation/ui-lib';
 import { ImageIcon } from '../../components/ui/Icons/ImageIcon/ImageIcon';

@@ -1,7 +1,7 @@
 import LoginNav from '../../components/Auth/LoginNav/LoginNav';
 import PhotoLibrary from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelection';
-import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
+import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
 import { Suspense, lazy, useState } from 'react';
 import { useParams } from 'react-router-dom';

@@ -1,6 +1,6 @@
 import ActionButton from '../../components/ui/Buttons/ActionButton';
 import Upload from '../../components/ui/Icons/Upload/Upload';
-import PageMeta from '../../components/ui/Layout/PageMeta/PageMeta';
+import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
 import Label from '../../components/Form/Label';
 import useImportStatus from '../../hooks/import/useImportStatus';
