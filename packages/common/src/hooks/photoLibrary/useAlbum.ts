@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
 import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
-import { DotYouClient } from '@youfoundation/js-lib/core';
 import { useAlbums } from './useAlbums';
 import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
@@ -11,32 +10,23 @@ export const useAlbum = (albumKey?: string) => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const { data: albums } = useAlbums().fetch;
-
-  const fetch = async (albumKey?: string) => {
-    if (!albumKey) return null;
-
-    return albums?.find((album) => album.tag === albumKey) || null;
-  };
+  const fetchAlbums = useAlbums().fetch;
 
   const save = async (album: AlbumDefinition) => {
-    return await saveAlbum(dotYouClient, album);
+    await saveAlbum(dotYouClient, album);
+    return album;
   };
 
   const remove = async (album: AlbumDefinition) => {
-    if (!album) return;
-
+    if (!album.fileId) throw new Error('Album has no fileId');
     await removeAlbumDefintion(dotYouClient, album);
   };
 
   return {
-    fetch: useQuery({
-      queryKey: ['album', albumKey],
-      queryFn: () => fetch(albumKey),
-      enabled: !!albumKey && !!albums,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnMount: false,
-    }),
+    fetch: {
+      ...fetchAlbums,
+      data: fetchAlbums.data?.find((album) => album.tag === albumKey) || null,
+    },
     save: useMutation({
       mutationFn: save,
       onMutate(newAlbum) {

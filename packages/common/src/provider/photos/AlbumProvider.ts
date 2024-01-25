@@ -77,7 +77,7 @@ export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
   };
 
-  uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptAlbums);
+  return await uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptAlbums);
 };
 
 export const removeAlbumDefintion = async (

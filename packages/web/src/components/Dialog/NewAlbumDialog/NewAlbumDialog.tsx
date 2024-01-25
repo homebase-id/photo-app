@@ -1,5 +1,5 @@
 import { getNewId } from '@youfoundation/js-lib/helpers';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../../helpers/i18n/dictionary';
@@ -28,13 +28,16 @@ const NewAlbumDialog = ({
   const formRef = useRef<HTMLFormElement>(null);
 
   const navigate = useNavigate();
-  const { mutateAsync: saveAlbum, status: saveStatus, error: saveError } = useAlbum().save;
+  const {
+    mutate: saveAlbum,
+    status: saveStatus,
+    error: saveError,
+    data: savedAlbum,
+  } = useAlbum().save;
 
-  const doSaveAlbum = async () => {
-    const newTag = getNewId();
-    await saveAlbum({ tag: newTag, name, description });
-    navigate(`/album/${newTag}`);
-  };
+  useEffect(() => {
+    if (saveStatus === 'success' && savedAlbum.tag) navigate(`/album/${savedAlbum.tag}`);
+  }, [saveStatus]);
 
   if (!isOpen) {
     return null;
@@ -52,7 +55,15 @@ const NewAlbumDialog = ({
       size="4xlarge"
       keepOpenOnBlur={true}
     >
-      <form onSubmit={() => doSaveAlbum()} ref={formRef}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!e.currentTarget.reportValidity()) return;
+
+          saveAlbum({ tag: getNewId(), name, description });
+        }}
+        ref={formRef}
+      >
         <div className="mb-5">
           <Label>{t('Name')}</Label>
           <Input onChange={(e) => setName(e.target.value)} required />
@@ -70,7 +81,8 @@ const NewAlbumDialog = ({
           className="m-2"
           icon={Plus}
           onClick={() => {
-            if (formRef.current?.reportValidity()) doSaveAlbum();
+            if (formRef.current?.reportValidity())
+              saveAlbum({ tag: getNewId(), name, description });
           }}
           type="primary"
           state={saveStatus}
