@@ -48,13 +48,16 @@ class Blob {
 
       const localPath = Dirs.CacheDir + `/${id}`;
 
-      FileSystem.writeFile(localPath, uint8ArrayToBase64(parts[0]), 'base64').then(() => {
-        this.written = true;
-      });
+      const base64Data = uint8ArrayToBase64(parts[0]);
+      this.uri = `data:${this.data.type};base64,${base64Data}`;
 
-      // We need to convert to a cached file on the system, as RN is dumb that way... It can't handle blobs in a data uri, as it will always load it as a bitmap... 🤷
-      // See getFileInputStream in RequestBodyUtil.class within RN for more info
-      this.uri = `file://${localPath}`;
+      FileSystem.writeFile(localPath, base64Data, 'base64').then(() => {
+        this.written = true;
+
+        // We need to convert to a cached file on the system, as RN is dumb that way... It can't handle blobs in a data uri, as it will always load it as a bitmap... 🤷
+        // See getFileInputStream in RequestBodyUtil.class within RN for more info
+        this.uri = `file://${localPath}`;
+      });
     } else if (typeof parts === 'string') {
       const id = getNewId();
       this.data = {
