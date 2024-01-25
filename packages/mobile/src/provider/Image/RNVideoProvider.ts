@@ -81,7 +81,6 @@ export const uploadVideo = async (
         : [],
       uniqueId: uploadMeta?.uniqueId ?? getNewId(),
       fileType: MediaConfig.MediaFileType,
-      content: fileMetadata ? jsonStringify64(fileMetadata) : undefined,
       previewThumbnail: tinyThumb,
       userDate: uploadMeta?.userDate,
       archivalStatus: uploadMeta?.archivalStatus,
@@ -103,6 +102,7 @@ export const uploadVideo = async (
       {
         payload: payloadBlob,
         key: DEFAULT_PAYLOAD_KEY,
+        descriptorContent: fileMetadata ? jsonStringify64(fileMetadata) : undefined,
       },
     ],
     additionalThumbnails,

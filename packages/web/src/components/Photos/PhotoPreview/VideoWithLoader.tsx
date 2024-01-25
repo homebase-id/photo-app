@@ -5,7 +5,7 @@ import {
   ImageSize,
   TargetDrive,
 } from '@youfoundation/js-lib/core';
-import { useDotYouClientContext } from 'photo-app-common';
+import { useDotYouClientContext, usePhoto, usePhotoMetadata } from 'photo-app-common';
 
 export const VideoWithLoader = ({
   fileId,
@@ -55,6 +55,7 @@ export const VideoWithLoader = ({
           fileKey={DEFAULT_PAYLOAD_KEY}
           lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
+          probablyEncrypted={true}
           // className={`absolute inset-0 h-full w-full ${
           //   fit === 'cover' ? 'object-cover' : 'object-contain'
           // }`}
