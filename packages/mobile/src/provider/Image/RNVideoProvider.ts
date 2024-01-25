@@ -4,16 +4,13 @@ import {
   AccessControlList,
   SecurityGroupType,
   UploadInstructionSet,
-  getRandom16ByteArray,
   DEFAULT_PAYLOAD_KEY,
   UploadFileMetadata,
-  getNewId,
   uploadFile,
-  jsonStringify64,
   getFileHeader,
   ImageContentType,
-  base64ToUint8Array,
-} from '@youfoundation/js-lib/dist';
+} from '@youfoundation/js-lib/core';
+import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@youfoundation/js-lib/helpers';
 import {
   MediaConfig,
   MediaUploadMeta,
@@ -24,7 +21,6 @@ import {
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { ImageSource } from './RNImageProvider';
 import { createThumbnails } from './RNThumbnailProvider';
-import { FileSystem } from 'react-native-file-access';
 
 export type VideoContentType = 'video/mp4';
 
@@ -42,6 +38,8 @@ export const uploadVideo = async (
   uploadMeta?: RNVideoUploadMeta
 ): Promise<VideoUploadResult | undefined> => {
   if (!targetDrive) throw 'Missing target drive';
+
+  // acl = { requiredSecurityGroup: SecurityGroupType.Anonymous };
 
   const encrypt = !(
     acl.requiredSecurityGroup === SecurityGroupType.Anonymous ||
@@ -74,8 +72,6 @@ export const uploadVideo = async (
     );
   }
 
-  // Read payload
-  const videoData = await FileSystem.readFile((video.filepath || video.uri) as string, 'base64');
   const metadata: UploadFileMetadata = {
     versionTag: versionTag,
     allowDistribution: uploadMeta?.allowDistribution || false,
@@ -94,15 +90,18 @@ export const uploadVideo = async (
     accessControlList: acl,
   };
 
+  // Custom blob to avoid reading and writing the file to disk again
+  const payloadBlob = new OdinBlob((video.filepath || video.uri) as string, {
+    type: uploadMeta?.type,
+  }) as any as Blob;
+
   const result = await uploadFile(
     dotYouClient,
     instructionSet,
     metadata,
     [
       {
-        payload: new OdinBlob([base64ToUint8Array(videoData)], {
-          type: uploadMeta?.type,
-        }) as any as Blob,
+        payload: payloadBlob,
         key: DEFAULT_PAYLOAD_KEY,
       },
     ],

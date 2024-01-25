@@ -52,7 +52,7 @@ const getPhotoExifMeta = async (photo: {
     if (!exifData || !exifData['{Exif}']) {
       return {
         imageMetadata: undefined,
-        imageUniqueId: photo?.filename || undefined,
+        imageUniqueId: photo?.filename ? toGuidId(photo?.filename) : undefined,
         dateTimeOriginal: undefined,
       };
     }
@@ -119,13 +119,11 @@ const uploadNewPhoto = async (
   newPhoto: ImageSource,
   meta?: MediaUploadMeta
 ) => {
-  // const photo: ImageSource = newPhoto as ImageSource;
-
   const exif = await getPhotoExifMeta(newPhoto);
 
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = exif || {
     imageMetadata: undefined,
-    imageUniqueId: undefined,
+    imageUniqueId: newPhoto.id || newPhoto.filename || undefined,
     dateTimeOriginal: undefined,
   };
   const userDate = dateTimeOriginal || new Date();
@@ -170,7 +168,24 @@ const uploadNewVideo = async (
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ) => {
+  const { imageUniqueId } = {
+    imageUniqueId:
+      newVideo.id || newVideo.filename
+        ? toGuidId((newVideo.id || newVideo.filename) as string)
+        : undefined,
+  };
+
   const userDate = newVideo.date || meta?.userDate || new Date().getTime();
+
+  const existingImages = imageUniqueId
+    ? await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId)
+    : [];
+
+  // Image already exists, we skip it
+  if (existingImages.length > 0) {
+    const result = existingImages[0];
+    return { fileId: result.fileId, userDate: new Date(userDate), type: 'video' };
+  }
 
   // Segment video file
   const { video: processedMedia, metadata } = await processVideo(newVideo);
@@ -184,9 +199,10 @@ const uploadNewVideo = async (
       metadata,
       {
         ...meta,
-        type: newVideo.type as VideoContentType,
+        type: 'video/mp4' as VideoContentType,
         tag: albumKey ? [albumKey] : undefined,
         userDate: userDate,
+        uniqueId: imageUniqueId,
         // thumb: thumb,
       }
     )),

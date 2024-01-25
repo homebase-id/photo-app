@@ -28,6 +28,7 @@ import { FileSystem } from 'react-native-file-access';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 export interface ImageSource {
+  id?: string | null;
   filename?: string | null;
   filepath?: string | null;
   uri?: string;

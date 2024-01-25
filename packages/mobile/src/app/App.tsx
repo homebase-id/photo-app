@@ -135,15 +135,7 @@ const RootStack = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen
-            name="Authenticated"
-            component={AuthenticatedStack}
-            initialParams={{
-              logout: () => {
-                //
-              },
-            }}
-          />
+          <Stack.Screen name="Authenticated" component={AuthenticatedStack} />
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
@@ -179,7 +171,7 @@ const AuthenticatedStack = (props: AuthenticatedProps) => {
       <Stack.Screen
         name="Home"
         component={TabStack}
-        initialParams={{ logout: props.route.params.logout }}
+        initialParams={{ logout: props.route.params?.logout }}
         options={{ headerShown: false }}
       />
       <Stack.Screen name="PhotoPreview" component={PhotoPreview} options={{ headerShown: false }} />

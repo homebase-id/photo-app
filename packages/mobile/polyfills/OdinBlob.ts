@@ -27,6 +27,7 @@ import { Dirs, FileSystem } from 'react-native-file-access';
 class Blob {
   _data: BlobData;
   uri: string;
+  written = false;
 
   /**
    * Constructor for JS consumers.
@@ -34,7 +35,7 @@ class Blob {
    * Homebase: We support creating Blobs from Uint8Arrays by converting them to base64 and writing them to a file.
    * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
    */
-  constructor(parts: Array<Blob | string | Uint8Array> = [], options?: BlobOptions) {
+  constructor(parts: Array<Blob | string | Uint8Array> | string = [], options?: BlobOptions) {
     if (Array.isArray(parts) && parts.length === 1 && parts[0] instanceof Uint8Array) {
       const id = getNewId();
       this.data = {
@@ -46,11 +47,26 @@ class Blob {
       };
 
       const localPath = Dirs.CacheDir + `/${id}`;
-      FileSystem.writeFile(localPath, uint8ArrayToBase64(parts[0]), 'base64');
+
+      FileSystem.writeFile(localPath, uint8ArrayToBase64(parts[0]), 'base64').then(() => {
+        this.written = true;
+      });
 
       // We need to convert to a cached file on the system, as RN is dumb that way... It can't handle blobs in a data uri, as it will always load it as a bitmap... 🤷
       // See getFileInputStream in RequestBodyUtil.class within RN for more info
       this.uri = `file://${localPath}`;
+    } else if (typeof parts === 'string') {
+      const id = getNewId();
+      this.data = {
+        blobId: id,
+        offset: 0,
+        type: options?.type || 'application/octet-stream',
+        __collector: null,
+      };
+      this.uri = parts;
+      this.written = true;
+
+      // this.writePromise = Promise.resolve();
     } else throw new Error('Unsupported Blob constructor arguments');
   }
 
@@ -91,17 +107,28 @@ class Blob {
   }
 
   arrayBuffer(): Promise<ArrayBuffer> {
-    return FileSystem.readFile(this.uri, 'base64')
-      .then((base64) => {
-        if (!base64) return new Uint8Array(0).buffer;
-        console.log('base64', base64.slice(0, 10));
+    const writePromise = new Promise<void>((resolve, reject) => {
+      const interval = setInterval(async () => {
+        if (this.written) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    });
 
-        return base64ToUint8Array(base64).buffer;
-      })
-      .catch((err) => {
-        console.log('err', err);
-        return new Uint8Array(0).buffer;
-      });
+    return writePromise.then(() =>
+      FileSystem.readFile(this.uri, 'base64')
+        .then((base64) => {
+          if (!base64) return new Uint8Array(0).buffer;
+          console.log('base64', base64.slice(0, 10));
+
+          return base64ToUint8Array(base64).buffer;
+        })
+        .catch((err) => {
+          console.log('err', err);
+          return new Uint8Array(0).buffer;
+        })
+    );
   }
 
   // arrayBuffer(): Promise<ArrayBuffer> {

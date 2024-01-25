@@ -38,6 +38,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       after: cursor,
       include: ['imageSize', 'filename', 'playableDuration'],
       assetType: 'All',
+      // assetType: 'Videos',
     });
 
     try {
@@ -60,7 +61,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
         const uploadResult = await uploadNew(dotYouClient, targetDrive, undefined, {
           ...fileData.node.image,
           type: fileData.node.type,
-          date: fileData.node.timestamp,
+          date: fileData.node.timestamp ? fileData.node.timestamp * 1000 : undefined,
         });
 
         await addDayToLibrary({ date: uploadResult.userDate });

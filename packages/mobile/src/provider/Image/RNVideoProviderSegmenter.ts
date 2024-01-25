@@ -23,7 +23,9 @@ const CompressVideo = async (video: ImageSource): Promise<ImageSource> => {
       bitrate: 3000000,
     },
     (progress) => {
-      console.log(`Compression Progress: ${progress}`);
+      if (Math.round(progress * 100) % 10 === 0) {
+        console.log(`Compression Progress: ${progress}`);
+      }
     }
   );
 
@@ -79,9 +81,8 @@ const FragmentVideo = async (video: ImageSource) => {
 export const processVideo = async (
   video: ImageSource
 ): Promise<{ video: ImageSource; metadata: SegmentedVideoMetadata }> => {
-  const compressedVideo = await CompressVideo(video);
-  const fragmentedVideo = await FragmentVideo(compressedVideo);
-
+  // const compressedVideo = await CompressVideo(video);
+  const fragmentedVideo = await FragmentVideo(video);
   const metadata: SegmentedVideoMetadata = {
     isSegmented: true,
     mimeType: 'video/mp4',
