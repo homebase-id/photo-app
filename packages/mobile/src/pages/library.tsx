@@ -17,6 +17,7 @@ import useAuth from '../hooks/auth/useAuth';
 type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 
 const LibraryPage = (_props: LibraryProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const { data: albums } = useAlbums().fetch;
 
   return (
@@ -60,11 +61,12 @@ const LibraryPage = (_props: LibraryProps) => {
               {albums?.map((album, index) => {
                 return <AlbumItem album={album} key={album.fileId ?? index} />;
               })}
-              <NewAlbumItem />
+              <NewAlbumItem onPress={() => setIsOpen(true)} />
             </View>
           </Container>
         </ScrollView>
       </View>
+      <NewAlbumDialog isOpen={isOpen} onClose={() => setIsOpen(!isOpen)} />
     </SafeAreaView>
   );
 };
@@ -168,8 +170,7 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
   );
 };
 
-const NewAlbumItem = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const NewAlbumItem = ({ onPress }: { onPress: () => void }) => {
   const { isDarkMode } = useDarkMode();
 
   const windowWidth = Dimensions.get('window').width;
@@ -184,7 +185,7 @@ const NewAlbumItem = () => {
           width: itemWidth,
           height: itemWidth,
         }}
-        onPress={() => setIsOpen(!isOpen)}
+        onPress={onPress}
       >
         <View
           style={{
@@ -200,7 +201,6 @@ const NewAlbumItem = () => {
           <Plus size={'6xl'} color={isDarkMode ? Colors.black : Colors.white} />
         </View>
       </TouchableOpacity>
-      <NewAlbumDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 };
