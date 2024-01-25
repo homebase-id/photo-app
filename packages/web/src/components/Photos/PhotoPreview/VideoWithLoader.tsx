@@ -45,7 +45,7 @@ export const VideoWithLoader = ({
             avoidPayload={true}
           />
         ) : (
-          <div className="absolute inset-0 bg-indigo-100 dark:bg-indigo-950"></div> // No preview available
+          <div className="relative h-full w-full min-w-[20rem] bg-slate-200 dark:bg-indigo-950"></div> // No preview available
         )
       ) : (
         <OdinVideo
@@ -55,9 +55,9 @@ export const VideoWithLoader = ({
           fileKey={DEFAULT_PAYLOAD_KEY}
           lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
-          className={`absolute inset-0 h-full w-full ${
-            fit === 'cover' ? 'object-cover' : 'object-contain'
-          }`}
+          // className={`absolute inset-0 h-full w-full ${
+          //   fit === 'cover' ? 'object-cover' : 'object-contain'
+          // }`}
         />
       )}
     </div>
