@@ -115,42 +115,22 @@ const uploadNewVideo = async (
 ) => {
   const userDate = (newVideo as File).lastModified || new Date().getTime();
 
-  // if video is tiny enough (less than 10MB), don't segment just upload
-  if (newVideo.size < 10000000 || 'bytes' in newVideo)
-    return {
-      ...(await uploadVideo(
-        dotYouClient,
-        targetDrive,
-        { requiredSecurityGroup: SecurityGroupType.Owner },
-        'bytes' in newVideo ? new Blob([newVideo.bytes], { type: newVideo.type }) : newVideo,
-        {
-          isSegmented: false,
-          mimeType: newVideo.type,
-          fileSize: newVideo.size,
-        },
-        {
-          ...meta,
-          type: newVideo.type as VideoContentType,
-          tag: albumKey ? [albumKey] : undefined,
-          userDate,
-          thumb: thumb,
-        }
-      )),
-      userDate: new Date(userDate),
-    };
-
   // Segment video file
-  const segmentVideoFile = (await import('@youfoundation/js-lib/media')).segmentVideoFile;
-  const { data: processedVideo, metadata } = await segmentVideoFile(newVideo);
+  const segmentVideoFileWithFfmpeg = (await import('@youfoundation/js-lib/media'))
+    .segmentVideoFileWithFfmpeg;
+  const { data: segmentedVideoData, metadata } = await segmentVideoFileWithFfmpeg(
+    'bytes' in newVideo ? new Blob([newVideo.bytes], { type: newVideo.type }) : newVideo
+  );
 
   return {
     ...(await uploadVideo(
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
-      processedVideo,
+      segmentedVideoData,
       metadata,
       {
+        ...meta,
         type: newVideo.type as VideoContentType,
         tag: albumKey ? [albumKey] : undefined,
         userDate,
