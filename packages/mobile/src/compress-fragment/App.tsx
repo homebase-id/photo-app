@@ -5,8 +5,7 @@ import RNFS from 'react-native-fs';
 import { Video } from 'react-native-compressor';
 import MP4Box from 'mp4box';
 import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
-import { btoa, atob } from 'react-native-quick-base64';
-import uuid from 'react-native-uuid';
+import { getNewId, mergeByteArrays, uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 import {
   FFmpegKit,
   FFmpegKitConfig,
@@ -319,7 +318,7 @@ const App = () => {
 
     const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
 
-    const destinationUri = `file://${dirPath}/mp4box-fragmented-${uuid.v4()}.mp4`;
+    const destinationUri = `file://${dirPath}/mp4box-fragmented-${getNewId()}.mp4`;
 
     const start = new Date().getTime();
 
@@ -328,8 +327,6 @@ const App = () => {
 
     const mp4File = MP4Box.createFile(true);
     const segmentedBytes: Uint8Array[] = [];
-    let videoTrackId: number;
-    let segmentedByteOffset = 0;
     const tracksToRead: boolean[] = [];
     const metadata: SegmentedVideoMetadata = {
       isSegmented: true,
@@ -337,7 +334,6 @@ const App = () => {
       codec: '',
       fileSize: 0,
       duration: 0,
-      segmentMap: [],
     };
 
     mp4File.onError = function (e: Error) {
@@ -350,7 +346,6 @@ const App = () => {
 
       metadata.codec = info.mime;
       const avTracks = info.tracks?.filter((trck) => ['video', 'audio'].includes(trck.type));
-      videoTrackId = avTracks.find((trck) => trck.type === 'video')?.id || 1;
       if (avTracks?.length > 1) {
         metadata.codec = `video/mp4; codecs="${avTracks
           .map((trck) => trck.codec)
@@ -388,37 +383,19 @@ const App = () => {
       sampleNum: number,
       is_last: boolean
     ) {
-      if (id === videoTrackId) {
-        metadata.segmentMap.push({
-          offset: segmentedByteOffset,
-          samples: sampleNum,
-        });
-      }
-
       const segment = new Uint8Array(buffer);
-      segmentedByteOffset += segment.length;
       segmentedBytes.push(segment);
 
       if (is_last) {
         tracksToRead[id] = true;
 
         if (!tracksToRead.some((trck) => !trck)) {
-          console.debug('without offsets: ', metadata.segmentMap);
-
           const finalMetaBytes = new Uint8Array(mp4boxBuildInitSegments(mp4File, mp4Info));
-          const metaOffset = finalMetaBytes.length;
-          metadata.segmentMap = [
-            { offset: 0, samples: 0 },
-            ...metadata.segmentMap.map((zegment) => {
-              return { ...zegment, offset: metaOffset + zegment.offset };
-            }),
-          ];
-          console.debug('with offsets: ', metadata.segmentMap);
           const finalSegmentedBytes = mergeByteArrays(segmentedBytes);
           const finalBytes = mergeByteArrays([finalMetaBytes, finalSegmentedBytes]);
           metadata.fileSize = finalBytes.length;
 
-          const base64String = arrayBufferToBase64(finalBytes);
+          const base64String = uint8ArrayToBase64(finalBytes);
           await RNFS.appendFile(destinationUri, base64String, 'base64');
 
           log(`Fragmented in ${(new Date().getTime() - start) / 1000}s`);
@@ -473,7 +450,7 @@ const App = () => {
     const dirPath = Platform.OS === 'ios' ? RNFS.CachesDirectoryPath : RNFS.CachesDirectoryPath;
 
     const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
-    const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${uuid.v4()}.mp4`;
+    const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${getNewId()}.mp4`;
 
     log(`Fragmenting ${source}`);
 
@@ -617,31 +594,6 @@ const App = () => {
 
 //
 // Misc
-//
-const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-};
-
-export const mergeByteArrays = (chunks: Uint8Array[]) => {
-  let size = 0;
-  chunks.forEach((item) => {
-    size += item.length;
-  });
-  const mergedArray = new Uint8Array(size);
-  let offset = 0;
-  chunks.forEach((item) => {
-    mergedArray.set(item, offset);
-    offset += item.length;
-  });
-  return mergedArray;
-};
-
 //
 
 const styles = StyleSheet.create({
