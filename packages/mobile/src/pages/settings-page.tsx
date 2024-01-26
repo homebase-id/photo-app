@@ -11,7 +11,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
-import { getVersion, getBuildNumber } from 'react-native-device-info';
+// import { getVersion, getBuildNumber } from 'react-native-device-info';
+import { version } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
 import { Download, Profile, RecycleBin, Sync, Times } from '../components/ui/Icons/icons';
@@ -192,12 +193,12 @@ const SettingsPage = (_props: SettingsProps) => {
                   {
                     text: 'Open owner console',
                     onPress: async () => {
-                      if (await InAppBrowser.isAvailable())
+                      if (await InAppBrowser.isAvailable()) {
                         await InAppBrowser.open(`https://${getIdentity()}/owner/settings/delete`, {
                           enableUrlBarHiding: false,
                           enableDefaultShare: false,
                         });
-                      else Linking.openURL(`https://${getIdentity()}/owner/settings/delete`);
+                      } else Linking.openURL(`https://${getIdentity()}/owner/settings/delete`);
                     },
                   },
                   {
@@ -240,7 +241,7 @@ const SettingsPage = (_props: SettingsProps) => {
 };
 
 const getVersionInfo = async () => {
-  const appVersion = `${getVersion()} (${getBuildNumber()})`;
+  const appVersion = `${version}`; //${getVersion()} (${getBuildNumber()})`;
   const update = await codePush.getUpdateMetadata();
 
   if (!update) return `v${appVersion}`;

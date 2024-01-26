@@ -9,8 +9,7 @@ import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Check from '../../ui/Icons/Check/Check';
 import Loader from '../../ui/Icons/Loader/Loader';
-import { FileLike, usePhoto, PhotoConfig } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
+import { FileLike, PhotoConfig } from 'photo-app-common';
 import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 
 const kiloBytes = 1024;

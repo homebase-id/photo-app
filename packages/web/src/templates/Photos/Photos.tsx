@@ -13,13 +13,14 @@ import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelectio
 import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/ErrorNotification';
 import PhotoAlbum from '../../components/Photos/PhotoAlbum/PhotoAlbum';
 import AlbumIcon from '../../components/ui/Icons/Album/Album';
-import { useAlbum, usePhotoSelection } from 'photo-app-common';
+import { useAlbum, useAlbums, usePhotoSelection } from 'photo-app-common';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
 const Photos = () => {
   const [isFileSelectorOpen, setFileSelectorOpen] = useState(false);
   const { photoKey, albumKey } = useParams();
+
   const {
     fetch: { data: album },
     remove: { mutate: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
@@ -30,9 +31,7 @@ const Photos = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (removeAlbumStatus === 'success') {
-      navigate(-1);
-    }
+    if (removeAlbumStatus === 'success') navigate('/');
   }, [removeAlbumStatus]);
 
   // Clear the selection when navigating

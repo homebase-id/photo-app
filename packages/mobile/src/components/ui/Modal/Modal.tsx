@@ -41,7 +41,8 @@ export const Modal = ({
       >
         <BottomSheetModal
           ref={bottomSheetRef}
-          enableDynamicSizing={true}
+          // enableDynamicSizing={true}
+          snapPoints={useMemo(() => ['75', '100'], [])}
           onDismiss={onClose}
           backgroundStyle={{ backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}
         >

@@ -115,6 +115,9 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
           exact: false,
         });
       },
+      onError: (error, variables) => {
+        console.error(error);
+      },
     }),
     download: useMutation({ mutationFn: download }),
   };

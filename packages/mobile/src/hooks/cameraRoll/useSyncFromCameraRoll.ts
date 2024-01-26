@@ -34,9 +34,12 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
       first: 50,
+      // fromTime: 1695664801015,
       fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
       after: cursor,
-      include: ['imageSize', 'filename'],
+      include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
+      assetType: 'All',
+      // assetType: 'Videos',
     });
 
     try {
@@ -56,12 +59,11 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
         }
 
         // Upload new always checkf if it already exists
-        const uploadResult = await uploadNew(
-          dotYouClient,
-          targetDrive,
-          undefined,
-          fileData.node.image
-        );
+        const uploadResult = await uploadNew(dotYouClient, targetDrive, undefined, {
+          ...fileData.node.image,
+          type: fileData.node.type,
+          date: fileData.node.timestamp ? fileData.node.timestamp * 1000 : undefined,
+        });
 
         await addDayToLibrary({ date: uploadResult.userDate });
       }
@@ -114,8 +116,9 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     if (
       lastCameraRollSyncTimeAsInt &&
       new Date().getTime() - lastCameraRollSyncTimeAsInt < FIVE_MINUTES
-    )
+    ) {
       return;
+    }
 
     await doSync();
   };

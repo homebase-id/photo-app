@@ -28,6 +28,7 @@ import { FileSystem } from 'react-native-file-access';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 export interface ImageSource {
+  id?: string | null;
   filename?: string | null;
   filepath?: string | null;
   uri?: string;
@@ -35,6 +36,9 @@ export interface ImageSource {
   width: number;
   fileSize?: number | null;
   orientation?: number | null;
+  type?: string | null;
+  date?: number | null;
+  playableDuration?: number | null;
 }
 
 export interface RNMediaUploadMeta extends MediaUploadMeta {
@@ -76,10 +80,11 @@ export const uploadImage = async (
 
   // Updating images in place is a rare thing, but if it happens there is often no versionTag, so we need to fetch it first
   let versionTag = uploadMeta?.versionTag;
-  if (!versionTag && uploadMeta?.fileId)
+  if (!versionTag && uploadMeta?.fileId) {
     versionTag = await getFileHeader(dotYouClient, targetDrive, uploadMeta.fileId).then(
       (header) => header?.fileMetadata.versionTag
     );
+  }
 
   const metadata: UploadFileMetadata = {
     versionTag: versionTag,

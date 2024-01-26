@@ -65,6 +65,7 @@ export const usePhotoLibrary = ({
       type,
       photoLibOnClient?.lastCursor
     );
+
     if (photoLibOnServer) {
       // Merge with local cache
       if (photoLibOnClient) {

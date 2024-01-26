@@ -12,8 +12,7 @@ import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
-import { PhotoConfig, useDotYouClientContext, usePhotoMetadata } from 'photo-app-common';
-import useAuth from '../../hooks/auth/useAuth';
+import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -34,17 +33,19 @@ const PhotoInfo = ({
 
   const onChange = useRef(
     (e: { target: { name: 'description'; value: string } | { name: 'date'; value: Date } }) => {
-      if (current)
-        if (e.target.name === 'description')
+      if (current) {
+        if (e.target.name === 'description') {
           updatePhotoMeta({
             photoFileId: current.fileId,
             newImageMetadata: { description: e.target.value },
           });
-        else
+        } else {
           updateDate({
             photoFileId: current.fileId as string,
             newDate: e.target.value.getTime(),
           });
+        }
+      }
     }
   );
 
@@ -199,8 +200,9 @@ const PhotoDate = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const date = useMemo(() => {
-    if (photoDsr?.fileMetadata.appData.userDate)
+    if (photoDsr?.fileMetadata.appData.userDate) {
       return new Date(photoDsr.fileMetadata.appData.userDate);
+    }
 
     if (photoDsr?.fileMetadata.created) return new Date(photoDsr.fileMetadata.created);
 
@@ -223,10 +225,11 @@ const PhotoDate = ({
               value={date || new Date()}
               mode={'datetime'}
               onChange={(e, newDate) => {
-                if (newDate && newDate?.getTime() !== date?.getTime())
+                if (newDate && newDate?.getTime() !== date?.getTime()) {
                   onChange({
                     target: { name: 'date', value: newDate },
                   });
+                }
 
                 setIsOpen(false);
               }}

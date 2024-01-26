@@ -22,11 +22,12 @@ if (!global.TextDecoder) global.TextDecoder = TextDecoder;
 // => https://github.com/PeculiarVentures/webcrypto and https://github.com/margelo/react-native-quick-crypto
 import { Crypto as webcrypto } from './polyfills/webcrypto';
 import { getRandomValues } from 'react-native-quick-crypto';
-if (!global.crypto?.subtle)
+if (!global.crypto?.subtle) {
   global.crypto = {
     subtle: new webcrypto().subtle,
     getRandomValues: getRandomValues,
   };
+}
 
 // Blob Polyfill
 import { OdinBlob } from './polyfills/OdinBlob';
@@ -42,6 +43,7 @@ localStorage = undefined;
 
 import { AppRegistry } from 'react-native';
 import App from './src/app/App';
+// import App from './src/compress-fragment/App';
 import { name as appName } from './app.json';
 
 AppRegistry.registerComponent(appName, () => App);
