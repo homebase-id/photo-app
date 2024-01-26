@@ -123,7 +123,10 @@ const uploadNewPhoto = async (
 
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = exif || {
     imageMetadata: undefined,
-    imageUniqueId: newPhoto.id || newPhoto.filename || undefined,
+    imageUniqueId:
+      newPhoto.id || newPhoto.filename
+        ? toGuidId((newPhoto.id || newPhoto.filename) as string)
+        : undefined,
     dateTimeOriginal: undefined,
   };
   const userDate = dateTimeOriginal || new Date();

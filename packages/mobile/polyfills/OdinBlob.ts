@@ -36,34 +36,34 @@ class Blob {
    * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
    */
   constructor(parts: Array<Blob | string | Uint8Array> | string = [], options?: BlobOptions) {
+    const mimeType = options?.type || 'application/octet-stream';
     if (Array.isArray(parts) && parts.length === 1 && parts[0] instanceof Uint8Array) {
       const id = getNewId();
       this.data = {
         blobId: id,
         offset: 0,
         size: parts[0].length,
-        type: options?.type || 'application/octet-stream',
+        type: mimeType,
         __collector: null,
       };
 
-      const localPath = Dirs.CacheDir + `/${id}`;
-
       const base64Data = uint8ArrayToBase64(parts[0]);
-      this.uri = `data:${this.data.type};base64,${base64Data}`;
+      this.uri = `data:${mimeType};base64,${base64Data}`;
 
+      const localPath = Dirs.CacheDir + `/${id}`;
       FileSystem.writeFile(localPath, base64Data, 'base64').then(() => {
-        this.written = true;
-
         // We need to convert to a cached file on the system, as RN is dumb that way... It can't handle blobs in a data uri, as it will always load it as a bitmap... 🤷
         // See getFileInputStream in RequestBodyUtil.class within RN for more info
         this.uri = `file://${localPath}`;
+
+        this.written = true;
       });
     } else if (typeof parts === 'string') {
       const id = getNewId();
       this.data = {
         blobId: id,
         offset: 0,
-        type: options?.type || 'application/octet-stream',
+        type: mimeType,
         __collector: null,
       };
       this.uri = parts;
@@ -123,8 +123,6 @@ class Blob {
       FileSystem.readFile(this.uri, 'base64')
         .then((base64) => {
           if (!base64) return new Uint8Array(0).buffer;
-          console.log('base64', base64.slice(0, 10));
-
           return base64ToUint8Array(base64).buffer;
         })
         .catch((err) => {
