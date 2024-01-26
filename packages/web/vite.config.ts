@@ -23,6 +23,7 @@ export default defineConfig({
     },
   },
   build: {
+    ...hostConfig,
     rollupOptions: {
       onwarn(warning, warn) {
         if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
