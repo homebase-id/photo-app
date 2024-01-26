@@ -71,8 +71,11 @@ const FragmentVideo = async (video: ImageSource) => {
       throw new Error(`FFmpeg process failed with state: ${state} and rc: ${returnCode}.`);
     }
 
+    const fileSize = await RNFS.stat(destinationUri).then((stats) => stats.size);
+
     return {
       ...video,
+      fileSize: fileSize || video.fileSize,
       uri: destinationUri,
       filepath: destinationUri,
     };
@@ -165,8 +168,8 @@ export const processVideo = async (
     isSegmented: true,
     mimeType: 'video/mp4',
     codec: getCodecFromMp4Info(mp4Info),
-    fileSize: video.fileSize || 0,
-    duration: video.playableDuration || 0,
+    fileSize: fragmentedVideo.fileSize || 0,
+    duration: fragmentedVideo.playableDuration || 0,
   };
 
   return { video: fragmentedVideo, metadata };
