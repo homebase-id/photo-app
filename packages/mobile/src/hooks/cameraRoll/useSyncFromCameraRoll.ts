@@ -65,7 +65,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
           date: fileData.node.timestamp ? fileData.node.timestamp * 1000 : undefined,
         });
 
-        // await addDayToLibrary({ date: uploadResult.userDate });
+        await addDayToLibrary({ date: uploadResult.userDate });
       }
     } catch (e) {
       console.error('failed to sync', e);
