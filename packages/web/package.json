@@ -25,7 +25,10 @@
     "react-helmet-async": "2.0.3",
     "react-router-dom": "^6.10.0",
     "jszip": "^3.10.1",
-    "photo-app-common": "*"
+    "photo-app-common": "*",
+    "mp4box": "^0.5.2",
+    "@youfoundation/ffmpeg": "0.12.10",
+    "@ffmpeg/util": "^0.12.1"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.7",
