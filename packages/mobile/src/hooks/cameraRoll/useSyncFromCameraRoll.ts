@@ -34,9 +34,10 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
       first: 50,
+      // fromTime: 1695664801015,
       fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
       after: cursor,
-      include: ['imageSize', 'filename', 'playableDuration'],
+      include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
       assetType: 'All',
       // assetType: 'Videos',
     });
@@ -64,7 +65,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
           date: fileData.node.timestamp ? fileData.node.timestamp * 1000 : undefined,
         });
 
-        await addDayToLibrary({ date: uploadResult.userDate });
+        // await addDayToLibrary({ date: uploadResult.userDate });
       }
     } catch (e) {
       console.error('failed to sync', e);
