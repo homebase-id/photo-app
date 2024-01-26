@@ -1,5 +1,5 @@
 import { EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
-import React, { memo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, TouchableOpacity, View } from 'react-native';
 import { OdinImage } from './PhotoWithLoader';
 import { Colors } from '../../../app/Colors';
@@ -8,8 +8,10 @@ import { TouchableWithoutFeedback } from 'react-native';
 import { Play } from '../../ui/Icons/icons';
 import Video from 'react-native-video';
 import useVideo from '../../../hooks/video/useVideo';
-import useAuth from '../../../hooks/auth/useAuth';
+import useAuth, { corsHost } from '../../../hooks/auth/useAuth';
 import { PhotoConfig } from 'photo-app-common';
+import { useDarkMode } from '../../../hooks/useDarkMode';
+import { uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 
 // Memo to performance optimize the FlatList
 export const VideoWithLoader = memo(
@@ -57,7 +59,7 @@ export const VideoWithLoader = memo(
         ) : null}
         {!preview ? (
           loadVideo ? (
-            <OdinVideo fileId={fileId} />
+            <OdinVideo targetDrive={targetDrive} fileId={fileId} />
           ) : (
             <>
               <OdinImage
@@ -104,65 +106,70 @@ export const VideoWithLoader = memo(
   }
 );
 
-const OdinVideo = ({ fileId }: { fileId: string }) => {
-  return Platform.OS === 'ios' ? (
-    <OdinVideoDownload fileId={fileId} />
-  ) : (
-    <OdinVideoWeb fileId={fileId} />
-  );
+const OdinVideo = ({ targetDrive, fileId }: { targetDrive: TargetDrive; fileId: string }) => {
+  // return Platform.OS === 'ios' ? (
+  //   <OdinVideoDownload fileId={fileId} />
+  // ) : (
+  return <OdinVideoWeb targetDrive={targetDrive} fileId={fileId} />;
+  // );
 };
 
-const OdinVideoWeb = ({ fileId }: { fileId: string }) => {
+const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
+  // const { isDarkMode } = useDarkMode();
+  const { authToken, getIdentity, getSharedSecret } = useAuth();
+  const identity = getIdentity();
+
+  const uri = useMemo(() => `https://${corsHost}/player/${fileId}`, [fileId]);
+
+  const sharedSecret = getSharedSecret();
+  const base64SharedSecret = sharedSecret ? uint8ArrayToBase64(sharedSecret) : '';
+
   const INJECTED_JAVASCRIPT = `(function() {
     const APP_SHARED_SECRET_KEY = 'APSS';
     const APP_AUTH_TOKEN_KEY = 'BX0900';
     const IDENTITY_KEY = 'identity';
+    const APP_CLIENT_TYPE_KEY = 'client_type';
 
-    const APP_SHARED_SECRET = '33LjWjGEYhIM/Puo0ZTopw==';
-    const APP_AUTH_TOKEN = 'GJh21h4QAKHCQPTA3OjQE85kdatkd/WLKrzl9wHn9vkD';
-    const IDENTITY = 'sam.dotyou.cloud';
+    const APP_SHARED_SECRET = '${base64SharedSecret}';
+    const APP_AUTH_TOKEN = '${authToken}';
+    const IDENTITY = '${identity}';
+    const APP_CLIENT_TYPE = 'react-native';
 
     window.localStorage.setItem(APP_SHARED_SECRET_KEY, APP_SHARED_SECRET);
     window.localStorage.setItem(APP_AUTH_TOKEN_KEY, APP_AUTH_TOKEN);
     window.localStorage.setItem(IDENTITY_KEY, IDENTITY);
-
-    // Debug
-    console = new Object();
-    console.log = function(log) {
-      window.ReactNativeWebView.postMessage(typeof log === 'object' ? JSON.stringify(log) : log);
-    };
-    console.debug = console.log;
-    console.info = console.log;
-    console.warn = console.log;
-    console.error = console.log;
+    window.localStorage.setItem(APP_CLIENT_TYPE_KEY, APP_CLIENT_TYPE);
   })();`;
 
-  return (
-    <TouchableWithoutFeedback>
-      <WebView
-        source={{
-          uri: `https://dev.dotyou.cloud:3005/player/${fileId}`,
-        }}
-        mixedContentMode="always"
-        javaScriptEnabled={true}
-        mediaPlaybackRequiresUserAction={false}
-        injectedJavaScriptBeforeContentLoaded={INJECTED_JAVASCRIPT}
-        style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}
-        allowsInlineMediaPlayback={true}
-        allowsProtectedMedia={true}
-        onError={(syntheticEvent) => {
-          console.log('onerror');
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-        }}
-        onHttpError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-        }}
-        onMessage={(_data) => console.log(_data.nativeEvent.data)}
-      />
-    </TouchableWithoutFeedback>
-  );
+  console.log('uri', uri);
+  if (identity && uri) {
+    return (
+      <TouchableWithoutFeedback>
+        <WebView
+          source={{
+            uri,
+          }}
+          mixedContentMode="always"
+          javaScriptEnabled={true}
+          mediaPlaybackRequiresUserAction={false}
+          injectedJavaScriptBeforeContentLoaded={INJECTED_JAVASCRIPT}
+          style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}
+          allowsInlineMediaPlayback={true}
+          allowsProtectedMedia={true}
+          onError={(syntheticEvent) => {
+            console.log('onerror');
+            const { nativeEvent } = syntheticEvent;
+            console.warn('WebView error: ', nativeEvent);
+          }}
+          onHttpError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.warn('WebView error: ', nativeEvent);
+          }}
+          onMessage={(_data) => console.log(_data.nativeEvent.data)}
+        />
+      </TouchableWithoutFeedback>
+    );
+  } else return null;
 };
 
 const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
@@ -172,7 +179,7 @@ const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
   const { data: videoUrl, isFetched } = useVideo(fileId, PhotoConfig.PhotoDrive).fetchVideo;
 
   // Loading
-  if (!isFetched)
+  if (!isFetched) {
     return (
       <View
         style={{
@@ -189,6 +196,7 @@ const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
         <ActivityIndicator size="large" />
       </View>
     );
+  }
 
   // Error
   if (!videoUrl) return null;
