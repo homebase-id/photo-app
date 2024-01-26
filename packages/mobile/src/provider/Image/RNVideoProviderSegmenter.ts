@@ -154,10 +154,11 @@ const getCodecFromMp4Info = (info: Mp4Info): string => {
 };
 
 export const processVideo = async (
-  video: ImageSource
+  video: ImageSource,
+  compress?: boolean
 ): Promise<{ video: ImageSource; metadata: SegmentedVideoMetadata }> => {
-  // const compressedVideo = await CompressVideo(video);
-  const fragmentedVideo = await FragmentVideo(video);
+  const compressedVideo = compress ? await CompressVideo(video) : undefined;
+  const fragmentedVideo = await FragmentVideo(compressedVideo || video);
 
   const mp4Info = await getMp4Info(video);
   const metadata: SegmentedVideoMetadata = {
@@ -166,7 +167,6 @@ export const processVideo = async (
     codec: getCodecFromMp4Info(mp4Info),
     fileSize: video.fileSize || 0,
     duration: video.playableDuration || 0,
-    segmentMap: [],
   };
 
   return { video: fragmentedVideo, metadata };
