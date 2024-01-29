@@ -149,13 +149,13 @@ export const PhotoItem = ({
       >
         <TouchableHighlight
           onPress={() => {
-            if (!isSelecting)
+            if (!isSelecting) {
               navigation.navigate('PhotoPreview', {
                 photoId: photoDsr.fileId,
                 typeId: type,
                 albumId: album,
               });
-            else toggleSelection(photoDsr.fileId);
+            } else toggleSelection(photoDsr.fileId);
           }}
           onLongPress={() => toggleSelection(photoDsr.fileId)}
         >

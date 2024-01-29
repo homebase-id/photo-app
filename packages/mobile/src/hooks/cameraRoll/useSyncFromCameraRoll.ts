@@ -31,11 +31,14 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     ? parseInt(lastCameraRollSyncTime)
     : undefined;
 
+  const lastWeek = new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
+  const fromTime = lastCameraRollSyncTimeAsInt || lastWeek;
+
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
       first: 50,
       // fromTime: 1695664801015,
-      fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
+      fromTime: fromTime,
       after: cursor,
       include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
       assetType: 'All',

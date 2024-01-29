@@ -1,16 +1,12 @@
 import { EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
 import React, { memo, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { OdinImage } from './PhotoWithLoader';
 import { Colors } from '../../../app/Colors';
 import WebView from 'react-native-webview';
 import { TouchableWithoutFeedback } from 'react-native';
 import { Play } from '../../ui/Icons/icons';
-import Video from 'react-native-video';
-import useVideo from '../../../hooks/video/useVideo';
 import useAuth, { corsHost } from '../../../hooks/auth/useAuth';
-import { PhotoConfig } from 'photo-app-common';
-import { useDarkMode } from '../../../hooks/useDarkMode';
 import { uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 
 // Memo to performance optimize the FlatList
@@ -35,7 +31,6 @@ export const VideoWithLoader = memo(
     onClick?: () => void;
   }) => {
     const [loadVideo, setLoadVideo] = useState(false);
-    const { getDotYouClient } = useAuth();
 
     return (
       <View
@@ -45,62 +40,88 @@ export const VideoWithLoader = memo(
           position: 'relative',
         }}
       >
-        {!loadVideo ? (
-          <OdinImage
-            targetDrive={targetDrive}
-            fileId={fileId}
-            previewThumbnail={previewThumbnail}
-            fit={fit}
-            imageSize={imageSize}
-            enableZoom={enableZoom}
-            onClick={onClick}
-            avoidPayload={true}
-          />
-        ) : null}
-        {!preview ? (
-          loadVideo ? (
-            <OdinVideo targetDrive={targetDrive} fileId={fileId} />
-          ) : (
-            <>
-              <OdinImage
-                targetDrive={targetDrive}
-                fileId={fileId}
-                previewThumbnail={previewThumbnail}
-                fit={fit}
-                imageSize={imageSize}
-                enableZoom={true}
-                onClick={() => setLoadVideo(true)}
-                avoidPayload={true}
-              />
+        {preview ? (
+          <>
+            <OdinImage
+              targetDrive={targetDrive}
+              fileId={fileId}
+              previewThumbnail={previewThumbnail}
+              fit={fit}
+              imageSize={imageSize}
+              enableZoom={enableZoom}
+              onClick={onClick}
+              avoidPayload={true}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+                zIndex: 20,
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.4)',
+              }}
+            >
               <View
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 20,
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  padding: 10,
+                  borderRadius: 50,
+                  borderWidth: 1,
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => setLoadVideo(true)}
-                  style={{
-                    padding: 20,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    borderColor: 'white',
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                  }}
-                >
-                  <Play size={'xl'} color={Colors.white} />
-                </TouchableOpacity>
+                <Play size={'xl'} color={Colors.white} />
               </View>
-            </>
-          )
-        ) : null}
+            </View>
+          </>
+        ) : loadVideo ? (
+          <OdinVideo targetDrive={targetDrive} fileId={fileId} />
+        ) : (
+          <>
+            <OdinImage
+              targetDrive={targetDrive}
+              fileId={fileId}
+              previewThumbnail={previewThumbnail}
+              fit={fit}
+              imageSize={imageSize}
+              enableZoom={true}
+              onClick={() => setLoadVideo(true)}
+              avoidPayload={true}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+                zIndex: 20,
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.4)',
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setLoadVideo(true)}
+                style={{
+                  padding: 20,
+                  borderRadius: 50,
+                  borderWidth: 1,
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                }}
+              >
+                <Play size={'xl'} color={Colors.white} />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
     );
   }
@@ -115,7 +136,6 @@ const OdinVideo = ({ targetDrive, fileId }: { targetDrive: TargetDrive; fileId: 
 };
 
 const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
-  // const { isDarkMode } = useDarkMode();
   const { authToken, getIdentity, getSharedSecret } = useAuth();
   const identity = getIdentity();
 
@@ -141,7 +161,6 @@ const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) 
     window.localStorage.setItem(APP_CLIENT_TYPE_KEY, APP_CLIENT_TYPE);
   })();`;
 
-  console.log('uri', uri);
   if (identity && uri) {
     return (
       <TouchableWithoutFeedback>
@@ -153,7 +172,14 @@ const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) 
           javaScriptEnabled={true}
           mediaPlaybackRequiresUserAction={false}
           injectedJavaScriptBeforeContentLoaded={INJECTED_JAVASCRIPT}
-          style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            backgroundColor: Colors.black,
+          }}
           allowsInlineMediaPlayback={true}
           allowsProtectedMedia={true}
           onError={(syntheticEvent) => {
@@ -172,48 +198,48 @@ const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) 
   } else return null;
 };
 
-const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
-  const { getDotYouClient } = useAuth();
+// const OdinVideoDownload = ({ fileId }: { fileId: string }) => {
+//   const { getDotYouClient } = useAuth();
 
-  // Hook to download the video
-  const { data: videoUrl, isFetched } = useVideo(fileId, PhotoConfig.PhotoDrive).fetchVideo;
+//   // Hook to download the video
+//   const { data: videoUrl, isFetched } = useVideo(fileId, PhotoConfig.PhotoDrive).fetchVideo;
 
-  // Loading
-  if (!isFetched) {
-    return (
-      <View
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-        }}
-      >
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+//   // Loading
+//   if (!isFetched) {
+//     return (
+//       <View
+//         style={{
+//           alignItems: 'center',
+//           justifyContent: 'center',
+//           flex: 1,
+//           position: 'absolute',
+//           top: 0,
+//           left: 0,
+//           bottom: 0,
+//           right: 0,
+//         }}
+//       >
+//         <ActivityIndicator size="large" />
+//       </View>
+//     );
+//   }
 
-  // Error
-  if (!videoUrl) return null;
+//   // Error
+//   if (!videoUrl) return null;
 
-  // Playback of the locally downloaded file
-  return (
-    <Video
-      source={{ uri: videoUrl }}
-      onError={(e) => console.error(e)}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-      }}
-      controls={true}
-    />
-  );
-};
+//   // Playback of the locally downloaded file
+//   return (
+//     <Video
+//       source={{ uri: videoUrl }}
+//       onError={(e) => console.error(e)}
+//       style={{
+//         position: 'absolute',
+//         top: 0,
+//         left: 0,
+//         bottom: 0,
+//         right: 0,
+//       }}
+//       controls={true}
+//     />
+//   );
+// };
