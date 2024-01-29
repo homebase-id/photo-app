@@ -246,7 +246,7 @@ export const PhotoMonth = ({
         });
       }
     }
-  }, [photos]);
+  }, [photos, monthMeta]);
 
   // Build daily meta from photos for this month
   const days: PhotoMetaDay[] = useMemo(
