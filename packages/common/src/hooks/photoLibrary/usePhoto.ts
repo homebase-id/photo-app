@@ -6,7 +6,6 @@ import {
   deleteFile,
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import { DotYouClient } from '@youfoundation/js-lib/core';
 
 import { updatePhoto } from '../../provider/photos/PhotoProvider';
 import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
@@ -320,10 +319,10 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
       onSettled: (data, error, variables) => {
         variables.addTags.forEach((tag) => {
           queryClient.invalidateQueries({
-            queryKey: ['photos', targetDrive?.alias, undefined, tag],
+            queryKey: ['photos', targetDrive?.alias, '', tag],
           });
           queryClient.invalidateQueries({
-            queryKey: ['photos-infinite', targetDrive?.alias, undefined, tag],
+            queryKey: ['photos-infinite', targetDrive?.alias, '', tag],
           });
           invalidateAlbumCover(tag);
         });
@@ -331,6 +330,11 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
         if (data?.date && variables.addTags.includes(PhotoConfig.FavoriteTag)) {
           queryClient.invalidateQueries({
             queryKey: ['photos-infinite', targetDrive?.alias, 'favorites'],
+            exact: false,
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['photos', targetDrive?.alias, 'favorites'],
+            exact: false,
           });
 
           addDayToLibrary({
@@ -376,11 +380,12 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
           queryClient.invalidateQueries({
-            queryKey: ['photos', targetDrive?.alias, undefined, tag],
+            queryKey: ['photos', targetDrive?.alias, '', tag],
           });
           queryClient.invalidateQueries({
-            queryKey: ['photos-infinite', targetDrive?.alias, undefined, tag],
+            queryKey: ['photos-infinite', targetDrive?.alias, '', tag],
           });
+          invalidateAlbumCover(tag);
         });
 
         if (variables.removeTags.includes(PhotoConfig.FavoriteTag)) {

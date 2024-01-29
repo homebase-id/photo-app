@@ -193,7 +193,7 @@ const PhotoSelection = ({
               type="secondary"
               onClick={() => favoriteSelection()}
             />
-            {albums && !albumKey ? (
+            {albums && albums?.length && !albumKey ? (
               <ActionButtonWithOptions
                 type="secondary"
                 options={albums.map((album) => {

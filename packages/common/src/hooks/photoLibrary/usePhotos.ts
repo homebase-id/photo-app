@@ -100,7 +100,7 @@ export const usePhotosByMonth = ({
       initialPageParam: undefined as string | undefined,
       getNextPageParam: (lastPage) =>
         lastPage?.results?.length >= PAGE_SIZE ? lastPage?.cursorState : undefined,
-      refetchOnMount: false,
+      // refetchOnMount: false,
       enabled: !!targetDrive && !!date,
       staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
     }),
@@ -246,7 +246,7 @@ export const usePhotosInfinte = ({
       queryKey: [
         'photos-infinite',
         targetDrive?.alias,
-        type,
+        type || '',
         album,
         startFromDate?.getTime(),
         direction,

@@ -12,7 +12,6 @@ import {
   usePhotosByMonth,
   PhotoMetaDay,
 } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
   year: 'numeric',
@@ -279,7 +278,9 @@ export const PhotoMonth = ({
 
   return (
     <div ref={wrapperRef}>
-      {monthMeta.photosThisMonth >= 1 ? <h1 className="text-2xl">{title}</h1> : null}
+      {/* {monthMeta.photosThisMonth >= 1 ?  */}
+      <h1 className="text-2xl">{title}</h1>
+      {/* : null} */}
 
       {photosFetched ? (
         days.map((day, index) => {

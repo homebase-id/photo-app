@@ -9,7 +9,6 @@ import {
   useFlatPhotosByMonth,
   usePhotosInfinte,
 } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
@@ -153,7 +152,6 @@ const PhotoAlbumPreview = ({
     targetDrive,
     album: albumKey,
     type,
-    direction: 'newer',
   }).fetchPhotos;
 
   const flatPhotos = photos?.pages.flatMap((page) => page.results) || [];
