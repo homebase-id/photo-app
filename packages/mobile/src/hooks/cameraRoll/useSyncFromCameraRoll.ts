@@ -10,6 +10,7 @@ import { hasAndroidPermission } from './permissionHelper';
 
 const ONE_MINUTE = 60000;
 const FIVE_MINUTES = ONE_MINUTE * 5;
+const BATCH_SIZE = 50;
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -36,7 +37,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
-      first: 50,
+      first: BATCH_SIZE,
       // fromTime: 1695664801015,
       fromTime: fromTime,
       after: cursor,
@@ -79,14 +80,18 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
     setCursor(photos.page_info.end_cursor);
     const hasMoreWork = photos.page_info.has_next_page;
-    if (!hasMoreWork) setLastCameraRollSyncTime(new Date().getTime().toString());
+
+    if (!hasMoreWork) {
+      setLastCameraRollSyncTime(new Date().getTime().toString());
+      console.log('set new time', new Date().getTime().toString());
+    }
 
     return hasMoreWork;
   };
 
   const getWhatsPending = async () => {
     const photos = await CameraRoll.getPhotos({
-      first: 50,
+      first: BATCH_SIZE,
       fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
       after: cursor,
     });
@@ -105,10 +110,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
     isFetching.current = true;
 
-    console.log(
-      'Syncing.. The camera roll from:',
-      lastCameraRollSyncTimeAsInt || new Date().getTime()
-    );
+    console.log('Syncing.. The camera roll from:', fromTime);
     while (await fetchAndUpload()) {}
 
     isFetching.current = false;
