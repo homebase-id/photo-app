@@ -171,13 +171,10 @@ const uploadNewVideo = async (
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ) => {
-  const { imageUniqueId } = {
-    imageUniqueId:
-      newVideo.id || newVideo.filename
-        ? toGuidId((newVideo.id || newVideo.filename) as string)
-        : undefined,
-  };
-
+  const imageUniqueId =
+    newVideo.id || newVideo.filename
+      ? toGuidId((newVideo.id || newVideo.filename) as string)
+      : undefined;
   const userDate = newVideo.date || meta?.userDate || new Date().getTime();
 
   const existingImages = imageUniqueId

@@ -56,7 +56,8 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
     } else if (meta?.archivalStatus === 1) {
       type = 'archive';
     }
-    addDayToLibrary({ type, date: uploadResult.userDate });
+
+    await addDayToLibrary({ type, date: uploadResult.userDate });
 
     return { ...uploadResult, type };
   };
@@ -104,15 +105,13 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
         });
 
         // Invalidate fetchByMonth
-        //['photos', targetDrive?.alias, type, date && `${date.getFullYear()}-${date.getMonth()}`]
         queryClient.invalidateQueries({
           queryKey: [
             'photos',
             targetDrive?.alias,
-            data?.type,
+            data?.type || '',
             data?.userDate && `${data?.userDate.getFullYear()}-${data?.userDate.getMonth()}`,
           ],
-          exact: false,
         });
       },
       onError: (error, variables) => {

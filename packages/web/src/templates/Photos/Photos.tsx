@@ -13,7 +13,7 @@ import PhotoSelection from '../../components/Photos/PhotoSelection/PhotoSelectio
 import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/ErrorNotification';
 import PhotoAlbum from '../../components/Photos/PhotoAlbum/PhotoAlbum';
 import AlbumIcon from '../../components/ui/Icons/Album/Album';
-import { useAlbum, useAlbums, usePhotoSelection } from 'photo-app-common';
+import { useAlbum, usePhotoSelection } from 'photo-app-common';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 

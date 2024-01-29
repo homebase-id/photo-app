@@ -29,6 +29,7 @@ export const drives = [
 ];
 export const appName = 'Homebase - Photos';
 export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
+export const corsHost = 'photos.homebase.id';
 
 // Adapted to work in react-native; With no fallbacks to web support; If we someday merge this with the web version, we should add the fallbacks
 const useAuth = () => {
@@ -49,10 +50,11 @@ const useAuth = () => {
   const queryClient = useQueryClient();
 
   const getDotYouClient = useCallback(() => {
-    if (!sharedSecret || !identity)
+    if (!sharedSecret || !identity) {
       return new DotYouClient({
         api: ApiType.App,
       });
+    }
 
     const headers: Record<string, string> = {};
     if (authToken) headers.bx0900 = authToken;
@@ -95,8 +97,9 @@ const useAuth = () => {
   }, [identity, sharedSecret, hasValidToken, isFetchedAfterMount, logout]);
 
   useEffect(() => {
-    if (authenticationState === 'authenticated' && !sharedSecret)
+    if (authenticationState === 'authenticated' && !sharedSecret) {
       setAuthenticationState('anonymous');
+    }
   }, [sharedSecret, authenticationState]);
 
   return {
@@ -135,7 +138,7 @@ export const useYouAuthAuthorization = () => {
       drives,
       undefined,
       uint8ArrayToBase64(stringToUint8Array(JSON.stringify(publicKeyJwk))),
-      'photos.homebase.id',
+      corsHost,
       `${Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : Platform.OS} | ${
         Platform.Version
       }`

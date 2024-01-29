@@ -86,7 +86,7 @@ export const usePhotosByMonth = ({
       queryKey: [
         'photos',
         targetDrive?.alias,
-        type,
+        type || '',
         date && `${date.getFullYear()}-${date.getMonth()}`,
       ],
       queryFn: async ({ pageParam }) =>
@@ -106,7 +106,7 @@ export const usePhotosByMonth = ({
     }),
     invalidateQueries: (type?: 'archive' | 'bin' | 'apps' | 'favorites') => {
       queryClient.invalidateQueries({
-        queryKey: ['photos', PhotoConfig.PhotoDrive.alias, type],
+        queryKey: ['photos', PhotoConfig.PhotoDrive.alias, type || ''],
         exact: false,
       });
     },
@@ -160,7 +160,7 @@ export const useFlatPhotosByMonth = ({
           queryKey: [
             'photos',
             targetDrive?.alias,
-            type,
+            type || '',
             dateParam && `${dateParam.getFullYear()}-${dateParam.getMonth()}`,
           ],
           initialPageParam: undefined as string | undefined,
