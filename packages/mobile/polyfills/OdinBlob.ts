@@ -23,6 +23,7 @@ type BlobOptions = any;
  */
 import { base64ToUint8Array, getNewId, uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 import { Dirs, FileSystem } from 'react-native-file-access';
+// import RNFS from 'react-native-fs';
 
 class Blob {
   _data: BlobData;
@@ -110,7 +111,7 @@ class Blob {
   }
 
   arrayBuffer(): Promise<ArrayBuffer> {
-    const writePromise = new Promise<void>((resolve, reject) => {
+    const writePromise = new Promise<void>((resolve) => {
       const interval = setInterval(async () => {
         if (this.written) {
           clearInterval(interval);
@@ -131,6 +132,44 @@ class Blob {
         })
     );
   }
+
+  // stream() {
+  //   const position = 0;
+  //   const chunkSize = 524288;
+
+  //   return new ReadableStream({
+  //     type: 'bytes',
+  //     autoAllocateChunkSize: chunkSize,
+
+  //     start: async () => {
+  //       return new Promise<void>((resolve) => {
+  //         const interval = setInterval(async () => {
+  //           if (this.written) {
+  //             clearInterval(interval);
+  //             resolve();
+  //           }
+  //         }, 100);
+  //       });
+  //     },
+
+  //     pull: async (controller) => {
+  //       if (!this.uri || !this.written) {
+  //         throw new Error('Blob has not been written to disk yet');
+  //       }
+
+  //       const chunk = await RNFS.read(this.uri, chunkSize, position).then((base64) =>
+  //         base64ToUint8Array(base64)
+  //       );
+
+  //       position += chunk.byteLength;
+  //       controller.enqueue(chunk);
+
+  //       if (position >= this.size) {
+  //         controller.close();
+  //       }
+  //     },
+  //   });
+  // }
 
   // arrayBuffer(): Promise<ArrayBuffer> {
   //   console.log('arrayBuffer', this.uri);
