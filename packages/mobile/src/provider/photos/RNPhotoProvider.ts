@@ -12,7 +12,7 @@ import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 import Exif from 'react-native-exif';
 import { getPhotoByUniqueId } from 'photo-app-common';
 import { uploadVideo } from '../Image/RNVideoProvider';
-import { processVideo } from '../Image/RNVideoProviderSegmenter';
+import { grabThumbnail, processVideo } from '../Image/RNVideoProviderSegmenter';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -190,6 +190,14 @@ const uploadNewVideo = async (
   // Segment video file
   const { video: processedMedia, metadata } = await processVideo(newVideo);
 
+  const thumbnail = await grabThumbnail(newVideo);
+  const thumbSource: ImageSource = {
+    uri: thumbnail.uri,
+    width: 1920,
+    height: 1080,
+    type: thumbnail.type,
+  };
+
   return {
     ...(await uploadVideo(
       dotYouClient,
@@ -203,7 +211,10 @@ const uploadNewVideo = async (
         tag: albumKey ? [albumKey] : undefined,
         userDate: userDate,
         uniqueId: imageUniqueId,
-        // thumb: thumb,
+        thumb: {
+          payload: thumbSource,
+          type: thumbnail.type as ImageContentType,
+        },
       }
     )),
     userDate: new Date(userDate),

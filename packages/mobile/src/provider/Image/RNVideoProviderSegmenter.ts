@@ -9,6 +9,7 @@ import RNFS from 'react-native-fs';
 import MP4Box from 'mp4box';
 import { FFmpegKit, SessionState } from 'ffmpeg-kit-react-native';
 import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
+import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 const CompressVideo = async (video: ImageSource): Promise<ImageSource> => {
   const source = video.filepath || video.uri;
@@ -79,6 +80,54 @@ const FragmentVideo = async (video: ImageSource) => {
       uri: destinationUri,
       filepath: destinationUri,
     };
+  } catch (error) {
+    throw new Error(`FFmpeg process failed with error: ${error}`);
+  }
+};
+
+export const grabThumbnail = async (video: ImageSource) => {
+  const source = video.filepath || video.uri;
+
+  if (!source || !(await FileSystem.exists(source))) {
+    throw new Error(`File not found: ${source}`);
+  }
+
+  const dirPath = Dirs.CacheDir;
+  const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
+
+  const newId = getNewId();
+
+  const commandFileName = `thumb%04d-${newId}.png`;
+  const commandDestinationUri = `${destinationPrefix}${dirPath}/${commandFileName}`;
+
+  const resultFileName = `thumb0001-${newId}.png`;
+  const destinationUri = `${destinationPrefix}${dirPath}/${resultFileName}`;
+
+  // MDN docs (https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#fragmenting)
+  // FFMPEG fragmenting: https://ffmpeg.org/ffmpeg-formats.html#Fragmentation
+  const command = `-i ${source} -frames:v 1 ${commandDestinationUri}`;
+
+  try {
+    const session = await FFmpegKit.execute(command);
+    const state = await session.getState();
+    const returnCode = await session.getReturnCode();
+    // const failStackTrace = await session.getFailStackTrace();
+    // const output = await session.getOutput();
+
+    if (state === SessionState.FAILED || !returnCode.isValueSuccess()) {
+      throw new Error(`FFmpeg process failed with state: ${state} and rc: ${returnCode}.`);
+    }
+
+    const thumbBlob = new OdinBlob(destinationUri, { type: 'image/png' });
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(async () => {
+        if (thumbBlob.written) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    });
+    return thumbBlob;
   } catch (error) {
     throw new Error(`FFmpeg process failed with error: ${error}`);
   }

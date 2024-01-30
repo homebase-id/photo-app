@@ -79,8 +79,9 @@ export const createThumbnails = async (
   const applicableThumbSizes = (thumbSizes || baseThumbSizes).reduce((currArray, thumbSize) => {
     if (tinyThumb.payload.type === svgType) return currArray;
 
-    if (naturalSize.pixelWidth < thumbSize.width && naturalSize.pixelHeight < thumbSize.height)
+    if (naturalSize.pixelWidth < thumbSize.width && naturalSize.pixelHeight < thumbSize.height) {
       return currArray;
+    }
 
     return [...currArray, thumbSize];
   }, [] as ThumbnailInstruction[]);
@@ -88,13 +89,14 @@ export const createThumbnails = async (
   if (
     applicableThumbSizes.length !== (thumbSizes || baseThumbSizes).length &&
     !applicableThumbSizes.some((thumbSize) => thumbSize.width === naturalSize.pixelWidth)
-  )
+  ) {
     // Source image is too small for some of the requested sizes so we add the source dimensions as exact size
     applicableThumbSizes.push({
       quality: 100,
       width: naturalSize.pixelWidth,
       height: naturalSize.pixelHeight,
     });
+  }
 
   // Create additionalThumbnails
   const additionalThumbnails: ThumbnailFile[] = [
