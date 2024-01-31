@@ -124,6 +124,7 @@ const PhotoAlbum = ({
             }}
           >
             <PhotoItem
+              type="photos"
               targetDrive={targetDrive}
               photoDsr={item.item}
               album={albumKey}

@@ -40,6 +40,7 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
         isSelecting={isSelecting}
       />
       <PhotoSelection
+        type="photos"
         albumKey={albumId}
         isSelecting={isSelecting}
         selection={selection}
