@@ -159,7 +159,7 @@ class Blob {
     );
 
     if (encryptStatus === 1) {
-      return new Blob(destinationUri);
+      return new Blob(destinationUri, { type: this.data.type });
     } else {
       throw new Error('Failed to encrypt blob, with native encryption');
     }
