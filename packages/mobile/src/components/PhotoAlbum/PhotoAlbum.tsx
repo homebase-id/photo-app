@@ -38,6 +38,7 @@ const PhotoAlbum = ({
   } = usePhotosInfinte({
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
+    type: 'photos',
   }).fetchPhotos;
   const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 
@@ -98,10 +99,11 @@ const PhotoAlbum = ({
 
   if (!flatPhotos) return null;
 
-  if (!flatPhotos?.length)
+  if (!flatPhotos?.length) {
     return (
       <Text style={{ padding: 5 }}>{'Mmh, this looks empty... Time to add some photos?'}</Text>
     );
+  }
 
   return (
     <View

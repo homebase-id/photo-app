@@ -1,5 +1,5 @@
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View, Dimensions, TouchableHighlight } from 'react-native';
 import { Text } from '../../ui/Text/Text';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';

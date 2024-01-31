@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, FlatList, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoDay } from '../Photos/PhotoDay/PhotoDay';
@@ -74,7 +74,9 @@ const PhotoLibrary = ({
     targetDrive: targetDrive,
     type,
   }).fetchLibrary;
-  const invalidatePhotos = usePhotosByMonth({}).invalidateQueries;
+  const invalidatePhotos = usePhotosByMonth({
+    type: 'photos',
+  }).invalidateQueries;
 
   const [refreshing, setRefreshing] = useState(false);
   const doRefresh = async () => {

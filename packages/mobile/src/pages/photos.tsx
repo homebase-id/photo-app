@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { TabStackParamList } from '../app/App';
 import PhotoLibrary from '../components/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
@@ -27,11 +27,13 @@ const PhotosPage = (_props: PhotosProps) => {
         selectRange={selectRange}
         isSelected={isSelected}
         isSelecting={isSelecting}
+        type="photos"
       />
       <PhotoSelection
         isSelecting={isSelecting}
         selection={selection}
         clearSelection={clearSelection}
+        type="photos"
       />
     </SafeAreaView>
   );

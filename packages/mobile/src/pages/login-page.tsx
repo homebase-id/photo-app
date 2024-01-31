@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   View,
@@ -229,12 +229,12 @@ const LoginComponent = () => {
                 {
                   text: 'Homebase.id',
                   onPress: async () => {
-                    if (await InAppBrowser.isAvailable())
+                    if (await InAppBrowser.isAvailable()) {
                       await InAppBrowser.open('https://homebase.id', {
                         enableUrlBarHiding: false,
                         enableDefaultShare: false,
                       });
-                    else Linking.openURL('https://homebase.id');
+                    } else Linking.openURL('https://homebase.id');
                   },
                 },
                 {
@@ -246,7 +246,7 @@ const LoginComponent = () => {
             );
           }}
         >
-          <Text style={{ textDecorationLine: 'underline' }}>Don't have an account?</Text>
+          <Text style={{ textDecorationLine: 'underline' }}>Don&apos;t have an account?</Text>
         </TouchableOpacity>
       </View>
     </>

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { Colors } from '../../../app/Colors';
 import { Text, TextProps } from 'react-native';

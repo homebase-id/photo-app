@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Text } from '../components/ui/Text/Text';
 import { RootStackParamList } from '../app/App';
 import PhotoAlbum from '../components/PhotoAlbum/PhotoAlbum';

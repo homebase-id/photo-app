@@ -20,6 +20,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
+    type: 'photos',
   }).addDay;
 
   const isFetching = useRef<boolean>(false);
@@ -70,7 +71,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
           date: fileData.node.timestamp ? fileData.node.timestamp * 1000 : undefined,
         });
 
-        await addDayToLibrary({ date: uploadResult.userDate });
+        await addDayToLibrary({ date: uploadResult.userDate, type: 'photos' });
       }
     } catch (e) {
       console.error('failed to sync', e);

@@ -24,7 +24,7 @@ const OfflineMessage = () => {
         zIndex: 100,
       }}
     >
-      <Text style={{ fontWeight: '600' }}>You're offline</Text>
+      <Text style={{ fontWeight: '600' }}>You&apos;re offline</Text>
       <Text>, experience will be limited</Text>
       <TouchableOpacity
         onPress={() => setIsDismissed(true)}

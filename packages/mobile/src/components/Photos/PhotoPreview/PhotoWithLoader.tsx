@@ -1,5 +1,5 @@
 import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import ImageZoom from 'react-native-image-pan-zoom';
 import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
 import useImage from '../../../hooks/image/useImage';

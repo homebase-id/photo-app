@@ -5,14 +5,13 @@ import { Platform } from 'react-native';
 
 export const useOnlineManager = () => {
   React.useEffect(() => {
-    if (Platform.OS !== 'web')
-      return NetInfo.addEventListener(state => {
+    if (Platform.OS !== 'web') {
+      return NetInfo.addEventListener((state) => {
         const status =
-          state.isConnected != null &&
-          state.isConnected &&
-          Boolean(state.isInternetReachable);
+          state.isConnected != null && state.isConnected && Boolean(state.isInternetReachable);
 
         onlineManager.setOnline(status);
       });
+    }
   }, []);
 };

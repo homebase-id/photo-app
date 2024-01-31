@@ -1,5 +1,5 @@
 import { EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
-import React, { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { OdinImage } from './PhotoWithLoader';
 import { Colors } from '../../../app/Colors';

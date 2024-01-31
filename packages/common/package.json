@@ -10,9 +10,6 @@
   "module": "./index.ts",
   "types": "./index.ts",
   "sideEffects": false,
-  "scripts": {
-    "lint": "eslint src/*"
-  },
   "dependencies": {
     "@youfoundation/js-lib": "*"
   },

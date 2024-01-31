@@ -3,7 +3,7 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ReactNode, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { ReactNode, useLayoutEffect, useMemo, useRef } from 'react';
 import { Text, View } from 'react-native';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { Colors } from '../../../app/Colors';

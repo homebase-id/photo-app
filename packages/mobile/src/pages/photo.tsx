@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { PhotoWithLoader } from '../components/Photos/PhotoPreview/PhotoWithLoader';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
@@ -23,7 +23,6 @@ import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoad
 import { useDarkMode } from '../hooks/useDarkMode';
 import { InfoIcon } from '../components/ui/Icons/icons';
 import { PhotoConfig, useAlbum, useFileHeader, usePhotosInfinte } from 'photo-app-common';
-import useAuth from '../hooks/auth/useAuth';
 
 type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
@@ -72,6 +71,7 @@ const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPr
     hasNextPage: hasOlderPage,
     isFetched: hasFetchedOlderPhotos,
   } = usePhotosInfinte({
+    type: 'photos',
     targetDrive,
     album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
     startFromDate: currentDate,
@@ -90,6 +90,7 @@ const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPr
     startFromDate: currentDate,
     disabled: !currentDate && !isAlbumView && !album,
     direction: 'newer',
+    type: 'photos',
   }).fetchPhotos;
 
   const flatNewerPhotos = newerPhotos?.pages.flatMap((page) => page.results) || [];

@@ -1,5 +1,5 @@
 import { debounce } from 'lodash-es';
-import React, { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { Platform, TouchableOpacity, View } from 'react-native';

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { SafeAreaView, View, Button, StyleSheet, ScrollView, Text, Platform } from 'react-native';
 import { ImageLibraryOptions, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
