@@ -4,6 +4,7 @@ import { PhotoActions } from './PhotoActions';
 import { DriveSearchResult } from '@youfoundation/js-lib/core';
 import PhotoPreviewSlider from './PhotoPreviewSlider';
 import {
+  LibraryType,
   PhotoConfig,
   useFileHeader,
   useFlatPhotosByMonth,
@@ -14,7 +15,7 @@ const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
   fileId: string;
   albumKey?: string;
-  type?: 'archive' | 'apps' | 'bin' | 'favorites';
+  type: LibraryType;
   urlPrefix?: string;
 }) => {
   const { data: fileHeader } = useFileHeader({
@@ -36,7 +37,7 @@ const PhotoLibPreview = ({
   dsr?: DriveSearchResult;
   fileId: string;
   albumKey?: string;
-  type?: 'archive' | 'apps' | 'bin' | 'favorites';
+  type: LibraryType;
   urlPrefix?: string;
 }) => {
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
@@ -130,7 +131,7 @@ const PhotoAlbumPreview = ({
   dsr?: DriveSearchResult;
   fileId: string;
   albumKey?: string;
-  type?: 'archive' | 'apps' | 'bin' | 'favorites';
+  type: LibraryType;
   urlPrefix?: string;
 }) => {
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');

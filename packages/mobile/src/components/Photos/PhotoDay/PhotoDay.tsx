@@ -9,6 +9,7 @@ import { Container } from '../../ui/Container/Container';
 import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
 import { Colors } from '../../../app/Colors';
 import { useDarkMode } from '../../../hooks/useDarkMode';
+import { LibraryType } from 'photo-app-common';
 
 const mobileDateFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -39,7 +40,7 @@ export const PhotoDay = ({
   photos?: DriveSearchResult[];
 
   targetDrive: TargetDrive;
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;
@@ -111,7 +112,7 @@ export const PhotoItem = ({
   targetDrive: TargetDrive;
   photoDsr: DriveSearchResult;
   album?: string;
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;

@@ -11,6 +11,7 @@ import {
   createDateObject,
   usePhotosByMonth,
   PhotoMetaDay,
+  LibraryType,
 } from 'photo-app-common';
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -29,7 +30,7 @@ const PhotoLibrary = ({
   isSelecting,
   setFileSelectorOpen,
 }: {
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   toggleSelection: (fileId: string) => void;
   selectRange: (fileIds: string[]) => void;
   isSelected: (fileId: string) => boolean;
@@ -202,7 +203,7 @@ export const PhotoMonth = ({
     photosThisMonth: number;
     year: number;
   };
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;

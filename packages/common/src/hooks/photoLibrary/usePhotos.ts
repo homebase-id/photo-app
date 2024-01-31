@@ -9,7 +9,7 @@ import { createDateObject, getPhotos } from '../../provider/photos/PhotoProvider
 import { useFlatMonthsFromMeta } from './usePhotoLibraryRange';
 import { useRef } from 'react';
 import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
-import { PhotoConfig } from '../../provider';
+import { LibraryType, PhotoConfig } from '../../provider';
 import { useDotYouClientContext } from '../auth/useDotYouClientContext';
 
 export type useInfintePhotosReturn = {
@@ -34,7 +34,7 @@ export const fetchPhotosByMonth = async ({
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   date: Date;
   cursorState?: string;
 }): Promise<useInfintePhotosReturn> => {
@@ -62,7 +62,7 @@ const fetchPhotosByCursor = async ({
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   album?: string;
   cursorState?: string;
   direction?: 'older' | 'newer';
@@ -76,7 +76,7 @@ export const usePhotosByMonth = ({
   date,
 }: {
   targetDrive?: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   date?: Date;
 }) => {
   const dotYouClient = useDotYouClientContext();
@@ -86,7 +86,7 @@ export const usePhotosByMonth = ({
       queryKey: [
         'photos',
         targetDrive?.alias,
-        type || '',
+        type,
         date && `${date.getFullYear()}-${date.getMonth()}`,
       ],
       queryFn: async ({ pageParam }) =>
@@ -104,9 +104,9 @@ export const usePhotosByMonth = ({
       enabled: !!targetDrive && !!date,
       staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
     }),
-    invalidateQueries: (type?: 'archive' | 'bin' | 'apps' | 'favorites') => {
+    invalidateQueries: (type: LibraryType) => {
       queryClient.invalidateQueries({
-        queryKey: ['photos', PhotoConfig.PhotoDrive.alias, type || ''],
+        queryKey: ['photos', PhotoConfig.PhotoDrive.alias, type],
         exact: false,
       });
     },
@@ -119,7 +119,7 @@ export const useFlatPhotosByMonth = ({
   date,
 }: {
   targetDrive: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   date?: Date;
 }) => {
   const dotYouClient = useDotYouClientContext();
@@ -160,7 +160,7 @@ export const useFlatPhotosByMonth = ({
           queryKey: [
             'photos',
             targetDrive?.alias,
-            type || '',
+            type,
             dateParam && `${dateParam.getFullYear()}-${dateParam.getMonth()}`,
           ],
           initialPageParam: undefined as string | undefined,
@@ -229,7 +229,7 @@ export const usePhotosInfinte = ({
 }: {
   targetDrive?: TargetDrive;
   album?: string;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   startFromDate?: Date;
   direction?: 'older' | 'newer';
   disabled?: boolean;
@@ -246,7 +246,7 @@ export const usePhotosInfinte = ({
       queryKey: [
         'photos-infinite',
         targetDrive?.alias,
-        type || '',
+        type,
         album,
         startFromDate?.getTime(),
         direction,
@@ -268,7 +268,7 @@ export const usePhotosInfinte = ({
 
       staleTime: 1000 * 60 * 10, //10min
     }),
-    invalidatePhotosInfinite: (album?: string, type?: 'archive' | 'bin' | 'apps') => {
+    invalidatePhotosInfinite: (album: string | undefined, type: LibraryType) => {
       const queryKey = ['photos-infinite', targetDrive?.alias, type];
       if (album) queryKey.push(album);
 

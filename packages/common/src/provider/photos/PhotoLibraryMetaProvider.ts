@@ -10,14 +10,14 @@ import {
   queryModified,
   uploadFile,
 } from '@youfoundation/js-lib/core';
-import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear } from './PhotoTypes';
+import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear, LibraryType } from './PhotoTypes';
 import { getRandom16ByteArray, jsonStringify64 } from '@youfoundation/js-lib/helpers';
 
 const encryptPhotoLibrary = true;
 
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
-  type?: 'bin' | 'archive' | 'apps' | 'favorites',
+  type: LibraryType,
   lastCursor?: number
 ): Promise<PhotoLibraryMetadata | null> => {
   const archivalStatus: ArchivalStatus[] =
@@ -27,7 +27,7 @@ export const getPhotoLibrary = async (
       ? [1]
       : type === 'apps'
       ? [3]
-      : type
+      : type === 'favorites'
       ? [0, 1, 3]
       : [0];
 
@@ -102,7 +102,7 @@ const dsrToPhotoLibraryMetadata = async (
 export const savePhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   def: PhotoLibraryMetadata,
-  type?: 'archive' | 'bin' | 'apps' | 'favorites',
+  type: LibraryType,
   onVersionConflict?: () => void
 ) => {
   const archivalStatus: ArchivalStatus =

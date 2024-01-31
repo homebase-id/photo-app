@@ -43,11 +43,13 @@ const PhotosFavorites = () => {
         selection={selection}
         clearSelection={clearSelection}
         albumKey={PhotoConfig.FavoriteTag}
+        type="photos"
       />
       <Uploader
         isFileSelectorOpen={isFileSelectorOpen}
         setFileSelectorOpen={setFileSelectorOpen}
         albumKey={PhotoConfig.FavoriteTag}
+        type="photos"
       />
       <PhotoLibrary
         toggleSelection={toggleSelection}

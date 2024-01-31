@@ -14,6 +14,7 @@ import {
   FileLike,
   getPhotoMetadata,
   useDotYouClientContext,
+  LibraryType,
 } from 'photo-app-common';
 import { uploadNew } from '../../provider/photos/WebPhotoProvider';
 
@@ -24,6 +25,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
+    type: 'photos',
   }).addDay;
 
   const uploadNewMedia = async ({
@@ -47,10 +49,10 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
       meta
     );
 
-    let type: 'favorites' | 'apps' | 'archive' | undefined;
+    let type: LibraryType = 'photos';
     // Cache updates happen here as they need the context and correct point in time;
     if (uploadResult?.userDate && !meta?.archivalStatus) {
-      type = albumKey === PhotoConfig.FavoriteTag ? 'favorites' : undefined;
+      type = albumKey === PhotoConfig.FavoriteTag ? 'favorites' : type;
     } else if (meta?.archivalStatus === 3) {
       type = 'apps';
     } else if (meta?.archivalStatus === 1) {
@@ -109,7 +111,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
           queryKey: [
             'photos',
             targetDrive?.alias,
-            data?.type || '',
+            data?.type,
             data?.userDate && `${data?.userDate.getFullYear()}-${data?.userDate.getMonth()}`,
           ],
         });

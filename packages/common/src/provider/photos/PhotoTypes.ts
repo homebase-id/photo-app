@@ -51,6 +51,8 @@ export interface PhotoMetaDay {
   photosThisDay: number;
 }
 
+export type LibraryType = 'bin' | 'archive' | 'apps' | 'favorites' | 'photos';
+
 export interface PhotoLibraryMetadata {
   fileId?: string;
   versionTag?: string;

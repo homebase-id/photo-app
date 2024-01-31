@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -31,6 +31,7 @@ import { useDarkMode } from '../hooks/useDarkMode';
 import useAuth from '../hooks/auth/useAuth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
+import { LibraryType } from 'photo-app-common';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -48,10 +49,10 @@ export type RootStackParamList = {
   PhotoPreview: {
     photoId: string;
     albumId?: string;
-    typeId?: 'archive' | 'apps' | 'bin' | 'favorites';
+    typeId: LibraryType;
   };
   Album: { albumId: string };
-  Type: { typeId: 'archive' | 'apps' | 'bin' | 'favorites' };
+  Type: { typeId: LibraryType };
 };
 
 const queryClient = new QueryClient({

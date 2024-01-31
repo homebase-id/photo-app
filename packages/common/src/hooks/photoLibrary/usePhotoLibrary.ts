@@ -1,7 +1,7 @@
 import { DotYouClient, TargetDrive, UploadResult } from '@youfoundation/js-lib/core';
 import { getPhotos } from '../../provider/photos/PhotoProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
+import { LibraryType, PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
 import {
   addDay,
   buildMetaStructure,
@@ -22,7 +22,7 @@ const rebuildLibrary = async ({
 }: {
   dotYouClient: DotYouClient;
   targetDrive: TargetDrive;
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
 }) => {
   const allPhotos = (await getPhotos(dotYouClient, targetDrive, type, undefined, 1200, undefined))
     .results;
@@ -42,15 +42,13 @@ export const usePhotoLibrary = ({
   disabled,
 }: {
   targetDrive?: TargetDrive;
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   disabled?: boolean;
 }) => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const fetch = async (
-    type: 'archive' | 'bin' | 'apps' | 'favorites' | undefined
-  ): Promise<PhotoLibraryMetadata | null> => {
+  const fetch = async (type: LibraryType): Promise<PhotoLibraryMetadata | null> => {
     if (!dotYouClient || !targetDrive) return null;
     // Get meta file from client
     const photoLibOnClient = queryClient.getQueryData<PhotoLibraryMetadata>([
@@ -102,7 +100,7 @@ export const usePhotoLibrary = ({
 
       await Promise.all(
         libQueries.map(async (query) => {
-          const type = query.queryKey[2] as 'archive' | 'apps' | 'bin' | undefined; // Can be undefined if it's the root library
+          const type = query.queryKey[2] as LibraryType; // Can be undefined if it's the root library
           const libToSave = queryClient.getQueryData<PhotoLibraryMetadata>(query.queryKey);
           if (!libToSave) return;
 
@@ -162,7 +160,7 @@ export const usePhotoLibrary = ({
     date,
     newCount,
   }: {
-    type?: 'archive' | 'bin' | 'apps' | 'favorites';
+    type: LibraryType;
     date: Date;
     newCount: number;
   }) => {
@@ -187,13 +185,7 @@ export const usePhotoLibrary = ({
     debouncedSaveOfLibs();
   };
 
-  const saveNewDay = async ({
-    type,
-    date,
-  }: {
-    type?: 'archive' | 'bin' | 'apps' | 'favorites';
-    date: Date;
-  }) => {
+  const saveNewDay = async ({ type, date }: { type: LibraryType; date: Date }) => {
     const photoLibOnClient =
       queryClient.getQueryData<PhotoLibraryMetadata>(['photo-library', targetDrive?.alias, type]) ||
       (await getPhotoLibrary(dotYouClient, type));

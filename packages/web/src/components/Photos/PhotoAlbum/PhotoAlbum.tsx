@@ -32,6 +32,7 @@ const PhotoAlbum = ({
   } = usePhotosInfinte({
     targetDrive: PhotoConfig.PhotoDrive,
     album: albumKey,
+    type: 'photos',
   }).fetchPhotos;
   const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 

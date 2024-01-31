@@ -11,8 +11,8 @@ import {
   PhotoConfig,
   createDateObject,
   PhotoMetaDay,
+  LibraryType,
 } from 'photo-app-common';
-import useAuth from '../../hooks/auth/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 
 const targetDrive = PhotoConfig.PhotoDrive;
@@ -33,7 +33,7 @@ const PhotoLibrary = ({
   isSelected,
   isSelecting,
 }: {
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   toggleSelection: (fileId: string) => void;
   selectRange: (fileIds: string[]) => void;
   isSelected: (fileId: string) => boolean;
@@ -135,7 +135,7 @@ export const PhotoMonth = ({
     photosThisMonth: number;
     year: number;
   };
-  type?: 'bin' | 'archive' | 'apps' | 'favorites';
+  type: LibraryType;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;

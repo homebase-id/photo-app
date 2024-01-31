@@ -79,11 +79,13 @@ const Photos = () => {
         selection={selection}
         clearSelection={clearSelection}
         albumKey={albumKey}
+        type="photos"
       />
       <Uploader
         isFileSelectorOpen={isFileSelectorOpen}
         setFileSelectorOpen={setFileSelectorOpen}
         albumKey={albumKey}
+        type="photos"
       />
       {albumKey ? (
         <PhotoAlbum
@@ -101,11 +103,12 @@ const Photos = () => {
           setFileSelectorOpen={setFileSelectorOpen}
           isSelected={isSelected}
           isSelecting={isSelecting}
+          type="photos"
         />
       )}
       {photoKey ? (
         <Suspense>
-          <PhotoPreview fileId={photoKey} albumKey={albumKey} />
+          <PhotoPreview fileId={photoKey} albumKey={albumKey} type="photos" />
         </Suspense>
       ) : null}
       {albumKey === 'new' ? (

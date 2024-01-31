@@ -17,6 +17,7 @@ export const useSiblingsRangeInfinte = ({
   const { data: photos } = usePhotosInfinte({
     targetDrive: targetDrive,
     album: album,
+    type: 'photos',
   }).fetchPhotos;
 
   const getRange = async () => {

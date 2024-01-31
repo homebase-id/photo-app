@@ -7,6 +7,7 @@ import { createDateObject } from '../../provider/photos/PhotoProvider';
 import { DotYouClient } from '@youfoundation/js-lib/core';
 import { useFileHeader } from './usePhotoHeader';
 import { useDotYouClientContext } from '../auth/useDotYouClientContext';
+import { LibraryType } from '../../provider';
 
 const useCurrentPhoto = ({
   targetDrive,
@@ -14,7 +15,7 @@ const useCurrentPhoto = ({
   photoFileId,
 }: {
   targetDrive: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   photoFileId?: string;
 }) => {
   const dotYouClient = useDotYouClientContext();
@@ -52,7 +53,7 @@ export const useFlatMonthsFromMeta = ({
   type,
 }: {
   targetDrive: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
 }) => {
   const { data: photoLibrary } = usePhotoLibrary({
     targetDrive,
@@ -79,7 +80,7 @@ export const useSiblingsRange = ({
   toFileId,
 }: {
   targetDrive: TargetDrive;
-  type?: 'archive' | 'bin' | 'apps' | 'favorites';
+  type: LibraryType;
   fromFileId?: string;
   toFileId?: string;
 }) => {

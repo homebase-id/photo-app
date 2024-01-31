@@ -1,4 +1,4 @@
-import { createDateObject, usePhotoLibrary, PhotoConfig } from 'photo-app-common';
+import { createDateObject, usePhotoLibrary, PhotoConfig, LibraryType } from 'photo-app-common';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
@@ -11,7 +11,7 @@ const PhotoScroll = ({
   onJumpInTime,
   onScroll,
 }: {
-  type?: 'bin' | 'archive' | 'apps' | 'favorites' | undefined;
+  type: LibraryType;
   onJumpInTime: (time: { year: number; month: number }) => void;
   onScroll?: (scrollPercentage: number) => void;
 }) => {

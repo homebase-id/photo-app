@@ -9,7 +9,7 @@ import Times from '../../ui/Icons/Times/Times';
 import Exclamation from '../../ui/Icons/Exclamation/Exclamation';
 import Check from '../../ui/Icons/Check/Check';
 import Loader from '../../ui/Icons/Loader/Loader';
-import { FileLike, PhotoConfig } from 'photo-app-common';
+import { FileLike, LibraryType, PhotoConfig } from 'photo-app-common';
 import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 
 const kiloBytes = 1024;
@@ -24,7 +24,7 @@ const Uploader = ({
   isFileSelectorOpen: boolean;
   setFileSelectorOpen: (isOpen: boolean) => void;
   albumKey?: string;
-  type?: 'archive' | 'apps';
+  type: LibraryType;
 }) => {
   const [failedFiles, setFailedFiles] = useState<(File | FileLike)[]>([]);
   const [uploadQueue, setUploadQueue] = useState<(File | FileLike)[]>([]);

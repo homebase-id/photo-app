@@ -11,8 +11,13 @@ import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import NewAlbumDialog from '../components/PhotoAlbum/NewAlbumDialog';
 import { useDarkMode } from '../hooks/useDarkMode';
-import { AlbumDefinition, PhotoConfig, useAlbumThumbnail, useAlbums } from 'photo-app-common';
-import useAuth from '../hooks/auth/useAuth';
+import {
+  AlbumDefinition,
+  LibraryType,
+  PhotoConfig,
+  useAlbumThumbnail,
+  useAlbums,
+} from 'photo-app-common';
 
 type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 
@@ -77,7 +82,7 @@ const TypeLink = ({
   icon,
 }: {
   children: string;
-  target: 'archive' | 'apps' | 'bin' | 'favorites';
+  target: LibraryType;
   icon?: React.ReactNode;
 }) => {
   const { isDarkMode } = useDarkMode();

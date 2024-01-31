@@ -8,7 +8,7 @@ import {
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
 import { updatePhoto } from '../../provider/photos/PhotoProvider';
-import { PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
+import { LibraryType, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
 import { useInfintePhotosReturn } from './usePhotos';
 import { usePhotoLibrary } from './usePhotoLibrary';
 import { useAlbumThumbnail } from './useAlbum';
@@ -23,6 +23,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     disabled: true,
+    type: 'photos',
   }).addDay;
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
@@ -128,7 +129,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
           .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach((query) => {
             const queryKey = query.queryKey;
-            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | 'apps' | 'favorites';
+            const libraryType = queryKey[2] as LibraryType;
             const queryData =
               queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
@@ -207,7 +208,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
           .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach((query) => {
             const queryKey = query.queryKey;
-            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | 'apps' | 'favorites';
+            const libraryType = queryKey[2] as LibraryType;
             const queryData =
               queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
@@ -253,7 +254,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
           .findAll({ queryKey: ['photos', targetDrive?.alias] })
           .forEach((query) => {
             const queryKey = query.queryKey;
-            const libraryType = queryKey[2] as undefined | 'bin' | 'archive' | string;
+            const libraryType = queryKey[2] as LibraryType;
             const queryData =
               queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey);
 
@@ -276,14 +277,14 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
       onSettled: (returnVal, _data) => {
         // Clear photo queries
         queryClient.invalidateQueries({
-          queryKey: ['photos', targetDrive?.alias, undefined],
+          queryKey: ['photos', targetDrive?.alias, 'photos'],
         });
         queryClient.invalidateQueries({
           queryKey: ['photos-infinite', targetDrive?.alias],
         });
 
         // Add day to the meta file
-        if (returnVal?.date) addDayToLibrary({ type: undefined, date: returnVal.date });
+        if (returnVal?.date) addDayToLibrary({ type: 'photos', date: returnVal.date });
       },
       onError: (ex) => {
         console.error(ex);

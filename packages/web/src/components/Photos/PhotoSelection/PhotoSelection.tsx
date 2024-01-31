@@ -5,7 +5,7 @@ import ActionButtonWithOptions from '../../ui/Buttons/ActionButtonWithOptions';
 import Archive from '../../ui/Icons/Archive/Archive';
 import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
-import { usePhoto, PhotoConfig, useAlbums } from 'photo-app-common';
+import { usePhoto, PhotoConfig, useAlbums, LibraryType } from 'photo-app-common';
 
 const PhotoSelection = ({
   selection,
@@ -18,7 +18,7 @@ const PhotoSelection = ({
   clearSelection: () => void;
   isSelecting: boolean;
   albumKey?: string;
-  type?: 'bin' | 'archive' | 'apps';
+  type: LibraryType;
 }) => {
   const {
     remove: { mutateAsync: removePhoto },

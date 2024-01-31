@@ -5,7 +5,7 @@ import { ReactNode, useState } from 'react';
 import { Colors } from '../../app/Colors';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
-import { useAlbums, usePhoto, PhotoConfig } from 'photo-app-common';
+import { useAlbums, usePhoto, PhotoConfig, LibraryType } from 'photo-app-common';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -20,7 +20,7 @@ const PhotoSelection = ({
   clearSelection: () => void;
   isSelecting: boolean;
   albumKey?: string;
-  type?: 'bin' | 'archive' | 'apps';
+  type: LibraryType;
 }) => {
   const [isAlbumSelectionOpen, setIsAlbumSelectionOpen] = useState(false);
 

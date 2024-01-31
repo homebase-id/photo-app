@@ -20,12 +20,12 @@ import {
 } from '@youfoundation/js-lib/media';
 import { jsonStringify64, getRandom16ByteArray } from '@youfoundation/js-lib/helpers';
 
-import { PhotoConfig, PhotoFile } from './PhotoTypes';
+import { LibraryType, PhotoConfig, PhotoFile } from './PhotoTypes';
 
 export const getPhotos = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  type: 'bin' | 'archive' | 'apps' | 'favorites' | undefined,
+  type: LibraryType,
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
