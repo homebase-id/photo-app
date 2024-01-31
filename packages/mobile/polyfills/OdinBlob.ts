@@ -12,6 +12,10 @@
 
 type BlobData = any;
 type BlobOptions = any;
+
+import { NativeModules } from 'react-native';
+const { OdinBlobModule } = NativeModules;
+
 /**
  * Opaque JS representation of some binary data in native.
  *
@@ -131,6 +135,34 @@ class Blob {
           return new Uint8Array(0).buffer;
         })
     );
+  }
+
+  async encrypt(key: Uint8Array, iv: Uint8Array) {
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(async () => {
+        if (this.written) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    });
+
+    const destinationUri = `file://${Dirs.CacheDir}/${this.data.blobId}-encrypted.${
+      this.data.type.split('/')[1]
+    }`;
+
+    const encryptStatus = await OdinBlobModule.encryptFileWithAesCbc16(
+      this.uri,
+      destinationUri,
+      uint8ArrayToBase64(key),
+      uint8ArrayToBase64(iv)
+    );
+
+    if (encryptStatus === 1) {
+      return new Blob(destinationUri);
+    } else {
+      throw new Error('Failed to encrypt blob, with native encryption');
+    }
   }
 
   // stream() {
