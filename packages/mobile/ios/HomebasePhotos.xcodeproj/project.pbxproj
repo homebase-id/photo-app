@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* HomebasePhotosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* HomebasePhotosTests.m */; };
+		1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -44,6 +45,8 @@
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* HomebasePhotosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomebasePhotosTests.m; sourceTree = "<group>"; };
 		0404990F6F069703266226B6 /* libPods-HomebasePhotos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HomebasePhotos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1205763A2B6A342C0029FB57 /* RCTOdinBlobModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTOdinBlobModule.h; sourceTree = "<group>"; };
+		1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RCTOdinBlobModule.m; path = OdinBlob/RCTOdinBlobModule.m; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* HomebasePhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomebasePhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = HomebasePhotos/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = HomebasePhotos/AppDelegate.mm; sourceTree = "<group>"; };
@@ -96,6 +99,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		1205763B2B6A346D0029FB57 /* OdinBlob */ = {
+			isa = PBXGroup;
+			children = (
+				1205763A2B6A342C0029FB57 /* RCTOdinBlobModule.h */,
+				1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */,
+			);
+			name = OdinBlob;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* HomebasePhotos */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,6 +134,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				1205763B2B6A346D0029FB57 /* OdinBlob */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -427,6 +440,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
