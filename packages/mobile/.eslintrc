@@ -5,6 +5,7 @@
   "plugins": ["@typescript-eslint"],
   "extends": ["@react-native"],
   "rules": {
+    "react/no-children-prop": "off",
     "prettier/prettier": 0,
     "curly": ["error", "multi-line"],
     "radix": ["error", "as-needed"],
