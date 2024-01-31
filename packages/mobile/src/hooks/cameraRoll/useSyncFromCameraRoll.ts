@@ -38,11 +38,12 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
       first: BATCH_SIZE,
-      // fromTime: 1695664801015,
       fromTime: fromTime,
+      assetType: 'All',
       after: cursor,
       include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
-      assetType: 'All',
+
+      // fromTime: 1695664801015,
       // assetType: 'Videos',
     });
 
