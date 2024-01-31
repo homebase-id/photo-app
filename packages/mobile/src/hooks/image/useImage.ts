@@ -66,8 +66,9 @@ const useImage = (
           entry.size &&
           entry.size.pixelHeight >= size.pixelHeight &&
           entry.size.pixelWidth >= size.pixelWidth
-        )
+        ) {
           return true;
+        }
       });
   };
 
@@ -170,18 +171,19 @@ const useImage = (
         })
         .filter((query) => query.state.status === 'success');
 
-      if (cachedEntries?.length)
+      if (cachedEntries?.length) {
         return queryClient.getQueryData<ImageData | undefined>(cachedEntries[0].queryKey);
+      }
     },
     save: useMutation({
       mutationFn: saveImageFile,
       onSuccess: (_data, variables) => {
         // Boom baby!
-        if (variables.fileId)
+        if (variables.fileId) {
           queryClient.invalidateQueries({
             queryKey: ['image', odinId, variables.targetDrive.alias, variables.fileId],
           });
-        else queryClient.removeQueries({ queryKey: ['image'] });
+        } else queryClient.removeQueries({ queryKey: ['image'] });
       },
     }),
     remove: useMutation({ mutationFn: removeImageFile }),

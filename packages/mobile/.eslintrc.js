@@ -20,6 +20,7 @@ module.exports = {
     'react-native/no-inline-styles': 'off',
     'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off',
+    '@typescript-eslint/no-shadow': 'off',
   },
   settings: {
     react: {
