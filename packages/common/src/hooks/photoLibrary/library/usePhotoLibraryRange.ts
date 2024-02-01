@@ -1,13 +1,12 @@
 import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { useQuery } from '@tanstack/react-query';
-import { fetchPhotosByMonth, usePhotosByMonth } from './usePhotos';
+import { fetchPhotosByMonth, usePhotosByMonth } from '../photos/usePhotos';
 import { usePhotoLibrary } from './usePhotoLibrary';
-import { createDateObject } from '../../provider/photos/PhotoProvider';
-import { DotYouClient } from '@youfoundation/js-lib/core';
-import { useFileHeader } from './usePhotoHeader';
-import { useDotYouClientContext } from '../auth/useDotYouClientContext';
-import { LibraryType } from '../../provider';
+import { createDateObject } from '../../../provider/photos/PhotoProvider';
+import { useFileHeader } from '../photo/usePhotoHeader';
+import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
+import { LibraryType } from '../../../provider';
 
 const useCurrentPhoto = ({
   targetDrive,
@@ -18,7 +17,6 @@ const useCurrentPhoto = ({
   type: LibraryType;
   photoFileId?: string;
 }) => {
-  const dotYouClient = useDotYouClientContext();
   const { data: fileHeader } = useFileHeader({ targetDrive, photoFileId });
 
   const date = fileHeader

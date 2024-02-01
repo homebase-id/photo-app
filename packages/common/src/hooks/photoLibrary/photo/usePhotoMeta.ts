@@ -7,10 +7,10 @@ import {
   getPhotoMetadata,
   updatePhoto,
   updatePhotoMetadata,
-} from '../../provider/photos/PhotoProvider';
-import { useInfintePhotosReturn } from './usePhotos';
-import { usePhotoLibrary } from './usePhotoLibrary';
-import { useDotYouClientContext } from '../auth/useDotYouClientContext';
+} from '../../../provider/photos/PhotoProvider';
+import { useInfintePhotosReturn } from '../photos/usePhotos';
+import { usePhotoLibrary } from '../library/usePhotoLibrary';
+import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   const dotYouClient = useDotYouClientContext();

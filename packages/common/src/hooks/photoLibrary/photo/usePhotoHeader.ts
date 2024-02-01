@@ -1,8 +1,8 @@
 import { useQueryClient, InfiniteData, useQuery } from '@tanstack/react-query';
 import { TargetDrive, getFileHeader } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import { useInfintePhotosReturn } from './usePhotos';
-import { useDotYouClientContext } from '../auth/useDotYouClientContext';
+import { useInfintePhotosReturn } from '../photos/usePhotos';
+import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export const useFileHeader = ({
   targetDrive,
@@ -15,13 +15,13 @@ export const useFileHeader = ({
   const queryClient = useQueryClient();
 
   const fetchCurrent = async (targetDrive: TargetDrive, photoFileId: string) => {
-    const previousKeys = queryClient
+    const cacheKeys = queryClient
       .getQueryCache()
       .findAll({ queryKey: ['photos', targetDrive?.alias], exact: false })
       .filter((query) => query.state.status === 'success');
 
-    for (let i = 0; i < previousKeys.length; i++) {
-      const key = previousKeys[i];
+    for (let i = 0; i < cacheKeys.length; i++) {
+      const key = cacheKeys[i];
       const dataForDay = queryClient.getQueryData<InfiniteData<useInfintePhotosReturn>>(
         key.queryKey
       );

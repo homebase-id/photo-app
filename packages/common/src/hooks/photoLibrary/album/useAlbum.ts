@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { removeAlbumDefintion, saveAlbum } from '../../provider/photos/AlbumProvider';
-import { AlbumDefinition, PhotoConfig } from '../../provider/photos/PhotoTypes';
+import { removeAlbumDefintion, saveAlbum } from '../../../provider/photos/AlbumProvider';
+import { AlbumDefinition, PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { useAlbums } from './useAlbums';
-import { getAlbumThumbnail } from '../../provider/photos/PhotoProvider';
+import { getAlbumThumbnail } from '../../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
-import { useDotYouClientContext } from '../auth/useDotYouClientContext';
+import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export const useAlbum = (albumKey?: string) => {
   const dotYouClient = useDotYouClientContext();

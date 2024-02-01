@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import PhotosPage from '../pages/photos';
-import PhotoPreview from '../pages/photo';
+import PhotoPreview from '../pages/photo-preview';
 
 import LoginPage from '../pages/login-page';
 import LibraryPage from '../pages/library';

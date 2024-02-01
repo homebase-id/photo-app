@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Ellipsis } from '../ui/Icons/icons';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 import { useAlbum, usePhotosInfinte, useSiblingsRangeInfinte, PhotoConfig } from 'photo-app-common';
-import useAuth from '../../hooks/auth/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 
 const targetDrive = PhotoConfig.PhotoDrive;

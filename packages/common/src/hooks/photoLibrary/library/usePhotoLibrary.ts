@@ -1,7 +1,7 @@
 import { DotYouClient, TargetDrive, UploadResult } from '@youfoundation/js-lib/core';
-import { getPhotos } from '../../provider/photos/PhotoProvider';
+import { getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { LibraryType, PhotoLibraryMetadata } from '../../provider/photos/PhotoTypes';
+import { LibraryType, PhotoLibraryMetadata } from '../../../provider/photos/PhotoTypes';
 import {
   addDay,
   buildMetaStructure,
@@ -9,8 +9,8 @@ import {
   mergeLibrary,
   savePhotoLibraryMetadata,
   updateCount,
-} from '../../provider/photos/PhotoLibraryMetaProvider';
-import { useDotYouClientContext } from '../auth/useDotYouClientContext';
+} from '../../../provider/photos/PhotoLibraryMetaProvider';
+import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 let saveScheduled = false;
 const isDebug = false;

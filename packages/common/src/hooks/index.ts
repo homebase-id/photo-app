@@ -1,12 +1,15 @@
 export * from './auth/useDotYouClientContext';
 
-export * from './photoLibrary/useAlbum';
-export * from './photoLibrary/usePhoto';
-export * from './photoLibrary/usePhotoLibrary';
-export * from './photoLibrary/usePhotoLibraryRangeInfinte';
-export * from './photoLibrary/usePhotoSelection';
-export * from './photoLibrary/useAlbums';
-export * from './photoLibrary/usePhotoHeader';
-export * from './photoLibrary/usePhotoLibraryRange';
-export * from './photoLibrary/usePhotoMeta';
-export * from './photoLibrary/usePhotos';
+export * from './photoLibrary/album/useAlbum';
+export * from './photoLibrary/album/useAlbums';
+
+export * from './photoLibrary/library/usePhotoLibrary';
+export * from './photoLibrary/library/usePhotoLibraryRange';
+export * from './photoLibrary/library/usePhotoLibraryRangeInfinte';
+
+export * from './photoLibrary/photo/usePhoto';
+export * from './photoLibrary/photo/usePhotoHeader';
+export * from './photoLibrary/photo/usePhotoMeta';
+export * from './photoLibrary/photos/usePhotos';
+
+export * from './photoLibrary/selection/usePhotoSelection';

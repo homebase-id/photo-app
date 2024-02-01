@@ -7,12 +7,12 @@ import {
 } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
-import { updatePhoto } from '../../provider/photos/PhotoProvider';
-import { LibraryType, PhotoConfig, PhotoFile } from '../../provider/photos/PhotoTypes';
-import { useInfintePhotosReturn } from './usePhotos';
-import { usePhotoLibrary } from './usePhotoLibrary';
-import { useAlbumThumbnail } from './useAlbum';
-import { useDotYouClientContext } from '../auth/useDotYouClientContext';
+import { updatePhoto } from '../../../provider/photos/PhotoProvider';
+import { LibraryType, PhotoConfig } from '../../../provider/photos/PhotoTypes';
+import { useInfintePhotosReturn } from '../photos/usePhotos';
+import { usePhotoLibrary } from '../library/usePhotoLibrary';
+import { useAlbumThumbnail } from '../album/useAlbum';
+import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export const usePhoto = (targetDrive?: TargetDrive) => {
   const dotYouClient = useDotYouClientContext();
@@ -101,26 +101,6 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
   };
 
   return {
-    fromCache: (targetDrive: TargetDrive, fileId: string) => {
-      const previousKeys = queryClient
-        .getQueryCache()
-        .findAll({
-          queryKey: ['photo', targetDrive?.alias, fileId],
-          exact: false,
-        })
-        .filter((query) => query.state.status === 'success');
-
-      if (previousKeys?.length) {
-        const bestKey = previousKeys.sort((keyA, keyB) =>
-          (keyA.queryKey[keyA.queryKey.length - 1] + '').localeCompare(
-            keyB.queryKey[keyB.queryKey.length - 1] + ''
-          )
-        )[0].queryKey;
-
-        const existingCachedImage = queryClient.getQueryData<PhotoFile>(bestKey);
-        if (existingCachedImage) return existingCachedImage;
-      }
-    },
     remove: useMutation({
       mutationFn: removePhoto,
       onMutate: (toRemovePhotoData) => {
