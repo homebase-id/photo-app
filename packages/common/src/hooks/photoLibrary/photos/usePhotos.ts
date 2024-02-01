@@ -227,21 +227,21 @@ export const useFlatPhotosByMonth = ({
         const prevMonth = flatMonths?.[currentMonthIndex - 1];
 
         return {
-          results: currentData.pages.flatMap((page) => page.results),
+          results: currentData?.pages?.flatMap((page) => page?.results) || [],
           // Pass cursorState of the last page of this month, but only if there is a next page
           cursorState:
-            currentData.pages[currentData.pages.length - 1]?.results?.length >= PAGE_SIZE
-              ? currentData.pages[currentData.pages.length - 1].cursorState
+            currentData?.pages[currentData?.pages?.length - 1]?.results?.length >= PAGE_SIZE
+              ? currentData?.pages[currentData?.pages?.length - 1].cursorState
               : undefined,
           prevMonth: prevMonth,
           nextMonth: nextMonth,
         };
       },
       initialPageParam: undefined as string | Date | undefined,
-      enabled: !!targetDrive && !!date,
+      enabled: !!flatMonths && !!targetDrive && !!date,
       getPreviousPageParam: (firstPage) => {
         // TODO: Check if we need something special here to fetch them reverted? And support pages inside of the months (not only a page per month)
-        if (firstPage.prevMonth) {
+        if (firstPage?.prevMonth) {
           return createDateObject(firstPage.prevMonth?.year, firstPage.prevMonth?.month);
         }
         return undefined;
@@ -249,7 +249,7 @@ export const useFlatPhotosByMonth = ({
       getNextPageParam: (lastPage) => {
         if (lastPage?.cursorState) {
           return lastPage.cursorState;
-        } else if (lastPage.nextMonth) {
+        } else if (lastPage?.nextMonth) {
           return createDateObject(lastPage.nextMonth?.year, lastPage.nextMonth?.month);
         }
         return undefined;

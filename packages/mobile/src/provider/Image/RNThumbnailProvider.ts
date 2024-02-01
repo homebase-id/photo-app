@@ -143,17 +143,7 @@ const createImageThumbnail = async (
 ): Promise<{ naturalSize: ImageSize; thumb: ThumbnailFile }> => {
   if (!photo.filepath && !photo.uri) throw new Error('No filepath found in image source');
 
-  return ImageResizer.createResizedImage(
-    (photo.filepath || photo.uri) as string,
-    instruction.width,
-    instruction.height,
-    format.toUpperCase() as ResizeFormat,
-    instruction.quality,
-    undefined,
-    undefined
-  ).then(async (resizedData) => {
-    const base64Bytes = await FileSystem.readFile(resizedData.path, 'base64');
-
+  return createResizedImage(photo, instruction, format).then(async (resizedData) => {
     return {
       naturalSize: {
         pixelWidth: photo.width,
@@ -162,11 +152,27 @@ const createImageThumbnail = async (
       thumb: {
         pixelWidth: resizedData.width,
         pixelHeight: resizedData.height,
-        payload: new OdinBlob([base64ToUint8Array(base64Bytes)], {
+        payload: new OdinBlob(resizedData.path, {
           type: `image/${instruction.type || format}`,
         }) as any as Blob,
         key,
       },
     };
   });
+};
+
+export const createResizedImage = async (
+  photo: ImageSource,
+  instruction: ThumbnailInstruction,
+  format: 'webp' | 'png' | 'jpeg' = Platform.OS === 'android' ? 'webp' : 'jpeg'
+) => {
+  return await ImageResizer.createResizedImage(
+    (photo.filepath || photo.uri) as string,
+    instruction.width,
+    instruction.height,
+    format.toUpperCase() as ResizeFormat,
+    instruction.quality,
+    undefined,
+    undefined
+  );
 };

@@ -1,3 +1,4 @@
+import { HeaderBackButton, Header } from '@react-navigation/elements';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { ReactElement, useEffect, useMemo } from 'react';
 import {
@@ -23,10 +24,11 @@ import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { PhotoConfig, useFileHeaderByUniqueId } from 'photo-app-common';
 import { getUniqueId } from '../provider/photos/RNPhotoProvider';
 import { Colors } from '../app/Colors';
-import { CloudIcon } from '../components/ui/Icons/icons';
+import { CloudIcon, Cog } from '../components/ui/Icons/icons';
 import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
+import { useDarkMode } from '../hooks/useDarkMode';
 
-type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
+type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'SyncDetails'>;
 
 const PREFFERED_IMAGE_SIZE = 90;
 const dateFormat: Intl.DateTimeFormatOptions = {
@@ -38,10 +40,17 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 };
 
 const SyncDetailsPage = (_props: SettingsProps) => {
+  const navigation = _props.navigation;
+  const { isDarkMode } = useDarkMode();
   const [syncNowState, setSyncNowState] = React.useState<'idle' | 'pending' | 'finished'>('idle');
 
-  const { setSyncFromCameraRoll, syncFromCameraRoll, lastCameraRollSyncTime } =
-    useKeyValueStorage();
+  const {
+    setSyncFromCameraRoll,
+    syncFromCameraRoll,
+    lastCameraRollSyncTime,
+    setForceLowerQuality,
+    forceLowerQuality,
+  } = useKeyValueStorage();
   const { forceSync } = useSyncFromCameraRoll(false);
 
   const doSyncNow = async () => {
@@ -49,7 +58,6 @@ const SyncDetailsPage = (_props: SettingsProps) => {
     await forceSync();
     setSyncNowState('finished');
   };
-  const lastSyncAsInt = lastCameraRollSyncTime ? parseInt(lastCameraRollSyncTime || '') : null;
 
   // On open, directly check for permissions
   useEffect(() => {
@@ -58,89 +66,143 @@ const SyncDetailsPage = (_props: SettingsProps) => {
     })();
   }, []);
 
-  return (
-    <SafeAreaView>
-      {syncFromCameraRoll ? (
-        <GalleryView>
-          <Container>
-            <View style={{ display: 'flex', flexDirection: 'column' }}>
-              <View
-                style={{
-                  marginLeft: 8,
-                  marginTop: 8,
-                  opacity: 0.5,
-                  flexDirection: 'column',
-                  gap: 4,
-                }}
-              >
-                <Text>
-                  {syncNowState === 'idle' ? (
-                    <>
-                      {lastSyncAsInt ? (
-                        <>
-                          Last sync: {new Date(lastSyncAsInt).toLocaleString(undefined, dateFormat)}
-                        </>
-                      ) : (
-                        'Last sync: did not sync yet'
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {syncNowState === 'pending'
-                        ? 'Syncing...'
-                        : syncNowState === 'finished'
-                        ? 'Last sync: Just now'
-                        : null}
-                    </>
-                  )}
-                </Text>
-              </View>
+  const headerLeft = () => (
+    <HeaderBackButton
+      style={{ position: 'absolute', left: 0 }}
+      canGoBack={true}
+      onPress={() => navigation.goBack()}
+      label={'Settings'}
+      labelVisible={true}
+      tintColor={isDarkMode ? Colors.white : Colors.black}
+    />
+  );
 
-              <View
-                style={{
-                  marginTop: 'auto',
-                  paddingTop: 8,
-                  flexDirection: 'row-reverse',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Button title="Sync now" onPress={doSyncNow} />
-                <Button
-                  title="Disable"
-                  onPress={() =>
-                    Alert.alert('Disable sync?', 'Your existing photos will not be removed', [
-                      {
-                        text: 'Disable',
-                        onPress: () => setSyncFromCameraRoll(false),
-                      },
-                      {
-                        text: 'Cancel',
-                        style: 'cancel',
-                      },
-                    ])
-                  }
-                />
+  const headerRight = () => (
+    <TouchableOpacity
+      onPress={() => {
+        Alert.alert(
+          'Backup quality',
+          `(currently: ${forceLowerQuality ? 'High quality' : 'Original quality'})`,
+          [
+            {
+              text: 'Original quality',
+              onPress: () => setForceLowerQuality(false),
+              style: 'default',
+            },
+            {
+              text: 'High quality (storage saver)',
+              onPress: () => setForceLowerQuality(true),
+              style: 'default',
+            },
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+          ]
+        );
+      }}
+      style={{ padding: 5 }}
+    >
+      <Cog color={isDarkMode ? Colors.white : Colors.black} size={'md'} />
+    </TouchableOpacity>
+  );
+
+  return (
+    <>
+      <Header
+        headerStyle={{
+          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+        }}
+        headerShadowVisible={false}
+        title={'Backup'}
+        headerLeft={headerLeft}
+        headerRight={headerRight}
+      />
+      <SafeAreaView>
+        {syncFromCameraRoll ? (
+          <GalleryView>
+            <Container>
+              <View style={{ display: 'flex', flexDirection: 'column' }}>
+                <View
+                  style={{
+                    marginLeft: 8,
+                    marginTop: 8,
+                    opacity: 0.5,
+                    flexDirection: 'column',
+                    gap: 4,
+                  }}
+                >
+                  <Text>
+                    {syncNowState === 'idle' ? (
+                      <>
+                        {lastCameraRollSyncTime ? (
+                          <>
+                            Last sync:{' '}
+                            {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
+                          </>
+                        ) : (
+                          'Last sync: did not sync yet'
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {syncNowState === 'pending'
+                          ? 'Syncing...'
+                          : syncNowState === 'finished'
+                          ? 'Last sync: Just now'
+                          : null}
+                      </>
+                    )}
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    marginTop: 'auto',
+                    paddingTop: 8,
+                    flexDirection: 'row-reverse',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Button title="Sync now" onPress={doSyncNow} />
+                  <Button
+                    title="Disable"
+                    onPress={() =>
+                      Alert.alert('Disable sync?', 'Your existing photos will not be removed', [
+                        {
+                          text: 'Disable',
+                          onPress: () => setSyncFromCameraRoll(false),
+                        },
+                        {
+                          text: 'Cancel',
+                          style: 'cancel',
+                        },
+                      ])
+                    }
+                  />
+                </View>
               </View>
-            </View>
+            </Container>
+          </GalleryView>
+        ) : (
+          <Container>
+            <Text
+              style={{
+                marginVertical: 16,
+              }}
+            >
+              Back-up your cameraroll into your identity. Your photos will remain secured and only
+              acessible by you.
+            </Text>
+            <Text style={{ opacity: 0.4 }}>
+              During alpha, we only support auto synchronizing recent media
+            </Text>
+            <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
           </Container>
-        </GalleryView>
-      ) : (
-        <Container>
-          <Text
-            style={{
-              marginVertical: 16,
-            }}
-          >
-            Back-up your cameraroll into your identity. Your photos will remain secured and only
-            acessible by you.
-          </Text>
-          <Text style={{ opacity: 0.4 }}>
-            During alpha, we only support auto synchronizing recent media
-          </Text>
-          <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
-        </Container>
-      )}
-    </SafeAreaView>
+        )}
+      </SafeAreaView>
+    </>
   );
 };
 

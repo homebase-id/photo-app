@@ -207,8 +207,6 @@ export const usePhotoLibrary = ({
     fetchLibrary: useQuery({
       queryKey: ['photo-library', targetDrive?.alias, type],
       queryFn: () => fetch(type),
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
       staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
       gcTime: Infinity, // Never => react query will never remove the data from the cache
       enabled: !!targetDrive && !disabled,

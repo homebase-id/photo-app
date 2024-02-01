@@ -15,6 +15,7 @@ import { uploadVideo } from '../Image/RNVideoProvider';
 import { grabThumbnail, processVideo } from '../Image/RNVideoProviderSegmenter';
 import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { Platform } from 'react-native';
+import { createResizedImage } from '../Image/RNThumbnailProvider';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -123,7 +124,7 @@ const uploadNewPhoto = async (
   targetDrive: TargetDrive,
   albumKey: string | undefined,
   newPhoto: PhotoIdentifier,
-  meta?: MediaUploadMeta
+  lowerQuality?: boolean
 ) => {
   const exif = await getPhotoExifMeta(newPhoto);
 
@@ -131,34 +132,33 @@ const uploadNewPhoto = async (
   const imageUniqueId = getUniqueId(newPhoto);
   const userDate = dateTimeOriginal || new Date();
 
-  console.log('imageUniqueId', imageUniqueId, newPhoto.node.id);
-
   const existingImage = imageUniqueId
     ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
     : null;
+
   // Image already exists, we skip it
   if (existingImage) {
     return { fileId: existingImage.fileId, userDate, type: 'image', imageUniqueId };
   }
+
+  const imageData = lowerQuality
+    ? await createResizedImage(newPhoto.node.image, { quality: 95, width: 3000, height: 3000 })
+    : newPhoto.node.image;
 
   return {
     ...(await uploadImage(
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
-      newPhoto.node.image,
+      imageData,
       { ...imageMetadata, originalFileName: newPhoto.node.image.filename || undefined },
       {
-        ...meta,
         type: getMimeType(newPhoto.node.image.filename || undefined) as ImageContentType,
         userDate: userDate.getTime(),
         tag: albumKey ? [albumKey] : undefined,
         uniqueId: imageUniqueId,
       },
-      [
-        { quality: 100, width: 500, height: 500 },
-        // { quality: 100, width: 2000, height: 2000 },
-      ]
+      [{ quality: 95, width: 1600, height: 1600 }]
     )),
     userDate: userDate,
     imageUniqueId,
@@ -170,14 +170,11 @@ const uploadNewVideo = async (
   targetDrive: TargetDrive,
   albumKey: string | undefined,
   newVideo: PhotoIdentifier,
-  thumb?: ThumbnailFile,
-  meta?: MediaUploadMeta
+  lowerQuality?: boolean
 ) => {
   const imageUniqueId = getUniqueId(newVideo);
   const userDate =
-    (newVideo.node.timestamp ? newVideo.node.timestamp * 1000 : undefined) ||
-    meta?.userDate ||
-    new Date().getTime();
+    (newVideo.node.timestamp ? newVideo.node.timestamp * 1000 : undefined) || new Date().getTime();
 
   const existingImage = imageUniqueId
     ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
@@ -194,7 +191,7 @@ const uploadNewVideo = async (
   }
 
   // Segment video file
-  const { video: processedMedia, metadata } = await processVideo(newVideo.node.image);
+  const { video: processedMedia, metadata } = await processVideo(newVideo.node.image, lowerQuality);
 
   const thumbnail = await grabThumbnail(newVideo.node.image);
   const thumbSource: ImageSource = {
@@ -212,7 +209,6 @@ const uploadNewVideo = async (
       processedMedia,
       metadata,
       {
-        ...meta,
         type: 'video/mp4' as VideoContentType,
         tag: albumKey ? [albumKey] : undefined,
         userDate: userDate,
@@ -233,8 +229,7 @@ export const uploadNew = async (
   targetDrive: TargetDrive,
   albumKey: string | undefined,
   newFile: PhotoIdentifier,
-  thumb?: ThumbnailFile,
-  meta?: MediaUploadMeta
+  lowerQuality?: boolean
 ): Promise<{ fileId?: string; userDate: Date; imageUniqueId: string }> => {
   const fileData =
     Platform.OS === 'ios'
@@ -257,8 +252,8 @@ export const uploadNew = async (
   };
 
   return toUpload.node.type?.includes('video')
-    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, toUpload, thumb, meta)
-    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, toUpload, meta);
+    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, toUpload, lowerQuality)
+    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, toUpload, lowerQuality);
 };
 
 export type PageParam = {

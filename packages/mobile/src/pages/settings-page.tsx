@@ -15,7 +15,7 @@ import { Text } from '../components/ui/Text/Text';
 import { version } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
-import { Download, Profile, RecycleBin, Sync, Times } from '../components/ui/Icons/icons';
+import { CloudIcon, Download, Profile, RecycleBin, Times } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
@@ -52,8 +52,6 @@ const SettingsPage = (_props: SettingsProps) => {
     queryClient.removeQueries();
     console.log('Local data cleared');
   };
-
-  const lastSyncAsInt = lastCameraRollSyncTime ? parseInt(lastCameraRollSyncTime || '') : null;
 
   return (
     <SafeAreaView>
@@ -97,14 +95,14 @@ const SettingsPage = (_props: SettingsProps) => {
               width: '100%',
             }}
           >
-            <Sync size={'lg'} />
+            <CloudIcon size={'lg'} />
             <View style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Text
                 style={{
                   marginLeft: 16,
                 }}
               >
-                Back up
+                Backup
               </Text>
               {syncFromCameraRoll ? (
                 <Text
@@ -113,22 +111,27 @@ const SettingsPage = (_props: SettingsProps) => {
                     opacity: 0.5,
                   }}
                 >
-                  {lastSyncAsInt ? (
-                    <>Last sync: {new Date(lastSyncAsInt).toLocaleString(undefined, dateFormat)}</>
+                  {lastCameraRollSyncTime ? (
+                    <>
+                      Last sync:{' '}
+                      {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
+                    </>
                   ) : (
                     'Last sync: not synced yet'
                   )}
                 </Text>
               ) : null}
             </View>
-            <View style={{ marginLeft: 'auto' }}>
-              <CheckBox
-                value={syncFromCameraRoll}
-                style={{ marginLeft: 'auto' }}
-                aria-label="Sync with your camera roll"
-                disabled={syncFromCameraRoll}
-              />
-            </View>
+            {syncFromCameraRoll ? (
+              <View style={{ marginLeft: 'auto' }}>
+                <CheckBox
+                  value={syncFromCameraRoll}
+                  style={{ marginLeft: 'auto' }}
+                  aria-label="Sync with your camera roll"
+                  disabled={syncFromCameraRoll}
+                />
+              </View>
+            ) : null}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => doClearLocalData()}

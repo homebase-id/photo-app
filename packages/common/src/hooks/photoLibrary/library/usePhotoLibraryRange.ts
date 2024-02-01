@@ -65,7 +65,7 @@ export const useFlatMonthsFromMeta = ({
   };
 
   return useQuery({
-    queryKey: ['flat-photos', targetDrive?.alias, type],
+    queryKey: ['flat-months', targetDrive?.alias, type],
     queryFn: fetch,
     enabled: !!photoLibrary,
   });

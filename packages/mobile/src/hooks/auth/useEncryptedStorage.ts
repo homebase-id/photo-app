@@ -6,6 +6,7 @@ const PRIVATE_KEY = 'ecc-pk';
 const IDENTITY = 'identity';
 const LAST_SYNC_TIME = 'lastSyncTime';
 const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRoll';
+const FORCE_LOWER_QUALITY = 'forceLowerQuality';
 
 const storage = new MMKVLoader().initialize();
 
@@ -53,11 +54,20 @@ export const useKeyValueStorage = () => {
     ''
   );
 
+  const [forceLowerQuality, setForceLowerQuality] = useMMKVStorage(
+    FORCE_LOWER_QUALITY,
+    storage,
+    ''
+  );
+
   return {
-    lastCameraRollSyncTime: lastCameraRollSyncTime.length ? lastCameraRollSyncTime : null,
-    setLastCameraRollSyncTime,
+    lastCameraRollSyncTime: lastCameraRollSyncTime.length ? parseInt(lastCameraRollSyncTime) : null,
+    setLastCameraRollSyncTime: (value: number) => setLastCameraRollSyncTime(value.toString()),
 
     syncFromCameraRoll: syncFromCameraRoll === '1',
     setSyncFromCameraRoll: (value: boolean) => setSyncFromCameraRoll(value ? '1' : '0'),
+
+    forceLowerQuality: forceLowerQuality === '1',
+    setForceLowerQuality: (value: boolean) => setForceLowerQuality(value ? '1' : '0'),
   };
 };

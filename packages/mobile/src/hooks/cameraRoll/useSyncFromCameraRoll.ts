@@ -1,11 +1,9 @@
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 
 import { useEffect, useRef, useState } from 'react';
-import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { Platform } from 'react-native';
 
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
-import { PhotoConfig, useDotYouClientContext, usePhotoLibrary } from 'photo-app-common';
 import { hasAndroidPermission } from './permissionHelper';
 import { useUploadPhoto } from '../photo/useUploadPhoto';
 
@@ -16,21 +14,15 @@ const BATCH_SIZE = 50;
 export const useSyncFrom = () => {
   // last synced time
   const { lastCameraRollSyncTime } = useKeyValueStorage();
-  const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
-    ? parseInt(lastCameraRollSyncTime)
-    : undefined;
 
   const lastWeek = new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
-  return lastCameraRollSyncTimeAsInt || lastWeek;
+  return lastCameraRollSyncTime || lastWeek;
 };
 
 export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const { mutateAsync: uploadPhoto } = useUploadPhoto().upload;
 
   const { lastCameraRollSyncTime, setLastCameraRollSyncTime } = useKeyValueStorage();
-  const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
-    ? parseInt(lastCameraRollSyncTime)
-    : undefined;
 
   const { syncFromCameraRoll } = useKeyValueStorage();
   const isFetching = useRef<boolean>(false);
@@ -45,9 +37,6 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       assetType: 'All',
       after: cursor,
       include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
-
-      // fromTime: 1695664801015,
-      // assetType: 'Videos',
     });
 
     try {
@@ -74,8 +63,8 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     const hasMoreWork = photos.page_info.has_next_page;
 
     if (!hasMoreWork) {
-      setLastCameraRollSyncTime(new Date().getTime().toString());
-      console.log('set new time', new Date().getTime().toString());
+      setLastCameraRollSyncTime(new Date().getTime());
+      console.log('set new time', new Date().getTime());
     }
 
     return hasMoreWork;
@@ -100,10 +89,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
   // Only auto sync when last sync was more than 5 minutes ago
   const runCheckAutoSync = async () => {
-    if (
-      lastCameraRollSyncTimeAsInt &&
-      new Date().getTime() - lastCameraRollSyncTimeAsInt < FIVE_MINUTES
-    ) {
+    if (lastCameraRollSyncTime && new Date().getTime() - lastCameraRollSyncTime < FIVE_MINUTES) {
       return;
     }
 
@@ -112,7 +98,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
   useEffect(() => {
     if (syncFromCameraRoll && enabledAutoSync) {
-      const interval = setInterval(() => runCheckAutoSync(), 1000 * 60 * 1);
+      const interval = setInterval(() => runCheckAutoSync(), ONE_MINUTE);
       return () => clearInterval(interval);
     }
   }, [syncFromCameraRoll, enabledAutoSync]);
