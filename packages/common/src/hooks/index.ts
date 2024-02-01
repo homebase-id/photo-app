@@ -9,6 +9,7 @@ export * from './photoLibrary/library/usePhotoLibraryRangeInfinte';
 
 export * from './photoLibrary/photo/usePhoto';
 export * from './photoLibrary/photo/usePhotoHeader';
+export * from './photoLibrary/photo/usePhotoHeaderByUniqueId';
 export * from './photoLibrary/photo/usePhotoMeta';
 export * from './photoLibrary/photos/usePhotos';
 

@@ -9,6 +9,7 @@ export const useCameraRoll = (fromTime?: number) => {
       fromTime: fromTime,
       assetType: 'All',
       after: cursor,
+      include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
     });
   };
 

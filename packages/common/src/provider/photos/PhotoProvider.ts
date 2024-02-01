@@ -177,27 +177,6 @@ export const getPhoto = async (
   };
 };
 
-export const getPhotoByUniqueId = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  uniqueId: string
-) => {
-  const reponse = await queryBatch(
-    dotYouClient,
-    {
-      targetDrive: targetDrive,
-      clientUniqueIdAtLeastOne: [uniqueId],
-      fileType: [MediaConfig.MediaFileType],
-    },
-    {
-      maxRecords: 5,
-      includeMetadataHeader: false,
-    }
-  );
-
-  return reponse?.searchResults;
-};
-
 const dsrToPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,

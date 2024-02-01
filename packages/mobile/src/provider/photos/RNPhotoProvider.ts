@@ -4,15 +4,17 @@ import {
   SecurityGroupType,
   TargetDrive,
   ThumbnailFile,
+  getFileHeaderByUniqueId,
 } from '@youfoundation/js-lib/core';
 import { ImageMetadata, MediaUploadMeta, VideoContentType } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
-import { getPhotoByUniqueId } from 'photo-app-common';
 import { uploadVideo } from '../Image/RNVideoProvider';
 import { grabThumbnail, processVideo } from '../Image/RNVideoProviderSegmenter';
+import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
+import { Platform } from 'react-native';
 
 const elaborateDateParser = (dateString: string) => {
   try {
@@ -35,32 +37,30 @@ const elaborateDateParser = (dateString: string) => {
   }
 };
 
-const getPhotoExifMeta = async (photo: {
-  filepath?: string | null;
-  uri?: string | null;
-  filename?: string | null;
-}): Promise<{
+const getPhotoExifMeta = async (
+  photo: PhotoIdentifier
+): Promise<{
   imageMetadata: ImageMetadata | undefined;
-  imageUniqueId: string;
   dateTimeOriginal: undefined | Date;
-} | null> => {
-  if (!photo.filepath || !photo.uri) return null;
+}> => {
+  if (!photo.node.image.filepath || !photo.node.image.uri) {
+    return {
+      imageMetadata: undefined,
+      dateTimeOriginal: undefined,
+    };
+  }
 
-  return Exif.getExif(photo.filepath || photo.uri).then((metadata: any) => {
+  return Exif.getExif(photo.node.image.filepath || photo.node.image.uri).then((metadata: any) => {
     const exifData = metadata.exif;
 
     if (!exifData || !exifData['{Exif}']) {
       return {
         imageMetadata: undefined,
-        imageUniqueId: photo?.filename ? toGuidId(photo?.filename) : undefined,
         dateTimeOriginal: undefined,
       };
     }
 
     const dateTimeOriginal = elaborateDateParser(exifData['{Exif}'].DateTimeOriginal);
-
-    const imageUniqueId = toGuidId(`${photo.filename}+${dateTimeOriginal?.getTime()}`);
-
     const imageMetadata: ImageMetadata | undefined = metadata
       ? {
           camera: {
@@ -85,7 +85,7 @@ const getPhotoExifMeta = async (photo: {
         }
       : undefined;
 
-    return { imageMetadata, imageUniqueId, dateTimeOriginal } as const;
+    return { imageMetadata, dateTimeOriginal } as const;
   });
 };
 
@@ -112,32 +112,33 @@ const getMimeType = (fileName?: string) => {
   return mimeTypes.find((m) => m.ext === fileExt)?.mime || 'application/octet-stream';
 };
 
+export const getUniqueId = (item: PhotoIdentifier) => {
+  return item.node.id
+    ? toGuidId(item.node.id as string)
+    : toGuidId(`${item.node.image.filename}x${item.node.image.width}x${item.node.image.height}`);
+};
+
 const uploadNewPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newPhoto: ImageSource,
+  newPhoto: PhotoIdentifier,
   meta?: MediaUploadMeta
 ) => {
   const exif = await getPhotoExifMeta(newPhoto);
 
-  const { imageMetadata, imageUniqueId, dateTimeOriginal } = exif || {
-    imageMetadata: undefined,
-    imageUniqueId:
-      newPhoto.id || newPhoto.filename
-        ? toGuidId((newPhoto.id || newPhoto.filename) as string)
-        : undefined,
-    dateTimeOriginal: undefined,
-  };
+  const { imageMetadata, dateTimeOriginal } = exif;
+  const imageUniqueId = getUniqueId(newPhoto);
   const userDate = dateTimeOriginal || new Date();
 
-  const existingImages = imageUniqueId
-    ? await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId)
-    : [];
+  console.log('imageUniqueId', imageUniqueId, newPhoto.node.id);
+
+  const existingImage = imageUniqueId
+    ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
+    : null;
   // Image already exists, we skip it
-  if (existingImages.length > 0) {
-    const result = existingImages[0];
-    return { fileId: result.fileId, userDate, type: 'image' };
+  if (existingImage) {
+    return { fileId: existingImage.fileId, userDate, type: 'image', imageUniqueId };
   }
 
   return {
@@ -145,11 +146,11 @@ const uploadNewPhoto = async (
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
-      newPhoto,
-      { ...imageMetadata, originalFileName: newPhoto.filename || undefined },
+      newPhoto.node.image,
+      { ...imageMetadata, originalFileName: newPhoto.node.image.filename || undefined },
       {
         ...meta,
-        type: getMimeType(newPhoto.filename || undefined) as ImageContentType,
+        type: getMimeType(newPhoto.node.image.filename || undefined) as ImageContentType,
         userDate: userDate.getTime(),
         tag: albumKey ? [albumKey] : undefined,
         uniqueId: imageUniqueId,
@@ -160,6 +161,7 @@ const uploadNewPhoto = async (
       ]
     )),
     userDate: userDate,
+    imageUniqueId,
   };
 };
 
@@ -167,30 +169,34 @@ const uploadNewVideo = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newVideo: ImageSource,
+  newVideo: PhotoIdentifier,
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
 ) => {
-  const imageUniqueId =
-    newVideo.id || newVideo.filename
-      ? toGuidId((newVideo.id || newVideo.filename) as string)
-      : undefined;
-  const userDate = newVideo.date || meta?.userDate || new Date().getTime();
+  const imageUniqueId = getUniqueId(newVideo);
+  const userDate =
+    (newVideo.node.timestamp ? newVideo.node.timestamp * 1000 : undefined) ||
+    meta?.userDate ||
+    new Date().getTime();
 
-  const existingImages = imageUniqueId
-    ? await getPhotoByUniqueId(dotYouClient, targetDrive, imageUniqueId)
-    : [];
+  const existingImage = imageUniqueId
+    ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
+    : null;
 
   // Image already exists, we skip it
-  if (existingImages.length > 0) {
-    const result = existingImages[0];
-    return { fileId: result.fileId, userDate: new Date(userDate), type: 'video' };
+  if (existingImage) {
+    return {
+      fileId: existingImage.fileId,
+      userDate: new Date(userDate),
+      type: 'video',
+      imageUniqueId,
+    };
   }
 
   // Segment video file
-  const { video: processedMedia, metadata } = await processVideo(newVideo);
+  const { video: processedMedia, metadata } = await processVideo(newVideo.node.image);
 
-  const thumbnail = await grabThumbnail(newVideo);
+  const thumbnail = await grabThumbnail(newVideo.node.image);
   const thumbSource: ImageSource = {
     uri: thumbnail.uri,
     width: 1920,
@@ -218,6 +224,7 @@ const uploadNewVideo = async (
       }
     )),
     userDate: new Date(userDate),
+    imageUniqueId,
   };
 };
 
@@ -225,13 +232,33 @@ export const uploadNew = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   albumKey: string | undefined,
-  newFile: ImageSource,
+  newFile: PhotoIdentifier,
   thumb?: ThumbnailFile,
   meta?: MediaUploadMeta
-): Promise<{ fileId?: string; userDate: Date }> => {
-  return newFile.type?.includes('video')
-    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, newFile, thumb, meta)
-    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, newFile, meta);
+): Promise<{ fileId?: string; userDate: Date; imageUniqueId: string }> => {
+  const fileData =
+    Platform.OS === 'ios'
+      ? await CameraRoll.iosGetImageDataById(newFile.node.image.uri, {
+          convertHeicImages: true,
+        })
+      : undefined;
+
+  const toUpload: PhotoIdentifier = {
+    ...newFile,
+    ...fileData,
+    node: {
+      ...newFile.node,
+      ...fileData?.node,
+      image: {
+        ...newFile.node.image,
+        ...fileData?.node?.image,
+      },
+    },
+  };
+
+  return toUpload.node.type?.includes('video')
+    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, toUpload, thumb, meta)
+    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, toUpload, meta);
 };
 
 export type PageParam = {

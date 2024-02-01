@@ -14,7 +14,23 @@ const BATCH_SIZE = 50;
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
+export const useSyncFrom = () => {
+  // last synced time
+  const { lastCameraRollSyncTime } = useKeyValueStorage();
+  const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
+    ? parseInt(lastCameraRollSyncTime)
+    : undefined;
+
+  const lastWeek = new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
+  return lastCameraRollSyncTimeAsInt || lastWeek;
+};
+
 export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
+  const { lastCameraRollSyncTime, setLastCameraRollSyncTime } = useKeyValueStorage();
+  const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
+    ? parseInt(lastCameraRollSyncTime)
+    : undefined;
+
   const { syncFromCameraRoll } = useKeyValueStorage();
   const dotYouClient = useDotYouClientContext();
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
@@ -27,14 +43,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
   const [cursor, setCursor] = useState<string | undefined>(undefined);
 
-  // last synced time
-  const { lastCameraRollSyncTime, setLastCameraRollSyncTime } = useKeyValueStorage();
-  const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
-    ? parseInt(lastCameraRollSyncTime)
-    : undefined;
-
-  const lastWeek = new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
-  const fromTime = lastCameraRollSyncTimeAsInt || lastWeek;
+  const fromTime = useSyncFrom();
 
   const fetchAndUpload = async () => {
     const photos = await CameraRoll.getPhotos({
@@ -52,24 +61,14 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       // Regular loop to have the photos uploaded sequentially
       for (let i = 0; i < photos.edges.length; i++) {
         const photo = photos.edges[i];
-        const fileData =
-          Platform.OS === 'ios'
-            ? await CameraRoll.iosGetImageDataById(photo.node.image.uri, {
-                convertHeicImages: true,
-              })
-            : photo;
 
-        if (!fileData?.node?.image) {
-          console.warn('Gotten image without imageData', fileData?.node?.image);
+        if (!photo?.node?.image) {
+          console.warn('Gotten image without imageData', photo?.node?.image);
           return undefined;
         }
 
         // Upload new always checkf if it already exists
-        const uploadResult = await uploadNew(dotYouClient, targetDrive, undefined, {
-          ...fileData.node.image,
-          type: fileData.node.type,
-          date: fileData.node.timestamp ? fileData.node.timestamp * 1000 : undefined,
-        });
+        const uploadResult = await uploadNew(dotYouClient, targetDrive, undefined, photo);
 
         await addDayToLibrary({ date: uploadResult.userDate, type: 'photos' });
       }
@@ -89,16 +88,6 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     }
 
     return hasMoreWork;
-  };
-
-  const getWhatsPending = async () => {
-    const photos = await CameraRoll.getPhotos({
-      first: BATCH_SIZE,
-      fromTime: lastCameraRollSyncTimeAsInt || new Date().getTime(),
-      after: cursor,
-    });
-
-    return photos.edges.length;
   };
 
   const doSync = async () => {
@@ -137,5 +126,5 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     }
   }, [syncFromCameraRoll, enabledAutoSync]);
 
-  return { forceSync: doSync, getWhatsPending };
+  return { forceSync: doSync };
 };
