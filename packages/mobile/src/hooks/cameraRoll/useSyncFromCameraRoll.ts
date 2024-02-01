@@ -7,12 +7,11 @@ import { Platform } from 'react-native';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
 import { PhotoConfig, useDotYouClientContext, usePhotoLibrary } from 'photo-app-common';
 import { hasAndroidPermission } from './permissionHelper';
+import { useUploadPhoto } from '../photo/useUploadPhoto';
 
 const ONE_MINUTE = 60000;
 const FIVE_MINUTES = ONE_MINUTE * 5;
 const BATCH_SIZE = 50;
-
-const targetDrive = PhotoConfig.PhotoDrive;
 
 export const useSyncFrom = () => {
   // last synced time
@@ -26,23 +25,17 @@ export const useSyncFrom = () => {
 };
 
 export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
+  const { mutateAsync: uploadPhoto } = useUploadPhoto().upload;
+
   const { lastCameraRollSyncTime, setLastCameraRollSyncTime } = useKeyValueStorage();
   const lastCameraRollSyncTimeAsInt = lastCameraRollSyncTime
     ? parseInt(lastCameraRollSyncTime)
     : undefined;
 
   const { syncFromCameraRoll } = useKeyValueStorage();
-  const dotYouClient = useDotYouClientContext();
-  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
-    disabled: true,
-    type: 'photos',
-  }).addDay;
-
   const isFetching = useRef<boolean>(false);
 
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-
   const fromTime = useSyncFrom();
 
   const fetchAndUpload = async () => {
@@ -68,9 +61,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
         }
 
         // Upload new always checkf if it already exists
-        const uploadResult = await uploadNew(dotYouClient, targetDrive, undefined, photo);
-
-        await addDayToLibrary({ date: uploadResult.userDate, type: 'photos' });
+        await uploadPhoto(photo);
       }
     } catch (e) {
       console.error('failed to sync', e);
