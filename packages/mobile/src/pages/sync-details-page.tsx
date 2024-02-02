@@ -1,6 +1,6 @@
 import { HeaderBackButton, Header } from '@react-navigation/elements';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { ReactElement, useEffect, useMemo } from 'react';
+import React, { ReactElement, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Button,
@@ -116,6 +116,8 @@ const SyncDetailsPage = (_props: SettingsProps) => {
         }}
         headerShadowVisible={false}
         title={'Backup'}
+        headerTitleAlign="center"
+        headerTitle={'Backup'}
         headerLeft={headerLeft}
         headerRight={headerRight}
       />
@@ -163,6 +165,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                     paddingTop: 8,
                     flexDirection: 'row-reverse',
                     justifyContent: 'space-between',
+                    paddingBottom: Platform.OS === 'android' ? 8 : 0,
                   }}
                 >
                   <Button title="Sync now" onPress={doSyncNow} />
@@ -223,6 +226,25 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
   const numColums = Math.round(windowSize.width / PREFFERED_IMAGE_SIZE);
   const size = Math.round(windowSize.width / numColums);
 
+  // Upload queue
+  const [uploadIndex, setUploadIndex] = useState(0);
+  const [uploadQueue, setUploadQueue] = useState<PhotoIdentifier[]>([]);
+
+  const { mutate: uploadPhoto, status: uploadStatus, reset: resetUpload } = useUploadPhoto().upload;
+
+  const currentFile = uploadQueue[uploadIndex];
+  useEffect(() => {
+    if (!currentFile) return;
+    uploadPhoto(currentFile);
+  }, [currentFile, uploadPhoto]);
+
+  useEffect(() => {
+    if (uploadStatus === 'success' || uploadStatus === 'error') {
+      resetUpload();
+      setUploadIndex((currentIndex) => currentIndex + 1);
+    }
+  }, [uploadStatus, resetUpload, setUploadIndex]);
+
   return (
     <View
       style={{
@@ -236,7 +258,16 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
           minHeight: '100%',
         }}
         ListHeaderComponent={children}
-        renderItem={(item) => <GalleryItem size={size} item={item.item} key={item.item.node.id} />}
+        renderItem={(item) => (
+          <GalleryItem
+            size={size}
+            item={item.item}
+            key={item.item.node.id}
+            addToUpload={(item: PhotoIdentifier) =>
+              setUploadQueue((currentUploadQueue) => [...currentUploadQueue, item])
+            }
+          />
+        )}
         ListEmptyComponent={
           <>
             <Text
@@ -258,24 +289,33 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
   );
 };
 
-const GalleryItem = ({ item, size }: { item: PhotoIdentifier; size: number }) => {
+const GalleryItem = ({
+  item,
+  size,
+  addToUpload,
+}: {
+  item: PhotoIdentifier;
+  size: number;
+  addToUpload: (photo: PhotoIdentifier) => void;
+}) => {
   const uniqueId = getUniqueId(item);
   const { data, isFetched } = useFileHeaderByUniqueId({
     targetDrive: PhotoConfig.PhotoDrive,
     photoUniqueId: uniqueId,
   });
 
-  const { mutate: uploadPhoto, status: uploadStatus } = useUploadPhoto().upload;
-
-  const alreadyUploaded = (isFetched && data !== null) || uploadStatus === 'success';
+  const [forceUpload, setForceUpload] = useState(false);
+  const alreadyUploaded = isFetched && data !== null;
 
   const fromTime = useSyncFrom();
   const pendingUploadInSync = item.node.timestamp * 1000 > fromTime;
 
   const onRequestSync = () => {
-    if (alreadyUploaded || pendingUploadInSync) return;
+    if (alreadyUploaded || pendingUploadInSync || forceUpload) return;
+    setForceUpload(true);
+
     console.log('uploading', uniqueId, item.node.id);
-    uploadPhoto(item);
+    addToUpload(item);
   };
 
   return (
@@ -299,8 +339,7 @@ const GalleryItem = ({ item, size }: { item: PhotoIdentifier; size: number }) =>
             position: 'absolute',
             top: 7,
             left: 7,
-            backgroundColor:
-              uploadStatus !== 'idle' || pendingUploadInSync ? Colors.indigo[500] : undefined,
+            backgroundColor: forceUpload || pendingUploadInSync ? Colors.indigo[500] : undefined,
             width: 15,
             height: 15,
             borderRadius: 50,
