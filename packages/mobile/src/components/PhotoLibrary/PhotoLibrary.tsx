@@ -243,7 +243,6 @@ export const PhotoMonth = ({
               type={type}
               key={`${year}-${month}-${day.day}`}
               toggleSelection={toggleSelection}
-              rangeSelection={rangeSelection}
               isSelected={isSelected}
               isSelecting={isSelecting}
             />
