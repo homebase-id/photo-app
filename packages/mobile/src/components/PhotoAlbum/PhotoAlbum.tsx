@@ -64,11 +64,6 @@ const PhotoAlbum = ({
     toggleSelection(fileId);
   };
 
-  const doRangeSelection = (fileId: string) => {
-    toggleSelection(fileId);
-    if (selectionRangeFrom) setSelectionRangeTo(fileId);
-  };
-
   useEffect(() => {
     if (selection && selectionRangeFrom && selectionRangeTo) {
       selectRange(selection);
@@ -129,7 +124,6 @@ const PhotoAlbum = ({
               album={albumKey}
               key={item.item.fileId}
               toggleSelection={doToggleSelection}
-              rangeSelection={doRangeSelection}
               isSelected={isSelected}
               isSelecting={isSelecting}
               size={size - 2} // -2 for the gap

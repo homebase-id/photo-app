@@ -1,5 +1,5 @@
 import { EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
-import { memo, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { OdinImage } from './PhotoWithLoader';
 import { Colors } from '../../../app/Colors';
@@ -31,6 +31,7 @@ export const VideoWithLoader = memo(
     onClick?: () => void;
   }) => {
     const [loadVideo, setLoadVideo] = useState(false);
+    const doLoadVideo = useCallback(() => setLoadVideo(true), []);
 
     return (
       <View
@@ -90,7 +91,7 @@ export const VideoWithLoader = memo(
               fit={fit}
               imageSize={imageSize}
               enableZoom={true}
-              onClick={() => setLoadVideo(true)}
+              onClick={doLoadVideo}
               avoidPayload={true}
             />
             <View
@@ -108,7 +109,7 @@ export const VideoWithLoader = memo(
               }}
             >
               <TouchableOpacity
-                onPress={() => setLoadVideo(true)}
+                onPress={doLoadVideo}
                 style={{
                   padding: 20,
                   borderRadius: 50,

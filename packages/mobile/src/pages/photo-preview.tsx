@@ -96,13 +96,15 @@ const PhotoPreview = ({ currentDate, fileHeader, route, navigation }: PhotoLibPr
   const flatNewerPhotos = newerPhotos?.pages.flatMap((page) => page.results) || [];
   const flatOlderPhotos = olderPhotos?.pages.flatMap((page) => page.results) || [];
 
+  const doGoBack = useCallback(() => navigation.goBack(), [navigation]);
+
   // The Flatlists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
   if (!hasFetchedOlderPhotos || !olderPhotos || !hasFetchedNewerPhotos || !newerPhotos) return null;
 
   return (
     <InnerPhotoPreview
       backTitle={isAlbumView ? album?.name || '' : 'Library'}
-      goBack={() => navigation.goBack()}
+      goBack={doGoBack}
       currentDate={currentDate}
       fileHeader={fileHeader}
       olderPhotos={flatOlderPhotos}
@@ -187,10 +189,12 @@ const InnerPhotoPreview = ({
     []
   );
 
+  const doToggleHeader = useCallback(() => setShowHeader(!showHeader), [showHeader]);
+
   const renderItem = useCallback(
     (item: ListRenderItemInfo<DriveSearchResult>) => (
       <Pressable
-        onPress={() => setShowHeader(!showHeader)}
+        onPress={doToggleHeader}
         key={item.item.fileId}
         style={{
           width: windowSize.width,
@@ -209,7 +213,7 @@ const InnerPhotoPreview = ({
               height: windowSize.height,
             }}
             enableZoom={true}
-            onClick={() => setShowHeader(!showHeader)}
+            onClick={doToggleHeader}
           />
         ) : (
           <PhotoWithLoader
@@ -221,7 +225,7 @@ const InnerPhotoPreview = ({
               height: windowSize.height,
             }}
             enableZoom={true}
-            onClick={() => setShowHeader(!showHeader)}
+            onClick={doToggleHeader}
           />
         )}
       </Pressable>

@@ -53,117 +53,120 @@ export interface OdinImageProps {
   onClick?: () => void;
 }
 
-export const OdinImage = ({
-  odinId,
-  targetDrive,
-  fileId,
-  fit,
-  imageSize,
-  alt,
-  title,
-  previewThumbnail,
-  probablyEncrypted,
-  avoidPayload,
-  enableZoom,
-  onClick,
-}: OdinImageProps) => {
-  const loadSize = {
-    pixelHeight:
-      (imageSize?.height ? Math.round(imageSize?.height * (enableZoom ? 3 : 1)) : undefined) || 800,
-    pixelWidth:
-      (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 3 : 1)) : undefined) || 800,
-  };
-
-  const embeddedThumbUrl = useMemo(() => {
-    if (!previewThumbnail) return;
-
-    return `data:${previewThumbnail.contentType};base64,${previewThumbnail.content}`;
-  }, [previewThumbnail]);
-
-  const { getFromCache } = useImage();
-  const cachedImage = useMemo(
-    () => (fileId ? getFromCache(odinId, fileId, targetDrive) : undefined),
-    [fileId, getFromCache, odinId, targetDrive]
-  );
-  const skipTiny = !!previewThumbnail || !!cachedImage;
-
-  const { data: tinyThumb } = useTinyThumb(odinId, !skipTiny ? fileId : undefined, targetDrive);
-  const previewUrl = cachedImage?.url || embeddedThumbUrl || tinyThumb?.url;
-
-  const naturalSize: ImageSize | undefined = tinyThumb
-    ? {
-        pixelHeight: tinyThumb.naturalSize.height,
-        pixelWidth: tinyThumb.naturalSize.width,
-      }
-    : cachedImage?.naturalSize || previewThumbnail;
-
-  const {
-    fetch: { data: imageData },
-  } = useImage(
+export const OdinImage = memo(
+  ({
     odinId,
-    loadSize !== undefined ? fileId : undefined,
     targetDrive,
-    avoidPayload ? { pixelHeight: 200, pixelWidth: 200 } : loadSize,
+    fileId,
+    fit,
+    imageSize,
+    alt,
+    title,
+    previewThumbnail,
     probablyEncrypted,
-    naturalSize
-  );
+    avoidPayload,
+    enableZoom,
+    onClick,
+  }: OdinImageProps) => {
+    const loadSize = {
+      pixelHeight:
+        (imageSize?.height ? Math.round(imageSize?.height * (enableZoom ? 3 : 1)) : undefined) ||
+        800,
+      pixelWidth:
+        (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 3 : 1)) : undefined) || 800,
+    };
 
-  return (
-    <View
-      style={{
-        position: 'relative',
-      }}
-    >
-      {/* Blurry image */}
-      {previewUrl ? (
-        <Image
-          source={{ uri: previewUrl }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            resizeMode: fit,
+    const embeddedThumbUrl = useMemo(() => {
+      if (!previewThumbnail) return;
 
-            ...imageSize,
-          }}
-          blurRadius={2}
-        />
-      ) : null}
+      return `data:${previewThumbnail.contentType};base64,${previewThumbnail.content}`;
+    }, [previewThumbnail]);
 
-      {!imageData?.url ? (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            ...imageSize,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <ActivityIndicator style={{}} size="large" />
-        </View>
-      ) : null}
+    const { getFromCache } = useImage();
+    const cachedImage = useMemo(
+      () => (fileId ? getFromCache(odinId, fileId, targetDrive) : undefined),
+      [fileId, getFromCache, odinId, targetDrive]
+    );
+    const skipTiny = !!previewThumbnail || !!cachedImage;
 
-      {/* Actual image */}
-      {imageData?.url && imageSize ? (
-        <ZoomableImage
-          uri={imageData.url}
-          fit={fit}
-          imageSize={imageSize}
-          enableZoom={enableZoom}
-          alt={alt || title}
-          onClick={onClick}
-          maxScale={3}
-        />
-      ) : null}
-    </View>
-  );
-};
+    const { data: tinyThumb } = useTinyThumb(odinId, !skipTiny ? fileId : undefined, targetDrive);
+    const previewUrl = cachedImage?.url || embeddedThumbUrl || tinyThumb?.url;
+
+    const naturalSize: ImageSize | undefined = tinyThumb
+      ? {
+          pixelHeight: tinyThumb.naturalSize.height,
+          pixelWidth: tinyThumb.naturalSize.width,
+        }
+      : cachedImage?.naturalSize || previewThumbnail;
+
+    const {
+      fetch: { data: imageData },
+    } = useImage(
+      odinId,
+      loadSize !== undefined ? fileId : undefined,
+      targetDrive,
+      avoidPayload ? { pixelHeight: 200, pixelWidth: 200 } : loadSize,
+      probablyEncrypted,
+      naturalSize
+    );
+
+    return (
+      <View
+        style={{
+          position: 'relative',
+        }}
+      >
+        {/* Blurry image */}
+        {previewUrl ? (
+          <Image
+            source={{ uri: previewUrl }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              resizeMode: fit,
+
+              ...imageSize,
+            }}
+            blurRadius={2}
+          />
+        ) : null}
+
+        {!imageData?.url ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              ...imageSize,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ActivityIndicator style={{}} size="large" />
+          </View>
+        ) : null}
+
+        {/* Actual image */}
+        {imageData?.url && imageSize ? (
+          <ZoomableImage
+            uri={imageData.url}
+            fit={fit}
+            imageSize={imageSize}
+            enableZoom={enableZoom}
+            alt={alt || title}
+            onClick={onClick}
+            maxScale={3}
+          />
+        ) : null}
+      </View>
+    );
+  }
+);
 
 const ZoomableImage = ({
   uri,

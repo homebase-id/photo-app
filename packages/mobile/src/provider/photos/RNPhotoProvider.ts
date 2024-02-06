@@ -163,7 +163,7 @@ const uploadNewPhoto = async (
       },
       [{ quality: 95, width: 900, height: 900 }]
     )),
-    userDate: userDate,
+    userDate: new Date(userDate),
     imageUniqueId,
   };
 };

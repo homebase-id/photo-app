@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Dimensions, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { Colors } from '../app/Colors';
@@ -24,6 +24,8 @@ type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 const LibraryPage = (_props: LibraryProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: albums } = useAlbums().fetch;
+
+  const toggleOpen = useCallback(() => setIsOpen(!isOpen), [isOpen]);
 
   return (
     <SafeAreaView>
@@ -66,12 +68,12 @@ const LibraryPage = (_props: LibraryProps) => {
               {albums?.map((album, index) => {
                 return <AlbumItem album={album} key={album.fileId ?? index} />;
               })}
-              <NewAlbumItem onPress={() => setIsOpen(true)} />
+              <NewAlbumItem onPress={toggleOpen} />
             </View>
           </Container>
         </ScrollView>
       </View>
-      <NewAlbumDialog isOpen={isOpen} onClose={() => setIsOpen(!isOpen)} />
+      <NewAlbumDialog isOpen={isOpen} onClose={toggleOpen} />
     </SafeAreaView>
   );
 };
@@ -87,6 +89,10 @@ const TypeLink = ({
 }) => {
   const { isDarkMode } = useDarkMode();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const doNavigate = useCallback(
+    () => navigation.navigate('Type', { typeId: target }),
+    [navigation, target]
+  );
 
   return (
     <View
@@ -96,7 +102,7 @@ const TypeLink = ({
       }}
     >
       <TouchableOpacity
-        onPress={() => navigation.navigate('Type', { typeId: target })}
+        onPress={doNavigate}
         style={{
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
           width: '100%',
@@ -130,12 +136,13 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
   const windowWidth = Dimensions.get('window').width;
   const itemsPerRow = windowWidth > 500 ? 4 : 2;
   const itemWidth = Math.round(windowWidth / itemsPerRow) - 10;
+  const doNavigate = useCallback(
+    () => navigation.navigate('Album', { albumId: album.tag }),
+    [album.tag, navigation]
+  );
 
   return (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('Album', { albumId: album.tag })}
-      style={{ width: '50%', padding: 5 }}
-    >
+    <TouchableOpacity onPress={doNavigate} style={{ width: '50%', padding: 5 }}>
       {thumb?.fileId ? (
         <PhotoWithLoader
           targetDrive={PhotoConfig.PhotoDrive}

@@ -1,5 +1,5 @@
-import { debounce } from 'lodash-es';
-import { useMemo, useRef, useState } from 'react';
+import { debounce, set } from 'lodash-es';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
 import { Platform, TouchableOpacity, View } from 'react-native';
@@ -209,6 +209,9 @@ const PhotoDate = ({
     return null;
   }, [photoDsr]);
 
+  const doOpen = useCallback(() => setIsOpen(true), [setIsOpen]);
+  const doClose = useCallback(() => setIsOpen(false), [setIsOpen]);
+
   return (
     <View
       style={{
@@ -233,13 +236,13 @@ const PhotoDate = ({
 
                 setIsOpen(false);
               }}
-              onTouchCancel={() => setIsOpen(false)}
+              onTouchCancel={doClose}
             />
           ) : null}
 
           {Platform.OS !== 'ios' ? (
             <TouchableOpacity
-              onPress={() => setIsOpen(true)}
+              onPress={doOpen}
               style={{
                 display: 'flex',
                 flexDirection: 'row',

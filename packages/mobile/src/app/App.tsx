@@ -82,6 +82,10 @@ const INCLUDED_QUERY_KEYS = [
   'photo-meta',
   'photos',
   'photos-infinite',
+
+  // Big data
+  'image',
+  'tinyThumb',
 ];
 
 const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
