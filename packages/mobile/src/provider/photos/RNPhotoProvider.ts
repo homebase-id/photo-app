@@ -43,50 +43,73 @@ const getPhotoExifMeta = async (
   imageMetadata: ImageMetadata | undefined;
   dateTimeOriginal: undefined | Date;
 }> => {
-  if (!photo.node.image.filepath || !photo.node.image.uri) {
+  if (!photo.node.image.filepath && !photo.node.image.uri) {
     return {
       imageMetadata: undefined,
       dateTimeOriginal: undefined,
     };
   }
 
-  return Exif.getExif(photo.node.image.filepath || photo.node.image.uri).then((metadata: any) => {
-    const exifData = metadata.exif;
+  return Exif.getExif(photo.node.image.filepath || photo.node.image.uri)
+    .then((metadata: any) => {
+      const exifData = metadata.exif;
+      if (!exifData) {
+        return {
+          imageMetadata: undefined,
+          dateTimeOriginal: undefined,
+        };
+      }
 
-    if (!exifData || !exifData['{Exif}']) {
+      const dateTimeOriginal = elaborateDateParser(
+        exifData['{Exif}']?.DateTimeOriginal || exifData.DateTimeDigitized || exifData.DateTime
+      );
+      const imageMetadata: ImageMetadata | undefined = metadata
+        ? {
+            camera: {
+              make: exifData['{TIFF}']?.Make || exifData.Make,
+              model: exifData['{TIFF}']?.Model || exifData.Model,
+              lens: exifData['{ExifAux}']?.LensModel || exifData.LensModel,
+            },
+            captureDetails: {
+              exposureTime: exifData['{Exif}']?.ExposureTime || exifData.ExposureTime,
+              fNumber: exifData['{Exif}']?.FNumber || exifData.FNumber,
+              iso: (exifData['{Exif}']?.ISOSpeedRatings || [exifData.ISOSpeedRatings] || [
+                  undefined,
+                ])[0],
+              focalLength: exifData['{Exif}']?.FocalLength || exifData.FocalLength,
+              geolocation:
+                exifData['{GPS}']?.latitude && exifData['{GPS}']?.longitude
+                  ? {
+                      latitude: exifData['{GPS}'].latitude,
+                      longitude: exifData['{GPS}'].longitude,
+                      altitude: exifData['{GPS}'].altitude,
+                    }
+                  : exifData?.GPSLatitude && exifData?.GPSLongitude
+                  ? {
+                      latitude: exifData.GPSLatitude,
+                      longitude: exifData.GPSLongitude,
+                      altitude: exifData.GPSAltitude,
+                    }
+                  : photo.node.location?.latitude && photo.node.location?.longitude
+                  ? {
+                      ...photo.node.location,
+                      latitude: photo.node.location.latitude as number,
+                      longitude: photo.node.location.longitude as number,
+                    }
+                  : undefined,
+            },
+          }
+        : undefined;
+
+      return { imageMetadata, dateTimeOriginal } as const;
+    })
+    .catch((ex: any) => {
+      console.warn('Error getting exif data:', ex);
       return {
         imageMetadata: undefined,
         dateTimeOriginal: undefined,
       };
-    }
-
-    const dateTimeOriginal = elaborateDateParser(exifData['{Exif}'].DateTimeOriginal);
-    const imageMetadata: ImageMetadata | undefined = metadata
-      ? {
-          camera: {
-            make: exifData['{TIFF}']?.Make,
-            model: exifData['{TIFF}']?.Model,
-            lens: exifData['{ExifAux}']?.LensModel,
-          },
-          captureDetails: {
-            exposureTime: exifData['{Exif}'].ExposureTime,
-            fNumber: exifData['{Exif}'].FNumber,
-            iso: (exifData['{Exif}'].ISOSpeedRatings || [undefined])[0],
-            focalLength: exifData['{Exif}'].FocalLength,
-            geolocation:
-              exifData['{GPS}']?.latitude && exifData['{GPS}']?.longitude
-                ? {
-                    latitude: exifData['{GPS}'].latitude,
-                    longitude: exifData['{GPS}'].longitude,
-                    altitude: exifData['{GPS}'].altitude,
-                  }
-                : undefined,
-          },
-        }
-      : undefined;
-
-    return { imageMetadata, dateTimeOriginal } as const;
-  });
+    });
 };
 
 const mimeTypes = [
@@ -141,7 +164,12 @@ const uploadNewPhoto = async (
 
   // Image already exists, we skip it
   if (existingImage) {
-    return { fileId: existingImage.fileId, userDate, type: 'image', imageUniqueId };
+    return {
+      fileId: existingImage.fileId,
+      userDate: new Date(userDate),
+      type: 'image',
+      imageUniqueId,
+    };
   }
 
   const imageData = lowerQuality

@@ -36,7 +36,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       fromTime: fromTime,
       assetType: 'All',
       after: cursor,
-      include: ['imageSize', 'filename', 'playableDuration', 'fileSize'],
+      include: ['imageSize', 'filename', 'playableDuration', 'fileSize', 'location'],
     });
 
     try {
