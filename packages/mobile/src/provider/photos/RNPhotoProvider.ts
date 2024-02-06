@@ -130,7 +130,11 @@ const uploadNewPhoto = async (
 
   const { imageMetadata, dateTimeOriginal } = exif;
   const imageUniqueId = getUniqueId(newPhoto);
-  const userDate = dateTimeOriginal || new Date();
+
+  const userDate =
+    dateTimeOriginal?.getTime() ||
+    (newPhoto.node.timestamp ? newPhoto.node.timestamp * 1000 : undefined) ||
+    new Date().getTime();
 
   const existingImage = imageUniqueId
     ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
@@ -154,11 +158,11 @@ const uploadNewPhoto = async (
       { ...imageMetadata, originalFileName: newPhoto.node.image.filename || undefined },
       {
         type: getMimeType(newPhoto.node.image.filename || undefined) as ImageContentType,
-        userDate: userDate.getTime(),
+        userDate: userDate,
         tag: albumKey ? [albumKey] : undefined,
         uniqueId: imageUniqueId,
       },
-      [{ quality: 95, width: 1600, height: 1600 }]
+      [{ quality: 95, width: 900, height: 900 }]
     )),
     userDate: userDate,
     imageUniqueId,
