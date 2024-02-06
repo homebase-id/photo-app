@@ -45,7 +45,7 @@ const Sidenav = () => {
   return (
     <>
       <button
-        className={`absolute left-0 top-0 z-40 p-4 lg:hidden ${sidebarBg}`}
+        className={`absolute left-0 top-0 z-40 p-3 md:p-4 lg:hidden ${sidebarBg}`}
         onClick={() => setIsOpen(true)}
       >
         <Bars className={`h-4 w-4`} />
