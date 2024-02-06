@@ -3,10 +3,9 @@ import {
   ImageContentType,
   SecurityGroupType,
   TargetDrive,
-  ThumbnailFile,
   getFileHeaderByUniqueId,
 } from '@youfoundation/js-lib/core';
-import { ImageMetadata, MediaUploadMeta, VideoContentType } from '@youfoundation/js-lib/media';
+import { ImageMetadata, VideoContentType } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 

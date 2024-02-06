@@ -300,10 +300,10 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
       onSettled: (data, error, variables) => {
         variables.addTags.forEach((tag) => {
           queryClient.invalidateQueries({
-            queryKey: ['photos', targetDrive?.alias, '', tag],
+            queryKey: ['photos', targetDrive?.alias, 'photos', tag],
           });
           queryClient.invalidateQueries({
-            queryKey: ['photos-infinite', targetDrive?.alias, '', tag],
+            queryKey: ['photos-infinite', targetDrive?.alias, 'photos', tag],
           });
           invalidateAlbumCover(tag);
         });
@@ -361,10 +361,10 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
       onSettled: (data, error, variables) => {
         variables.removeTags.forEach((tag) => {
           queryClient.invalidateQueries({
-            queryKey: ['photos', targetDrive?.alias, '', tag],
+            queryKey: ['photos', targetDrive?.alias, 'photos', tag],
           });
           queryClient.invalidateQueries({
-            queryKey: ['photos-infinite', targetDrive?.alias, '', tag],
+            queryKey: ['photos-infinite', targetDrive?.alias, 'photos', tag],
           });
           invalidateAlbumCover(tag);
         });
