@@ -83,9 +83,9 @@ const INCLUDED_QUERY_KEYS = [
   'photos',
   'photos-infinite',
 
-  // Big data
+  // Big data (base64 uri's)
   'image',
-  'tinyThumb',
+  // 'tinyThumb',
 ];
 
 const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {

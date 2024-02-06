@@ -1,9 +1,15 @@
-import { EmbeddedThumb, ImageSize, TargetDrive } from '@youfoundation/js-lib/core';
+import {
+  EmbeddedThumb,
+  ImageContentType,
+  ImageSize,
+  TargetDrive,
+} from '@youfoundation/js-lib/core';
 import { memo, useMemo } from 'react';
 import ImageZoom from 'react-native-image-pan-zoom';
 import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
 import useImage from '../../../hooks/image/useImage';
 import useTinyThumb from '../../../hooks/image/useTinyThumb';
+import { SvgUri } from 'react-native-svg';
 
 // Memo to performance optimize the FlatList
 export const PhotoWithLoader = memo(
@@ -63,7 +69,6 @@ export const OdinImage = memo(
     alt,
     title,
     previewThumbnail,
-    probablyEncrypted,
     avoidPayload,
     enableZoom,
     onClick,
@@ -106,7 +111,6 @@ export const OdinImage = memo(
       loadSize !== undefined ? fileId : undefined,
       targetDrive,
       avoidPayload ? { pixelHeight: 200, pixelWidth: 200 } : loadSize,
-      probablyEncrypted,
       naturalSize
     );
 
@@ -155,6 +159,7 @@ export const OdinImage = memo(
         {imageData?.url && imageSize ? (
           <ZoomableImage
             uri={imageData.url}
+            contentType={imageData.type}
             fit={fit}
             imageSize={imageSize}
             enableZoom={enableZoom}
@@ -177,6 +182,8 @@ const ZoomableImage = ({
   enableZoom,
   onClick,
   maxScale,
+
+  contentType,
 }: {
   uri: string;
   imageSize: { width: number; height: number };
@@ -186,18 +193,23 @@ const ZoomableImage = ({
   enableZoom: boolean;
   onClick?: () => void;
   maxScale: number;
-}) => {
-  const innerImage = (
-    <Image
-      source={{ uri }}
-      alt={alt}
-      style={{
-        resizeMode: fit,
 
-        ...imageSize,
-      }}
-    />
-  );
+  contentType?: ImageContentType;
+}) => {
+  const innerImage =
+    contentType === 'image/svg+xml' ? (
+      <SvgUri width={imageSize.width} height={imageSize.height} uri={uri} />
+    ) : (
+      <Image
+        source={{ uri }}
+        alt={alt}
+        style={{
+          resizeMode: fit,
+
+          ...imageSize,
+        }}
+      />
+    );
 
   if (!enableZoom) return innerImage;
 

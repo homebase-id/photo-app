@@ -8,13 +8,14 @@ import {
   AccessControlList,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
-import { getDecryptedImageUrl, uploadImage, removeImage } from '@youfoundation/js-lib/media';
+import { uploadImage, removeImage, getDecryptedImageData } from '@youfoundation/js-lib/media';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { useDotYouClientContext } from 'photo-app-common';
 
 interface ImageData {
   url: string;
   naturalSize?: ImageSize;
+  type?: ImageContentType;
 }
 
 const useImage = (
@@ -22,7 +23,6 @@ const useImage = (
   imageFileId?: string | undefined,
   imageDrive?: TargetDrive,
   size?: ImageSize,
-  probablyEncrypted?: boolean,
   naturalSize?: ImageSize
 ) => {
   const dotYouClient = useDotYouClientContext();
@@ -77,7 +77,6 @@ const useImage = (
     imageFileId: string | undefined,
     imageDrive?: TargetDrive,
     size?: ImageSize,
-    probablyEncrypted?: boolean,
     naturalSize?: ImageSize
   ): Promise<ImageData | undefined> => {
     if (imageFileId === undefined || imageFileId === '' || !imageDrive) return;
@@ -88,21 +87,23 @@ const useImage = (
       if (cachedData) return cachedData;
     }
 
-    const fetchDataPromise = async () => {
-      return {
-        url: await getDecryptedImageUrl(
-          dotYouClient,
-          imageDrive,
-          imageFileId,
-          DEFAULT_PAYLOAD_KEY,
-          size,
-          probablyEncrypted
-        ),
-        naturalSize: naturalSize,
-      };
-    };
+    const imageData = await getDecryptedImageData(
+      dotYouClient,
+      imageDrive,
+      imageFileId,
+      DEFAULT_PAYLOAD_KEY,
+      size
+    );
 
-    return await fetchDataPromise();
+    if (!imageData) return undefined;
+    // The blob uri should be much easier to cache than the whole image data
+    const blob = new OdinBlob([new Uint8Array(imageData.bytes)], { type: imageData.contentType });
+
+    return {
+      url: blob.uri,
+      naturalSize: naturalSize,
+      type: imageData.contentType,
+    };
   };
 
   const saveImageFile = async ({
@@ -155,8 +156,7 @@ const useImage = (
           ? `${Math.round(size.pixelHeight / 25) * 25}x${Math.round(size?.pixelWidth / 25) * 25}`
           : undefined,
       ],
-      queryFn: () =>
-        fetchImageData(odinId, imageFileId, imageDrive, size, probablyEncrypted, naturalSize),
+      queryFn: () => fetchImageData(odinId, imageFileId, imageDrive, size, naturalSize),
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 60 * 1, // 1h

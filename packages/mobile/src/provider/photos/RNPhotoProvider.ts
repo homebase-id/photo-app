@@ -189,7 +189,10 @@ const uploadNewPhoto = async (
         tag: albumKey ? [albumKey] : undefined,
         uniqueId: imageUniqueId,
       },
-      [{ quality: 95, width: 900, height: 900 }]
+      [
+        { quality: 95, width: 300, height: 300 },
+        { quality: 95, width: 1200, height: 1200 },
+      ]
     )),
     userDate: new Date(userDate),
     imageUniqueId,

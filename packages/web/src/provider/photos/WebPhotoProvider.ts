@@ -84,8 +84,8 @@ const uploadNewPhoto = async (
         uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
       },
       [
-        { quality: 100, width: 500, height: 500 },
-        { quality: 100, width: 2000, height: 2000 },
+        { quality: 95, width: 300, height: 300 },
+        { quality: 95, width: 1200, height: 1200 },
       ]
     )),
     userDate: new Date(userDate),

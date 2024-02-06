@@ -159,6 +159,9 @@ class Blob {
     );
 
     if (encryptStatus === 1) {
+      //Remove the original file
+      await FileSystem.unlink(this.uri);
+
       return new Blob(destinationUri, { type: this.data.type });
     } else {
       throw new Error('Failed to encrypt blob, with native encryption');

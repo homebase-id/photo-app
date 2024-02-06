@@ -279,9 +279,7 @@ export const PhotoMonth = ({
 
   return (
     <div ref={wrapperRef}>
-      {/* {monthMeta.photosThisMonth >= 1 ?  */}
-      <h1 className="text-2xl">{title}</h1>
-      {/* : null} */}
+      {monthMeta.photosThisMonth >= 1 ? <h1 className="text-2xl">{title}</h1> : null}
 
       {photosFetched ? (
         days.map((day, index) => {
