@@ -1,12 +1,12 @@
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 
-const APP_AUTH_TOKEN = 'bx0900';
-const APP_SHARED_SECRET = 'APSS';
+export const APP_AUTH_TOKEN = 'bx0900';
+export const APP_SHARED_SECRET = 'APSS';
 const PRIVATE_KEY = 'ecc-pk';
-const IDENTITY = 'identity';
-const LAST_SYNC_TIME = 'lastSyncTime';
-const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRoll';
-const FORCE_LOWER_QUALITY = 'forceLowerQuality';
+export const IDENTITY = 'identity';
+export const LAST_SYNC_TIME = 'lastSyncTimeAsNumber';
+export const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRollAsBoolean';
+export const FORCE_LOWER_QUALITY = 'forceLowerQualityAsBoolean';
 
 const storage = new MMKVLoader().initialize();
 
@@ -42,32 +42,32 @@ export const useEncrtypedStorage = () => {
 
 export const useKeyValueStorage = () => {
   // Sync
-  const [lastCameraRollSyncTime, setLastCameraRollSyncTime] = useMMKVStorage(
+  const [lastCameraRollSyncTime, setLastCameraRollSyncTime] = useMMKVStorage<number>(
     LAST_SYNC_TIME,
     storage,
-    ''
+    undefined
   );
 
-  const [syncFromCameraRoll, setSyncFromCameraRoll] = useMMKVStorage(
+  const [syncFromCameraRoll, setSyncFromCameraRoll] = useMMKVStorage<boolean>(
     SYNC_FROM_CAMERA_ROLL,
     storage,
-    ''
+    false
   );
 
-  const [forceLowerQuality, setForceLowerQuality] = useMMKVStorage(
+  const [forceLowerQuality, setForceLowerQuality] = useMMKVStorage<boolean>(
     FORCE_LOWER_QUALITY,
     storage,
-    ''
+    false
   );
 
   return {
-    lastCameraRollSyncTime: lastCameraRollSyncTime.length ? parseInt(lastCameraRollSyncTime) : null,
-    setLastCameraRollSyncTime: (value: number) => setLastCameraRollSyncTime(value.toString()),
+    lastCameraRollSyncTime,
+    setLastCameraRollSyncTime,
 
-    syncFromCameraRoll: syncFromCameraRoll === '1',
-    setSyncFromCameraRoll: (value: boolean) => setSyncFromCameraRoll(value ? '1' : '0'),
+    syncFromCameraRoll,
+    setSyncFromCameraRoll,
 
-    forceLowerQuality: forceLowerQuality === '1',
-    setForceLowerQuality: (value: boolean) => setForceLowerQuality(value ? '1' : '0'),
+    forceLowerQuality,
+    setForceLowerQuality,
   };
 };
