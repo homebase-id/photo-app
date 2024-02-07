@@ -9,7 +9,7 @@ import {
 } from '../hooks/auth/useEncryptedStorage';
 import { fetchAndUpload } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import { uploadNew } from '../provider/photos/RNPhotoProvider';
-import { PhotoConfig } from 'photo-app-common';
+import { PhotoConfig, getPhotoLibrary, addDay, savePhotoLibraryMetadata } from 'photo-app-common';
 import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
 import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
@@ -58,15 +58,28 @@ const headlessSync = async () => {
   const targetDrive = PhotoConfig.PhotoDrive;
   const forceLowerQuality = await getBooleanFromStorage(FORCE_LOWER_QUALITY);
 
-  const uploadPhoto = (newPhoto: PhotoIdentifier) =>
-    uploadNew(dotYouClient, targetDrive, undefined, newPhoto, forceLowerQuality);
+  let currentLib = await getPhotoLibrary(dotYouClient, 'photos');
+  const uploadPhoto = async (newPhoto: PhotoIdentifier) => {
+    const uploadResult = await uploadNew(
+      dotYouClient,
+      targetDrive,
+      undefined,
+      newPhoto,
+      forceLowerQuality
+    );
+    if (uploadResult && currentLib) {
+      currentLib = addDay(currentLib, uploadResult.userDate);
+    }
+    return uploadResult;
+  };
 
   const { uploaded, errors } = await fetchAndUpload(fromTime, uploadPhoto);
-  console.log(`Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`);
-
-  if (uploaded > 0) {
-    await storage.setInt(LAST_SYNC_TIME, new Date().getTime());
+  if (uploaded > 0 && currentLib) {
+    await savePhotoLibraryMetadata(dotYouClient, currentLib, 'photos');
   }
+
+  console.log(`Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`);
+  await storage.setInt(LAST_SYNC_TIME, new Date().getTime());
 };
 
 export default headlessSync;
