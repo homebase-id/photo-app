@@ -194,8 +194,15 @@ export const useFlatPhotosByMonth = ({
     fetchPhotos: useInfiniteQuery({
       queryKey: ['flat-photos', targetDrive?.alias, type],
       queryFn: async ({ pageParam }) => {
-        const pageDateParam = pageParam instanceof Date ? pageParam : undefined;
-        const cursorState = pageParam instanceof Date ? undefined : pageParam;
+        const pageParamAsDate =
+          pageParam instanceof Date
+            ? pageParam
+            : typeof pageParam === 'string'
+            ? (!isNaN(new Date(pageParam) as any) && new Date(pageParam)) || undefined
+            : undefined;
+
+        const pageDateParam = pageParamAsDate instanceof Date ? pageParamAsDate : undefined;
+        const cursorState = pageParamAsDate instanceof Date ? undefined : (pageParam as string);
 
         const dateParam = pageDateParam || (date as Date);
         const currentData = await queryClient.fetchInfiniteQuery({
