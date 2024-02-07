@@ -39,9 +39,11 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
       include: ['imageSize', 'filename', 'playableDuration', 'fileSize', 'location'],
     });
 
-    try {
-      // Regular loop to have the photos uploaded sequentially
-      for (let i = 0; i < photos.edges.length; i++) {
+    const errors: string[] = [];
+
+    // Regular loop to have the photos uploaded sequentially
+    for (let i = 0; i < photos.edges.length; i++) {
+      try {
         const photo = photos.edges[i];
 
         if (!photo?.node?.image) {
@@ -51,23 +53,33 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
         // Upload new always checkf if it already exists
         await uploadPhoto(photo);
+      } catch (e: unknown) {
+        // console.error('failed to sync', e);
+        errors.push(
+          e && typeof e === 'object'
+            ? e.toString()
+            : e && typeof e === 'string'
+            ? e
+            : 'Unknown error'
+        );
+        // Skip & continue to next one
       }
-    } catch (e) {
-      console.error('failed to sync', e);
-      throw e;
     }
 
-    console.log(`synced ${photos.edges.length} photos`);
+    console.log(
+      `synced from ${fromTime}, uploaded ${photos.edges.length - errors.length} photos, with ${
+        errors.length
+      } errors.`
+    );
 
     setCursor(photos.page_info.end_cursor);
     const hasMoreWork = photos.page_info.has_next_page;
 
     if (!hasMoreWork) {
       setLastCameraRollSyncTime(new Date().getTime());
-      console.log('set new time', new Date().getTime());
     }
 
-    return hasMoreWork;
+    return { hasMoreWork, errors };
   };
 
   const doSync = async () => {
@@ -78,13 +90,19 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
     // Only one to run at the same time;
     if (isFetching.current) return;
-
     isFetching.current = true;
 
-    console.log('Syncing.. The camera roll from:', fromTime);
-    while (await fetchAndUpload()) {}
+    let allErrors: string[] = [];
+    let result;
+    while (!result || result?.hasMoreWork) {
+      result = await fetchAndUpload();
+      if (result) {
+        allErrors = allErrors.concat(result.errors);
+      }
+    }
 
     isFetching.current = false;
+    return allErrors;
   };
 
   // Only auto sync when last sync was more than 5 minutes ago

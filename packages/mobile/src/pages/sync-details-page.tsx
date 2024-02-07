@@ -55,7 +55,10 @@ const SyncDetailsPage = (_props: SettingsProps) => {
 
   const doSyncNow = async () => {
     setSyncNowState('pending');
-    await forceSync();
+    const errors = await forceSync();
+    if (errors && errors.length > 0) {
+      Alert.alert('Error', errors.join('\n'));
+    }
     setSyncNowState('finished');
   };
 

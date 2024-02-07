@@ -118,8 +118,6 @@ export const OdinImage = memo(
       naturalSize
     );
 
-    if (enableZoom) console.log('enableZoom', imageSize, loadSize);
-
     return (
       <View
         style={{
@@ -218,7 +216,7 @@ const ZoomableImage = ({
     );
 
   if (!enableZoom) return innerImage;
-  console.log('zoomable', uri);
+
   return (
     <ImageZoom
       cropWidth={Dimensions.get('window').width}

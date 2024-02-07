@@ -42,15 +42,18 @@ const Photo = ({ route, navigation }: PhotoProps) => {
     [fileHeader]
   );
 
+  const { isDarkMode } = useDarkMode();
   if (!currentDate || !fileHeader) return null;
 
   return (
-    <PhotoPreview
-      route={route}
-      navigation={navigation}
-      currentDate={currentDate}
-      fileHeader={fileHeader}
-    />
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}>
+      <PhotoPreview
+        route={route}
+        navigation={navigation}
+        currentDate={currentDate}
+        fileHeader={fileHeader}
+      />
+    </View>
   );
 };
 

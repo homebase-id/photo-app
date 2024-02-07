@@ -16,7 +16,7 @@ import {
   PersistQueryClientOptions,
   PersistQueryClientProvider,
 } from '@tanstack/react-query-persist-client';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
 import AlbumPage, { AlbumTitle } from '../pages/album';
@@ -153,39 +153,45 @@ const AuthenticatedStack = () => {
   const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-        },
-        headerTitleStyle: {
-          color: isDarkMode ? Colors.white : Colors.black,
-        },
-        headerTintColor: isDarkMode ? Colors.white : Colors.black,
-        headerShadowVisible: false,
-      }}
-    >
-      <Stack.Screen name="Home" component={TabStack} options={{ headerShown: false }} />
-      <Stack.Screen name="PhotoPreview" component={PhotoPreview} options={{ headerShown: false }} />
-      <Stack.Screen
-        name="Album"
-        component={AlbumPage}
-        options={({ route }) => ({
-          headerTitleAlign: 'center',
-          headerTitle: () => albumTitle(route.params.albumId),
-          headerBackTitle: 'Library',
-        })}
-      />
-      <Stack.Screen
-        name="Type"
-        component={TypePage}
-        options={({ route }) => ({
-          headerTitleAlign: 'center',
-          headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
-          headerBackTitle: 'Library',
-        })}
-      />
-    </Stack.Navigator>
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+          },
+          headerTitleStyle: {
+            color: isDarkMode ? Colors.white : Colors.black,
+          },
+          headerTintColor: isDarkMode ? Colors.white : Colors.black,
+          headerShadowVisible: false,
+        }}
+      >
+        <Stack.Screen name="Home" component={TabStack} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="PhotoPreview"
+          component={PhotoPreview}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Album"
+          component={AlbumPage}
+          options={({ route }) => ({
+            headerTitleAlign: 'center',
+            headerTitle: () => albumTitle(route.params.albumId),
+            headerBackTitle: 'Library',
+          })}
+        />
+        <Stack.Screen
+          name="Type"
+          component={TypePage}
+          options={({ route }) => ({
+            headerTitleAlign: 'center',
+            headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
+            headerBackTitle: 'Library',
+          })}
+        />
+      </Stack.Navigator>
+    </View>
   );
 };
 
