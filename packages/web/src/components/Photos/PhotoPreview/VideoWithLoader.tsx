@@ -56,9 +56,7 @@ export const VideoWithLoader = ({
           lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
           probablyEncrypted={true}
-          // className={`absolute inset-0 h-full w-full ${
-          //   fit === 'cover' ? 'object-cover' : 'object-contain'
-          // }`}
+          className="max-h-[inherit]"
         />
       )}
     </div>
