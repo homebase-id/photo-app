@@ -73,13 +73,17 @@ export const OdinImage = memo(
     enableZoom,
     onClick,
   }: OdinImageProps) => {
-    const loadSize = {
-      pixelHeight:
-        (imageSize?.height ? Math.round(imageSize?.height * (enableZoom ? 3 : 1)) : undefined) ||
-        800,
-      pixelWidth:
-        (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 3 : 1)) : undefined) || 800,
-    };
+    const loadSize = enableZoom
+      ? undefined
+      : {
+          pixelHeight:
+            (imageSize?.height
+              ? Math.round(imageSize?.height * (enableZoom ? 4 : 1))
+              : undefined) || 800,
+          pixelWidth:
+            (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 4 : 1)) : undefined) ||
+            800,
+        };
 
     const embeddedThumbUrl = useMemo(() => {
       if (!previewThumbnail) return;
@@ -108,11 +112,13 @@ export const OdinImage = memo(
       fetch: { data: imageData },
     } = useImage(
       odinId,
-      loadSize !== undefined ? fileId : undefined,
+      enableZoom || loadSize !== undefined ? fileId : undefined,
       targetDrive,
       avoidPayload ? { pixelHeight: 200, pixelWidth: 200 } : loadSize,
       naturalSize
     );
+
+    if (enableZoom) console.log('enableZoom', imageSize, loadSize);
 
     return (
       <View
@@ -212,7 +218,7 @@ const ZoomableImage = ({
     );
 
   if (!enableZoom) return innerImage;
-
+  console.log('zoomable', uri);
   return (
     <ImageZoom
       cropWidth={Dimensions.get('window').width}

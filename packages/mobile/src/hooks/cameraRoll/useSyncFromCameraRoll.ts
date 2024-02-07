@@ -8,7 +8,7 @@ import { hasAndroidPermission } from './permissionHelper';
 import { useUploadPhoto } from '../photo/useUploadPhoto';
 
 const ONE_MINUTE = 60000;
-const FIVE_MINUTES = ONE_MINUTE * 5;
+const TEN_MINUTES = ONE_MINUTE * 10;
 const BATCH_SIZE = 50;
 
 export const useSyncFrom = () => {
@@ -89,7 +89,7 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
 
   // Only auto sync when last sync was more than 5 minutes ago
   const runCheckAutoSync = async () => {
-    if (lastCameraRollSyncTime && new Date().getTime() - lastCameraRollSyncTime < FIVE_MINUTES) {
+    if (lastCameraRollSyncTime && new Date().getTime() - lastCameraRollSyncTime < TEN_MINUTES) {
       return;
     }
 
