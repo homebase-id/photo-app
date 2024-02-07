@@ -20,7 +20,7 @@ export const PhotoWithLoader = ({
   targetDrive: TargetDrive;
   previewThumbnail?: EmbeddedThumb;
   lastModified: number | undefined;
-  size?: ImageSize;
+  size?: ImageSize | 'full';
   fit?: 'cover' | 'contain';
   className?: string;
 }) => {
