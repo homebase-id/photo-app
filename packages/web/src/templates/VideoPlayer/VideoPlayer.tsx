@@ -5,9 +5,6 @@ import { ErrorBoundary } from '../../components/ui/Layout/ErrorBoundary/ErrorBou
 import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
 import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
 
-const KILOBYTE = 1024;
-const MEGABYTE = 1024 * KILOBYTE;
-
 const targetDrive = PhotoConfig.PhotoDrive;
 const VideoPlayer = () => {
   const { getIdentity } = useAuth();
@@ -26,7 +23,6 @@ const VideoPlayer = () => {
           className={`absolute inset-0 h-full w-full bg-black object-contain`}
           skipChunkedPlayback={false}
           autoPlay={true}
-          directFileSizeLimit={10 * MEGABYTE}
         />
       </ErrorBoundary>
       {photoKey}

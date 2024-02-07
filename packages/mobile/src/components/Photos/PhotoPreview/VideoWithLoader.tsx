@@ -183,6 +183,8 @@ const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) 
           }}
           allowsInlineMediaPlayback={true}
           allowsProtectedMedia={true}
+          allowsAirPlayForMediaPlayback={true}
+          allowsFullscreenVideo={true}
           onError={(syntheticEvent) => {
             console.log('onerror');
             const { nativeEvent } = syntheticEvent;
