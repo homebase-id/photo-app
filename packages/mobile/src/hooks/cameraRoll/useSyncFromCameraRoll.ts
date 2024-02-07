@@ -1,6 +1,6 @@
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
@@ -19,68 +19,65 @@ export const useSyncFrom = () => {
   return lastCameraRollSyncTime || lastWeek;
 };
 
+export const fetchAndUpload = async (
+  fromTime: number,
+  uploadPhoto: (
+    photo: PhotoIdentifier
+  ) => Promise<{ fileId?: string; userDate: Date; imageUniqueId: string }>,
+  cursor?: string | undefined
+): Promise<{ uploaded: number; errors: string[] }> => {
+  const photos = await CameraRoll.getPhotos({
+    first: BATCH_SIZE,
+    fromTime: fromTime,
+    assetType: 'All',
+    after: cursor,
+    include: ['imageSize', 'filename', 'playableDuration', 'fileSize', 'location'],
+  });
+
+  const errors: string[] = [];
+
+  // Regular loop to have the photos uploaded sequentially
+  for (let i = 0; i < photos.edges.length; i++) {
+    try {
+      const photo = photos.edges[i];
+
+      if (!photo?.node?.image) {
+        errors.push('Gotten image without imageData');
+        continue;
+      }
+
+      // Upload new always checkf if it already exists
+      await uploadPhoto(photo);
+    } catch (e: unknown) {
+      // console.error('failed to sync', e);
+      errors.push(
+        e && typeof e === 'object' ? e.toString() : e && typeof e === 'string' ? e : 'Unknown error'
+      );
+      // Skip & continue to next one
+    }
+  }
+
+  const uploadedCount = photos.edges.length - errors.length;
+  if (photos.page_info.has_next_page) {
+    const recursiveResults = await fetchAndUpload(
+      fromTime,
+      uploadPhoto,
+      photos.page_info.end_cursor
+    );
+    return { uploaded: uploadedCount, errors: errors.concat(recursiveResults.errors) };
+  }
+
+  return { uploaded: uploadedCount, errors };
+};
+
 export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
   const { mutateAsync: uploadPhoto } = useUploadPhoto().upload;
-
   const { lastCameraRollSyncTime, setLastCameraRollSyncTime } = useKeyValueStorage();
 
   const { syncFromCameraRoll } = useKeyValueStorage();
   const isFetching = useRef<boolean>(false);
 
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
   const fromTime = useSyncFrom();
-
-  const fetchAndUpload = async () => {
-    const photos = await CameraRoll.getPhotos({
-      first: BATCH_SIZE,
-      fromTime: fromTime,
-      assetType: 'All',
-      after: cursor,
-      include: ['imageSize', 'filename', 'playableDuration', 'fileSize', 'location'],
-    });
-
-    const errors: string[] = [];
-
-    // Regular loop to have the photos uploaded sequentially
-    for (let i = 0; i < photos.edges.length; i++) {
-      try {
-        const photo = photos.edges[i];
-
-        if (!photo?.node?.image) {
-          console.warn('Gotten image without imageData', photo?.node?.image);
-          return undefined;
-        }
-
-        // Upload new always checkf if it already exists
-        await uploadPhoto(photo);
-      } catch (e: unknown) {
-        // console.error('failed to sync', e);
-        errors.push(
-          e && typeof e === 'object'
-            ? e.toString()
-            : e && typeof e === 'string'
-            ? e
-            : 'Unknown error'
-        );
-        // Skip & continue to next one
-      }
-    }
-
-    console.log(
-      `synced from ${fromTime}, uploaded ${photos.edges.length - errors.length} photos, with ${
-        errors.length
-      } errors.`
-    );
-
-    setCursor(photos.page_info.end_cursor);
-    const hasMoreWork = photos.page_info.has_next_page;
-
-    if (!hasMoreWork) {
-      setLastCameraRollSyncTime(new Date().getTime());
-    }
-
-    return { hasMoreWork, errors };
-  };
 
   const doSync = async () => {
     if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
@@ -92,17 +89,14 @@ export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {
     if (isFetching.current) return;
     isFetching.current = true;
 
-    let allErrors: string[] = [];
-    let result;
-    while (!result || result?.hasMoreWork) {
-      result = await fetchAndUpload();
-      if (result) {
-        allErrors = allErrors.concat(result.errors);
-      }
-    }
-
+    const { uploaded, errors } = await fetchAndUpload(fromTime, uploadPhoto);
+    console.log(
+      `Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`
+    );
     isFetching.current = false;
-    return allErrors;
+
+    setLastCameraRollSyncTime(new Date().getTime());
+    return errors;
   };
 
   // Only auto sync when last sync was more than 5 minutes ago
