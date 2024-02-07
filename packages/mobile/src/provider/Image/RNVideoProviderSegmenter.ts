@@ -39,11 +39,19 @@ const CompressVideo = async (video: ImageSource): Promise<ImageSource> => {
   };
 };
 
+const MB = 1000000;
 const FragmentVideo = async (video: ImageSource) => {
   const source = video.filepath || video.uri;
 
   if (!source || !(await FileSystem.exists(source))) {
     throw new Error(`File not found: ${source}`);
+  }
+
+  const sourceFileSize = await RNFS.stat(source).then((stats) => stats.size);
+  if (sourceFileSize < 10 * MB) {
+    return {
+      ...video,
+    };
   }
 
   const dirPath = Dirs.CacheDir;
