@@ -1,16 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   ImageSize,
   TargetDrive,
-  SecurityGroupType,
   ImageContentType,
-  AccessControlList,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
-import { uploadImage, removeImage, getDecryptedImageData } from '@youfoundation/js-lib/media';
+import { getDecryptedImageData } from '@youfoundation/js-lib/media';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { useDotYouClientContext } from 'photo-app-common';
+import { FileSystem } from 'react-native-file-access';
 
 interface ImageData {
   url: string;
@@ -84,7 +83,7 @@ const useImage = (
     const cachedEntry = checkIfWeHaveLargerCachedImage(odinId, imageFileId, imageDrive, size);
     if (cachedEntry) {
       const cachedData = queryClient.getQueryData<ImageData | undefined>(cachedEntry.queryKey);
-      if (cachedData) return cachedData;
+      if (cachedData && (await FileSystem.exists(cachedData.url))) return cachedData;
     }
 
     const imageData = await getDecryptedImageData(
@@ -97,51 +96,16 @@ const useImage = (
 
     if (!imageData) return undefined;
     // The blob uri should be much easier to cache than the whole image data
-    const blob = new OdinBlob([new Uint8Array(imageData.bytes)], { type: imageData.contentType });
+    const blob = new OdinBlob([new Uint8Array(imageData.bytes)], {
+      type: imageData.contentType,
+      id: imageFileId,
+    });
 
     return {
       url: blob.uri,
       naturalSize: naturalSize,
       type: imageData.contentType,
     };
-  };
-
-  const saveImageFile = async ({
-    bytes,
-    type,
-    targetDrive,
-    acl = { requiredSecurityGroup: SecurityGroupType.Anonymous },
-    fileId = undefined,
-    versionTag = undefined,
-  }: {
-    bytes: Uint8Array;
-    type: ImageContentType;
-    targetDrive: TargetDrive;
-    acl?: AccessControlList;
-    fileId?: string;
-    versionTag?: string;
-  }) => {
-    return await uploadImage(
-      dotYouClient,
-      targetDrive,
-      acl,
-      new OdinBlob([bytes], { type }) as any as Blob,
-      undefined,
-      {
-        fileId,
-        versionTag,
-      }
-    );
-  };
-
-  const removeImageFile = async ({
-    targetDrive,
-    fileId,
-  }: {
-    targetDrive: TargetDrive;
-    fileId: string;
-  }) => {
-    return await removeImage(dotYouClient, fileId, targetDrive);
   };
 
   return {
@@ -157,8 +121,6 @@ const useImage = (
           : undefined,
       ],
       queryFn: () => fetchImageData(odinId, imageFileId, imageDrive, size, naturalSize),
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 60 * 1, // 1h
       enabled: !!imageFileId && imageFileId !== '',
     }),
@@ -175,18 +137,6 @@ const useImage = (
         return queryClient.getQueryData<ImageData | undefined>(cachedEntries[0].queryKey);
       }
     },
-    save: useMutation({
-      mutationFn: saveImageFile,
-      onSuccess: (_data, variables) => {
-        // Boom baby!
-        if (variables.fileId) {
-          queryClient.invalidateQueries({
-            queryKey: ['image', odinId, variables.targetDrive.alias, variables.fileId],
-          });
-        } else queryClient.removeQueries({ queryKey: ['image'] });
-      },
-    }),
-    remove: useMutation({ mutationFn: removeImageFile }),
   };
 };
 

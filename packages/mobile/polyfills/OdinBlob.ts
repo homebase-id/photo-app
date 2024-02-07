@@ -11,7 +11,10 @@
 'use strict';
 
 type BlobData = any;
-type BlobOptions = any;
+type BlobOptions = {
+  type?: string;
+  id?: string;
+};
 
 import { NativeModules } from 'react-native';
 const { OdinBlobModule } = NativeModules;
@@ -43,7 +46,7 @@ class Blob {
   constructor(parts: Array<Blob | string | Uint8Array> | string = [], options?: BlobOptions) {
     const mimeType = options?.type || 'application/octet-stream';
     if (Array.isArray(parts) && parts.length === 1 && parts[0] instanceof Uint8Array) {
-      const id = getNewId();
+      const id = options?.id || getNewId();
       this.data = {
         blobId: id,
         offset: 0,
@@ -60,7 +63,6 @@ class Blob {
       const localPath = Dirs.CacheDir + `/${id}` + `.${mimeType.split('/')[1]}`;
       this.uri = `file://${localPath}`;
       FileSystem.writeFile(localPath, base64Data, 'base64').then(() => {
-        // this.uri = `file://${localPath}`;
         this.written = true;
       });
     } else if (typeof parts === 'string') {
