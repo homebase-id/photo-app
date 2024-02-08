@@ -39,6 +39,11 @@ jobs:
           build-number: ${{github.run_number}}
           project-path: packages/mobile/ios
 
+      - name: setup-cocoapods
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: 1.15.2
+
       - name: Install Pods
         run: pod install --repo-update
         working-directory: packages/mobile/ios
