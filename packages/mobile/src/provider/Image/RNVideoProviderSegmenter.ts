@@ -226,7 +226,7 @@ export const processVideo = async (
     mimeType: 'video/mp4',
     codec: getCodecFromMp4Info(mp4Info),
     fileSize: fragmentedVideo.fileSize || 0,
-    duration: fragmentedVideo.playableDuration || 0,
+    duration: fragmentedVideo.playableDuration ? fragmentedVideo.playableDuration * 1000 : 0,
   };
 
   return { video: fragmentedVideo, metadata };
