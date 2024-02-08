@@ -299,8 +299,6 @@ const PreviewSlider = memo(
     // Both the FlatLists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
     if (!dataForLeft || !newerPhotos) return null;
 
-    console.log('render photo preview');
-
     return (
       <View>
         <View
