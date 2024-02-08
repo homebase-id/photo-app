@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +11,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
-// import { getVersion, getBuildNumber } from 'react-native-device-info';
+import { getVersion, getBuildNumber } from 'react-native-device-info';
 import { version } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
@@ -209,23 +209,28 @@ const SettingsPage = (_props: SettingsProps) => {
 };
 
 const getVersionInfo = async () => {
-  const appVersion = `${version}`; //${getVersion()} (${getBuildNumber()})`;
+  const appVersion = `${getVersion()} (${getBuildNumber()})`;
   const update = await codePush.getUpdateMetadata();
 
-  if (!update) return `v${appVersion}`;
+  if (!update) return `${appVersion}`;
 
   const label = update.label.substring(1);
-  return `v${appVersion} rev.${label}`;
+  return `${appVersion} rev.${label}`;
 };
 
 export const VersionInfo = () => {
-  const [version, setVersion] = useState<string>('');
+  const [fullVersion, setFullVersion] = useState<string | undefined>(undefined);
 
-  InteractionManager.runAfterInteractions(() => {
-    getVersionInfo().then((v) => setVersion(v));
-  });
+  const doLoadFullVersion = async () => {
+    const fullVersion = await getVersionInfo();
+    setFullVersion(fullVersion);
+  };
 
-  return <Text style={{ paddingTop: 10 }}>{version}</Text>;
+  return (
+    <TouchableOpacity onPress={doLoadFullVersion}>
+      <Text style={{ paddingTop: 10 }}>{fullVersion || version}</Text>
+    </TouchableOpacity>
+  );
 };
 
 export const CheckForUpdates = ({
