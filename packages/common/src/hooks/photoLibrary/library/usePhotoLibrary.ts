@@ -152,7 +152,7 @@ export const usePhotoLibrary = ({
           libQueries.map((q) => q.queryKey)
         );
       saveScheduled = false;
-    }, 10000);
+    }, 5000);
   };
 
   const saveNewCount = async ({
@@ -207,7 +207,6 @@ export const usePhotoLibrary = ({
     fetchLibrary: useQuery({
       queryKey: ['photo-library', targetDrive?.alias, type],
       queryFn: () => fetch(type),
-      staleTime: 10 * 60 * 1000, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
       gcTime: Infinity, // Never => react query will never remove the data from the cache
       enabled: !!targetDrive && !disabled,
     }),
