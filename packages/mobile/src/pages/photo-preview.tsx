@@ -208,8 +208,9 @@ const PreviewSlider = memo(
     doToggleHeader: () => void;
     setActiveDate: (date: Date) => void;
   }) => {
-    const [isGoingLeft, setIsGoingLeft] = useState(true);
+    // console.log('rendering PreviewSlider');
 
+    const [isGoingLeft, setIsGoingLeft] = useState(true);
     const windowSize = useMemo(() => Dimensions.get('window'), [Dimensions]);
 
     const newerFlatListRef = useRef<FlatListComponent<DriveSearchResult, any>>();
@@ -217,18 +218,15 @@ const PreviewSlider = memo(
 
     const baseFlatListProps = {
       onStartReachedThreshold: 0,
+      showsHorizontalScrollIndicator: false,
       getItemLayout: (data: ArrayLike<DriveSearchResult> | null | undefined, index: number) => ({
         length: windowSize.width,
         offset: windowSize.width * index,
         index,
       }),
       horizontal: true,
-      snapToInterval: windowSize.width,
-      snapToAlignment: 'start',
-      decelerationRate: 'fast',
+      pagingEnabled: true,
       keyExtractor: (item: DriveSearchResult) => item.fileId,
-      initialNumToRender: 1,
-      maxToRenderPerBatch: 2,
     } as const;
 
     const hasOlder = olderPhotos && olderPhotos.length >= 1;

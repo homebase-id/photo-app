@@ -73,17 +73,13 @@ export const OdinImage = memo(
     enableZoom,
     onClick,
   }: OdinImageProps) => {
-    const loadSize = enableZoom
-      ? undefined
-      : {
-          pixelHeight:
-            (imageSize?.height
-              ? Math.round(imageSize?.height * (enableZoom ? 4 : 1))
-              : undefined) || 800,
-          pixelWidth:
-            (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 4 : 1)) : undefined) ||
-            800,
-        };
+    const loadSize = {
+      pixelHeight:
+        (imageSize?.height ? Math.round(imageSize?.height * (enableZoom ? 4 : 1)) : undefined) ||
+        800,
+      pixelWidth:
+        (imageSize?.width ? Math.round(imageSize?.width * (enableZoom ? 4 : 1)) : undefined) || 800,
+    };
 
     const embeddedThumbUrl = useMemo(() => {
       if (!previewThumbnail) return;

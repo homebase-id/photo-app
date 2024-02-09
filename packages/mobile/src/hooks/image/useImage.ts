@@ -98,7 +98,7 @@ const useImage = (
     // The blob uri should be much easier to cache than the whole image data
     const blob = new OdinBlob([new Uint8Array(imageData.bytes)], {
       type: imageData.contentType,
-      id: imageFileId,
+      id: `${imageFileId}+${size?.pixelHeight}x${size?.pixelWidth}`,
     });
 
     return {
