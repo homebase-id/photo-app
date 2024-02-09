@@ -18,7 +18,6 @@ export const VideoWithLoader = memo(
     fit = 'cover',
     preview,
     imageSize,
-    enableZoom,
     onClick,
   }: {
     fileId: string;
@@ -27,7 +26,6 @@ export const VideoWithLoader = memo(
     fit?: 'cover' | 'contain';
     preview?: boolean;
     imageSize?: { width: number; height: number };
-    enableZoom: boolean;
     onClick?: () => void;
   }) => {
     const [loadVideo, setLoadVideo] = useState(false);
@@ -49,7 +47,6 @@ export const VideoWithLoader = memo(
               previewThumbnail={previewThumbnail}
               fit={fit}
               imageSize={imageSize}
-              enableZoom={enableZoom}
               onClick={onClick}
               avoidPayload={true}
             />
@@ -90,7 +87,6 @@ export const VideoWithLoader = memo(
               previewThumbnail={previewThumbnail}
               fit={fit}
               imageSize={imageSize}
-              enableZoom={true}
               onClick={doLoadVideo}
               avoidPayload={true}
             />

@@ -170,7 +170,6 @@ export const PhotoItem = memo(
                     height: size,
                   }}
                   fit="cover"
-                  enableZoom={false}
                   preview={true}
                 />
               ) : (
@@ -183,7 +182,6 @@ export const PhotoItem = memo(
                     width: size,
                     height: size,
                   }}
-                  enableZoom={false}
                 />
               )}
             </View>

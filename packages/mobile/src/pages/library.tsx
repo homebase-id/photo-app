@@ -152,7 +152,6 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
             width: itemWidth,
             height: itemWidth,
           }}
-          enableZoom={false}
         />
       ) : (
         <View
