@@ -7,6 +7,7 @@ import {
   FlatList,
   FlatListComponent,
   ListRenderItemInfo,
+  Platform,
   Pressable,
   TouchableOpacity,
   View,
@@ -227,6 +228,10 @@ const PreviewSlider = memo(
       horizontal: true,
       pagingEnabled: true,
       keyExtractor: (item: DriveSearchResult) => item.fileId,
+      pinchGestureEnabled: true,
+      mimimumZoomScale: 1,
+      maximumZoomScale: 3,
+      bouncesZoom: false,
     } as const;
 
     const hasOlder = olderPhotos && olderPhotos.length >= 1;
@@ -264,7 +269,7 @@ const PreviewSlider = memo(
                   width: windowSize.width,
                   height: windowSize.height,
                 }}
-                enableZoom={true}
+                enableZoom={Platform.OS === 'android'}
                 onClick={doToggleHeader}
               />
             ) : (
@@ -276,7 +281,7 @@ const PreviewSlider = memo(
                   width: windowSize.width,
                   height: windowSize.height,
                 }}
-                enableZoom={true}
+                enableZoom={Platform.OS === 'android'}
                 onClick={doToggleHeader}
               />
             )}
