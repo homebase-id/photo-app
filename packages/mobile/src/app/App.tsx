@@ -158,6 +158,7 @@ const AuthenticatedStack = () => {
       <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}>
         <Stack.Navigator
           screenOptions={{
+            gestureEnabled: false,
             headerStyle: {
               backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
             },
@@ -172,7 +173,7 @@ const AuthenticatedStack = () => {
           <Stack.Screen
             name="PhotoPreview"
             component={PhotoPreview}
-            options={{ headerShown: false }}
+            options={{ headerShown: false, gestureEnabled: false }}
           />
           <Stack.Screen
             name="Album"

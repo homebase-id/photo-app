@@ -27,7 +27,7 @@ export const PhotoWithLoader = memo(
     previewThumbnail?: EmbeddedThumb;
     fit?: 'cover' | 'contain';
     imageSize?: { width: number; height: number };
-    enableZoom: boolean;
+    enableZoom?: boolean;
     onClick?: () => void;
   }) => {
     return (
@@ -55,7 +55,7 @@ export interface OdinImageProps {
   previewThumbnail?: EmbeddedThumb;
   probablyEncrypted?: boolean;
   avoidPayload?: boolean;
-  enableZoom: boolean;
+  enableZoom?: boolean;
   onClick?: () => void;
 }
 
@@ -190,7 +190,7 @@ const ZoomableImage = ({
   alt?: string;
 
   fit?: 'cover' | 'contain';
-  enableZoom: boolean;
+  enableZoom?: boolean;
   onClick?: () => void;
   maxScale: number;
 

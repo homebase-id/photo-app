@@ -7,7 +7,6 @@ import {
   FlatList,
   FlatListComponent,
   ListRenderItemInfo,
-  Platform,
   Pressable,
   TouchableOpacity,
   View,
@@ -269,7 +268,6 @@ const PreviewSlider = memo(
                   width: windowSize.width,
                   height: windowSize.height,
                 }}
-                enableZoom={Platform.OS === 'android'}
                 onClick={doToggleHeader}
               />
             ) : (
@@ -281,7 +279,7 @@ const PreviewSlider = memo(
                   width: windowSize.width,
                   height: windowSize.height,
                 }}
-                enableZoom={Platform.OS === 'android'}
+                enableZoom={false}
                 onClick={doToggleHeader}
               />
             )}
@@ -323,10 +321,13 @@ const PreviewSlider = memo(
               }}
               onStartReached={() => {
                 hasOlder && isGoingLeft && setIsGoingLeft(false);
-                newerFlatListRef.current?.scrollToIndex({
-                  index: hasOlder ? 1 : 0,
-                  animated: false,
-                });
+                // Reset this flatList to the first real item; Not the overlap
+                setTimeout(() => {
+                  newerFlatListRef.current?.scrollToIndex({
+                    index: hasOlder ? 1 : 0,
+                    animated: false,
+                  });
+                }, 100);
               }}
               data={dataForLeft}
               inverted={true}
@@ -357,10 +358,13 @@ const PreviewSlider = memo(
               }}
               onStartReached={() => {
                 hasNewer && setIsGoingLeft(true);
-                olderFlatListRef.current?.scrollToIndex({
-                  index: hasNewer ? 1 : 0,
-                  animated: false,
-                });
+                // Reset this flatList to the first real item; Not the overlap
+                setTimeout(() => {
+                  olderFlatListRef.current?.scrollToIndex({
+                    index: hasNewer ? 1 : 0,
+                    animated: false,
+                  });
+                }, 100);
               }}
               onViewableItemsChanged={onViewableItemsChanged}
               viewabilityConfig={{

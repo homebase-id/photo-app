@@ -125,8 +125,8 @@ const SyncDetailsPage = (_props: SettingsProps) => {
         headerRight={headerRight}
       />
       <SafeAreaView>
-        {syncFromCameraRoll ? (
-          <GalleryView>
+        <GalleryView>
+          {syncFromCameraRoll ? (
             <Container>
               <View style={{ display: 'flex', flexDirection: 'column' }}>
                 <View
@@ -190,23 +190,23 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                 </View>
               </View>
             </Container>
-          </GalleryView>
-        ) : (
-          <Container>
-            <Text
-              style={{
-                marginVertical: 16,
-              }}
-            >
-              Back-up your cameraroll into your identity. Your photos will remain secured and only
-              acessible by you.
-            </Text>
-            <Text style={{ opacity: 0.4 }}>
-              During alpha, we only support auto synchronizing recent media
-            </Text>
-            <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
-          </Container>
-        )}
+          ) : (
+            <Container>
+              <Text
+                style={{
+                  marginVertical: 16,
+                }}
+              >
+                Back-up your cameraroll into your identity. Your photos will remain secured and only
+                acessible by you.
+              </Text>
+              <Text style={{ opacity: 0.4 }}>
+                During alpha, we only support auto synchronizing recent media
+              </Text>
+              <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
+            </Container>
+          )}
+        </GalleryView>
       </SafeAreaView>
     </>
   );
