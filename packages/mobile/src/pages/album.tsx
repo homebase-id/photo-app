@@ -61,7 +61,7 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
         headerShadowVisible={false}
         title={album?.name || 'An album'}
         headerTitleAlign="center"
-        headerTitle={album?.name || 'An album'}
+        headerTintColor={isDarkMode ? Colors.white : Colors.black}
         headerLeft={headerLeft}
         headerRight={headerRight}
       />

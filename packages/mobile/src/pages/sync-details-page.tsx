@@ -119,8 +119,8 @@ const SyncDetailsPage = (_props: SettingsProps) => {
         }}
         headerShadowVisible={false}
         title={'Backup'}
+        headerTintColor={isDarkMode ? Colors.white : Colors.black}
         headerTitleAlign="center"
-        headerTitle={'Backup'}
         headerLeft={headerLeft}
         headerRight={headerRight}
       />
