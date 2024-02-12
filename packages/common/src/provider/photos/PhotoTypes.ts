@@ -30,6 +30,7 @@ export interface PhotoFile {
 
 export interface AlbumDefinition {
   fileId?: string;
+  versionTag?: string;
   name: string;
   description?: string;
   tag: string;

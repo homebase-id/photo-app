@@ -47,6 +47,7 @@ const dsrToAlbumDefinition = async (
   return {
     ...payload,
     fileId: dsr.fileId,
+    versionTag: dsr.fileMetadata.versionTag,
   };
 };
 
@@ -75,6 +76,7 @@ export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition
     },
     isEncrypted: encryptAlbums,
     accessControlList: { requiredSecurityGroup: SecurityGroupType.Owner },
+    versionTag: def.versionTag,
   };
 
   return await uploadFile(dotYouClient, instruct, metadata, undefined, undefined, encryptAlbums);

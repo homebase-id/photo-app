@@ -150,8 +150,6 @@ const AuthenticatedStack = () => {
   useSyncFromCameraRoll(Platform.OS === 'ios');
   const { isDarkMode } = useDarkMode();
 
-  const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
-
   return (
     <DotYouClientProvider>
       <BackgroundProvider>
@@ -184,11 +182,9 @@ const AuthenticatedStack = () => {
             <StackAuthenticated.Screen
               name="Album"
               component={AlbumPage}
-              options={({ route }) => ({
-                headerTitleAlign: 'center',
-                headerTitle: () => albumTitle(route.params.albumId),
-                headerBackTitle: 'Library',
-              })}
+              options={{
+                headerShown: false,
+              }}
             />
             <StackAuthenticated.Screen
               name="Type"

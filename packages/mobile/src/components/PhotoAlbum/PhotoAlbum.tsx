@@ -1,12 +1,13 @@
-import { Dimensions, FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, Dimensions, FlatList, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoItem } from '../Photos/PhotoDay/PhotoDay';
 import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { Ellipsis } from '../ui/Icons/icons';
-import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 import { useAlbum, usePhotosInfinte, useSiblingsRangeInfinte, PhotoConfig } from 'photo-app-common';
 import { useQueryClient } from '@tanstack/react-query';
+import { Modal } from '../ui/Modal/Modal';
+import { Input } from '../ui/Form/Input';
+import { Colors } from '../../app/Colors';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -137,38 +138,84 @@ const PhotoAlbum = ({
   );
 };
 
-export const PhotoAlbumContextToggle = ({ albumId }: { albumId: string }) => {
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
+export const PhotoAlbumEditDialog = ({
+  albumId,
+  onClose,
+}: {
+  albumId: string;
+  onClose: () => void;
+}) => {
   const navigation = useNavigation();
 
   const {
     fetch: { data: album },
-    remove: { mutate: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
+    save: { mutateAsync: saveAlbum, status: saveStatus, error: saveError },
+    remove: { mutateAsync: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
   } = useAlbum(albumId);
 
-  const doRemove = () => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+
+  const doRemoveAlbum = async () => {
     if (!album) return;
 
-    removeAlbum(album);
-    setIsInfoOpen(false);
-    navigation.goBack();
+    await Alert.alert(
+      'Are you sure',
+      `Delete your album "${album.name}"? Pictures will stay available in your library`,
+      [
+        {
+          text: 'Confirm',
+          style: 'destructive',
+          onPress: async () => {
+            await removeAlbum(album);
+            navigation.goBack();
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const doSaveAlbum = async () => {
+    if (!album) return;
+    await saveAlbum({
+      ...album,
+      name: name || album.name,
+      description: description || album.description,
+    });
+    onClose();
   };
 
   return (
-    <>
-      <TouchableOpacity onPress={() => setIsInfoOpen(true)}>
-        <Ellipsis color={'blue.400'} />
-      </TouchableOpacity>
-      <ActionSheet isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)}>
-        <ActionSheetItem
-          onPress={() => {
-            doRemove();
+    <Modal onClose={onClose} title={`Edit ${album?.name}`}>
+      <View style={{ marginBottom: 30, width: '100%' }}>
+        <Text style={{ marginBottom: 5, fontWeight: '600' }}>Name</Text>
+        <Input
+          placeholder="Add a name"
+          defaultValue={album?.name}
+          onChangeText={(val) => setName(val)}
+          onSubmitEditing={name ? doSaveAlbum : undefined}
+        />
+      </View>
+      <View style={{ width: '100%' }}>
+        <Text style={{ marginBottom: 5, fontWeight: '600' }}>Description</Text>
+        <Input
+          placeholder="Add a description"
+          defaultValue={album?.description}
+          onChangeText={(val) => setDescription(val)}
+          style={{
+            height: 70,
           }}
-        >
-          <Text>Remove</Text>
-        </ActionSheetItem>
-      </ActionSheet>
-    </>
+          multiline={true}
+          onSubmitEditing={name ? doSaveAlbum : undefined}
+        />
+      </View>
+      <Button title="Save" onPress={doSaveAlbum} />
+      <Button title="Delete Album" onPress={doRemoveAlbum} color={Colors.red[500]} />
+    </Modal>
   );
 };
 

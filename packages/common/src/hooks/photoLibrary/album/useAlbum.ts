@@ -31,7 +31,16 @@ export const useAlbum = (albumKey?: string) => {
       mutationFn: save,
       onMutate(newAlbum) {
         const prevAlbums = queryClient.getQueryData<AlbumDefinition[]>(['albums']);
-        queryClient.setQueryData(['albums'], [...(prevAlbums || []), newAlbum]);
+        if (newAlbum.fileId) {
+          queryClient.setQueryData(
+            ['albums'],
+            prevAlbums?.map((album) =>
+              stringGuidsEqual(album.fileId, newAlbum.fileId) ? newAlbum : album
+            )
+          );
+        } else {
+          queryClient.setQueryData(['albums'], [...(prevAlbums || []), newAlbum]);
+        }
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['albums'] });
