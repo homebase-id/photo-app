@@ -1,7 +1,7 @@
 import { Alert, Button, Dimensions, FlatList, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoItem } from '../Photos/PhotoDay/PhotoDay';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useAlbum, usePhotosInfinte, useSiblingsRangeInfinte, PhotoConfig } from 'photo-app-common';
 import { useQueryClient } from '@tanstack/react-query';
@@ -156,7 +156,7 @@ export const PhotoAlbumEditDialog = ({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const doRemoveAlbum = async () => {
+  const doRemoveAlbum = useCallback(async () => {
     if (!album) return;
 
     await Alert.alert(
@@ -177,9 +177,9 @@ export const PhotoAlbumEditDialog = ({
         },
       ]
     );
-  };
+  }, [album, navigation, removeAlbum]);
 
-  const doSaveAlbum = async () => {
+  const doSaveAlbum = useCallback(async () => {
     if (!album) return;
     await saveAlbum({
       ...album,
@@ -187,7 +187,7 @@ export const PhotoAlbumEditDialog = ({
       description: description || album.description,
     });
     onClose();
-  };
+  }, [album, description, name, onClose, saveAlbum]);
 
   return (
     <Modal onClose={onClose} title={`Edit ${album?.name}`}>

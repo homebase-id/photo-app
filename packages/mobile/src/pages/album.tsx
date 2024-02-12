@@ -1,6 +1,6 @@
 import { HeaderBackButton, Header } from '@react-navigation/elements';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Text } from '../components/ui/Text/Text';
 import { RootStackParamList } from '../app/App';
 import PhotoAlbum, { PhotoAlbumEditDialog } from '../components/PhotoAlbum/PhotoAlbum';
@@ -30,13 +30,10 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
-      clearSelection();
-    });
-
-    return unsubscribe;
-  }, [navigation, clearSelection]);
+  const toggleEditDialog = useCallback(
+    () => setIsEditDialog((oldEditDialog) => !oldEditDialog),
+    [setIsEditDialog]
+  );
 
   const headerLeft = () => (
     <HeaderBackButton
@@ -50,7 +47,7 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
   );
 
   const headerRight = () => (
-    <TouchableOpacity onPress={() => setIsEditDialog(true)} style={{ padding: 5 }}>
+    <TouchableOpacity onPress={toggleEditDialog} style={{ padding: 5 }}>
       <Pencil color={isDarkMode ? Colors.white : Colors.black} size={'md'} />
     </TouchableOpacity>
   );
@@ -84,7 +81,7 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
           clearSelection={clearSelection}
         />
         {isEditDialog ? (
-          <PhotoAlbumEditDialog albumId={albumId} onClose={() => setIsEditDialog(false)} />
+          <PhotoAlbumEditDialog albumId={albumId} onClose={toggleEditDialog} />
         ) : null}
       </SafeAreaView>
     </>
