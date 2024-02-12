@@ -128,7 +128,6 @@ App = CodePush(codePushOptions)(App);
 const StackedRoot = createNativeStackNavigator<AuthStackParamList>();
 const RootStack = () => {
   const { isAuthenticated } = useAuth();
-  console.log('render root stack');
 
   return (
     <NavigationContainer>

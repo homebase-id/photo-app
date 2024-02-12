@@ -27,6 +27,7 @@ export const drives = [
     p: DrivePermissionType.Read + DrivePermissionType.Write,
   },
 ];
+export const permissionKeys = undefined;
 export const appName = 'Homebase - Photos';
 export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
 export const corsHost = 'photos.homebase.id';
@@ -126,7 +127,7 @@ export const useYouAuthAuthorization = () => {
       'homebase-photos://auth/finalize/',
       appName,
       appId,
-      undefined,
+      permissionKeys,
       undefined,
       drives,
       undefined,
