@@ -27,7 +27,7 @@ import TypePage from '../pages/type';
 import { useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import CodePush from 'react-native-code-push';
 import { useDarkMode } from '../hooks/useDarkMode';
-import useAuth from '../hooks/auth/useAuth';
+import { useAuth, useValidTokenCheck } from '../hooks/auth/useAuth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
 import { LibraryType } from 'photo-app-common';
@@ -116,86 +116,92 @@ let App = () => {
         queryClient.resumePausedMutations().then(() => queryClient.invalidateQueries())
       }
     >
-      <DotYouClientProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootStack />
-        </GestureHandlerRootView>
-      </DotYouClientProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <RootStack />
+      </GestureHandlerRootView>
     </PersistQueryClientProvider>
   );
 };
 const codePushOptions = { checkFrequency: CodePush.CheckFrequency.MANUAL };
 App = CodePush(codePushOptions)(App);
 
+const StackedRoot = createNativeStackNavigator<AuthStackParamList>();
 const RootStack = () => {
-  const Stack = createNativeStackNavigator<AuthStackParamList>();
   const { isAuthenticated } = useAuth();
+  console.log('render root stack');
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <StackedRoot.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="Authenticated" component={AuthenticatedStack} />
+          <StackedRoot.Screen name="Authenticated" component={AuthenticatedStack} />
         ) : (
-          <>
-            <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
-          </>
+          <StackedRoot.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
         )}
-      </Stack.Navigator>
+      </StackedRoot.Navigator>
     </NavigationContainer>
   );
 };
 
+const StackAuthenticated = createNativeStackNavigator<RootStackParamList>();
 const AuthenticatedStack = () => {
+  useValidTokenCheck();
   useSyncFromCameraRoll(Platform.OS === 'ios');
   const { isDarkMode } = useDarkMode();
-  const Stack = createNativeStackNavigator<RootStackParamList>();
 
   const albumTitle = (albumId: string) => <AlbumTitle albumId={albumId} />;
 
   return (
-    <BackgroundProvider>
-      <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}>
-        <Stack.Navigator
-          screenOptions={{
-            gestureEnabled: false,
-            headerStyle: {
-              backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-            },
-            headerTitleStyle: {
-              color: isDarkMode ? Colors.white : Colors.black,
-            },
-            headerTintColor: isDarkMode ? Colors.white : Colors.black,
-            headerShadowVisible: false,
-          }}
+    <DotYouClientProvider>
+      <BackgroundProvider>
+        <View
+          style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}
         >
-          <Stack.Screen name="Home" component={TabStack} options={{ headerShown: false }} />
-          <Stack.Screen
-            name="PhotoPreview"
-            component={PhotoPreview}
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-          <Stack.Screen
-            name="Album"
-            component={AlbumPage}
-            options={({ route }) => ({
-              headerTitleAlign: 'center',
-              headerTitle: () => albumTitle(route.params.albumId),
-              headerBackTitle: 'Library',
-            })}
-          />
-          <Stack.Screen
-            name="Type"
-            component={TypePage}
-            options={({ route }) => ({
-              headerTitleAlign: 'center',
-              headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
-              headerBackTitle: 'Library',
-            })}
-          />
-        </Stack.Navigator>
-      </View>
-    </BackgroundProvider>
+          <StackAuthenticated.Navigator
+            screenOptions={{
+              gestureEnabled: false,
+              headerStyle: {
+                backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+              },
+              headerTitleStyle: {
+                color: isDarkMode ? Colors.white : Colors.black,
+              },
+              headerTintColor: isDarkMode ? Colors.white : Colors.black,
+              headerShadowVisible: false,
+            }}
+          >
+            <StackAuthenticated.Screen
+              name="Home"
+              component={TabStack}
+              options={{ headerShown: false }}
+            />
+            <StackAuthenticated.Screen
+              name="PhotoPreview"
+              component={PhotoPreview}
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <StackAuthenticated.Screen
+              name="Album"
+              component={AlbumPage}
+              options={({ route }) => ({
+                headerTitleAlign: 'center',
+                headerTitle: () => albumTitle(route.params.albumId),
+                headerBackTitle: 'Library',
+              })}
+            />
+            <StackAuthenticated.Screen
+              name="Type"
+              component={TypePage}
+              options={({ route }) => ({
+                headerTitleAlign: 'center',
+                headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
+                headerBackTitle: 'Library',
+              })}
+            />
+          </StackAuthenticated.Navigator>
+        </View>
+      </BackgroundProvider>
+    </DotYouClientProvider>
   );
 };
 
@@ -205,16 +211,16 @@ type TabIconProps = {
   size: number;
 };
 
+const TabBottom = createBottomTabNavigator<TabStackParamList>();
 const TabStack = () => {
   const { isDarkMode } = useDarkMode();
-  const Tab = createBottomTabNavigator<TabStackParamList>();
 
   const photosIcon = (props: TabIconProps) => <Images {...props} />;
   const imageLibraryIcon = (props: TabIconProps) => <ImageLibrary {...props} />;
   const settingsIcon = (props: TabIconProps) => <Cog {...props} />;
 
   return (
-    <Tab.Navigator
+    <TabBottom.Navigator
       screenOptions={{
         tabBarStyle: {
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
@@ -234,7 +240,7 @@ const TabStack = () => {
         tabBarShowLabel: false,
       }}
     >
-      <Tab.Screen
+      <TabBottom.Screen
         name="Photos"
         component={PhotosPage}
         options={{
@@ -242,14 +248,14 @@ const TabStack = () => {
           tabBarIcon: photosIcon,
         }}
       />
-      <Tab.Screen
+      <TabBottom.Screen
         name="Library"
         component={LibraryPage}
         options={{
           tabBarIcon: imageLibraryIcon,
         }}
       />
-      <Tab.Screen
+      <TabBottom.Screen
         name="Settings"
         component={SettingsStack}
         options={{
@@ -257,7 +263,7 @@ const TabStack = () => {
           headerShown: false,
         }}
       />
-    </Tab.Navigator>
+    </TabBottom.Navigator>
   );
 };
 
@@ -266,12 +272,12 @@ export type SettingsStackParamList = {
   SyncDetails: undefined;
 };
 
+const StackSettings = createNativeStackNavigator<SettingsStackParamList>();
 const SettingsStack = () => {
   const { isDarkMode } = useDarkMode();
-  const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
   return (
-    <Stack.Navigator
+    <StackSettings.Navigator
       screenOptions={{
         headerStyle: {
           backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
@@ -283,17 +289,17 @@ const SettingsStack = () => {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen
+      <StackSettings.Screen
         name="Profile"
         component={SettingsPage}
         options={{ headerShown: true, headerTitle: 'Settings' }}
       />
-      <Stack.Screen
+      <StackSettings.Screen
         name="SyncDetails"
         component={SyncDetailsPage}
         options={{ headerShown: false }}
       />
-    </Stack.Navigator>
+    </StackSettings.Navigator>
   );
 };
 

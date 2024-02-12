@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Button,
   View,
@@ -153,7 +153,7 @@ const LoginComponent = () => {
 
   useEffect(() => setInvalid(false), [odinId]);
 
-  const doLogin = async () => {
+  const doLogin = useCallback(async () => {
     if (!odinId) {
       setInvalid(true);
       return;
@@ -185,7 +185,7 @@ const LoginComponent = () => {
 
       if (result.type === 'success' && result.url) Linking.openURL(result.url);
     } else await Linking.openURL(url);
-  };
+  }, [authParams, odinId]);
 
   if (finalizeState === 'loading' || finalizeState === 'preparing') return <ActivityIndicator />;
 

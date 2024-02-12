@@ -5,3 +5,4 @@ declare global {
 }
 
 declare module 'react-native-exif';
+declare module '*.png';
