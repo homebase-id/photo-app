@@ -84,8 +84,10 @@ const INCLUDED_QUERY_KEYS = [
   'photos',
   'photos-infinite',
 
-  // Big data (base64 uri's)
+  // Small data (blobs to local file Uri)
   'image',
+
+  // Big data (base64 uri's)
   // 'tinyThumb',
 ];
 
