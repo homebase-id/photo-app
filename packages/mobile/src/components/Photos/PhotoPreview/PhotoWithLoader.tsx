@@ -114,6 +114,8 @@ export const OdinImage = memo(
       naturalSize
     );
 
+    const hasCachedImage = !!cachedImage?.url;
+
     return (
       <View
         style={{
@@ -134,11 +136,11 @@ export const OdinImage = memo(
 
               ...imageSize,
             }}
-            blurRadius={2}
+            blurRadius={hasCachedImage ? 0 : 2}
           />
         ) : null}
 
-        {!imageData?.url ? (
+        {!imageData?.url && !hasCachedImage ? (
           <View
             style={{
               position: 'absolute',

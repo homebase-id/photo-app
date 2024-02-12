@@ -87,7 +87,7 @@ android {
         versionName "0.0.1"
     }
     signingConfigs {
-         release {
+        release {
             if (System.getenv("SIGNING_KEYSTORE_FILE_PATH")?.trim()) {
                 storeFile = file(System.getenv("SIGNING_KEYSTORE_FILE_PATH"))
                 storePassword System.getenv("SIGNING_STORE_PASSWORD")

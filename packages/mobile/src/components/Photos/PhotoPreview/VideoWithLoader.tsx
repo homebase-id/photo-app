@@ -6,7 +6,7 @@ import { Colors } from '../../../app/Colors';
 import WebView from 'react-native-webview';
 import { TouchableWithoutFeedback } from 'react-native';
 import { Play } from '../../ui/Icons/icons';
-import useAuth, { corsHost } from '../../../hooks/auth/useAuth';
+import { useAuth, corsHost } from '../../../hooks/auth/useAuth';
 import { uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
 
 // Memo to performance optimize the FlatList
@@ -124,15 +124,7 @@ export const VideoWithLoader = memo(
   }
 );
 
-const OdinVideo = ({ targetDrive, fileId }: { targetDrive: TargetDrive; fileId: string }) => {
-  // return Platform.OS === 'ios' ? (
-  //   <OdinVideoDownload fileId={fileId} />
-  // ) : (
-  return <OdinVideoWeb targetDrive={targetDrive} fileId={fileId} />;
-  // );
-};
-
-const OdinVideoWeb = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
+const OdinVideo = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
   const { authToken, getIdentity, getSharedSecret } = useAuth();
   const identity = getIdentity();
 

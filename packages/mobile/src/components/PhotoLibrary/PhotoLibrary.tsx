@@ -128,7 +128,6 @@ export const PhotoMonth = ({
   monthMeta,
   type,
   toggleSelection,
-  rangeSelection,
   isSelected,
   isSelecting,
 }: {

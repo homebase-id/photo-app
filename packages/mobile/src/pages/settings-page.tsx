@@ -20,7 +20,7 @@ import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import codePush from 'react-native-code-push';
-import useAuth from '../hooks/auth/useAuth';
+import { useAuth } from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { useQueryClient } from '@tanstack/react-query';

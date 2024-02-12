@@ -1,6 +1,6 @@
 import { DotYouClientContext } from 'photo-app-common';
 import { ReactNode, useMemo } from 'react';
-import useAuth from '../../hooks/auth/useAuth';
+import { useAuth } from '../../hooks/auth/useAuth';
 
 export const DotYouClientProvider = ({ children }: { children: ReactNode }) => {
   const { getDotYouClient, isAuthenticated } = useAuth();

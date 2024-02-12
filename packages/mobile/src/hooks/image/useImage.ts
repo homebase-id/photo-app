@@ -36,7 +36,7 @@ const useImage = (
     const cachedEntries = queryClient
       .getQueryCache()
       .findAll({
-        queryKey: ['image', odinId, imageDrive?.alias, imageFileId],
+        queryKey: ['image', odinId || '', imageDrive?.alias, imageFileId],
         exact: false,
       })
       .filter((query) => query.state.status !== 'error');
@@ -112,7 +112,7 @@ const useImage = (
     fetch: useQuery({
       queryKey: [
         'image',
-        odinId,
+        odinId || '',
         imageDrive?.alias,
         imageFileId,
         // Rounding the cache key of the size so close enough sizes will be cached together
@@ -128,7 +128,7 @@ const useImage = (
       const cachedEntries = queryClient
         .getQueryCache()
         .findAll({
-          queryKey: ['image', odinId, imageDrive?.alias, imageFileId],
+          queryKey: ['image', odinId || '', imageDrive?.alias, imageFileId],
           exact: false,
         })
         .filter((query) => query.state.status === 'success');
