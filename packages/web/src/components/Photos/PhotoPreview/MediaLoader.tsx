@@ -1,7 +1,8 @@
 import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
-import { PhotoWithLoader } from './PhotoWithLoader';
 import { VideoWithLoader } from './VideoWithLoader';
-import { PhotoConfig } from 'photo-app-common';
+import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
+import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@youfoundation/ui-lib';
+import { useState } from 'react';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -9,13 +10,11 @@ const MediaWithLoader = ({
   media,
   fileId,
   lastModified,
-  className,
   original,
 }: {
   media?: DriveSearchResult;
   fileId?: string;
   lastModified: number | undefined;
-  className?: string;
   original?: boolean;
 }) => {
   if (!media || !fileId) return <div className="relative h-full w-[100vw]"></div>;
@@ -28,20 +27,76 @@ const MediaWithLoader = ({
       targetDrive={targetDrive}
       lastModified={lastModified}
       fit="contain"
-      className={className}
+      className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain flex`}
       skipChunkedPlayback={original}
     />
   ) : (
-    <PhotoWithLoader
+    <CustomOdinImage
       fileId={fileId}
-      targetDrive={targetDrive}
       lastModified={lastModified}
-      previewThumbnail={media?.fileMetadata.appData.previewThumbnail}
-      size={!original ? { pixelWidth: 1200, pixelHeight: 1200 } : 'full'}
-      fit="contain"
+      original={original}
+      media={media}
       key={fileId}
-      className={className}
     />
+  );
+};
+
+const CustomOdinImage = ({
+  media,
+  fileId,
+  lastModified,
+
+  original,
+}: {
+  media: DriveSearchResult;
+  fileId: string;
+  lastModified: number | undefined;
+
+  original?: boolean;
+}) => {
+  const dotYouClient = useDotYouClientContext();
+  const [tinyLoaded, setTinyLoaded] = useState(false);
+  const [finalLoaded, setFinalLoaded] = useState(false);
+
+  return (
+    <div className="relative h-full w-full">
+      <OdinPreviewImage
+        className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity delay-500 ${finalLoaded ? 'opacity-0' : 'opacity-100'}`}
+        dotYouClient={dotYouClient}
+        fileId={fileId}
+        targetDrive={targetDrive}
+        lastModified={lastModified}
+        previewThumbnail={media.fileMetadata.appData.previewThumbnail}
+        fileKey={DEFAULT_PAYLOAD_KEY}
+        blur="auto"
+        onLoad={() => setTinyLoaded(true)}
+      />
+      {tinyLoaded ? (
+        original ? (
+          <OdinPayloadImage
+            className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity duration-300 ${finalLoaded ? 'opacity-100' : 'opacity-0'}`}
+            dotYouClient={dotYouClient}
+            fileId={fileId}
+            targetDrive={targetDrive}
+            fileKey={DEFAULT_PAYLOAD_KEY}
+            onLoad={() => setFinalLoaded(true)}
+            key={'original'}
+          />
+        ) : (
+          <OdinThumbnailImage
+            className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity duration-300 ${finalLoaded ? 'opacity-100' : 'opacity-0'}`}
+            dotYouClient={dotYouClient}
+            fileId={fileId}
+            targetDrive={targetDrive}
+            lastModified={lastModified}
+            fileKey={DEFAULT_PAYLOAD_KEY}
+            loadSize={{ pixelHeight: 1200, pixelWidth: 1200 }}
+            onLoad={() => setFinalLoaded(true)}
+            key={'thumbnail'}
+          />
+        )
+      ) : null}
+    </div>
   );
 };
 

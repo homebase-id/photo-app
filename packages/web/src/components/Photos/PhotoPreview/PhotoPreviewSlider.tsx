@@ -103,7 +103,6 @@ const PhotoPreviewSlider = ({
                 media={photo}
                 fileId={photo.fileId}
                 lastModified={photo.fileMetadata.updated}
-                className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain`}
                 original={original}
                 key={`${photo.fileId}-${original}`}
               />

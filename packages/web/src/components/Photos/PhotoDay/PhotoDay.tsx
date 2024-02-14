@@ -254,7 +254,6 @@ export const PhotoItem = ({
                 targetDrive={targetDrive}
                 lastModified={photoDsr.fileMetadata.updated}
                 previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
-                size={{ pixelWidth: 200, pixelHeight: 200 }}
                 fit="cover"
                 className="h-full w-full"
               />

@@ -1,9 +1,4 @@
-import {
-  DEFAULT_PAYLOAD_KEY,
-  EmbeddedThumb,
-  TargetDrive,
-  ImageSize,
-} from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
 import { OdinImage } from '@youfoundation/ui-lib';
 import { useDotYouClientContext } from 'photo-app-common';
 
@@ -12,7 +7,6 @@ export const PhotoWithLoader = ({
   targetDrive,
   previewThumbnail,
   lastModified,
-  size,
   fit = 'cover',
   className,
 }: {
@@ -20,7 +14,6 @@ export const PhotoWithLoader = ({
   targetDrive: TargetDrive;
   previewThumbnail?: EmbeddedThumb;
   lastModified: number | undefined;
-  size?: ImageSize | 'full';
   fit?: 'cover' | 'contain';
   className?: string;
 }) => {
@@ -34,7 +27,6 @@ export const PhotoWithLoader = ({
       fileKey={DEFAULT_PAYLOAD_KEY}
       lastModified={lastModified}
       previewThumbnail={previewThumbnail}
-      explicitSize={size}
       fit={fit}
       className={className}
     />
