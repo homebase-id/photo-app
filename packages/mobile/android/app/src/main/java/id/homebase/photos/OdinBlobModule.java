@@ -34,9 +34,6 @@ public class OdinBlobModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void encryptFileWithAesCbc16(String inputFilePath, String outputFilePath, String base64Key, String base64Iv, Promise promise) {
-        Log.d("CalendarModule", "Create event called with name: " + inputFilePath
-                + " and location: " + outputFilePath);
-
         try {
             byte[] keyBytes = Base64.getDecoder().decode(base64Key);
             byte[] ivBytes = Base64.getDecoder().decode(base64Iv);
@@ -80,8 +77,6 @@ public class OdinBlobModule extends ReactContextBaseJavaModule {
                 // Write the last block of encrypted data (with padding)
                 byte[] finalEncryptedBytes = cipher.doFinal();
                 fos.write(finalEncryptedBytes);
-
-                Log.d("CalendarModule","File encrypted successfully.");
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -5,7 +5,7 @@ import {
   ImageSize,
   TargetDrive,
 } from '@youfoundation/js-lib/core';
-import { useDotYouClientContext, usePhoto, usePhotoMetadata } from 'photo-app-common';
+import { useDotYouClientContext } from 'photo-app-common';
 
 export const VideoWithLoader = ({
   fileId,

@@ -19,7 +19,7 @@ import {
 import { Platform, View } from 'react-native';
 import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
-import AlbumPage, { AlbumTitle } from '../pages/album';
+import AlbumPage from '../pages/album';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SettingsPage from '../pages/settings-page';
 import SyncDetailsPage from '../pages/sync-details-page';

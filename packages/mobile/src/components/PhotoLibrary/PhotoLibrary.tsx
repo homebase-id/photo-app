@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, FlatList, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoDay } from '../Photos/PhotoDay/PhotoDay';
@@ -50,16 +50,22 @@ const PhotoLibrary = ({
     toFileId: selectionRangeTo,
   });
 
-  const doToggleSelection = (fileId: string) => {
-    if (!isSelected(fileId)) setSelectionRangeFrom(fileId);
+  const doToggleSelection = useCallback(
+    (fileId: string) => {
+      if (!isSelected(fileId)) setSelectionRangeFrom(fileId);
 
-    toggleSelection(fileId);
-  };
+      toggleSelection(fileId);
+    },
+    [isSelected, toggleSelection]
+  );
 
-  const doRangeSelection = (fileId: string) => {
-    toggleSelection(fileId);
-    if (selectionRangeFrom) setSelectionRangeTo(fileId);
-  };
+  const doRangeSelection = useCallback(
+    (fileId: string) => {
+      toggleSelection(fileId);
+      if (selectionRangeFrom) setSelectionRangeTo(fileId);
+    },
+    [selectionRangeFrom, toggleSelection]
+  );
 
   useEffect(() => {
     if (selection && selectionRangeFrom && selectionRangeTo) {
@@ -79,21 +85,47 @@ const PhotoLibrary = ({
   }).invalidateQueries;
 
   const [refreshing, setRefreshing] = useState(false);
-  const doRefresh = async () => {
+  const doRefresh = useCallback(async () => {
     setRefreshing(true);
-
     queryClient.invalidateQueries();
-
     // Refetch library;
     await refetchLibrary();
     // (trigger) Refetch photos
     await invalidatePhotos(type);
-
     setRefreshing(false);
-  };
+  }, [invalidatePhotos, queryClient, refetchLibrary, type]);
 
-  const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
-    year.months.map((month) => ({ year: year.year, ...month }))
+  const monthsToShow = useMemo(
+    () =>
+      photoLibrary?.yearsWithMonths?.flatMap((year) =>
+        year.months.map((month) => ({ year: year.year, ...month }))
+      ),
+    [photoLibrary]
+  );
+
+  const renderItem = useCallback(
+    ({
+      item: month,
+      index,
+    }: {
+      item: {
+        month: number;
+        photosThisMonth: number;
+        year: number;
+      };
+      index: number;
+    }) => (
+      <PhotoMonth
+        key={`${index}_${month.photosThisMonth}`}
+        monthMeta={month}
+        type={type}
+        toggleSelection={doToggleSelection}
+        rangeSelection={doRangeSelection}
+        isSelected={isSelected}
+        isSelecting={isSelecting}
+      />
+    ),
+    [doRangeSelection, doToggleSelection, isSelected, isSelecting, type]
   );
 
   if (!monthsToShow?.length) {
@@ -109,192 +141,139 @@ const PhotoLibrary = ({
       keyExtractor={(item, index) => `${index}_${item.month}`}
       initialNumToRender={1}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={doRefresh} />}
-      renderItem={({ item: month, index }) => (
-        <PhotoMonth
-          key={`${index}_${month.photosThisMonth}`}
-          monthMeta={month}
-          type={type}
-          toggleSelection={doToggleSelection}
-          rangeSelection={doRangeSelection}
-          isSelected={isSelected}
-          isSelecting={isSelecting}
-        />
-      )}
+      renderItem={renderItem}
     />
   );
 };
 
-export const PhotoMonth = ({
-  monthMeta,
-  type,
-  toggleSelection,
-  isSelected,
-  isSelecting,
-}: {
-  monthMeta: {
-    month: number;
-    photosThisMonth: number;
-    year: number;
-  };
-  type: LibraryType;
-  toggleSelection: (fileId: string) => void;
-  rangeSelection: (fileId: string) => void;
-  isSelected: (fileId: string) => boolean;
-  isSelecting?: boolean;
-}) => {
-  const { year, month } = monthMeta;
-
-  const monthInDateObj = createDateObject(year, month, 1);
-  const {
-    data: photosInfinte,
-    isFetched: photosFetched,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = usePhotosByMonth({
-    targetDrive,
+export const PhotoMonth = memo(
+  ({
+    monthMeta,
     type,
-    date: monthInDateObj,
-  }).fetchPhotos;
+    toggleSelection,
+    isSelected,
+    isSelecting,
+  }: {
+    monthMeta: {
+      month: number;
+      photosThisMonth: number;
+      year: number;
+    };
+    type: LibraryType;
+    toggleSelection: (fileId: string) => void;
+    rangeSelection: (fileId: string) => void;
+    isSelected: (fileId: string) => boolean;
+    isSelecting?: boolean;
+  }) => {
+    const { year, month } = monthMeta;
 
-  const { mutate: updateCount } = usePhotoLibrary({
-    targetDrive: targetDrive,
-    type,
-    disabled: true,
-  }).updateCount;
+    const monthInDateObj = useMemo(() => createDateObject(year, month, 1), [year, month]);
+    const {
+      data: photosInfinte,
+      isFetched: photosFetched,
+      hasNextPage,
+      fetchNextPage,
+      isFetchingNextPage,
+    } = usePhotosByMonth({
+      targetDrive,
+      type,
+      date: monthInDateObj,
+    }).fetchPhotos;
 
-  const photos = useMemo(
-    () => photosInfinte?.pages?.flatMap((page) => page.results),
-    [photosInfinte]
-  );
+    const photos = useMemo(
+      () => photosInfinte?.pages?.flatMap((page) => page.results),
+      [photosInfinte]
+    );
 
-  useEffect(() => {
-    if (!hasNextPage && photosFetched) {
-      if (photos?.length !== monthMeta.photosThisMonth) {
-        // All photos fetched
-        updateCount({
-          type,
-          date: monthInDateObj,
-          newCount: photos?.length || 0,
-        });
-      }
-    }
-  }, [photos, type, hasNextPage, photosFetched, monthMeta, updateCount, monthInDateObj]);
+    const { mutate: updateCount } = usePhotoLibrary({
+      targetDrive: targetDrive,
+      type,
+      disabled: true,
+    }).updateCount;
 
-  // Might be improved by using a SectionList on the higher level... But for now let's assume the data per month is rather "limited"
-  // Also, it would mean we would have to abondon the component structure, with the usePhotosByMonth hook
-  useEffect(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  // Build daily meta from photos for this month
-  const days: PhotoMetaDay[] = useMemo(
-    () =>
-      photos?.reduce((days, photo) => {
-        const dateNumber = new Date(
-          photo.fileMetadata.appData.userDate || photo.fileMetadata.created
-        ).getDate();
-
-        const dayIndex = days.findIndex((metaDay) => metaDay.day === dateNumber);
-        if (dayIndex === -1) {
-          days.push({
-            day: dateNumber,
-            photosThisDay: 1,
+    useEffect(() => {
+      if (!hasNextPage && photosFetched) {
+        if (photos?.length !== monthMeta.photosThisMonth) {
+          // All photos fetched
+          updateCount({
+            type,
+            date: monthInDateObj,
+            newCount: photos?.length || 0,
           });
-        } else days[dayIndex].photosThisDay++;
+        }
+      }
+    }, [photos, type, hasNextPage, photosFetched, monthMeta, updateCount, monthInDateObj]);
 
-        return days;
-      }, [] as PhotoMetaDay[]) || [],
-    [photos]
-  );
+    // Might be improved by using a SectionList on the higher level... But for now let's assume the data per month is rather "limited"
+    // Also, it would mean we would have to abondon the component structure, with the usePhotosByMonth hook
+    useEffect(() => {
+      if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const title = useMemo(() => {
-    return year === new Date().getFullYear()
-      ? createDateObject(year, month).toLocaleDateString(undefined, thisYearMonthFormat)
-      : createDateObject(year, month).toLocaleDateString(undefined, monthFormat);
-  }, [year, month]);
+    // Build daily meta from photos for this month
+    const days: PhotoMetaDay[] = useMemo(
+      () =>
+        photos?.reduce((days, photo) => {
+          const dateNumber = new Date(
+            photo.fileMetadata.appData.userDate || photo.fileMetadata.created
+          ).getDate();
 
-  return (
-    <View>
-      {monthMeta.photosThisMonth >= 1 ? (
-        <Container>
-          <Text>{title}</Text>
-        </Container>
-      ) : null}
+          const dayIndex = days.findIndex((metaDay) => metaDay.day === dateNumber);
+          if (dayIndex === -1) {
+            days.push({
+              day: dateNumber,
+              photosThisDay: 1,
+            });
+          } else days[dayIndex].photosThisDay++;
 
-      {photosFetched ? (
-        days.map((day) => {
-          const dayInDateObj = createDateObject(year, month, day.day);
+          return days;
+        }, [] as PhotoMetaDay[]) || [],
+      [photos]
+    );
 
-          return (
-            <PhotoDay
-              date={dayInDateObj}
-              photos={
-                photos?.filter((photo) => {
-                  const photoDate = new Date(
-                    photo.fileMetadata.appData.userDate || photo.fileMetadata.created
-                  );
+    const title = useMemo(() => {
+      return year === new Date().getFullYear()
+        ? createDateObject(year, month).toLocaleDateString(undefined, thisYearMonthFormat)
+        : createDateObject(year, month).toLocaleDateString(undefined, monthFormat);
+    }, [year, month]);
 
-                  return photoDate.getDate() === day.day;
-                }) || []
-              }
-              targetDrive={targetDrive}
-              type={type}
-              key={`${year}-${month}-${day.day}`}
-              toggleSelection={toggleSelection}
-              isSelected={isSelected}
-              isSelecting={isSelecting}
-            />
-          );
-        })
-      ) : (
-        <PhotoMonthLoading photosCount={monthMeta.photosThisMonth} />
-      )}
-    </View>
-  );
-};
+    return (
+      <View>
+        {monthMeta.photosThisMonth >= 1 ? (
+          <Container>
+            <Text>{title}</Text>
+          </Container>
+        ) : null}
 
-const PhotoMonthLoading = ({ photosCount }: { photosCount: number }) => {
-  const { isDarkMode } = useDarkMode();
+        {photosFetched
+          ? days.map((day) => {
+              const dayInDateObj = createDateObject(year, month, day.day);
 
-  const photoLoaders = useMemo(() => {
-    const aspect = 1;
-    const size = Math.round(Dimensions.get('window').width / 4);
+              return (
+                <PhotoDay
+                  date={dayInDateObj}
+                  photos={
+                    photos?.filter((photo) => {
+                      const photoDate = new Date(
+                        photo.fileMetadata.appData.userDate || photo.fileMetadata.created
+                      );
 
-    return new Array(photosCount).fill(0).map((_, index) => (
-      <View
-        key={index}
-        style={{
-          height: size,
-          width: aspect * size,
-          padding: 1,
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: isDarkMode ? 'rgb(51, 65, 85)' : 'white',
-
-            height: '100%',
-            width: '100%',
-            margin: 1,
-          }}
-        />
+                      return photoDate.getDate() === day.day;
+                    }) || []
+                  }
+                  targetDrive={targetDrive}
+                  type={type}
+                  key={`${year}-${month}-${day.day}`}
+                  toggleSelection={toggleSelection}
+                  isSelected={isSelected}
+                  isSelecting={isSelecting}
+                />
+              );
+            })
+          : null}
       </View>
-    ));
-  }, [photosCount, isDarkMode]);
-
-  return (
-    <View
-      style={{
-        paddingTop: 8,
-        margin: -1,
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-      }}
-    >
-      {photoLoaders}
-    </View>
-  );
-};
+    );
+  }
+);
 
 export default PhotoLibrary;

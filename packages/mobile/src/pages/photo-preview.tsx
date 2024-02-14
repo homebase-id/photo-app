@@ -28,6 +28,7 @@ type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const Photo = ({ route, navigation }: PhotoProps) => {
+  console.log('rendering Photo');
   const { photoId: fileId } = route.params;
 
   const { data: fileHeader } = useFileHeader({
@@ -64,6 +65,7 @@ interface PhotoLibPreviewProps extends PhotoProps {
 
 const PhotoPreview = memo(
   ({ currentDate, fileHeader, route, navigation }: PhotoLibPreviewProps) => {
+    console.log('rendering PhotoPreview');
     const { typeId, albumId } = route.params;
     const isAlbumView = albumId || typeId === 'favorites';
 
@@ -106,7 +108,14 @@ const PhotoPreview = memo(
       [olderPhotos?.pages]
     );
 
-    const doGoBack = useCallback(() => navigation.goBack(), [navigation]);
+    const doGoBack = useCallback(() => {
+      console.log('goBack');
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('Home');
+      }
+    }, [navigation]);
 
     // The Flatlists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
     if (
@@ -157,6 +166,8 @@ const InnerPhotoPreview = memo(
     hasNewerPage: boolean | undefined;
     fetchNewerPage: () => void;
   }) => {
+    console.log('rendering InnerPhotoPreview');
+
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [activeDate, setActiveDate] = useState(currentDate);
     const [showHeader, setShowHeader] = useState(true);
@@ -231,6 +242,7 @@ const PreviewSlider = memo(
       mimimumZoomScale: 1,
       maximumZoomScale: 3,
       bouncesZoom: false,
+      initialNumToRender: 2,
     } as const;
 
     const hasOlder = olderPhotos && olderPhotos.length >= 1;
@@ -380,91 +392,93 @@ const PreviewSlider = memo(
   }
 );
 
-const PreviewHeader = ({
-  currentDate,
-  goBack,
-  setIsInfoOpen,
-  backTitle,
-  showHeader,
-}: {
-  currentDate: Date;
-  goBack: () => void;
-  setIsInfoOpen: (isOpen: boolean) => void;
-  backTitle: string;
-  showHeader: boolean;
-}) => {
-  const { isDarkMode } = useDarkMode();
+const PreviewHeader = memo(
+  ({
+    currentDate,
+    goBack,
+    setIsInfoOpen,
+    backTitle,
+    showHeader,
+  }: {
+    currentDate: Date;
+    goBack: () => void;
+    setIsInfoOpen: (isOpen: boolean) => void;
+    backTitle: string;
+    showHeader: boolean;
+  }) => {
+    const { isDarkMode } = useDarkMode();
 
-  // TODO, override currentdate, after any scrolling
-  const headerTitle = () => (
-    <View
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <Text
+    // TODO, override currentdate, after any scrolling
+    const headerTitle = () => (
+      <View
         style={{
-          fontWeight: '500',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
-        {currentDate?.toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </Text>
-      <Text>
-        {currentDate?.toLocaleTimeString(undefined, {
-          hour: 'numeric',
-          minute: 'numeric',
-        })}
-      </Text>
-    </View>
-  );
+        <Text
+          style={{
+            fontWeight: '500',
+          }}
+        >
+          {currentDate?.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </Text>
+        <Text>
+          {currentDate?.toLocaleTimeString(undefined, {
+            hour: 'numeric',
+            minute: 'numeric',
+          })}
+        </Text>
+      </View>
+    );
 
-  const headerLeft = () => (
-    <HeaderBackButton
-      style={{ position: 'absolute', left: 0 }}
-      canGoBack={true}
-      onPress={() => goBack()}
-      label={backTitle}
-      labelVisible={false}
-      tintColor={isDarkMode ? Colors.white : Colors.black}
-    />
-  );
-  const headerRight = () => (
-    <TouchableOpacity onPress={() => setIsInfoOpen(true)} style={{ padding: 5 }}>
-      <InfoIcon color={'blue.400'} />
-    </TouchableOpacity>
-  );
-
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        opacity: showHeader ? 1 : 0,
-        paddingVertical: 3,
-        zIndex: 10,
-      }}
-    >
-      <Header
-        headerStyle={{
-          backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-        }}
-        headerShadowVisible={false}
-        title={'Photo'}
-        headerTitleAlign="center"
-        headerTitle={headerTitle}
-        headerLeft={headerLeft}
-        headerRight={headerRight}
+    const headerLeft = () => (
+      <HeaderBackButton
+        style={{ position: 'absolute', left: 0 }}
+        canGoBack={true}
+        onPress={goBack}
+        label={backTitle}
+        labelVisible={false}
+        tintColor={isDarkMode ? Colors.white : Colors.black}
       />
-    </View>
-  );
-};
+    );
+    const headerRight = () => (
+      <TouchableOpacity onPress={() => setIsInfoOpen(true)} style={{ padding: 5 }}>
+        <InfoIcon color={'blue.400'} />
+      </TouchableOpacity>
+    );
+
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          opacity: showHeader ? 1 : 0,
+          paddingVertical: 3,
+          zIndex: 10,
+        }}
+      >
+        <Header
+          headerStyle={{
+            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+          }}
+          headerShadowVisible={false}
+          title={'Photo'}
+          headerTitleAlign="center"
+          headerTitle={headerTitle}
+          headerLeft={headerLeft}
+          headerRight={headerRight}
+        />
+      </View>
+    );
+  }
+);
 
 export default Photo;
