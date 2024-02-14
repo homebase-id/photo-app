@@ -32,6 +32,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
 import { LibraryType } from 'photo-app-common';
 import { BackgroundProvider } from './BackgroundProvider';
+import { memo, useCallback } from 'react';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -145,7 +146,7 @@ const RootStack = () => {
 };
 
 const StackAuthenticated = createNativeStackNavigator<RootStackParamList>();
-const AuthenticatedStack = () => {
+const AuthenticatedStack = memo(() => {
   useValidTokenCheck();
   useSyncFromCameraRoll(Platform.OS === 'ios');
   const { isDarkMode } = useDarkMode();
@@ -200,7 +201,7 @@ const AuthenticatedStack = () => {
       </BackgroundProvider>
     </DotYouClientProvider>
   );
-};
+});
 
 type TabIconProps = {
   focused: boolean;
@@ -209,12 +210,12 @@ type TabIconProps = {
 };
 
 const TabBottom = createBottomTabNavigator<TabStackParamList>();
-const TabStack = () => {
+const TabStack = memo(() => {
   const { isDarkMode } = useDarkMode();
 
-  const photosIcon = (props: TabIconProps) => <Images {...props} />;
-  const imageLibraryIcon = (props: TabIconProps) => <ImageLibrary {...props} />;
-  const settingsIcon = (props: TabIconProps) => <Cog {...props} />;
+  const photosIcon = useCallback((props: TabIconProps) => <Images {...props} />, []);
+  const imageLibraryIcon = useCallback((props: TabIconProps) => <ImageLibrary {...props} />, []);
+  const settingsIcon = useCallback((props: TabIconProps) => <Cog {...props} />, []);
 
   return (
     <TabBottom.Navigator
@@ -262,7 +263,7 @@ const TabStack = () => {
       />
     </TabBottom.Navigator>
   );
-};
+});
 
 export type SettingsStackParamList = {
   Profile: undefined;
@@ -270,7 +271,7 @@ export type SettingsStackParamList = {
 };
 
 const StackSettings = createNativeStackNavigator<SettingsStackParamList>();
-const SettingsStack = () => {
+const SettingsStack = memo(() => {
   const { isDarkMode } = useDarkMode();
 
   return (
@@ -298,6 +299,6 @@ const SettingsStack = () => {
       />
     </StackSettings.Navigator>
   );
-};
+});
 
 export default App;
