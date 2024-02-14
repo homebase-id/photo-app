@@ -28,7 +28,6 @@ type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
 
 const Photo = ({ route, navigation }: PhotoProps) => {
-  console.log('rendering Photo');
   const { photoId: fileId } = route.params;
 
   const { data: fileHeader } = useFileHeader({
@@ -65,7 +64,6 @@ interface PhotoLibPreviewProps extends PhotoProps {
 
 const PhotoPreview = memo(
   ({ currentDate, fileHeader, route, navigation }: PhotoLibPreviewProps) => {
-    console.log('rendering PhotoPreview');
     const { typeId, albumId } = route.params;
     const isAlbumView = albumId || typeId === 'favorites';
 
@@ -109,7 +107,6 @@ const PhotoPreview = memo(
     );
 
     const doGoBack = useCallback(() => {
-      console.log('goBack');
       if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
@@ -166,8 +163,6 @@ const InnerPhotoPreview = memo(
     hasNewerPage: boolean | undefined;
     fetchNewerPage: () => void;
   }) => {
-    console.log('rendering InnerPhotoPreview');
-
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [activeDate, setActiveDate] = useState(currentDate);
     const [showHeader, setShowHeader] = useState(true);
