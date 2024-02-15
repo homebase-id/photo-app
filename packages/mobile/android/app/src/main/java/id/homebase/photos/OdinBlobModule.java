@@ -51,7 +51,6 @@ public class OdinBlobModule extends ReactContextBaseJavaModule {
                  FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
 
                 byte[] buffer = new byte[16]; // Block size for AES
-                //byte[] lastPadding = null;
 
                 while (true) {
                     int bytesRead = fis.read(buffer);

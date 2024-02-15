@@ -119,7 +119,6 @@ Boolean encryptFileWithAES_CBC(NSString *inputFilePath, NSString *outputFilePath
   [inputFile closeFile];
   [outputFile closeFile];
   free(buffer);
-  NSLog(@"File encrypted successfully.");
   return true;
 }
 
@@ -221,7 +220,6 @@ BOOL decryptFileWithAES_CBC(NSString *inputFilePath, NSString *outputFilePath, N
     [inputFile closeFile];
     [outputFile closeFile];
 
-    NSLog(@"File decrypted successfully.");
     return YES;
 }
 
@@ -235,13 +233,7 @@ RCT_EXPORT_METHOD(encryptFileWithAesCbc16:
 {
   @autoreleasepool {
     NSData *ivData = [[NSData alloc] initWithBase64EncodedString:iv options:0];
-    // const uint8_t *ivByteArray = [ivData bytes];
-
-    // NSString *base64String = [ivData base64EncodedStringWithOptions:0];
-    // NSLog(@"Base64 String: %@", base64String);
-    
     NSData *keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
-    // const uint8_t *keyByteArray = [keyData bytes];
 
     // Encrypt the file
     if(encryptFileWithAES_CBC(inputFilePath, outputFilePath, keyData, ivData)){
@@ -263,17 +255,11 @@ RCT_EXPORT_METHOD(decryptFileWithAesCbc16:
 {
   @autoreleasepool {
     NSData *ivData = [[NSData alloc] initWithBase64EncodedString:iv options:0];
-    // const uint8_t *ivByteArray = [ivData bytes];
-
-    // NSString *base64String = [ivData base64EncodedStringWithOptions:0];
-    // NSLog(@"Base64 String: %@", base64String);
-    
     NSData *keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
-    // const uint8_t *keyByteArray = [keyData bytes];
 
     // Encrypt the file
     if(decryptFileWithAES_CBC(inputFilePath, outputFilePath, keyData, ivData)){
-      RCTLogInfo(@"Dencrypted to %@", outputFilePath);
+      // RCTLogInfo(@"Dencrypted to %@", outputFilePath);
       resolve(@1);
     } else {
       reject(@"event_failure", @"no event id returned", nil);

@@ -38,7 +38,7 @@ import { FileSystem } from 'react-native-file-access';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { AxiosRequestConfig } from 'axios';
 
-import RNFetchBlob from 'rn-fetch-blob';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 export interface ImageSource {
   id?: string | null;
@@ -168,11 +168,10 @@ export const getThumbBytes = async (
 
   const { lastModified } = options || {};
 
-  // const client = getAxiosClient(dotYouClient, systemFileType);
   const request = {
     ...targetDrive,
     fileId,
-    key,
+    payloadKey: payloadKey,
   };
 
   const ss = dotYouClient.getSharedSecret();
@@ -188,7 +187,7 @@ export const getThumbBytes = async (
   );
 
   //https://www.npmjs.com/package/rn-fetch-blob#download-example-fetch-files-that-need-authorization-token
-  return RNFetchBlob.config({
+  return ReactNativeBlobUtil.config({
     // add this option that makes response data to be stored as a file,
     // this is much more performant.
     fileCache: true,
@@ -252,7 +251,7 @@ export const getPayloadBytes = async (
   );
 
   //https://www.npmjs.com/package/rn-fetch-blob#download-example-fetch-files-that-need-authorization-token
-  return RNFetchBlob.config({
+  return ReactNativeBlobUtil.config({
     // add this option that makes response data to be stored as a file,
     // this is much more performant.
     fileCache: true,

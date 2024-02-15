@@ -909,6 +909,8 @@ PODS:
   - React-Mapbuffer (0.73.4):
     - glog
     - React-debug
+  - react-native-blob-util (0.19.6):
+    - React-Core
   - react-native-cameraroll (7.4.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -1117,8 +1119,6 @@ PODS:
   - ReactNativeFileAccess (3.0.5):
     - React-Core
     - ZIPFoundation (= 0.9.11)
-  - rn-fetch-blob (0.12.0):
-    - React-Core
   - RNBackgroundFetch (4.2.2):
     - React-Core
   - RNCAsyncStorage (1.21.0):
@@ -1188,6 +1188,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../../../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../../../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../../../node_modules/react-native/ReactCommon`)
+  - react-native-blob-util (from `../../../node_modules/react-native-blob-util`)
   - "react-native-cameraroll (from `../../../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-compressor (from `../../../node_modules/react-native-compressor`)
   - react-native-exif (from `../../../node_modules/react-native-exif`)
@@ -1220,7 +1221,6 @@ DEPENDENCIES:
   - React-utils (from `../../../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../../../node_modules/react-native/ReactCommon`)
   - ReactNativeFileAccess (from `../../../node_modules/react-native-file-access`)
-  - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBackgroundFetch (from `../../../node_modules/react-native-background-fetch`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCCheckbox (from `../../../node_modules/@react-native-community/checkbox`)"
@@ -1311,6 +1311,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../../../node_modules/react-native/ReactCommon"
+  react-native-blob-util:
+    :path: "../../../node_modules/react-native-blob-util"
   react-native-cameraroll:
     :path: "../../../node_modules/@react-native-camera-roll/camera-roll"
   react-native-compressor:
@@ -1375,8 +1377,6 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/ReactCommon"
   ReactNativeFileAccess:
     :path: "../../../node_modules/react-native-file-access"
-  rn-fetch-blob:
-    :path: "../../../node_modules/rn-fetch-blob"
   RNBackgroundFetch:
     :path: "../../../node_modules/react-native-background-fetch"
   RNCAsyncStorage:
@@ -1443,6 +1443,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 9ac353eccf6ab54d1e0a33862ba91221d1e88460
   React-logger: 0a57b68dd2aec7ff738195f081f0520724b35dab
   React-Mapbuffer: 63913773ed7f96b814a2521e13e6d010282096ad
+  react-native-blob-util: d8fa1a7f726867907a8e43163fdd8b441d4489ea
   react-native-cameraroll: 1c980a71284ab9b86bdb65476bf20fdb57fb5021
   react-native-compressor: a49f6d9a80167ed6a6b3e14e6cbbaf092c6f7e22
   react-native-exif: c43e7c18af8bfa133c79145671a0f036e413468e
@@ -1475,7 +1476,6 @@ SPEC CHECKSUMS:
   React-utils: 6e5ad394416482ae21831050928ae27348f83487
   ReactCommon: 840a955d37b7f3358554d819446bffcf624b2522
   ReactNativeFileAccess: ad2a22183f172817526bbff7c303e2418792f18c
-  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBackgroundFetch: 35c7183f6eeff69396d42c4b206e1ae2a21e9327
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
