@@ -170,63 +170,36 @@ class Blob {
     }
   }
 
-  // stream() {
-  //   const position = 0;
-  //   const chunkSize = 524288;
+  async decrypt(key: Uint8Array, iv: Uint8Array) {
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(async () => {
+        if (this.written) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    });
 
-  //   return new ReadableStream({
-  //     type: 'bytes',
-  //     autoAllocateChunkSize: chunkSize,
+    const destinationUri = `file://${Dirs.CacheDir}/${this.data.blobId}.${
+      this.data.type.split('/')[1]
+    }`;
 
-  //     start: async () => {
-  //       return new Promise<void>((resolve) => {
-  //         const interval = setInterval(async () => {
-  //           if (this.written) {
-  //             clearInterval(interval);
-  //             resolve();
-  //           }
-  //         }, 100);
-  //       });
-  //     },
+    const decryptStatus = await OdinBlobModule.decryptFileWithAesCbc16(
+      this.uri,
+      destinationUri,
+      uint8ArrayToBase64(key),
+      uint8ArrayToBase64(iv)
+    );
 
-  //     pull: async (controller) => {
-  //       if (!this.uri || !this.written) {
-  //         throw new Error('Blob has not been written to disk yet');
-  //       }
+    if (decryptStatus === 1) {
+      //Remove the original file
+      await FileSystem.unlink(this.uri);
 
-  //       const chunk = await RNFS.read(this.uri, chunkSize, position).then((base64) =>
-  //         base64ToUint8Array(base64)
-  //       );
-
-  //       position += chunk.byteLength;
-  //       controller.enqueue(chunk);
-
-  //       if (position >= this.size) {
-  //         controller.close();
-  //       }
-  //     },
-  //   });
-  // }
-
-  // arrayBuffer(): Promise<ArrayBuffer> {
-  //   console.log('arrayBuffer', this.uri);
-
-  //   return FileSystem.exists(this.uri)
-  //     .then((exists) => {
-  //       console.log('exists', exists);
-  //       return FileSystem.readFile(this.uri, 'base64');
-  //     })
-  //     .then((base64) => {
-  //       if (!base64) return new Uint8Array(0).buffer;
-  //       console.log('base64', base64.slice(0, 10));
-
-  //       return base64ToUint8Array(base64).buffer;
-  //     })
-  //     .catch((err) => {
-  //       console.log('err', err);
-  //       return new Uint8Array(0).buffer;
-  //     });
-  // }
+      return new Blob(destinationUri, { type: this.data.type });
+    } else {
+      throw new Error('Failed to decrypt blob, with native encryption');
+    }
+  }
 
   /**
    * Size of the data contained in the Blob object, in bytes.

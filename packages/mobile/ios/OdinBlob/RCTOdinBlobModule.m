@@ -123,6 +123,108 @@ Boolean encryptFileWithAES_CBC(NSString *inputFilePath, NSString *outputFilePath
   return true;
 }
 
+
+BOOL decryptFileWithAES_CBC(NSString *inputFilePath, NSString *outputFilePath, NSData *key, NSData *initialIV) {
+    // Initialize the decryption operation
+    CCOptions options = kCCOptionPKCS7Padding;
+    const void *keyPtr = [key bytes];
+    size_t keyLength = [key length];
+
+    // Remove "file://" prefix from input file path if present
+    if ([inputFilePath hasPrefix:@"file://"]) {
+        inputFilePath = [inputFilePath substringFromIndex:@"file://".length];
+    }
+
+    // Remove "file://" prefix from output file path if present
+    if ([outputFilePath hasPrefix:@"file://"]) {
+        outputFilePath = [outputFilePath substringFromIndex:@"file://".length];
+    }
+
+    // Open the input file for reading
+    NSFileHandle *inputFile = [NSFileHandle fileHandleForReadingAtPath:inputFilePath];
+    if (!inputFile) {
+        NSLog(@"Unable to open input file %@", inputFilePath);
+        return NO;
+    }
+
+    // Create an output file for writing the decrypted data
+    [[NSFileManager defaultManager] createFileAtPath:outputFilePath contents:nil attributes:nil];
+    NSFileHandle *outputFile = [NSFileHandle fileHandleForWritingAtPath:outputFilePath];
+    if (!outputFile) {
+        NSLog(@"Unable to create output file %@", outputFilePath);
+        [inputFile closeFile];
+        return NO;
+    }
+
+    // Initialize the buffer
+    size_t blockSize = kCCBlockSizeAES128;
+    size_t chunkSize = 1024;  // You can adjust this based on your needs
+    uint8_t *buffer = malloc(chunkSize + blockSize);  // Additional space for IV
+
+    // Initialize the IV
+    NSMutableData *iv = [initialIV mutableCopy];
+
+    // Initialize the decryption context
+    CCCryptorRef cryptor;
+    CCCryptorStatus status = CCCryptorCreate(kCCDecrypt, kCCAlgorithmAES, options, keyPtr, keyLength, [iv bytes], &cryptor);
+    if (status != kCCSuccess) {
+        NSLog(@"Failed to create cryptor with status %d", status);
+        free(buffer);
+        [inputFile closeFile];
+        [outputFile closeFile];
+        return NO;
+    }
+
+    // Read and decrypt the file in chunks
+    while (YES) {
+        @autoreleasepool {
+            NSData *inputData = [inputFile readDataOfLength:chunkSize];
+            if ([inputData length] == 0) {
+                // Reached end of file
+                break;
+            }
+
+            size_t numBytesDecrypted = 0;
+            status = CCCryptorUpdate(cryptor, [inputData bytes], [inputData length], buffer, chunkSize + blockSize, &numBytesDecrypted);
+            if (status != kCCSuccess) {
+                NSLog(@"Decryption failed with status %d", status);
+                CCCryptorRelease(cryptor);
+                free(buffer);
+                [inputFile closeFile];
+                [outputFile closeFile];
+                return NO;
+            }
+
+            // Write the decrypted data to the output file
+            [outputFile writeData:[NSData dataWithBytesNoCopy:buffer length:numBytesDecrypted freeWhenDone:NO]];
+        }
+    }
+
+    // Finalize the decryption
+    size_t numBytesDecrypted = 0;
+    status = CCCryptorFinal(cryptor, buffer, chunkSize + blockSize, &numBytesDecrypted);
+    if (status != kCCSuccess) {
+        NSLog(@"Finalizing decryption failed with status %d", status);
+        CCCryptorRelease(cryptor);
+        free(buffer);
+        [inputFile closeFile];
+        [outputFile closeFile];
+        return NO;
+    }
+
+    // Write the final decrypted data to the output file
+    [outputFile writeData:[NSData dataWithBytesNoCopy:buffer length:numBytesDecrypted freeWhenDone:NO]];
+
+    // Cleanup
+    CCCryptorRelease(cryptor);
+    free(buffer);
+    [inputFile closeFile];
+    [outputFile closeFile];
+
+    NSLog(@"File decrypted successfully.");
+    return YES;
+}
+
 RCT_EXPORT_METHOD(encryptFileWithAesCbc16:
                   (NSString *)inputFilePath
                   outputFilePath:(NSString *)outputFilePath
@@ -135,8 +237,8 @@ RCT_EXPORT_METHOD(encryptFileWithAesCbc16:
     NSData *ivData = [[NSData alloc] initWithBase64EncodedString:iv options:0];
     // const uint8_t *ivByteArray = [ivData bytes];
 
-    NSString *base64String = [ivData base64EncodedStringWithOptions:0];
-    NSLog(@"Base64 String: %@", base64String);
+    // NSString *base64String = [ivData base64EncodedStringWithOptions:0];
+    // NSLog(@"Base64 String: %@", base64String);
     
     NSData *keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
     // const uint8_t *keyByteArray = [keyData bytes];
@@ -144,6 +246,34 @@ RCT_EXPORT_METHOD(encryptFileWithAesCbc16:
     // Encrypt the file
     if(encryptFileWithAES_CBC(inputFilePath, outputFilePath, keyData, ivData)){
       RCTLogInfo(@"Encrypted to %@", outputFilePath);
+      resolve(@1);
+    } else {
+      reject(@"event_failure", @"no event id returned", nil);
+    }
+  }
+}
+
+RCT_EXPORT_METHOD(decryptFileWithAesCbc16:
+                  (NSString *)inputFilePath
+                  outputFilePath:(NSString *)outputFilePath
+                  key:(NSString *)key
+                  iv:(NSString *)iv
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  @autoreleasepool {
+    NSData *ivData = [[NSData alloc] initWithBase64EncodedString:iv options:0];
+    // const uint8_t *ivByteArray = [ivData bytes];
+
+    // NSString *base64String = [ivData base64EncodedStringWithOptions:0];
+    // NSLog(@"Base64 String: %@", base64String);
+    
+    NSData *keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
+    // const uint8_t *keyByteArray = [keyData bytes];
+
+    // Encrypt the file
+    if(decryptFileWithAES_CBC(inputFilePath, outputFilePath, keyData, ivData)){
+      RCTLogInfo(@"Dencrypted to %@", outputFilePath);
       resolve(@1);
     } else {
       reject(@"event_failure", @"no event id returned", nil);

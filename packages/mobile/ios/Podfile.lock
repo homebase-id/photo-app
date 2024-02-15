@@ -1117,6 +1117,8 @@ PODS:
   - ReactNativeFileAccess (3.0.5):
     - React-Core
     - ZIPFoundation (= 0.9.11)
+  - rn-fetch-blob (0.12.0):
+    - React-Core
   - RNBackgroundFetch (4.2.2):
     - React-Core
   - RNCAsyncStorage (1.21.0):
@@ -1218,6 +1220,7 @@ DEPENDENCIES:
   - React-utils (from `../../../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../../../node_modules/react-native/ReactCommon`)
   - ReactNativeFileAccess (from `../../../node_modules/react-native-file-access`)
+  - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBackgroundFetch (from `../../../node_modules/react-native-background-fetch`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCCheckbox (from `../../../node_modules/@react-native-community/checkbox`)"
@@ -1372,6 +1375,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/ReactCommon"
   ReactNativeFileAccess:
     :path: "../../../node_modules/react-native-file-access"
+  rn-fetch-blob:
+    :path: "../../../node_modules/rn-fetch-blob"
   RNBackgroundFetch:
     :path: "../../../node_modules/react-native-background-fetch"
   RNCAsyncStorage:
@@ -1470,6 +1475,7 @@ SPEC CHECKSUMS:
   React-utils: 6e5ad394416482ae21831050928ae27348f83487
   ReactCommon: 840a955d37b7f3358554d819446bffcf624b2522
   ReactNativeFileAccess: ad2a22183f172817526bbff7c303e2418792f18c
+  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBackgroundFetch: 35c7183f6eeff69396d42c4b206e1ae2a21e9327
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
