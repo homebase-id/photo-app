@@ -5,11 +5,12 @@ import {
   TargetDrive,
 } from '@youfoundation/js-lib/core';
 import { memo, useMemo } from 'react';
-// import ImageZoom from 'react-native-image-pan-zoom';
-import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
+import { ActivityIndicator, Image, View } from 'react-native';
 import useImage from '../../../hooks/image/useImage';
 import useTinyThumb from '../../../hooks/image/useTinyThumb';
 import { SvgUri } from 'react-native-svg';
+import { ImageZoom } from '@likashefqet/react-native-image-zoom';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 // Memo to performance optimize the FlatList
 export const PhotoWithLoader = memo(
@@ -158,7 +159,7 @@ export const OdinImage = memo(
         ) : null}
 
         {/* Actual image */}
-        {imageData?.url && imageSize ? (
+        {imageData?.url ? (
           <ZoomableImage
             uri={imageData.url}
             contentType={imageData.type}
@@ -167,7 +168,6 @@ export const OdinImage = memo(
             enableZoom={enableZoom}
             alt={alt || title}
             onClick={onClick}
-            maxScale={3}
           />
         ) : null}
       </View>
@@ -183,24 +183,22 @@ const ZoomableImage = ({
   fit,
   enableZoom,
   onClick,
-  maxScale,
 
   contentType,
 }: {
   uri: string;
-  imageSize: { width: number; height: number };
+  imageSize?: { width: number; height: number };
   alt?: string;
 
   fit?: 'cover' | 'contain';
   enableZoom?: boolean;
   onClick?: () => void;
-  maxScale: number;
 
   contentType?: ImageContentType;
 }) => {
-  const innerImage =
-    contentType === 'image/svg+xml' ? (
-      <SvgUri width={imageSize.width} height={imageSize.height} uri={uri} />
+  if (!enableZoom) {
+    return contentType === 'image/svg+xml' ? (
+      <SvgUri width={imageSize?.width} height={imageSize?.height} uri={uri} />
     ) : (
       <Image
         source={{ uri }}
@@ -212,20 +210,25 @@ const ZoomableImage = ({
         }}
       />
     );
-
-  if (!enableZoom) return innerImage;
+  }
 
   return (
-    <ImageZoom
-      cropWidth={Dimensions.get('window').width}
-      cropHeight={Dimensions.get('window').height}
-      imageWidth={imageSize.width}
-      imageHeight={imageSize.height}
-      minScal={1}
-      onClick={onClick}
-      maxScale={maxScale}
-    >
-      {innerImage}
-    </ImageZoom>
+    <TouchableWithoutFeedback onPress={onClick}>
+      <View
+        style={{
+          ...imageSize,
+        }}
+      >
+        <ImageZoom
+          uri={uri}
+          minScale={1}
+          maxScale={3}
+          resizeMode="contain"
+          style={{
+            ...imageSize,
+          }}
+        />
+      </View>
+    </TouchableWithoutFeedback>
   );
 };

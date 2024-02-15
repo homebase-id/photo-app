@@ -17,6 +17,7 @@
   "dependencies": {
     "@bam.tech/react-native-image-resizer": "^3.0.7",
     "@gorhom/bottom-sheet": "^4.6.0",
+    "@likashefqet/react-native-image-zoom": "^2.2.0",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/json-schema": "^1.1.12",
     "@peculiar/webcrypto": "^1.4.5",
@@ -50,7 +51,6 @@
     "react-native-exif": "^0.5.0",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.15.0",
-    "react-native-image-pan-zoom": "^2.1.12",
     "react-native-inappbrowser-reborn": "^3.7.0",
     "react-native-mmkv-storage": "^0.9.1",
     "react-native-quick-crypto": "^0.6.1",

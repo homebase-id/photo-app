@@ -7,6 +7,7 @@ import {
   FlatList,
   FlatListComponent,
   ListRenderItemInfo,
+  Platform,
   Pressable,
   TouchableOpacity,
   View,
@@ -291,7 +292,7 @@ const PreviewSlider = memo(
                   width: windowSize.width,
                   height: windowSize.height,
                 }}
-                enableZoom={false}
+                enableZoom={Platform.OS === 'android'}
                 onClick={doToggleHeader}
               />
             )}
