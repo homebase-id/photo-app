@@ -1,15 +1,10 @@
 package id.homebase.photos;
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -22,7 +17,7 @@ import java.util.Base64;
 
 
 public class OdinBlobModule extends ReactContextBaseJavaModule {
-    // add to CalendarModule.java
+    @NonNull
     @Override
     public String getName() {
         return "OdinBlobModule";
@@ -64,12 +59,6 @@ public class OdinBlobModule extends ReactContextBaseJavaModule {
                         break; // End of file
                     }
 
-                    // Pad the last block with zeros
-                    //if (bytesRead < buffer.length) {
-                    //    lastPadding = Arrays.copyOf(buffer, buffer.length);
-                    //    Arrays.fill(buffer, bytesRead, buffer.length, (byte) 0);
-                    //}
-
                     byte[] encryptedBytes = cipher.update(buffer);
                     fos.write(encryptedBytes);
                 }
@@ -77,6 +66,54 @@ public class OdinBlobModule extends ReactContextBaseJavaModule {
                 // Write the last block of encrypted data (with padding)
                 byte[] finalEncryptedBytes = cipher.doFinal();
                 fos.write(finalEncryptedBytes);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            promise.reject(e);
+        }
+
+        promise.resolve(1);
+    }
+
+
+    @ReactMethod
+    public void decryptFileWithAesCbc16(String inputFilePath, String outputFilePath, String base64Key, String base64Iv, Promise promise) {
+        try {
+            byte[] keyBytes = Base64.getDecoder().decode(base64Key);
+            byte[] ivBytes = Base64.getDecoder().decode(base64Iv);
+
+            SecretKeySpec secretKey = new SecretKeySpec(keyBytes, "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+
+            if (inputFilePath.startsWith("file://")) {
+                inputFilePath = inputFilePath.substring(7);
+            }
+            Path inputPath = Paths.get(inputFilePath);
+            if (outputFilePath.startsWith("file://")) {
+                outputFilePath = outputFilePath.substring(7);
+            }
+            Path outputPath = Paths.get(outputFilePath);
+
+
+            try (FileInputStream fis = new FileInputStream(inputPath.toFile());
+                 FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
+
+                byte[] buffer = new byte[16]; // Block size for AES
+
+                while (true) {
+                    int bytesRead = fis.read(buffer);
+                    if (bytesRead == -1) {
+                        break; // End of file
+                    }
+
+                    byte[] decryptedBytes = cipher.update(buffer, 0, bytesRead);
+                    fos.write(decryptedBytes);
+                }
+
+                byte[] finalDecryptedBytes = cipher.doFinal();
+                fos.write(finalDecryptedBytes);
             }
         } catch (Exception e) {
             e.printStackTrace();
