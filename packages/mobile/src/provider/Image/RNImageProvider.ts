@@ -145,57 +145,76 @@ export const uploadImage = async (
   };
 };
 
-// export const getThumbBytes = async (
-//   dotYouClient: DotYouClient,
-//   targetDrive: TargetDrive,
-//   fileId: string,
-//   payloadKey: string,
-//   width: number,
-//   height: number,
-//   options: {
-//     systemFileType?: SystemFileType;
-//     lastModified?: number;
-//     axiosConfig?: AxiosRequestConfig;
-//   }
-// ): Promise<{ bytes: ArrayBuffer; contentType: ImageContentType } | null> => {
-//   assertIfDefined('DotYouClient', dotYouClient);
-//   assertIfDefined('TargetDrive', targetDrive);
-//   assertIfDefined('FileId', fileId);
-//   assertIfDefined('PayloadKey', payloadKey);
-//   assertIfDefined('Width', width);
-//   assertIfDefined('Height', height);
+export const getThumbBytes = async (
+  dotYouClient: DotYouClient,
+  targetDrive: TargetDrive,
+  fileId: string,
+  payloadKey: string,
+  authToken: string,
+  width: number,
+  height: number,
+  options: {
+    systemFileType?: SystemFileType;
+    lastModified?: number;
+    axiosConfig?: AxiosRequestConfig;
+  }
+): Promise<OdinBlob | null> => {
+  assertIfDefined('DotYouClient', dotYouClient);
+  assertIfDefined('TargetDrive', targetDrive);
+  assertIfDefined('FileId', fileId);
+  assertIfDefined('PayloadKey', payloadKey);
+  assertIfDefined('Width', width);
+  assertIfDefined('Height', height);
 
-//   const { systemFileType, lastModified } = options ?? { systemFileType: 'Standard' };
+  const { lastModified } = options || {};
 
-//   const client = getAxiosClient(dotYouClient, systemFileType);
-//   const request = {
-//     ...targetDrive,
-//     fileId,
-//     payloadKey: payloadKey,
-//   };
-//   const config: AxiosRequestConfig = {
-//     responseType: 'arraybuffer',
-//     ...options?.axiosConfig,
-//   };
+  // const client = getAxiosClient(dotYouClient, systemFileType);
+  const request = {
+    ...targetDrive,
+    fileId,
+    key,
+  };
 
-//   return client
-//     .get<ArrayBuffer>(
-//       '/drive/files/thumb?' + stringifyToQueryParams({ ...request, width, height, lastModified }),
-//       config
-//     )
-//     .then(async (response) => {
-//       if (!response.data) return null;
-//       return {
-//         bytes: await decryptBytesResponse(dotYouClient, response),
-//         contentType: `${response.headers.decryptedcontenttype}` as ImageContentType,
-//       };
-//     })
-//     .catch((error) => {
-//       if (error.response?.status === 404) return null;
-//       console.error('[DotYouCore-js:getThumbBytes]', error);
-//       return null;
-//     });
-// };
+  const ss = dotYouClient.getSharedSecret();
+  if (!ss) throw new Error('Shared secret not found');
+  const url = await encryptUrl(
+    `${dotYouClient.getEndpoint()}/drive/files/thumb?${stringifyToQueryParams({
+      ...request,
+      width,
+      height,
+      lastModified,
+    })}`,
+    ss
+  );
+
+  //https://www.npmjs.com/package/rn-fetch-blob#download-example-fetch-files-that-need-authorization-token
+  return RNFetchBlob.config({
+    // add this option that makes response data to be stored as a file,
+    // this is much more performant.
+    fileCache: true,
+  })
+    .fetch('GET', url, {
+      bx0900: authToken,
+      'X-ODIN-FILE-SYSTEM-TYPE': options?.systemFileType || 'Standard',
+    })
+    .then(async (res) => {
+      const imageBlob = new OdinBlob(res.path(), {
+        type: res.info().headers.decryptedcontenttype,
+      });
+
+      const encryptedKeyHeader = splitSharedSecretEncryptedKeyHeader(
+        res.info().headers.sharedsecretencryptedheader64
+      );
+      const keyHeader = await decryptKeyHeader(dotYouClient, encryptedKeyHeader);
+      const decryptedBlob = await imageBlob.decrypt(keyHeader.aesKey, keyHeader.iv);
+
+      return decryptedBlob;
+    })
+    .catch((err) => {
+      console.error('Error fetching file', err);
+      return null;
+    });
+};
 
 export const getPayloadBytes = async (
   dotYouClient: DotYouClient,
@@ -271,22 +290,23 @@ export const getDecryptedImageData = async (
   systemFileType?: SystemFileType,
   lastModified?: number
 ): Promise<OdinBlob | null> => {
-  // if (size) {
-  //   try {
-  //     const thumbBytes = await getThumbBytes(
-  //       dotYouClient,
-  //       targetDrive,
-  //       fileId,
-  //       key,
-  //       size.pixelWidth,
-  //       size.pixelHeight,
-  //       { systemFileType, lastModified }
-  //     );
-  //     if (thumbBytes) return thumbBytes;
-  //   } catch (ex) {
-  //     // Failed to get thumb data, try to get payload data
-  //   }
-  // }
+  if (size) {
+    try {
+      const thumbBytes = await getThumbBytes(
+        dotYouClient,
+        targetDrive,
+        fileId,
+        key,
+        authToken,
+        size.pixelWidth,
+        size.pixelHeight,
+        { systemFileType, lastModified }
+      );
+      if (thumbBytes) return thumbBytes;
+    } catch (ex) {
+      // Failed to get thumb data, try to get payload data
+    }
+  }
 
   return await getPayloadBytes(dotYouClient, targetDrive, fileId, key, authToken, {
     systemFileType,
