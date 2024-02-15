@@ -6,10 +6,10 @@ import {
   ImageContentType,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
-import { getDecryptedImageData } from '@youfoundation/js-lib/media';
-import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { useDotYouClientContext } from 'photo-app-common';
-import { FileSystem } from 'react-native-file-access';
+import { getDecryptedImageData } from '../../provider/Image/RNImageProvider';
+import { useAuth } from '../auth/useAuth';
+import RNFS from 'react-native-fs';
 
 interface ImageData {
   url: string;
@@ -24,6 +24,7 @@ const useImage = (
   size?: ImageSize,
   naturalSize?: ImageSize
 ) => {
+  const { authToken } = useAuth();
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
@@ -78,33 +79,29 @@ const useImage = (
     size?: ImageSize,
     naturalSize?: ImageSize
   ): Promise<ImageData | undefined> => {
-    if (imageFileId === undefined || imageFileId === '' || !imageDrive) return;
+    if (imageFileId === undefined || imageFileId === '' || !imageDrive || !authToken) return;
 
     const cachedEntry = checkIfWeHaveLargerCachedImage(odinId, imageFileId, imageDrive, size);
     if (cachedEntry) {
       const cachedData = queryClient.getQueryData<ImageData | undefined>(cachedEntry.queryKey);
-      if (cachedData && (await FileSystem.exists(cachedData.url))) return cachedData;
+      if (cachedData && (await RNFS.exists(cachedData.url))) return cachedData;
     }
 
-    const imageData = await getDecryptedImageData(
+    const imageBlob = await getDecryptedImageData(
       dotYouClient,
       imageDrive,
       imageFileId,
       DEFAULT_PAYLOAD_KEY,
+      authToken,
       size
     );
 
-    if (!imageData) return undefined;
-    // The blob uri should be much easier to cache than the whole image data
-    const blob = new OdinBlob([new Uint8Array(imageData.bytes)], {
-      type: imageData.contentType,
-      id: `${imageFileId}+${size?.pixelHeight}x${size?.pixelWidth}`,
-    });
+    if (!imageBlob) return undefined;
 
     return {
-      url: blob.uri,
+      url: imageBlob.uri,
       naturalSize: naturalSize,
-      type: imageData.contentType,
+      type: imageBlob.type as ImageContentType,
     };
   };
 
