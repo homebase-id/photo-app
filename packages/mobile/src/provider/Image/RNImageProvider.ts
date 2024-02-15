@@ -34,9 +34,9 @@ import {
   splitSharedSecretEncryptedKeyHeader,
 } from '@youfoundation/js-lib/helpers';
 import { createThumbnails } from './RNThumbnailProvider';
-import { FileSystem } from 'react-native-file-access';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { AxiosRequestConfig } from 'axios';
+import RNFS from 'react-native-fs';
 
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
@@ -118,7 +118,7 @@ export const uploadImage = async (
   };
 
   // Read payload
-  const imageData = await FileSystem.readFile((photo.filepath || photo.uri) as string, 'base64');
+  const imageData = await RNFS.readFile((photo.filepath || photo.uri) as string, 'base64');
   const result = await uploadFile(
     dotYouClient,
     instructionSet,

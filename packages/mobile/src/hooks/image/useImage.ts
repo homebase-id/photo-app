@@ -6,11 +6,10 @@ import {
   ImageContentType,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
-import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { useDotYouClientContext } from 'photo-app-common';
-import { FileSystem } from 'react-native-file-access';
 import { getDecryptedImageData } from '../../provider/Image/RNImageProvider';
 import { useAuth } from '../auth/useAuth';
+import RNFS from 'react-native-fs';
 
 interface ImageData {
   url: string;
@@ -85,7 +84,7 @@ const useImage = (
     const cachedEntry = checkIfWeHaveLargerCachedImage(odinId, imageFileId, imageDrive, size);
     if (cachedEntry) {
       const cachedData = queryClient.getQueryData<ImageData | undefined>(cachedEntry.queryKey);
-      if (cachedData && (await FileSystem.exists(cachedData.url))) return cachedData;
+      if (cachedData && (await RNFS.exists(cachedData.url))) return cachedData;
     }
 
     const imageBlob = await getDecryptedImageData(

@@ -1,11 +1,10 @@
 import { ImageSource } from './RNImageProvider';
 import { getNewId } from '@youfoundation/js-lib/helpers';
 
-import { Dirs, FileSystem } from 'react-native-file-access';
+import RNFS from 'react-native-fs';
 import { Video } from 'react-native-compressor';
 import { Platform } from 'react-native';
 
-import RNFS from 'react-native-fs';
 import MP4Box from 'mp4box';
 import { FFmpegKit, SessionState } from 'ffmpeg-kit-react-native';
 import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
@@ -14,7 +13,7 @@ import { OdinBlob } from '../../../polyfills/OdinBlob';
 const CompressVideo = async (video: ImageSource): Promise<ImageSource> => {
   const source = video.filepath || video.uri;
 
-  if (!source || !(await FileSystem.exists(source))) {
+  if (!source || !(await RNFS.exists(source))) {
     throw new Error(`File not found: ${source}`);
   }
 
@@ -43,7 +42,7 @@ const MB = 1000000;
 const FragmentVideo = async (video: ImageSource) => {
   const source = video.filepath || video.uri;
 
-  if (!source || !(await FileSystem.exists(source))) {
+  if (!source || !(await RNFS.exists(source))) {
     throw new Error(`File not found: ${source}`);
   }
 
@@ -54,7 +53,7 @@ const FragmentVideo = async (video: ImageSource) => {
     };
   }
 
-  const dirPath = Dirs.CacheDir;
+  const dirPath = RNFS.CachesDirectoryPath;
 
   const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
   const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${getNewId()}.mp4`;
@@ -96,11 +95,11 @@ const FragmentVideo = async (video: ImageSource) => {
 export const grabThumbnail = async (video: ImageSource) => {
   const source = video.filepath || video.uri;
 
-  if (!source || !(await FileSystem.exists(source))) {
+  if (!source || !(await RNFS.exists(source))) {
     throw new Error(`File not found: ${source}`);
   }
 
-  const dirPath = Dirs.CacheDir;
+  const dirPath = RNFS.CachesDirectoryPath;
   const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
 
   const newId = getNewId();
@@ -165,11 +164,11 @@ type ExtendedBuffer = ArrayBuffer & { fileStart?: number };
 const getMp4Info = async (video: ImageSource) => {
   const source = video.filepath || video.uri;
 
-  if (!source || !(await FileSystem.exists(source))) {
+  if (!source || !(await RNFS.exists(source))) {
     throw new Error(`File not found: ${source}`);
   }
 
-  const stat = await FileSystem.stat(source);
+  const stat = await RNFS.stat(source);
 
   const mp4File = MP4Box.createFile(true);
 

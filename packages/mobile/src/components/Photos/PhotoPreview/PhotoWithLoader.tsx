@@ -5,7 +5,7 @@ import {
   TargetDrive,
 } from '@youfoundation/js-lib/core';
 import { memo, useMemo } from 'react';
-import ImageZoom from 'react-native-image-pan-zoom';
+// import ImageZoom from 'react-native-image-pan-zoom';
 import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
 import useImage from '../../../hooks/image/useImage';
 import useTinyThumb from '../../../hooks/image/useTinyThumb';
