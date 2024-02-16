@@ -1,6 +1,6 @@
 import BackgroundFetch from 'react-native-background-fetch';
 import headlessSync from './HeadlessSync';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 
