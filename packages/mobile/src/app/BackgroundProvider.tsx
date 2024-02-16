@@ -1,12 +1,13 @@
 import BackgroundFetch from 'react-native-background-fetch';
 import headlessSync from './HeadlessSync';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
+import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 
 export const BackgroundProvider = ({ children }: { children: React.ReactNode }) => {
-  const isInitialized = useRef(false);
+  const { minConnectionType } = useKeyValueStorage();
 
-  const initBackgroundFetch = async () => {
+  const initBackgroundFetch = useCallback(async () => {
     console.log('[BackgroundFetch] init');
     // BackgroundFetch event handler.
     const onEvent = async (taskId: string) => {
@@ -29,22 +30,25 @@ export const BackgroundProvider = ({ children }: { children: React.ReactNode }) 
       {
         minimumFetchInterval: 15,
         enableHeadless: true,
-        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_UNMETERED,
+        requiredNetworkType:
+          minConnectionType === 'UNMETERED'
+            ? BackgroundFetch.NETWORK_TYPE_ANY
+            : BackgroundFetch.NETWORK_TYPE_UNMETERED,
         requiresBatteryNotLow: true,
+        startOnBoot: true,
       },
       onEvent,
       onTimeout
     );
 
     console.log('[BackgroundFetch] configure status: ', status);
-  };
+  }, [minConnectionType]);
 
   useEffect(() => {
-    if (!isInitialized.current && Platform.OS === 'android') {
-      isInitialized.current = true;
+    if (Platform.OS === 'android') {
       initBackgroundFetch();
     }
-  }, []);
+  }, [initBackgroundFetch]);
 
   return children;
 };

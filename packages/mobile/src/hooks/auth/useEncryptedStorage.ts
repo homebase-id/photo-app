@@ -7,6 +7,7 @@ export const IDENTITY = 'identity';
 export const LAST_SYNC_TIME = 'lastSyncTimeAsNumber';
 export const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRollAsBoolean';
 export const FORCE_LOWER_QUALITY = 'forceLowerQualityAsBoolean';
+export const MIN_CONNECTION_TYPE = 'minConnectionType';
 
 const storage = new MMKVLoader().initialize();
 
@@ -59,6 +60,11 @@ export const useKeyValueStorage = () => {
     storage,
     false
   );
+  const [minConnectionType, setMinConnectionType] = useMMKVStorage<'METERED' | 'UNMETERED'>(
+    MIN_CONNECTION_TYPE,
+    storage,
+    'METERED'
+  );
 
   return {
     lastCameraRollSyncTime,
@@ -69,5 +75,8 @@ export const useKeyValueStorage = () => {
 
     forceLowerQuality,
     setForceLowerQuality,
+
+    minConnectionType,
+    setMinConnectionType,
   };
 };

@@ -194,7 +194,6 @@ const LoginComponent = () => {
         },
         {
           text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
           style: 'cancel',
         },
       ]

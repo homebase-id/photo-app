@@ -27,6 +27,8 @@ import { Colors } from '../app/Colors';
 import { CloudIcon, Cog } from '../components/ui/Icons/icons';
 import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
 import { useDarkMode } from '../hooks/useDarkMode';
+import BackgroundFetch from 'react-native-background-fetch';
+import { Modal } from '../components/ui/Modal/Modal';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'SyncDetails'>;
 
@@ -43,23 +45,30 @@ const SyncDetailsPage = (_props: SettingsProps) => {
   const navigation = _props.navigation;
   const { isDarkMode } = useDarkMode();
   const [syncNowState, setSyncNowState] = React.useState<'idle' | 'pending' | 'finished'>('idle');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const {
-    setSyncFromCameraRoll,
-    syncFromCameraRoll,
-    lastCameraRollSyncTime,
-    setForceLowerQuality,
-    forceLowerQuality,
-  } = useKeyValueStorage();
+  const { setSyncFromCameraRoll, syncFromCameraRoll, lastCameraRollSyncTime } =
+    useKeyValueStorage();
   const { forceSync } = useSyncFromCameraRoll(false);
 
   const doSyncNow = async () => {
-    setSyncNowState('pending');
-    const errors = await forceSync();
-    if (errors && errors.length > 0) {
-      Alert.alert('Error', errors.join('\n'));
+    if (Platform.OS === 'android') {
+      // on Android we can trigger the background task
+
+      // Step 2:  Schedule a custom "oneshot" task "id.homebase.id.sync-now" to execute 2500ms from now.
+      BackgroundFetch.scheduleTask({
+        taskId: 'id.homebase.id.sync-now',
+        forceAlarmManager: true,
+        delay: 2500, // <-- milliseconds
+      });
+    } else {
+      setSyncNowState('pending');
+      const errors = await forceSync();
+      if (errors && errors.length > 0) {
+        Alert.alert('Error', errors.join('\n'));
+      }
+      setSyncNowState('finished');
     }
-    setSyncNowState('finished');
   };
 
   // On open, directly check for permissions
@@ -81,32 +90,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
   );
 
   const headerRight = () => (
-    <TouchableOpacity
-      onPress={() => {
-        Alert.alert(
-          'Backup quality',
-          `(currently: ${forceLowerQuality ? 'High quality' : 'Original quality'})`,
-          [
-            {
-              text: 'Original quality',
-              onPress: () => setForceLowerQuality(false),
-              style: 'default',
-            },
-            {
-              text: 'High quality (storage saver)',
-              onPress: () => setForceLowerQuality(true),
-              style: 'default',
-            },
-            {
-              text: 'Cancel',
-              onPress: () => console.log('Cancel Pressed'),
-              style: 'cancel',
-            },
-          ]
-        );
-      }}
-      style={{ padding: 5 }}
-    >
+    <TouchableOpacity onPress={() => setIsSettingsOpen(true)} style={{ padding: 5 }}>
       <Cog color={isDarkMode ? Colors.white : Colors.black} size={'md'} />
     </TouchableOpacity>
   );
@@ -162,31 +146,8 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                   </Text>
                 </View>
 
-                <View
-                  style={{
-                    marginTop: 'auto',
-                    paddingTop: 8,
-                    flexDirection: 'row-reverse',
-                    justifyContent: 'space-between',
-                    paddingBottom: Platform.OS === 'android' ? 8 : 0,
-                  }}
-                >
+                <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
                   <Button title="Sync now" onPress={doSyncNow} />
-                  <Button
-                    title="Disable"
-                    onPress={() =>
-                      Alert.alert('Disable sync?', 'Your existing photos will not be removed', [
-                        {
-                          text: 'Disable',
-                          onPress: () => setSyncFromCameraRoll(false),
-                        },
-                        {
-                          text: 'Cancel',
-                          style: 'cancel',
-                        },
-                      ])
-                    }
-                  />
                 </View>
               </View>
             </Container>
@@ -203,11 +164,14 @@ const SyncDetailsPage = (_props: SettingsProps) => {
               <Text style={{ opacity: 0.4 }}>
                 During alpha, we only support auto synchronizing recent media
               </Text>
-              <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
+              <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
+                <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
+              </View>
             </Container>
           )}
         </GalleryView>
       </SafeAreaView>
+      {isSettingsOpen ? <SettingsModal onClose={() => setIsSettingsOpen(false)} /> : null}
     </>
   );
 };
@@ -362,6 +326,111 @@ const GalleryItem = ({
         source={{ uri: item.node.image.uri }}
       />
     </TouchableOpacity>
+  );
+};
+
+const SettingsModal = ({ onClose }: { onClose: () => void }) => {
+  const {
+    syncFromCameraRoll,
+    setSyncFromCameraRoll,
+    setForceLowerQuality,
+    forceLowerQuality,
+    minConnectionType,
+    setMinConnectionType,
+  } = useKeyValueStorage();
+
+  return (
+    <Modal onClose={onClose} title="Sync settings">
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              'Backup quality',
+              `(currently: ${forceLowerQuality ? 'High quality' : 'Original quality'})`,
+              [
+                {
+                  text: 'Original quality',
+                  onPress: () => setForceLowerQuality(false),
+                  style: 'default',
+                },
+                {
+                  text: 'High quality (storage saver)',
+                  onPress: () => setForceLowerQuality(true),
+                  style: 'default',
+                },
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+              ]
+            );
+          }}
+        >
+          <Text>Backup quality</Text>
+          <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
+            {forceLowerQuality ? 'High quality' : 'Original quality'}
+          </Text>
+        </TouchableOpacity>
+
+        {Platform.OS === 'android' ? (
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert('Sync settings?', 'When can sync run', [
+                {
+                  text: 'Always, even on mobile data',
+                  onPress: () => setMinConnectionType('METERED'),
+                },
+                {
+                  text: 'Only on Wi-Fi',
+                  onPress: () => setMinConnectionType('UNMETERED'),
+                },
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+              ]);
+            }}
+          >
+            <Text>{minConnectionType === 'METERED' ? 'Only sync over wi-fi' : 'Sync always'}</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {syncFromCameraRoll ? (
+          <TouchableOpacity
+            onPress={() =>
+              Alert.alert('Disable sync?', 'Your existing photos will not be removed', [
+                {
+                  text: 'Disable',
+                  onPress: () => setSyncFromCameraRoll(false),
+                },
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+              ])
+            }
+          >
+            <Text>Disable sync</Text>
+            <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
+              Don&apos;t sync new media from my camera roll
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => setSyncFromCameraRoll(true)}>
+            <Text>Enable sync</Text>
+            <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
+              Sync new media from my camera roll
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </Modal>
   );
 };
 

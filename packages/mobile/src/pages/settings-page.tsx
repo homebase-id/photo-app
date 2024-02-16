@@ -171,7 +171,6 @@ const SettingsPage = (_props: SettingsProps) => {
                   },
                   {
                     text: 'Cancel',
-                    onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel',
                   },
                 ]
