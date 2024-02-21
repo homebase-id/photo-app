@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 
 import MP4Box from 'mp4box';
 import { FFmpegKit, SessionState } from 'ffmpeg-kit-react-native';
-import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
+import { PlainVideoMetadata, SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 const CompressVideo = async (video: ImageSource): Promise<ImageSource> => {
@@ -98,7 +98,7 @@ const FragmentVideo = async (video: ImageSource) => {
     }
   } catch (ex) {
     console.error('failed to fragment video', ex);
-    return video;
+    return null;
   }
 };
 
@@ -227,18 +227,27 @@ const getCodecFromMp4Info = (info: Mp4Info): string => {
 export const processVideo = async (
   video: ImageSource,
   compress?: boolean
-): Promise<{ video: ImageSource; metadata: SegmentedVideoMetadata }> => {
+): Promise<{ video: ImageSource; metadata: SegmentedVideoMetadata | PlainVideoMetadata }> => {
   const compressedVideo = compress ? await CompressVideo(video) : undefined;
   const fragmentedVideo = await FragmentVideo(compressedVideo || video);
 
-  const mp4Info = await getMp4Info(video);
-  const metadata: SegmentedVideoMetadata = {
-    isSegmented: true,
-    mimeType: 'video/mp4',
-    codec: getCodecFromMp4Info(mp4Info),
-    fileSize: fragmentedVideo.fileSize || 0,
-    duration: fragmentedVideo.playableDuration ? fragmentedVideo.playableDuration * 1000 : 0,
-  };
+  if (fragmentedVideo) {
+    const mp4Info = await getMp4Info(video);
+    const segmentedMetadata: SegmentedVideoMetadata = {
+      isSegmented: true,
+      mimeType: 'video/mp4',
+      codec: getCodecFromMp4Info(mp4Info),
+      fileSize: fragmentedVideo.fileSize || 0,
+      duration: fragmentedVideo.playableDuration ? fragmentedVideo.playableDuration * 1000 : 0,
+    };
 
-  return { video: fragmentedVideo, metadata };
+    return { video: fragmentedVideo, metadata: segmentedMetadata };
+  }
+
+  const plainMetadata: PlainVideoMetadata = {
+    isSegmented: false,
+    mimeType: 'video/mp4',
+    fileSize: compressedVideo?.fileSize || video.fileSize || 0,
+  };
+  return { video: compressedVideo || video, metadata: plainMetadata };
 };
