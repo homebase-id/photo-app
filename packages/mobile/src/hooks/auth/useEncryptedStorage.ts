@@ -8,6 +8,7 @@ export const LAST_SYNC_TIME = 'lastSyncTimeAsNumber';
 export const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRollAsBoolean';
 export const FORCE_LOWER_QUALITY = 'forceLowerQualityAsBoolean';
 export const MIN_CONNECTION_TYPE = 'minConnectionType';
+export const HEADLESS_SYNC_LOG = 'headlessSyncLog';
 
 const storage = new MMKVLoader().initialize();
 
@@ -66,6 +67,8 @@ export const useKeyValueStorage = () => {
     'METERED'
   );
 
+  const [headlessSyncLog] = useMMKVStorage<string>('headlessSyncLog', storage, '');
+
   return {
     lastCameraRollSyncTime,
     setLastCameraRollSyncTime,
@@ -78,5 +81,7 @@ export const useKeyValueStorage = () => {
 
     minConnectionType,
     setMinConnectionType,
+
+    headlessSyncLog,
   };
 };

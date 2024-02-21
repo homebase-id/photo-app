@@ -337,6 +337,7 @@ const SettingsModal = ({ onClose }: { onClose: () => void }) => {
     forceLowerQuality,
     minConnectionType,
     setMinConnectionType,
+    headlessSyncLog,
   } = useKeyValueStorage();
 
   return (
@@ -429,6 +430,18 @@ const SettingsModal = ({ onClose }: { onClose: () => void }) => {
             </Text>
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert('Sync log', headlessSyncLog.toString() || 'No log found', [
+              {
+                text: 'Ok',
+              },
+            ]);
+          }}
+        >
+          <Text>Show log</Text>
+        </TouchableOpacity>
       </View>
     </Modal>
   );

@@ -15,8 +15,11 @@ import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
 import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 
 const headlessSync = async () => {
+  const storage = new MMKVLoader().initialize();
+  const customLog: string[] = [];
+  customLog.push(`Start sync ${new Date().toISOString()}`);
+
   try {
-    const storage = new MMKVLoader().initialize();
     const getFromStorage = (key: string) =>
       new Promise<string | undefined>((resolve) =>
         storage.getString(key, (_err, result) => resolve(result || undefined))
@@ -79,14 +82,23 @@ const headlessSync = async () => {
       await savePhotoLibraryMetadata(dotYouClient, currentLib, 'photos');
     }
 
+    customLog.push(
+      `Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`
+    );
+    customLog.push(...errors);
+
     console.log(
       `Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`
     );
     await storage.setInt(LAST_SYNC_TIME, new Date().getTime());
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error in headlessSync', e);
+    customLog.push('Error in headlessSync');
+    customLog.push(e.toString());
     return;
   }
+
+  await storage.setItem('headlessSyncLog', JSON.stringify(customLog));
 };
 
 export default headlessSync;
