@@ -92,7 +92,7 @@ const Sidenav = () => {
               <p className={`${navItemClassName} opacity-40`}>
                 <span className={`text-center text-2xl`}>©</span>{' '}
                 <span className={`my-auto ml-3 ${!isOpen && 'hidden'}`}>
-                  2023 | v.
+                  {new Date().getFullYear()} | v.
                   {getVersion()}
                 </span>
               </p>
