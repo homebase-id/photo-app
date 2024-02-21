@@ -18,7 +18,6 @@ export const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => 
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: targetDrive,
-    disabled: true,
     type: 'photos',
   }).addDay;
 
@@ -31,8 +30,7 @@ export const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => 
   }) => {
     if (!targetDrive || !fileId) return null;
 
-    const fetchDataPromise = () => getPhotoMetadata(dotYouClient, targetDrive, fileId);
-    return await fetchDataPromise();
+    return await getPhotoMetadata(dotYouClient, targetDrive, fileId);
   };
 
   const updatePhotoMeta = async ({

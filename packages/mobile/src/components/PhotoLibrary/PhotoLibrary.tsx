@@ -188,7 +188,6 @@ export const PhotoMonth = memo(
     const { mutate: updateCount } = usePhotoLibrary({
       targetDrive: targetDrive,
       type,
-      disabled: true,
     }).updateCount;
 
     useEffect(() => {

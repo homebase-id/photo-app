@@ -39,6 +39,7 @@ const AUTH_PATH = '/auth';
 
 import './App.css';
 import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
+import Debug from '../templates/Debug/debug';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +125,7 @@ function App() {
             <Route path="/bin/photo/:photoKey" element={<PhotosBin />}></Route>
 
             <Route path="/import" element={<GoogleTakeoutImport />}></Route>
+            <Route path="/debug" element={<Debug />}></Route>
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>

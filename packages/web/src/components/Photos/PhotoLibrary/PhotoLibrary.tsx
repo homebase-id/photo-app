@@ -227,7 +227,6 @@ export const PhotoMonth = ({
   const { mutate: updateCount } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     type,
-    disabled: true,
   }).updateCount;
 
   const photos = useMemo(

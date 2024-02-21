@@ -15,7 +15,7 @@ import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 let saveScheduled = false;
 const isDebug = false;
 
-const rebuildLibrary = async ({
+export const rebuildLibrary = async ({
   dotYouClient,
   targetDrive,
   type,
@@ -39,11 +39,9 @@ const rebuildLibrary = async ({
 export const usePhotoLibrary = ({
   targetDrive,
   type,
-  disabled,
 }: {
   targetDrive?: TargetDrive;
   type: LibraryType;
-  disabled?: boolean;
 }) => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
@@ -152,7 +150,7 @@ export const usePhotoLibrary = ({
           libQueries.map((q) => q.queryKey)
         );
       saveScheduled = false;
-    }, 5000);
+    }, 2000);
   };
 
   const saveNewCount = async ({
@@ -208,7 +206,7 @@ export const usePhotoLibrary = ({
       queryKey: ['photo-library', targetDrive?.alias, type],
       queryFn: () => fetch(type),
       gcTime: Infinity, // Never => react query will never remove the data from the cache
-      enabled: !!targetDrive && !disabled,
+      enabled: !!targetDrive,
     }),
     updateCount: useMutation({ mutationFn: saveNewCount }),
     addDay: useMutation({ mutationFn: saveNewDay }),

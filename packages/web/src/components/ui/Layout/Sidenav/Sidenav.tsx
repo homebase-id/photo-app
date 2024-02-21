@@ -38,9 +38,7 @@ const Sidenav = () => {
   const [isOpen, setIsOpen] = useState(overruledOpen ?? isDesktop);
   const [isHoverOpen, setIsHoverOpen] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, isOpen ? '1' : '0');
-  }, [isOpen]);
+  useEffect(() => localStorage.setItem(STORAGE_KEY, isOpen ? '1' : '0'), [isOpen]);
 
   return (
     <>

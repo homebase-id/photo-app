@@ -11,7 +11,6 @@ export const useUploadPhoto = () => {
 
   const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    disabled: true,
     type: 'photos',
   }).addDay;
 
