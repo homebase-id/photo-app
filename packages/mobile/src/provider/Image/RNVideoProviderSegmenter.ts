@@ -11,84 +11,94 @@ import { SegmentedVideoMetadata } from '@youfoundation/js-lib/media';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 
 const CompressVideo = async (video: ImageSource): Promise<ImageSource> => {
-  const source = video.filepath || video.uri;
+  try {
+    const source = video.filepath || video.uri;
 
-  if (!source || !(await RNFS.exists(source))) {
-    throw new Error(`File not found: ${source}`);
-  }
-
-  const resultUri = await Video.compress(
-    source,
-    {
-      compressionMethod: 'manual',
-      maxSize: 1280,
-      bitrate: 3000000,
-    },
-    (progress) => {
-      if (Math.round(progress * 100) % 10 === 0) {
-        console.log(`Compression Progress: ${progress}`);
-      }
+    if (!source || !(await RNFS.exists(source))) {
+      throw new Error(`File not found: ${source}`);
     }
-  );
 
-  return {
-    ...video,
-    uri: resultUri,
-    filepath: resultUri,
-  };
+    const resultUri = await Video.compress(
+      source,
+      {
+        compressionMethod: 'manual',
+        maxSize: 1280,
+        bitrate: 3000000,
+      },
+      (progress) => {
+        if (Math.round(progress * 100) % 10 === 0) {
+          console.log(`Compression Progress: ${progress}`);
+        }
+      }
+    );
+
+    return {
+      ...video,
+      uri: resultUri,
+      filepath: resultUri,
+    };
+  } catch (ex) {
+    console.error('failed to compress video', ex);
+    return video;
+  }
 };
 
 const MB = 1000000;
 const FragmentVideo = async (video: ImageSource) => {
-  const source = video.filepath || video.uri;
-
-  if (!source || !(await RNFS.exists(source))) {
-    throw new Error(`File not found: ${source}`);
-  }
-
-  const sourceFileSize = await RNFS.stat(source).then((stats) => stats.size);
-  if (sourceFileSize < 10 * MB) {
-    return {
-      ...video,
-    };
-  }
-
-  const dirPath = RNFS.CachesDirectoryPath;
-
-  const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
-  const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${getNewId()}.mp4`;
-
-  // MDN docs (https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#fragmenting)
-  // FFMPEG fragmenting: https://ffmpeg.org/ffmpeg-formats.html#Fragmentation
-  const command = `-i ${source} -c:v copy -c:a copy -movflags frag_keyframe+empty_moov+default_base_moof ${destinationUri}`;
-
-  // empty_moov (older version of the above)
-  // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
-
-  // faststart (this doesn't work in firefox)
-  // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
-
   try {
-    const session = await FFmpegKit.execute(command);
-    const state = await session.getState();
-    const returnCode = await session.getReturnCode();
-    // const failStackTrace = await session.getFailStackTrace();
-    // const output = await session.getOutput();
+    const source = video.filepath || video.uri;
 
-    if (state === SessionState.FAILED || !returnCode.isValueSuccess()) {
-      throw new Error(`FFmpeg process failed with state: ${state} and rc: ${returnCode}.`);
+    if (!source || !(await RNFS.exists(source))) {
+      throw new Error(`File not found: ${source}`);
     }
 
-    const fileSize = await RNFS.stat(destinationUri).then((stats) => stats.size);
+    const sourceFileSize = await RNFS.stat(source).then((stats) => stats.size);
+    if (sourceFileSize < 10 * MB) {
+      return {
+        ...video,
+      };
+    }
 
-    return {
-      ...video,
-      fileSize: fileSize || video.fileSize,
-      uri: destinationUri,
-      filepath: destinationUri,
-    };
-  } catch (error) {
-    throw new Error(`FFmpeg process failed with error: ${error}`);
+    const dirPath = RNFS.CachesDirectoryPath;
+
+    const destinationPrefix = Platform.OS === 'ios' ? '' : 'file://';
+    const destinationUri = `${destinationPrefix}${dirPath}/ffmpeg-fragmented-${getNewId()}.mp4`;
+
+    // MDN docs (https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#fragmenting)
+    // FFMPEG fragmenting: https://ffmpeg.org/ffmpeg-formats.html#Fragmentation
+    const command = `-i ${source} -c:v copy -c:a copy -movflags frag_keyframe+empty_moov+default_base_moof ${destinationUri}`;
+
+    // empty_moov (older version of the above)
+    // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov ${destinationUri}`;
+
+    // faststart (this doesn't work in firefox)
+    // const command = `-i ${source} -c copy -movflags +frag_keyframe+separate_moof+omit_tfhd_offset+faststart ${destinationUri}`;
+
+    try {
+      const session = await FFmpegKit.execute(command);
+      const state = await session.getState();
+      const returnCode = await session.getReturnCode();
+      // const failStackTrace = await session.getFailStackTrace();
+      // const output = await session.getOutput();
+
+      if (state === SessionState.FAILED || !returnCode.isValueSuccess()) {
+        throw new Error(`FFmpeg process failed with state: ${state} and rc: ${returnCode}.`);
+      }
+
+      const fileSize = await RNFS.stat(destinationUri).then((stats) => stats.size);
+
+      return {
+        ...video,
+        fileSize: fileSize || video.fileSize,
+        uri: destinationUri,
+        filepath: destinationUri,
+      };
+    } catch (error) {
+      throw new Error(`FFmpeg process failed with error: ${error}`);
+    }
+  } catch (ex) {
+    console.error('failed to fragment video', ex);
+    return video;
   }
 };
 
@@ -96,7 +106,8 @@ export const grabThumbnail = async (video: ImageSource) => {
   const source = video.filepath || video.uri;
 
   if (!source || !(await RNFS.exists(source))) {
-    throw new Error(`File not found: ${source}`);
+    console.error(`File not found: ${source}`);
+    return null;
   }
 
   const dirPath = RNFS.CachesDirectoryPath;
@@ -136,7 +147,8 @@ export const grabThumbnail = async (video: ImageSource) => {
     });
     return thumbBlob;
   } catch (error) {
-    throw new Error(`FFmpeg process failed with error: ${error}`);
+    console.error(`FFmpeg process failed with error: ${error}`);
+    return null;
   }
 };
 

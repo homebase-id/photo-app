@@ -228,12 +228,14 @@ const uploadNewVideo = async (
   const { video: processedMedia, metadata } = await processVideo(newVideo.node.image, lowerQuality);
 
   const thumbnail = await grabThumbnail(newVideo.node.image);
-  const thumbSource: ImageSource = {
-    uri: thumbnail.uri,
-    width: 1920,
-    height: 1080,
-    type: thumbnail.type,
-  };
+  const thumbSource: ImageSource | null = thumbnail
+    ? {
+        uri: thumbnail.uri,
+        width: 1920,
+        height: 1080,
+        type: thumbnail.type,
+      }
+    : null;
 
   return {
     ...(await uploadVideo(
@@ -247,10 +249,13 @@ const uploadNewVideo = async (
         tag: albumKey ? [albumKey] : undefined,
         userDate: userDate,
         uniqueId: imageUniqueId,
-        thumb: {
-          payload: thumbSource,
-          type: thumbnail.type as ImageContentType,
-        },
+        thumb:
+          thumbSource && thumbnail
+            ? {
+                payload: thumbSource,
+                type: thumbnail.type as ImageContentType,
+              }
+            : undefined,
       }
     )),
     userDate: new Date(userDate),
