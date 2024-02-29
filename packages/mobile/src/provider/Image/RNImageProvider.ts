@@ -9,7 +9,6 @@ import {
   uploadFile,
   ImageContentType,
   DEFAULT_PAYLOAD_KEY,
-  ContentType,
   ImageSize,
   SystemFileType,
   decryptKeyHeader,
@@ -197,17 +196,28 @@ export const getThumbBytes = async (
       'X-ODIN-FILE-SYSTEM-TYPE': options?.systemFileType || 'Standard',
     })
     .then(async (res) => {
+      if (res.info().status !== 200) throw new Error(`Failed to fetch thumb ${res.info().status}`);
+
       const imageBlob = new OdinBlob(res.path(), {
         type: res.info().headers.decryptedcontenttype,
       });
 
-      const encryptedKeyHeader = splitSharedSecretEncryptedKeyHeader(
+      if (
+        res.info().headers.payloadencrypted === 'True' &&
         res.info().headers.sharedsecretencryptedheader64
-      );
-      const keyHeader = await decryptKeyHeader(dotYouClient, encryptedKeyHeader);
-      const decryptedBlob = await imageBlob.decrypt(keyHeader.aesKey, keyHeader.iv);
+      ) {
+        const encryptedKeyHeader = splitSharedSecretEncryptedKeyHeader(
+          res.info().headers.sharedsecretencryptedheader64
+        );
+        const keyHeader = await decryptKeyHeader(dotYouClient, encryptedKeyHeader);
+        const decryptedBlob = await imageBlob.decrypt(keyHeader.aesKey, keyHeader.iv);
 
-      return decryptedBlob;
+        return decryptedBlob;
+      } else if (res.info().headers.payloadencrypted === 'True') {
+        throw new Error("Can't decrypt; missing keyheader");
+      } else {
+        return imageBlob;
+      }
     })
     .catch((err) => {
       console.error('Error fetching file', err);
@@ -261,17 +271,30 @@ export const getPayloadBytes = async (
       'X-ODIN-FILE-SYSTEM-TYPE': options?.systemFileType || 'Standard',
     })
     .then(async (res) => {
+      if (res.info().status !== 200) {
+        throw new Error(`Failed to fetch payload ${res.info().status}`);
+      }
+
       const imageBlob = new OdinBlob(res.path(), {
         type: res.info().headers.decryptedcontenttype,
       });
 
-      const encryptedKeyHeader = splitSharedSecretEncryptedKeyHeader(
+      if (
+        res.info().headers.payloadencrypted === 'True' &&
         res.info().headers.sharedsecretencryptedheader64
-      );
-      const keyHeader = await decryptKeyHeader(dotYouClient, encryptedKeyHeader);
-      const decryptedBlob = await imageBlob.decrypt(keyHeader.aesKey, keyHeader.iv);
+      ) {
+        const encryptedKeyHeader = splitSharedSecretEncryptedKeyHeader(
+          res.info().headers.sharedsecretencryptedheader64
+        );
+        const keyHeader = await decryptKeyHeader(dotYouClient, encryptedKeyHeader);
+        const decryptedBlob = await imageBlob.decrypt(keyHeader.aesKey, keyHeader.iv);
 
-      return decryptedBlob;
+        return decryptedBlob;
+      } else if (res.info().headers.payloadencrypted === 'True') {
+        throw new Error("Can't decrypt; missing keyheader");
+      } else {
+        return imageBlob;
+      }
     })
     .catch((err) => {
       console.error('Error fetching file', err);
@@ -365,7 +388,7 @@ const buildIvFromQueryString = async (querystring: string) => {
 
 const encryptUrl = async (url: string, ss: Uint8Array) => {
   const parts = (url ?? '').split('?');
-  const querystring = parts.length == 2 ? parts[1] : '';
+  const querystring = parts.length === 2 ? parts[1] : '';
   if (!querystring.length) return url;
 
   const dedicatedIv = await buildIvFromQueryString(querystring);
