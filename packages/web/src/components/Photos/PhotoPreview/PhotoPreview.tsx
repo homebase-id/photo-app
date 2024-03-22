@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
 import { PhotoActions } from './PhotoActions';
-import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import { HomebaseFile } from '@youfoundation/js-lib/core';
 import PhotoPreviewSlider from './PhotoPreviewSlider';
 import {
   LibraryType,
@@ -34,7 +34,7 @@ const PhotoLibPreview = ({
   type,
   urlPrefix: urlPrefixProp,
 }: {
-  dsr?: DriveSearchResult;
+  dsr?: HomebaseFile;
   fileId: string;
   albumKey?: string;
   type: LibraryType;
@@ -128,7 +128,7 @@ const PhotoAlbumPreview = ({
   type,
   urlPrefix: urlPrefixProp,
 }: {
-  dsr?: DriveSearchResult;
+  dsr?: HomebaseFile;
   fileId: string;
   albumKey?: string;
   type: LibraryType;

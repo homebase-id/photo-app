@@ -17,7 +17,7 @@ import { PhotoWithLoader } from '../components/Photos/PhotoPreview/PhotoWithLoad
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
-import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
 
 import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoader';
 
@@ -61,7 +61,7 @@ const Photo = ({ route, navigation }: PhotoProps) => {
 
 interface PhotoLibPreviewProps extends PhotoProps {
   currentDate: Date;
-  fileHeader: DriveSearchResult;
+  fileHeader: HomebaseFile;
 }
 
 const PhotoPreview = memo(
@@ -157,10 +157,10 @@ const InnerPhotoPreview = memo(
     backTitle: string;
     currentDate: Date;
     goBack: () => void;
-    fileHeader: DriveSearchResult;
+    fileHeader: HomebaseFile;
 
-    olderPhotos: DriveSearchResult[];
-    newerPhotos: DriveSearchResult[];
+    olderPhotos: HomebaseFile[];
+    newerPhotos: HomebaseFile[];
     hasOlderPage: boolean | undefined;
     fetchOlderPage: () => void;
 
@@ -209,8 +209,8 @@ const PreviewSlider = memo(
     doToggleHeader,
     setActiveDate,
   }: {
-    olderPhotos: DriveSearchResult[];
-    newerPhotos: DriveSearchResult[];
+    olderPhotos: HomebaseFile[];
+    newerPhotos: HomebaseFile[];
     hasOlderPage: boolean | undefined;
     fetchOlderPage: () => void;
 
@@ -225,20 +225,20 @@ const PreviewSlider = memo(
     const [isGoingLeft, setIsGoingLeft] = useState(true);
     const windowSize = useMemo(() => Dimensions.get('window'), [Dimensions]);
 
-    const newerFlatListRef = useRef<FlatListComponent<DriveSearchResult, any>>();
-    const olderFlatListRef = useRef<FlatListComponent<DriveSearchResult, any>>();
+    const newerFlatListRef = useRef<FlatListComponent<HomebaseFile, any>>();
+    const olderFlatListRef = useRef<FlatListComponent<HomebaseFile, any>>();
 
     const baseFlatListProps = {
       onStartReachedThreshold: 0,
       showsHorizontalScrollIndicator: false,
-      getItemLayout: (data: ArrayLike<DriveSearchResult> | null | undefined, index: number) => ({
+      getItemLayout: (data: ArrayLike<HomebaseFile> | null | undefined, index: number) => ({
         length: windowSize.width,
         offset: windowSize.width * index,
         index,
       }),
       horizontal: true,
       pagingEnabled: true,
-      keyExtractor: (item: DriveSearchResult) => item.fileId,
+      keyExtractor: (item: HomebaseFile) => item.fileId,
       pinchGestureEnabled: true,
       mimimumZoomScale: 1,
       maximumZoomScale: 3,
@@ -250,7 +250,7 @@ const PreviewSlider = memo(
     const hasNewer = newerPhotos && newerPhotos.length >= 1;
 
     const onViewableItemsChanged = useCallback(
-      ({ viewableItems }: { viewableItems: { item: DriveSearchResult }[] }) => {
+      ({ viewableItems }: { viewableItems: { item: HomebaseFile }[] }) => {
         const timestamp =
           viewableItems[0]?.item?.fileMetadata?.appData?.userDate ||
           viewableItems[0]?.item?.fileMetadata?.created;
@@ -260,7 +260,7 @@ const PreviewSlider = memo(
     );
 
     const renderItem = useCallback(
-      (item: ListRenderItemInfo<DriveSearchResult>) => {
+      (item: ListRenderItemInfo<HomebaseFile>) => {
         return (
           <Pressable
             onPress={doToggleHeader}

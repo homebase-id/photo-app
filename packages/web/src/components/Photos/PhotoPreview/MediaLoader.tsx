@@ -1,4 +1,4 @@
-import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
 import { VideoWithLoader } from './VideoWithLoader';
 import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
 import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@youfoundation/ui-lib';
@@ -12,7 +12,7 @@ const MediaWithLoader = ({
   lastModified,
   original,
 }: {
-  media?: DriveSearchResult;
+  media?: HomebaseFile;
   fileId?: string;
   lastModified: number | undefined;
   original?: boolean;
@@ -48,7 +48,7 @@ const CustomOdinImage = ({
 
   original,
 }: {
-  media: DriveSearchResult;
+  media: HomebaseFile;
   fileId: string;
   lastModified: number | undefined;
 

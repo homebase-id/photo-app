@@ -1,4 +1,4 @@
-import { DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
+import { HomebaseFile, TargetDrive } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPhotosByMonth, usePhotosByMonth } from '../photos/usePhotos';
@@ -125,7 +125,7 @@ export const useSiblingsRange = ({
     }
 
     // If not, get the data with the index of those photos in the months...
-    const returnRange: DriveSearchResult[] = [];
+    const returnRange: HomebaseFile[] = [];
     returnRange.push(...fromCurrentData.dataForMonth.slice(fromCurrentData.currentIndex));
     returnRange.push(...toCurrentData.dataForMonth.slice(0, toCurrentData.currentIndex + 1));
 

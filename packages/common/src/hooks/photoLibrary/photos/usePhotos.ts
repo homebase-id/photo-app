@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
-  DriveSearchResult,
+  HomebaseFile,
   DotYouClient,
   CursoredResult,
 } from '@youfoundation/js-lib/core';
@@ -11,10 +11,10 @@ import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
 import { LibraryType, PhotoConfig } from '../../../provider';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
-export type useInfintePhotosReturn = CursoredResult<DriveSearchResult[]>;
+export type useInfintePhotosReturn = CursoredResult<HomebaseFile[]>;
 const PAGE_SIZE = 1000;
 
-export const sortDsrFunction = (a: DriveSearchResult, b: DriveSearchResult) => {
+export const sortDsrFunction = (a: HomebaseFile, b: HomebaseFile) => {
   const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;
   const bDate = b.fileMetadata.appData.userDate || b.fileMetadata.created;
   return bDate - aDate;
@@ -32,7 +32,7 @@ export const fetchPhotosByMonth = async ({
   type: LibraryType;
   date: Date;
   cursorState?: string;
-}): Promise<CursoredResult<DriveSearchResult[]>> => {
+}): Promise<CursoredResult<HomebaseFile[]>> => {
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
@@ -61,7 +61,7 @@ const fetchPhotosByCursor = async ({
   album?: string;
   cursorState?: string;
   direction?: 'older' | 'newer';
-}): Promise<CursoredResult<DriveSearchResult[]>> => {
+}): Promise<CursoredResult<HomebaseFile[]>> => {
   return await getPhotos(dotYouClient, targetDrive, type, album, PAGE_SIZE, cursorState, direction);
 };
 

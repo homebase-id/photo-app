@@ -7,7 +7,7 @@ import Heart, { SolidHeart } from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
 import { ActionGroup } from '../../ui/Buttons/ActionGroup';
 import Info from '../../ui/Icons/Info/Info';
-import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import { HomebaseFile } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { PhotoConfig, usePhoto } from 'photo-app-common';
 import useAuth from '../../../hooks/auth/useAuth';
@@ -27,9 +27,9 @@ export const PhotoActions = ({
   setLoadOriginal,
 }: {
   fileId: string;
-  current?: DriveSearchResult;
-  nextSibling?: DriveSearchResult;
-  prevSibling?: DriveSearchResult;
+  current?: HomebaseFile;
+  nextSibling?: HomebaseFile;
+  prevSibling?: HomebaseFile;
   setIsInfoOpen: (isOpen: boolean) => void;
   isInfoOpen: boolean;
   urlPrefix?: string;

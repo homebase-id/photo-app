@@ -1,5 +1,5 @@
 import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, DriveSearchResult } from '@youfoundation/js-lib/core';
+import { TargetDrive, HomebaseFile } from '@youfoundation/js-lib/core';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
@@ -107,13 +107,13 @@ export const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => 
             queryClient.setQueryData<InfiniteData<useInfintePhotosReturn>>(queryKey, newQueryData);
           });
 
-        const queryData = queryClient.getQueryData<DriveSearchResult>([
+        const queryData = queryClient.getQueryData<HomebaseFile>([
           'photo-header',
           targetDrive?.alias,
           _newData.photoFileId,
         ]);
         if (queryData) {
-          const newQueryData: DriveSearchResult = {
+          const newQueryData: HomebaseFile = {
             ...queryData,
             fileMetadata: {
               ...queryData.fileMetadata,
