@@ -1,7 +1,7 @@
 import { debounce, set } from 'lodash-es';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { DEFAULT_PAYLOAD_KEY, DriveSearchResult } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -20,7 +20,7 @@ const PhotoInfo = ({
   current,
   onClose,
 }: {
-  current?: DriveSearchResult;
+  current?: HomebaseFile;
 
   onClose: () => void;
 }) => {
@@ -195,7 +195,7 @@ const PhotoDate = ({
   photoDsr,
   onChange,
 }: {
-  photoDsr: DriveSearchResult;
+  photoDsr: HomebaseFile;
   onChange: (e: { target: { name: 'date'; value: Date } }) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);

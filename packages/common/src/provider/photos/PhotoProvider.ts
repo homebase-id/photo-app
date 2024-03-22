@@ -2,7 +2,7 @@ import {
   ArchivalStatus,
   DEFAULT_PAYLOAD_KEY,
   DotYouClient,
-  DriveSearchResult,
+  HomebaseFile,
   ImageSize,
   TargetDrive,
   UploadFileMetadata,
@@ -180,7 +180,7 @@ export const getPhoto = async (
 const dsrToPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
-  dsr: DriveSearchResult,
+  dsr: HomebaseFile,
   size?: ImageSize,
   isProbablyEncrypted?: boolean
 ): Promise<PhotoFile> => {

@@ -1,7 +1,7 @@
 import {
   ArchivalStatus,
   DotYouClient,
-  DriveSearchResult,
+  HomebaseFile,
   SecurityGroupType,
   UploadFileMetadata,
   UploadInstructionSet,
@@ -68,9 +68,7 @@ export const getPhotoLibrary = async (
 
   const meta = await dsrToPhotoLibraryMetadata(
     dotYouClient,
-    (
-      batch.searchResults.filter((dsr) => dsr.fileState === 'active') as DriveSearchResult<string>[]
-    )[0]
+    (batch.searchResults.filter((dsr) => dsr.fileState === 'active') as HomebaseFile<string>[])[0]
   );
   if (!meta) return null;
   return {
@@ -81,7 +79,7 @@ export const getPhotoLibrary = async (
 
 const dsrToPhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
-  dsr: DriveSearchResult
+  dsr: HomebaseFile
 ): Promise<PhotoLibraryMetadata | null> => {
   const payload = await getContentFromHeaderOrPayload<PhotoLibraryMetadata>(
     dotYouClient,
@@ -153,12 +151,12 @@ export const savePhotoLibraryMetadata = async (
 };
 
 const sortRecents = (elements: string[]) => elements.sort((a, b) => parseInt(b) - parseInt(a));
-export const buildMetaStructure = (headers: DriveSearchResult[]): PhotoLibraryMetadata => {
+export const buildMetaStructure = (headers: HomebaseFile[]): PhotoLibraryMetadata => {
   // Filter duplicates (Shouldn't happen anymore):
   headers = headers.reduce((curVal, head) => {
     if (!curVal.find((h) => h.fileId === head.fileId)) return [...curVal, head];
     else return curVal;
-  }, [] as DriveSearchResult[]);
+  }, [] as HomebaseFile[]);
 
   // Build easier to use structure
   const arrayStruc = headers.reduce(

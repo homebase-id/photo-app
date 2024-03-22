@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TargetDrive,
-  DriveSearchResult,
+  HomebaseFile,
   ThumbnailFile,
   getPayloadBytes,
   DEFAULT_PAYLOAD_KEY,
@@ -68,7 +68,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
     dsr,
   }: {
     targetDrive: TargetDrive;
-    dsr: DriveSearchResult;
+    dsr: HomebaseFile;
   }) => {
     if (!targetDrive) return null;
 

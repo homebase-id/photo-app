@@ -1,4 +1,4 @@
-import { DEFAULT_PAYLOAD_KEY, DriveSearchResult, TargetDrive } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile, TargetDrive } from '@youfoundation/js-lib/core';
 import { memo, useCallback, useMemo } from 'react';
 import { View, Dimensions, TouchableHighlight } from 'react-native';
 import { Text } from '../../ui/Text/Text';
@@ -37,7 +37,7 @@ export const PhotoDay = memo(
     isSelecting,
   }: {
     date: Date;
-    photos?: DriveSearchResult[];
+    photos?: HomebaseFile[];
 
     targetDrive: TargetDrive;
     type: LibraryType;
@@ -111,7 +111,7 @@ export const PhotoItem = memo(
     size,
   }: {
     targetDrive: TargetDrive;
-    photoDsr: DriveSearchResult;
+    photoDsr: HomebaseFile;
     album?: string;
     type: LibraryType;
     toggleSelection: (fileId: string) => void;

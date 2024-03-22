@@ -1,4 +1,4 @@
-import { DriveSearchResult } from '@youfoundation/js-lib/core';
+import { HomebaseFile } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { useRef, useEffect } from 'react';
 import useDebounce from '../../../hooks/debounce/useDebounce';
@@ -31,7 +31,7 @@ const PhotoPreviewSlider = ({
   hasNewerPage?: boolean;
   isFetchingNewerPage?: boolean;
 
-  flatPhotos: DriveSearchResult[];
+  flatPhotos: HomebaseFile[];
   original?: boolean;
 }) => {
   const scrollContainer = useRef<HTMLDivElement>(null);

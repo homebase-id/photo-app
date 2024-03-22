@@ -1,7 +1,7 @@
 import {
   deleteFile,
   DotYouClient,
-  DriveSearchResult,
+  HomebaseFile,
   getContentFromHeaderOrPayload,
   queryBatch,
   SecurityGroupType,
@@ -35,7 +35,7 @@ export const getAllAlbums = async (dotYouClient: DotYouClient): Promise<AlbumDef
 
 const dsrToAlbumDefinition = async (
   dotYouClient: DotYouClient,
-  dsr: DriveSearchResult
+  dsr: HomebaseFile
 ): Promise<AlbumDefinition | null> => {
   const payload = await getContentFromHeaderOrPayload<AlbumDefinition>(
     dotYouClient,

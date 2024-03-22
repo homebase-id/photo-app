@@ -1,7 +1,7 @@
 import {
   ImageSize,
   TargetDrive,
-  DriveSearchResult,
+  HomebaseFile,
   DEFAULT_PAYLOAD_KEY,
 } from '@youfoundation/js-lib/core';
 import { useState, useRef, useMemo } from 'react';
@@ -57,7 +57,7 @@ export const PhotoDay = ({
 }: {
   date: Date;
   photosCount?: number;
-  photos?: DriveSearchResult[];
+  photos?: HomebaseFile[];
   setIsInView?: () => void;
 
   targetDrive: TargetDrive;
@@ -129,7 +129,7 @@ export const PhotoItem = ({
   isSelecting,
 }: {
   targetDrive: TargetDrive;
-  photoDsr: DriveSearchResult;
+  photoDsr: HomebaseFile;
   toggleSelection: (fileId: string) => void;
   rangeSelection: (fileId: string) => void;
   isSelected: (fileId: string) => boolean;

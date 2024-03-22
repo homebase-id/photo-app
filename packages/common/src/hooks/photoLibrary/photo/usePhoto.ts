@@ -1,10 +1,5 @@
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  TargetDrive,
-  getFileHeader,
-  DriveSearchResult,
-  deleteFile,
-} from '@youfoundation/js-lib/core';
+import { TargetDrive, getFileHeader, HomebaseFile, deleteFile } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 
 import { updatePhoto } from '../../../provider/photos/PhotoProvider';
@@ -272,14 +267,14 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
     addTags: useMutation({
       mutationFn: addTags,
       onMutate: (toAddData) => {
-        const queryData = queryClient.getQueryData<DriveSearchResult>([
+        const queryData = queryClient.getQueryData<HomebaseFile>([
           'photo-header',
           toAddData.targetDrive.alias,
           toAddData.fileId,
         ]);
 
         if (queryData) {
-          const newQueryData: DriveSearchResult = {
+          const newQueryData: HomebaseFile = {
             ...queryData,
             fileMetadata: {
               ...queryData.fileMetadata,
@@ -290,7 +285,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
             },
           };
 
-          queryClient.setQueryData<DriveSearchResult>(
+          queryClient.setQueryData<HomebaseFile>(
             ['photo-header', toAddData.targetDrive.alias, toAddData.fileId],
             newQueryData
           );
@@ -327,14 +322,14 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
     removeTags: useMutation({
       mutationFn: removeTags,
       onMutate: (toRemoveData) => {
-        const queryData = queryClient.getQueryData<DriveSearchResult>([
+        const queryData = queryClient.getQueryData<HomebaseFile>([
           'photo-header',
           toRemoveData.targetDrive.alias,
           toRemoveData.fileId,
         ]);
 
         if (queryData) {
-          const newQueryData: DriveSearchResult = {
+          const newQueryData: HomebaseFile = {
             ...queryData,
             fileMetadata: {
               ...queryData.fileMetadata,
@@ -351,7 +346,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
 
           console.log('newQueryData', newQueryData);
 
-          queryClient.setQueryData<DriveSearchResult>(
+          queryClient.setQueryData<HomebaseFile>(
             ['photo-header', toRemoveData.targetDrive.alias, toRemoveData.fileId],
             newQueryData
           );
