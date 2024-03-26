@@ -115,7 +115,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
           ],
         });
       },
-      onError: (error, variables) => {
+      onError: (error) => {
         console.error(error);
       },
     }),

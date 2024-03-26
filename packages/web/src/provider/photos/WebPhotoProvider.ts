@@ -4,17 +4,13 @@ import {
   TargetDrive,
   ThumbnailFile,
 } from '@youfoundation/js-lib/core';
-import {
-  ImageMetadata,
-  MediaUploadMeta,
-  VideoContentType,
-  uploadImage,
-  uploadVideo,
-} from '@youfoundation/js-lib/media';
+import { ImageMetadata, MediaUploadMeta, VideoContentType } from '@youfoundation/js-lib/media';
 import { toGuidId } from '@youfoundation/js-lib/helpers';
 
 import { FileLike } from 'photo-app-common';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
+import { uploadImage } from './WebImageProvider';
+import { uploadVideo } from './WebVideoProvider';
 
 const getPhotoExifMeta = async (imageBlob: Blob) => {
   // Read Exif Data for the Created date of the photo itself and not the file;

@@ -127,6 +127,7 @@ export const useYouAuthAuthorization = () => {
       undefined,
       drives,
       undefined,
+      undefined,
       eccKey.publicKey,
       window.location.host,
       undefined,
