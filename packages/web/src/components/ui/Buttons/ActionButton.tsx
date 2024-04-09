@@ -1,7 +1,5 @@
 import { FC, ReactNode, useState } from 'react';
-import ConfirmDialog, {
-  ConfirmDialogProps,
-} from '../../Dialog/ConfirmDialog/ConfirmDialog';
+import ConfirmDialog, { ConfirmDialogProps } from '../../Dialog/ConfirmDialog/ConfirmDialog';
 import Arrow from '../Icons/Arrow/Arrow';
 import Check from '../Icons/Check/Check';
 import Exclamation from '../Icons/Exclamation/Exclamation';
@@ -13,12 +11,7 @@ import Shield from '../Icons/Shield/Shield';
 import Times from '../Icons/Times/Times';
 import Trash from '../Icons/Trash/Trash';
 
-export type ActionButtonState =
-  | 'loading'
-  | 'pending'
-  | 'success'
-  | 'error'
-  | 'idle';
+export type ActionButtonState = 'loading' | 'pending' | 'success' | 'error' | 'idle';
 
 export interface ActionButtonProps {
   children?: ReactNode;
@@ -46,7 +39,7 @@ export interface ActionButtonProps {
 
 export const mergeStates = (
   stateA: ActionButtonState,
-  stateB: ActionButtonState,
+  stateB: ActionButtonState
 ): ActionButtonState => {
   if (stateA === 'error' || stateB === 'error') {
     return 'error';
@@ -68,10 +61,7 @@ export const mergeStates = (
     return 'success';
   }
 
-  if (
-    (stateA === 'success' && stateB === 'idle') ||
-    (stateA === 'idle' && stateB === 'success')
-  ) {
+  if ((stateA === 'success' && stateB === 'idle') || (stateA === 'idle' && stateB === 'success')) {
     return 'success';
   }
 
@@ -133,14 +123,14 @@ const ActionButton: FC<ActionButtonProps> = ({
     (state === 'error'
       ? 'bg-red-500 hover:bg-red-600 text-white'
       : type === 'secondary'
-      ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-800 dark:text-white'
-      : type === 'hybrid'
-      ? 'bg-white bg-opacity-10 text-white hover:bg-white hover:bg-opacity-20'
-      : type === 'remove'
-      ? 'bg-red-200 hover:bg-red-400 dark:bg-red-700 hover:dark:bg-red-800 dark:text-white'
-      : type === 'mute'
-      ? ''
-      : 'bg-green-500 hover:bg-green-600 text-white') +
+        ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-800 dark:text-white'
+        : type === 'hybrid'
+          ? 'bg-white bg-opacity-10 text-white hover:bg-white hover:bg-opacity-20'
+          : type === 'remove'
+            ? 'bg-red-200 hover:bg-red-400 dark:bg-red-700 hover:dark:bg-red-800 dark:text-white'
+            : type === 'mute'
+              ? ''
+              : 'bg-green-500 hover:bg-green-600 text-white') +
     (isDisabled ? ' opacity-50 cursor-not-allowed' : '');
 
   const widthClasses =
@@ -152,13 +142,12 @@ const ActionButton: FC<ActionButtonProps> = ({
     size === 'large'
       ? 'px-5 py-3'
       : size === 'small'
-      ? 'px-3 py-1 text-sm'
-      : size === 'square'
-      ? 'p-2'
-      : 'px-3 py-2';
+        ? 'px-3 py-1 text-sm'
+        : size === 'square'
+          ? 'p-2'
+          : 'px-3 py-2';
 
-  const stateClasses =
-    state === 'loading' || state === 'pending' ? 'animate-pulse' : '';
+  const stateClasses = state === 'loading' || state === 'pending' ? 'animate-pulse' : '';
 
   return (
     <>
@@ -171,7 +160,7 @@ const ActionButton: FC<ActionButtonProps> = ({
         disabled={isDisabled || state === 'loading' || state === 'pending'}
         onClick={
           confirmOptions
-            ? e => {
+            ? (e) => {
                 e.preventDefault();
                 setNeedsConfirmation(true);
                 setMouseEvent(e);
@@ -179,9 +168,10 @@ const ActionButton: FC<ActionButtonProps> = ({
               }
             : onClick
         }
-        title={title}>
+        title={title}
+      >
         {children}
-        <Icon className={`my-auto ${children ? 'ml-1' : ''} h-4 w-4`} />
+        <Icon className={`my-auto ${children ? 'ml-1' : ''} h-5 w-5`} />
       </button>
       {confirmOptions && onClick && needsConfirmation ? (
         <ConfirmDialog

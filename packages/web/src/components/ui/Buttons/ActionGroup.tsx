@@ -85,7 +85,7 @@ const ActionOption = ({ icon, label, onClick, href, confirmOptions }: ActionGrou
           }
           className="flex w-full flex-row px-2 py-1"
         >
-          {icon && icon({ className: 'h-4 w-4 my-auto mr-2 flex-shrink-0' })}
+          {icon && icon({ className: 'h-5 w-5 my-auto mr-2 flex-shrink-0' })}
           <span className={''}>{label}</span>
         </a>
       </li>

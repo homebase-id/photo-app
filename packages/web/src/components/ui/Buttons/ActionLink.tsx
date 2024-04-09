@@ -80,10 +80,10 @@ const ActionLink: FC<ActionLinkProps> = ({
     type === 'secondary'
       ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-800 dark:text-white'
       : type === 'remove'
-      ? 'bg-red-200 hover:bg-red-400 dark:bg-red-700 hover:dark:bg-red-800 dark:text-white'
-      : type === 'mute'
-      ? ''
-      : 'bg-green-500 hover:bg-green-600 text-white';
+        ? 'bg-red-200 hover:bg-red-400 dark:bg-red-700 hover:dark:bg-red-800 dark:text-white'
+        : type === 'mute'
+          ? ''
+          : 'bg-green-500 hover:bg-green-600 text-white';
 
   const widthClasses =
     children && type !== 'mute'
@@ -94,10 +94,10 @@ const ActionLink: FC<ActionLinkProps> = ({
     size === 'large'
       ? 'px-5 py-3'
       : size === 'small'
-      ? 'px-3 py-1 text-sm'
-      : size === 'square'
-      ? 'p-2'
-      : 'px-3 py-2';
+        ? 'px-3 py-1 text-sm'
+        : size === 'square'
+          ? 'p-2'
+          : 'px-3 py-2';
 
   return (
     <a
@@ -108,7 +108,7 @@ const ActionLink: FC<ActionLinkProps> = ({
       onClick={onClick}
     >
       {children}
-      <Icon className={`my-auto ${children ? 'ml-2' : ''} h-4 w-4`} />
+      <Icon className={`my-auto ${children ? 'ml-2' : ''} h-5 w-5`} />
     </a>
   );
 };

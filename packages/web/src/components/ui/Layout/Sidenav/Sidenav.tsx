@@ -46,7 +46,7 @@ const Sidenav = () => {
         className={`absolute left-0 top-0 z-40 p-3 md:p-4 lg:hidden ${sidebarBg}`}
         onClick={() => setIsOpen(true)}
       >
-        <Bars className={`h-4 w-4`} />
+        <Bars className={`h-5 w-5`} />
       </button>
       <aside
         className={`body-font fixed bottom-0 left-0 right-0 top-0 z-40 h-screen flex-shrink-0 transition-transform duration-300 lg:sticky lg:transition-all ${
