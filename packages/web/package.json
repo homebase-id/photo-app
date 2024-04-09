@@ -23,7 +23,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet-async": "2.0.3",
-    "react-router-dom": "^6.10.0",
+    "react-router-dom": "^6.22.3",
     "jszip": "^3.10.1",
     "photo-app-common": "*",
     "mp4box": "^0.5.2",
