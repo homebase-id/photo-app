@@ -124,9 +124,7 @@ let App = () => {
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={persistOptions}
-      onSuccess={() =>
-        queryClient.resumePausedMutations().then(() => queryClient.invalidateQueries())
-      }
+      onSuccess={() => queryClient.resumePausedMutations()}
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <RootStack />
