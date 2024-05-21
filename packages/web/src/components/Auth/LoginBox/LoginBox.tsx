@@ -29,19 +29,17 @@ export const LoginBox = () => {
     <>
       {authParams ? (
         <Helmet>
-          <meta
-            name="youauth"
-            content={stringifyToQueryParams(authParams as any)}
-          />
+          <meta name="youauth" content={stringifyToQueryParams(authParams as any)} />
         </Helmet>
       ) : null}
       <iframe
         src={`${
-          import.meta.env.VITE_CENTRAL_LOGIN_URL
-        }?isDarkMode=${document.documentElement.classList.contains(
-          IS_DARK_CLASSNAME,
+          import.meta.env.VITE_CENTRAL_LOGIN_HOST
+        }/anonymous?isDarkMode=${document.documentElement.classList.contains(
+          IS_DARK_CLASSNAME
         )}${authParams ? `&${stringifyToQueryParams(authParams as any)}` : ''}`}
-        className="h-[16rem] w-full"></iframe>
+        className="h-[16rem] w-full"
+      ></iframe>
     </>
   );
 };
