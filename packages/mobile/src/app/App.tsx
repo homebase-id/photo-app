@@ -11,7 +11,6 @@ import { Colors } from './Colors';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Images, ImageLibrary, Cog } from '../components/ui/Icons/icons';
 import { Platform, View } from 'react-native';
-import { useOnlineManager } from '../hooks/offline/useOnlineManager';
 import AlbumPage from '../pages/album';
 import SettingsPage from '../pages/settings-page';
 import SyncDetailsPage from '../pages/sync-details-page';
@@ -27,6 +26,7 @@ import { BackgroundProvider } from './BackgroundProvider';
 import { memo, useCallback } from 'react';
 import { OdinQueryClient } from './OdinQueryClient';
 import { useRefetchOnFocus } from '../hooks/platform/useRefetchOnFocus';
+import { useOnlineManager } from '../hooks/platform/useOnlineManager';
 
 export type AuthStackParamList = {
   Login: undefined;
