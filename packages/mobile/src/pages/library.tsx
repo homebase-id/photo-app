@@ -21,7 +21,7 @@ import {
 
 type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 
-const LibraryPage = (_props: LibraryProps) => {
+export const LibraryPage = (_props: LibraryProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: albums } = useAlbums().fetch;
 
@@ -215,5 +215,3 @@ const NewAlbumItem = ({ onPress }: { onPress: () => void }) => {
     </>
   );
 };
-
-export default LibraryPage;

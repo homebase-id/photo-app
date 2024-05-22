@@ -15,6 +15,7 @@
     "release:ios-codepush": "appcenter codepush release -a odinops/Homebase-Photo-ios -d Staging -c ./codepush -t 0.0.1 && rm -rf codepush"
   },
   "dependencies": {
+    "react-native-permissions": "^4.1.4",
     "@bam.tech/react-native-image-resizer": "^3.0.7",
     "@gorhom/bottom-sheet": "^4.6.0",
     "@likashefqet/react-native-image-zoom": "^2.2.0",
@@ -24,7 +25,7 @@
     "@react-native-async-storage/async-storage": "^1.21.0",
     "@react-native-camera-roll/camera-roll": "^7.4.1",
     "@react-native-community/checkbox": "^0.5.17",
-    "@react-native-community/datetimepicker": "^7.6.2",
+    "@react-native-community/datetimepicker": "^8.0.1",
     "@react-native-community/netinfo": "^11.2.1",
     "@react-navigation/bottom-tabs": "^6.5.12",
     "@react-navigation/native": "^6.1.10",

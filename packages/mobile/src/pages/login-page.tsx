@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button,
   View,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { AuthStackParamList } from '../app/App';
@@ -15,17 +16,22 @@ import { Container } from '../components/ui/Container/Container';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Colors } from '../app/Colors';
 import { stringifyToQueryParams } from '@youfoundation/js-lib/helpers';
-import { useYouAuthAuthorization } from '../hooks/auth/useAuth';
+import { useAuth, useYouAuthAuthorization } from '../hooks/auth/useAuth';
 import { doCheckIdentity } from '../hooks/checkIdentity/useCheckIdentity';
 import { CheckForUpdates, VersionInfo } from './settings-page';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 import logo from '../assets/homebase-photos.png';
 import { Input } from '../components/ui/Form/Input';
+import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
+import { useDarkMode } from '../hooks/useDarkMode';
+import { Divider } from '../components/ui/Divider';
+import { PublicAvatar } from '../components/ui/Avatars/PublicAvatar';
+import { AuthorName } from '../components/ui/Avatars/Name';
 
 type LoginProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-const LoginPage = (_props: LoginProps) => {
+export const LoginPage = (_props: LoginProps) => {
   return (
     <SafeAreaView>
       <Container style={{ flex: 1, flexDirection: 'column' }}>
@@ -95,12 +101,24 @@ const useFinalize = () => {
     Linking.addEventListener('url', ({ url }) => setUrl(url));
   }, []);
 
+  useEffect(() => {
+    // State is only reset when the url is updated; If it failed last time.. it will still fail
+    setState(null);
+  }, [url]);
+
   const { finalizeAuthentication } = useYouAuthAuthorization();
 
   useEffect(() => {
     // Finalize
     (async () => {
-      if (state === 'preparing' || state === 'success' || state === 'loading') return;
+      if (
+        state === 'error' ||
+        state === 'preparing' ||
+        state === 'success' ||
+        state === 'loading'
+      ) {
+        return;
+      }
       try {
         if (url?.startsWith(FINALIZE_PATH)) {
           setState('loading');
@@ -113,23 +131,35 @@ const useFinalize = () => {
           const salt = params.get('salt');
 
           if (!identity || !public_key || !salt) return;
-          await finalizeAuthentication(identity, public_key, salt);
-
-          setState('success');
+          const success = await finalizeAuthentication(identity, public_key, salt);
+          setState(success ? 'success' : 'error');
         }
       } catch (e) {
         setState('error');
         setUrl(null);
       }
     })();
-  }, [url, finalizeAuthentication, state]);
+  }, [url, state, finalizeAuthentication]);
 
   return state;
 };
 
 const useParams = () => {
   const { getRegistrationParams } = useYouAuthAuthorization();
-  return { data: useMemo(() => getRegistrationParams(), [getRegistrationParams]) };
+
+  const [params, setParams] = useState<YouAuthorizationParams | null>(null);
+  useEffect(() => {
+    (async () => setParams(await getRegistrationParams()))();
+  }, [getRegistrationParams]);
+
+  const refetch = useCallback(() => {
+    (async () => setParams(await getRegistrationParams()))();
+  }, [getRegistrationParams]);
+
+  return {
+    data: params,
+    refetch,
+  };
 };
 
 const LoginComponent = () => {
@@ -138,25 +168,32 @@ const LoginComponent = () => {
 
   const [invalid, setInvalid] = useState<boolean>(false);
   const [odinId, setOdinId] = useState<string>('');
-  const { data: authParams } = useParams();
+  const { data: authParams, refetch } = useParams();
+  const lastIdentity = useAuth().getLastIdentity();
+  const { isDarkMode } = useDarkMode();
+  useEffect(() => {
+    if (finalizeState === 'error') {
+      refetch();
+    }
+  }, [finalizeState, refetch]);
 
   useEffect(() => setInvalid(false), [odinId]);
 
-  const doLogin = useCallback(async () => {
-    if (!odinId) {
+  const onLogin = useCallback(async () => {
+    if (!odinId && !lastIdentity) {
       setInvalid(true);
       return;
     }
 
-    const identityReachable = await doCheckIdentity(odinId);
+    const identityReachable = await doCheckIdentity(odinId || (lastIdentity as string));
     if (!identityReachable) {
       setInvalid(true);
       return;
     }
 
-    const url = `https://${odinId}/api/owner/v1/youauth/authorize?${stringifyToQueryParams(
-      authParams as any
-    )}`;
+    const url = `https://${
+      odinId || lastIdentity
+    }/api/owner/v1/youauth/authorize?${stringifyToQueryParams(authParams as any)}`;
     if (await InAppBrowser.isAvailable()) {
       const result = await InAppBrowser.openAuth(url, '', {
         enableUrlBarHiding: false,
@@ -174,7 +211,7 @@ const LoginComponent = () => {
 
       if (result.type === 'success' && result.url) Linking.openURL(result.url);
     } else await Linking.openURL(url);
-  }, [authParams, odinId]);
+  }, [authParams, lastIdentity, odinId]);
 
   const showSignUpAlert = useCallback(() => {
     Alert.alert(
@@ -194,6 +231,7 @@ const LoginComponent = () => {
         },
         {
           text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
           style: 'cancel',
         },
       ]
@@ -204,16 +242,17 @@ const LoginComponent = () => {
 
   return (
     <>
-      <Text style={{ fontSize: 18 }}>Your Homebase id</Text>
+      <Text style={{ fontSize: Platform.OS === 'ios' ? 20 : 18 }}>Your Homebase id</Text>
       <Input
         placeholder="Homebase id"
         style={{
           height: 40,
+          fontSize: Platform.OS === 'ios' ? 16 : 14,
         }}
         onChangeText={setOdinId}
         autoCapitalize="none"
         autoCorrect={false}
-        onSubmitEditing={doLogin}
+        onSubmitEditing={onLogin}
       />
 
       {invalid ? <Text style={{ color: Colors.red[500] }}>Invalid homebase id</Text> : null}
@@ -222,7 +261,48 @@ const LoginComponent = () => {
         <Text style={{ color: Colors.red[500] }}>Something went wrong, please try again</Text>
       ) : null}
 
-      <Button title="Login" disabled={!odinId} onPress={doLogin} />
+      <Button title="Login" disabled={!odinId} onPress={onLogin} />
+
+      {lastIdentity && !odinId && (
+        <View
+          style={{
+            marginBottom: 10,
+          }}
+        >
+          {/* Render -----OR----- */}
+          <Divider text="OR" />
+          <TouchableOpacity
+            onPress={onLogin}
+            style={{
+              flexShrink: 1,
+              backgroundColor: isDarkMode ? Colors.indigo[700] : Colors.indigo[100],
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              borderRadius: 15,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                flexShrink: 1,
+                alignItems: 'center',
+                padding: 8,
+              }}
+            >
+              <PublicAvatar odinId={lastIdentity} style={{ width: 30, height: 30 }} />
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 16,
+                  marginLeft: 8,
+                }}
+              >
+                Continue as {<AuthorName odinId={lastIdentity} />}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View
         style={{
@@ -240,5 +320,3 @@ const LoginComponent = () => {
     </>
   );
 };
-
-export default LoginPage;

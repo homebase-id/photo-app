@@ -4,23 +4,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PhotosPage from '../pages/photos';
 import PhotoPreview from '../pages/photo-preview';
 
-import LoginPage from '../pages/login-page';
-import LibraryPage from '../pages/library';
+import { LoginPage } from '../pages/login-page';
+import { LibraryPage } from '../pages/library';
 
 import { Colors } from './Colors';
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { focusManager, QueryClient } from '@tanstack/react-query';
 import { Images, ImageLibrary, Cog } from '../components/ui/Icons/icons';
-import {
-  PersistQueryClientOptions,
-  PersistQueryClientProvider,
-} from '@tanstack/react-query-persist-client';
 import { Platform, View } from 'react-native';
-import { useAppState } from '../hooks/offline/useAppState';
 import { useOnlineManager } from '../hooks/offline/useOnlineManager';
 import AlbumPage from '../pages/album';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import SettingsPage from '../pages/settings-page';
 import SyncDetailsPage from '../pages/sync-details-page';
 import TypePage from '../pages/type';
@@ -33,6 +25,8 @@ import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
 import { LibraryType } from 'photo-app-common';
 import { BackgroundProvider } from './BackgroundProvider';
 import { memo, useCallback } from 'react';
+import { OdinQueryClient } from './OdinQueryClient';
+import { useRefetchOnFocus } from '../hooks/platform/useRefetchOnFocus';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -56,80 +50,13 @@ export type RootStackParamList = {
   Type: { typeId: LibraryType };
 };
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    mutations: {
-      gcTime: Infinity,
-      retry: 0,
-    },
-    queries: {
-      retry: 2,
-      gcTime: Infinity,
-    },
-  },
-});
-
-const asyncPersister = createAsyncStoragePersister({
-  storage: AsyncStorage,
-  throttleTime: 1000,
-});
-
-// Explicit includes to avoid persisting media items, or large data in general
-const INCLUDED_QUERY_KEYS = [
-  'album',
-  'album-thumb',
-  'albums',
-  'photo-header',
-  'photo-library',
-  'photo-meta',
-  'photos',
-  'photos-infinite',
-
-  // Small data (blobs to local file Uri)
-  'image',
-
-  // Big data (base64 uri's)
-  // 'tinyThumb',
-];
-
-const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
-  maxAge: Infinity,
-  persister: asyncPersister,
-  dehydrateOptions: {
-    shouldDehydrateQuery: (query) => {
-      if (
-        query.state.status === 'pending' ||
-        query.state.status === 'error' ||
-        (query.state.data &&
-          typeof query.state.data === 'object' &&
-          !Array.isArray(query.state.data) &&
-          Object.keys(query.state.data).length === 0)
-      )
-        return false;
-      const { queryKey } = query;
-      return INCLUDED_QUERY_KEYS.some((key) => queryKey.includes(key));
-    },
-  },
-};
-
-const onAppStateChange = (status: string) => {
-  if (Platform.OS !== 'web') focusManager.setFocused(status === 'active');
-};
-
 let App = () => {
-  useAppState(onAppStateChange);
-  useOnlineManager();
-
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={persistOptions}
-      onSuccess={() => queryClient.resumePausedMutations()}
-    >
+    <OdinQueryClient>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <RootStack />
       </GestureHandlerRootView>
-    </PersistQueryClientProvider>
+    </OdinQueryClient>
   );
 };
 const codePushOptions = { checkFrequency: CodePush.CheckFrequency.MANUAL };
@@ -155,6 +82,8 @@ const RootStack = () => {
 const StackAuthenticated = createNativeStackNavigator<RootStackParamList>();
 const AuthenticatedStack = memo(() => {
   useValidTokenCheck();
+  useRefetchOnFocus();
+  useOnlineManager();
   useSyncFromCameraRoll(Platform.OS === 'ios');
   const { isDarkMode } = useDarkMode();
 

@@ -9,6 +9,7 @@ export const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRollAsBoolean';
 export const FORCE_LOWER_QUALITY = 'forceLowerQualityAsBoolean';
 export const MIN_CONNECTION_TYPE = 'minConnectionType';
 export const HEADLESS_SYNC_LOG = 'headlessSyncLog';
+const LAST_LOGGED_OUT_IDENTITY = 'lastLoggedOutIdentity';
 
 const storage = new MMKVLoader().initialize();
 
@@ -30,6 +31,12 @@ export const useEncrtypedStorage = () => {
     '' //'samwisegamgee.me',
   );
 
+  const [lastLoggedOutIdentity, setLastLoggedOutIdentity] = useMMKVStorage(
+    LAST_LOGGED_OUT_IDENTITY,
+    storage,
+    ''
+  );
+
   return {
     privateKey: privateKey.length ? privateKey : null,
     setPrivateKey,
@@ -39,6 +46,8 @@ export const useEncrtypedStorage = () => {
     setSharedSecret,
     identity: identity.length ? identity : null,
     setIdentity,
+    lastLoggedOutIdentity: lastLoggedOutIdentity.length ? lastLoggedOutIdentity : null,
+    setLastLoggedOutIdentity,
   };
 };
 
