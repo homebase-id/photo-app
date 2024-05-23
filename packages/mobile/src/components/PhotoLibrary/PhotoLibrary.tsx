@@ -14,6 +14,7 @@ import {
   LibraryType,
 } from 'photo-app-common';
 import { useQueryClient } from '@tanstack/react-query';
+import { ErrorNotification } from '../ui/Alert/ErrorNotification';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -185,7 +186,7 @@ export const PhotoMonth = memo(
       [photosInfinte]
     );
 
-    const { mutate: updateCount } = usePhotoLibrary({
+    const { mutate: updateCount, error: updateCountError } = usePhotoLibrary({
       targetDrive: targetDrive,
       type,
     }).updateCount;
@@ -238,6 +239,7 @@ export const PhotoMonth = memo(
 
     return (
       <View>
+        <ErrorNotification error={updateCountError} />
         {monthMeta.photosThisMonth >= 1 ? (
           <Container>
             <Text>{title}</Text>

@@ -55,6 +55,8 @@ export const useAuth = () => {
     setAuthToken,
     identity,
     setIdentity,
+    setLastLoggedOutIdentity,
+    lastLoggedOutIdentity,
   } = useEncrtypedStorage();
 
   const [authenticationState, setAuthenticationState] = useState<'anonymous' | 'authenticated'>(
@@ -90,6 +92,11 @@ export const useAuth = () => {
   const logout = useCallback(async (): Promise<void> => {
     await logoutYouauth(getDotYouClient());
 
+    // Store last logged out identity
+    if (identity) {
+      setLastLoggedOutIdentity(identity);
+    }
+
     setAuthenticationState('anonymous');
 
     setPrivateKey('');
@@ -108,6 +115,7 @@ export const useAuth = () => {
       () => sharedSecret && base64ToUint8Array(sharedSecret),
       [sharedSecret]
     ),
+    getLastIdentity: useCallback(() => lastLoggedOutIdentity, [lastLoggedOutIdentity]),
     getIdentity: useCallback(() => identity, [identity]),
     isAuthenticated: useMemo(() => authenticationState !== 'anonymous', [authenticationState]),
   };
@@ -141,7 +149,7 @@ export const useYouAuthAuthorization = () => {
 
   const finalizeAuthentication = useCallback(
     async (identity: string, publicKey: string, salt: string) => {
-      if (!identity || !publicKey || !salt) {
+      if (!identity || !publicKey || !salt || !privateKey) {
         console.error('Missing data');
         return false;
       }

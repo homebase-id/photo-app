@@ -6,6 +6,7 @@ import { Colors } from '../../app/Colors';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 import { useAlbums, usePhoto, PhotoConfig, LibraryType } from 'photo-app-common';
+import { useErrors } from '../../hooks/errors/useErrors';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -37,89 +38,117 @@ const PhotoSelection = ({
   if (!isSelecting) return null;
 
   const removeSelection = async () => {
-    await Promise.all(
-      selection.map(async (fileId) => {
-        await removePhoto({ photoFileId: fileId });
-      })
-    );
+    try {
+      await Promise.all(
+        selection.map(async (fileId) => {
+          await removePhoto({ photoFileId: fileId });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   const deleteSelection = async () => {
-    await Promise.all(
-      selection.map(async (fileId) => {
-        await deletePhoto({ photoFileId: fileId });
-      })
-    );
+    try {
+      await Promise.all(
+        selection.map(async (fileId) => {
+          await deletePhoto({ photoFileId: fileId });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   const archiveSelection = async () => {
-    await Promise.all(
-      selection.map(async (fileId) => {
-        await archivePhoto({ photoFileId: fileId });
-      })
-    );
+    try {
+      await Promise.all(
+        selection.map(async (fileId) => {
+          await archivePhoto({ photoFileId: fileId });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   const restoreSelection = async () => {
-    await Promise.all(
-      selection.map(async (fileId) => {
-        await restorePhoto({ photoFileId: fileId });
-      })
-    );
+    try {
+      await Promise.all(
+        selection.map(async (fileId) => {
+          await restorePhoto({ photoFileId: fileId });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   const favoriteSelection = async () => {
-    await Promise.all(
-      selection.map(async (fileId) => {
-        addTagsToPhoto({
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileId: fileId,
-          addTags: [PhotoConfig.FavoriteTag],
-        });
-      })
-    );
+    try {
+      await Promise.all(
+        selection.map(async (fileId) => {
+          addTagsToPhoto({
+            targetDrive: PhotoConfig.PhotoDrive,
+            fileId: fileId,
+            addTags: [PhotoConfig.FavoriteTag],
+          });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   const addSelectionToAlbum = async (albumTag: string) => {
-    if (!albumTag) return;
+    try {
+      if (!albumTag) return;
 
-    await Promise.all(
-      selection.map(async (fileId) => {
-        addTagsToPhoto({
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileId: fileId,
-          addTags: [albumTag],
-        });
-      })
-    );
+      await Promise.all(
+        selection.map(async (fileId) => {
+          addTagsToPhoto({
+            targetDrive: PhotoConfig.PhotoDrive,
+            fileId: fileId,
+            addTags: [albumTag],
+          });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   const removeSelectionFromAlbum = async (albumTag: string) => {
-    if (!albumTag) return;
+    try {
+      if (!albumTag) return;
 
-    await Promise.all(
-      selection.map(async (fileId) => {
-        removeTagsFromPhoto({
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileId: fileId,
-          removeTags: [albumTag],
-        });
-      })
-    );
+      await Promise.all(
+        selection.map(async (fileId) => {
+          removeTagsFromPhoto({
+            targetDrive: PhotoConfig.PhotoDrive,
+            fileId: fileId,
+            removeTags: [albumTag],
+          });
+        })
+      );
 
-    clearSelection();
+      clearSelection();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   return (
