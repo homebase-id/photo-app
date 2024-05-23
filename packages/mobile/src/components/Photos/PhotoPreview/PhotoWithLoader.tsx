@@ -1,4 +1,5 @@
 import {
+  DEFAULT_PAYLOAD_KEY,
   EmbeddedThumb,
   ImageContentType,
   ImageSize,
@@ -90,12 +91,18 @@ export const OdinImage = memo(
 
     const { getFromCache } = useImage();
     const cachedImage = useMemo(
-      () => (fileId ? getFromCache(odinId, fileId, targetDrive) : undefined),
+      () => (fileId ? getFromCache(odinId, fileId, DEFAULT_PAYLOAD_KEY, targetDrive) : undefined),
       [fileId, getFromCache, odinId, targetDrive]
     );
     const skipTiny = !!previewThumbnail || !!cachedImage;
 
-    const { data: tinyThumb } = useTinyThumb(odinId, !skipTiny ? fileId : undefined, targetDrive);
+    const { data: tinyThumb } = useTinyThumb({
+      odinId,
+      imageFileId: !skipTiny ? fileId : undefined,
+      imageFileKey: DEFAULT_PAYLOAD_KEY,
+      imageDrive: targetDrive,
+    });
+
     const previewUrl = cachedImage?.url || embeddedThumbUrl || tinyThumb?.url;
 
     const naturalSize: ImageSize | undefined = tinyThumb
@@ -107,13 +114,14 @@ export const OdinImage = memo(
 
     const {
       fetch: { data: imageData },
-    } = useImage(
+    } = useImage({
+      imageDrive: targetDrive,
       odinId,
-      enableZoom || loadSize !== undefined ? fileId : undefined,
-      targetDrive,
-      avoidPayload ? { pixelHeight: 200, pixelWidth: 200 } : loadSize,
-      naturalSize
-    );
+      imageFileId: enableZoom || loadSize !== undefined ? fileId : undefined,
+      imageFileKey: DEFAULT_PAYLOAD_KEY,
+      size: loadSize,
+      naturalSize,
+    });
 
     const hasCachedImage = !!cachedImage?.url;
 

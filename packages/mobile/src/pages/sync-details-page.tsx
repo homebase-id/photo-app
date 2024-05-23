@@ -251,6 +251,7 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
         }
         numColumns={numColums}
         onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+        ListFooterComponent={<View style={{ height: 90 }} />}
       />
     </View>
   );
