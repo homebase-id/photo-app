@@ -29,6 +29,7 @@ import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
 import { useDarkMode } from '../hooks/useDarkMode';
 import BackgroundFetch from 'react-native-background-fetch';
 import { Modal } from '../components/ui/Modal/Modal';
+import { ErrorNotification } from '../components/ui/Alert/ErrorNotification';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'SyncDetails'>;
 
@@ -197,7 +198,12 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
   const [uploadIndex, setUploadIndex] = useState(0);
   const [uploadQueue, setUploadQueue] = useState<PhotoIdentifier[]>([]);
 
-  const { mutate: uploadPhoto, status: uploadStatus, reset: resetUpload } = useUploadPhoto().upload;
+  const {
+    mutate: uploadPhoto,
+    status: uploadStatus,
+    reset: resetUpload,
+    error: uploadError,
+  } = useUploadPhoto().upload;
 
   const currentFile = uploadQueue[uploadIndex];
   useEffect(() => {
@@ -218,6 +224,7 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
         margin: -1,
       }}
     >
+      <ErrorNotification error={uploadError} />
       <FlatList
         data={flatPhotos}
         key={numColums}

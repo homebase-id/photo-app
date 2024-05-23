@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from '../ui/Modal/Modal';
 import { Input } from '../ui/Form/Input';
 import { Colors } from '../../app/Colors';
+import { useErrors } from '../../hooks/errors/useErrors';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -149,44 +150,52 @@ export const PhotoAlbumEditDialog = ({
 
   const {
     fetch: { data: album },
-    save: { mutateAsync: saveAlbum, status: saveStatus, error: saveError },
-    remove: { mutateAsync: removeAlbum, status: removeAlbumStatus, error: removeAlbumError },
+    save: { mutateAsync: saveAlbum },
+    remove: { mutateAsync: removeAlbum },
   } = useAlbum(albumId);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const doRemoveAlbum = useCallback(async () => {
-    if (!album) return;
+    try {
+      if (!album) return;
 
-    await Alert.alert(
-      'Are you sure',
-      `Delete your album "${album.name}"? Pictures will stay available in your library`,
-      [
-        {
-          text: 'Confirm',
-          style: 'destructive',
-          onPress: async () => {
-            await removeAlbum(album);
-            navigation.goBack();
+      await Alert.alert(
+        'Are you sure',
+        `Delete your album "${album.name}"? Pictures will stay available in your library`,
+        [
+          {
+            text: 'Confirm',
+            style: 'destructive',
+            onPress: async () => {
+              await removeAlbum(album);
+              navigation.goBack();
+            },
           },
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-      ]
-    );
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+        ]
+      );
+    } catch (err) {
+      useErrors().add(err);
+    }
   }, [album, navigation, removeAlbum]);
 
   const doSaveAlbum = useCallback(async () => {
-    if (!album) return;
-    await saveAlbum({
-      ...album,
-      name: name || album.name,
-      description: description || album.description,
-    });
-    onClose();
+    try {
+      if (!album) return;
+      await saveAlbum({
+        ...album,
+        name: name || album.name,
+        description: description || album.description,
+      });
+      onClose();
+    } catch (err) {
+      useErrors().add(err);
+    }
   }, [album, description, name, onClose, saveAlbum]);
 
   return (

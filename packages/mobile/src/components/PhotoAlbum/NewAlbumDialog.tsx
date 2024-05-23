@@ -5,17 +5,22 @@ import { getNewId } from '@youfoundation/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
 import { useAlbum } from 'photo-app-common';
+import { useErrors } from '../../hooks/errors/useErrors';
 
 const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const { mutateAsync: saveAlbum, status: saveStatus, error: saveError } = useAlbum().save;
+  const { mutateAsync: saveAlbum } = useAlbum().save;
 
   const doSaveAlbum = async () => {
-    const newTag = getNewId();
-    await saveAlbum({ tag: newTag, name, description });
-    onClose();
+    try {
+      const newTag = getNewId();
+      await saveAlbum({ tag: newTag, name, description });
+      onClose();
+    } catch (err) {
+      useErrors().add(err);
+    }
   };
 
   if (!isOpen) return null;

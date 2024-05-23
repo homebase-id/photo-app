@@ -27,6 +27,7 @@ import { memo, useCallback } from 'react';
 import { OdinQueryClient } from './OdinQueryClient';
 import { useRefetchOnFocus } from '../hooks/platform/useRefetchOnFocus';
 import { useOnlineManager } from '../hooks/platform/useOnlineManager';
+import { ErrorToaster } from '../components/ui/Alert/ErrorToaster';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -75,6 +76,7 @@ const RootStack = () => {
           <StackedRoot.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
         )}
       </StackedRoot.Navigator>
+      <ErrorToaster />
     </NavigationContainer>
   );
 };
