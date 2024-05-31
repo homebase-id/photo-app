@@ -70,11 +70,6 @@ export const useKeyValueStorage = () => {
     storage,
     false
   );
-  const [minConnectionType, setMinConnectionType] = useMMKVStorage<'METERED' | 'UNMETERED'>(
-    MIN_CONNECTION_TYPE,
-    storage,
-    'METERED'
-  );
 
   const [headlessSyncLog] = useMMKVStorage<string>('headlessSyncLog', storage, '');
 
@@ -87,9 +82,6 @@ export const useKeyValueStorage = () => {
 
     forceLowerQuality,
     setForceLowerQuality,
-
-    minConnectionType,
-    setMinConnectionType,
 
     headlessSyncLog,
   };

@@ -343,8 +343,6 @@ const SettingsModal = ({ onClose }: { onClose: () => void }) => {
     setSyncFromCameraRoll,
     setForceLowerQuality,
     forceLowerQuality,
-    minConnectionType,
-    setMinConnectionType,
     headlessSyncLog,
   } = useKeyValueStorage();
 
@@ -386,29 +384,6 @@ const SettingsModal = ({ onClose }: { onClose: () => void }) => {
             {forceLowerQuality ? 'High quality' : 'Original quality'}
           </Text>
         </TouchableOpacity>
-
-        {Platform.OS === 'android' ? (
-          <TouchableOpacity
-            onPress={() => {
-              Alert.alert('Sync settings?', 'When can sync run', [
-                {
-                  text: 'Always, even on mobile data',
-                  onPress: () => setMinConnectionType('METERED'),
-                },
-                {
-                  text: 'Only on Wi-Fi',
-                  onPress: () => setMinConnectionType('UNMETERED'),
-                },
-                {
-                  text: 'Cancel',
-                  style: 'cancel',
-                },
-              ]);
-            }}
-          >
-            <Text>{minConnectionType === 'METERED' ? 'Only sync over wi-fi' : 'Sync always'}</Text>
-          </TouchableOpacity>
-        ) : null}
 
         {syncFromCameraRoll ? (
           <TouchableOpacity
