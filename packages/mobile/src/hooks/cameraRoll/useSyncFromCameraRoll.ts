@@ -9,7 +9,7 @@ import { useUploadPhoto } from '../photo/useUploadPhoto';
 
 const ONE_MINUTE = 60000;
 const TEN_MINUTES = ONE_MINUTE * 10;
-const BATCH_SIZE = 50;
+// const BATCH_SIZE = 50;
 
 export const useSyncFrom = () => {
   // last synced time
@@ -21,19 +21,21 @@ export const useSyncFrom = () => {
 
 export const fetchAndUpload = async (
   fromTime: number,
+  maxBatch: number,
   uploadPhoto: (
     photo: PhotoIdentifier
   ) => Promise<{ fileId?: string; userDate: Date; imageUniqueId: string }>,
   cursor?: string | undefined
-): Promise<{ uploaded: number; errors: string[] }> => {
+): Promise<{ lastTimestamp: number; uploaded: number; errors: string[] }> => {
   const photos = await CameraRoll.getPhotos({
-    first: BATCH_SIZE,
+    first: maxBatch,
     fromTime: fromTime,
     assetType: 'All',
     after: cursor,
     include: ['imageSize', 'filename', 'playableDuration', 'fileSize', 'location'],
   });
 
+  let lastTimestamp = 0;
   const errors: string[] = [];
 
   // Regular loop to have the photos uploaded sequentially
@@ -48,6 +50,7 @@ export const fetchAndUpload = async (
 
       // Upload new always checkf if it already exists
       await uploadPhoto(photo);
+      lastTimestamp = photo.node.timestamp;
     } catch (e: unknown) {
       // console.error('failed to sync', e);
       errors.push(
@@ -58,16 +61,20 @@ export const fetchAndUpload = async (
   }
 
   const uploadedCount = photos.edges.length - errors.length;
-  if (photos.page_info.has_next_page) {
-    const recursiveResults = await fetchAndUpload(
-      fromTime,
-      uploadPhoto,
-      photos.page_info.end_cursor
-    );
-    return { uploaded: uploadedCount, errors: errors.concat(recursiveResults.errors) };
-  }
+  // if (photos.page_info.has_next_page) {
+  //   const recursiveResults = await fetchAndUpload(
+  //     fromTime,
+  //     uploadPhoto,
+  //     photos.page_info.end_cursor
+  //   );
+  //   return {
+  //     lastTimestamp,
+  //     uploaded: uploadedCount,
+  //     errors: errors.concat(recursiveResults.errors),
+  //   };
+  // }
 
-  return { uploaded: uploadedCount, errors };
+  return { lastTimestamp, uploaded: uploadedCount, errors };
 };
 
 export const useSyncFromCameraRoll = (enabledAutoSync: boolean) => {

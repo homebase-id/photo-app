@@ -14,6 +14,7 @@ import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
 import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 
+const MAX_BATCH = 10;
 const headlessSync = async () => {
   const storage = new MMKVLoader().initialize();
   const customLog: string[] = [];
@@ -77,7 +78,11 @@ const headlessSync = async () => {
       return uploadResult;
     };
 
-    const { uploaded, errors } = await fetchAndUpload(fromTime, uploadPhoto);
+    const { uploaded, errors, lastTimestamp } = await fetchAndUpload(
+      fromTime,
+      MAX_BATCH,
+      uploadPhoto
+    );
     if (uploaded > 0 && currentLib) {
       await savePhotoLibraryMetadata(dotYouClient, currentLib, 'photos');
     }
@@ -90,7 +95,7 @@ const headlessSync = async () => {
     console.log(
       `Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`
     );
-    await storage.setInt(LAST_SYNC_TIME, new Date().getTime());
+    await storage.setInt(LAST_SYNC_TIME, lastTimestamp);
   } catch (e: any) {
     console.error('Error in headlessSync', e);
     customLog.push('Error in headlessSync');
