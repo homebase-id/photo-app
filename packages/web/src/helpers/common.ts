@@ -5,7 +5,7 @@ export const getVersion = () => {
       return import.meta.env.VITE_VERSION;
     }
 
-    const t = new Date(1970, 0, 1); // Epoch
+    const t = new Date(0); // Epoch
     t.setSeconds(numberedVersion);
     return `${t.toLocaleDateString()} ${t.toLocaleTimeString()}`;
   } catch (ex) {
