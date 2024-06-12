@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import id.homebase.photos.worker.PhotoInfoModule;
+
 public class MyAppPackage implements ReactPackage {
 
     @Override
@@ -21,6 +23,7 @@ public class MyAppPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
 
         modules.add(new OdinBlobModule(reactContext));
+        modules.add(new PhotoInfoModule(reactContext));
 
         return modules;
     }

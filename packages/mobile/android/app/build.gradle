@@ -143,6 +143,13 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation('com.google.guava:guava:29.0-android')
+
+    // Work manager: https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started#kts
+    def work_version = "2.9.0"
+    implementation("androidx.work:work-runtime:$work_version")
+
 }
 
 apply from: file("../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

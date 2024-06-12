@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
   StyleProp,
   TouchableOpacity,
   View,
@@ -84,54 +85,56 @@ const SettingsPage = (_props: SettingsProps) => {
             </Text>
             {logoutPending ? <ActivityIndicator style={{ marginLeft: 'auto' }} /> : null}
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigate('SyncDetails')}
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: 12,
-              width: '100%',
-            }}
-          >
-            <CloudIcon size={'lg'} />
-            <View style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Text
-                style={{
-                  marginLeft: 16,
-                }}
-              >
-                Backup
-              </Text>
-              {syncFromCameraRoll ? (
+          {Platform.OS === 'android' ? (
+            <TouchableOpacity
+              onPress={() => navigate('SyncDetails')}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: 12,
+                width: '100%',
+              }}
+            >
+              <CloudIcon size={'lg'} />
+              <View style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Text
                   style={{
                     marginLeft: 16,
-                    opacity: 0.5,
                   }}
                 >
-                  {lastCameraRollSyncTime ? (
-                    <>
-                      Last sync:{' '}
-                      {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
-                    </>
-                  ) : (
-                    'Last sync: not synced yet'
-                  )}
+                  Backup
                 </Text>
-              ) : null}
-            </View>
-            {syncFromCameraRoll ? (
-              <View style={{ marginLeft: 'auto' }}>
-                <CheckBox
-                  value={syncFromCameraRoll}
-                  style={{ marginLeft: 'auto' }}
-                  aria-label="Sync with your camera roll"
-                  disabled={syncFromCameraRoll}
-                />
+                {syncFromCameraRoll ? (
+                  <Text
+                    style={{
+                      marginLeft: 16,
+                      opacity: 0.5,
+                    }}
+                  >
+                    {lastCameraRollSyncTime ? (
+                      <>
+                        Last sync:{' '}
+                        {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
+                      </>
+                    ) : (
+                      'Last sync: not synced yet'
+                    )}
+                  </Text>
+                ) : null}
               </View>
-            ) : null}
-          </TouchableOpacity>
+              {syncFromCameraRoll ? (
+                <View style={{ marginLeft: 'auto' }}>
+                  <CheckBox
+                    value={syncFromCameraRoll}
+                    style={{ marginLeft: 'auto' }}
+                    aria-label="Sync with your camera roll"
+                    disabled={syncFromCameraRoll}
+                  />
+                </View>
+              ) : null}
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             onPress={() => doClearLocalData()}
             style={{
