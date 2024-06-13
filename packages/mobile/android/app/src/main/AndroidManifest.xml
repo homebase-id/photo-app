@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <service android:name="id.homebase.photos.worker.PhotoMonitoringService" />
-        <service android:name="id.homebase.photos.worker.HeadlessJsService" android:foregroundServiceType="dataSync" />
+        <!-- <service android:name="id.homebase.photos.worker.HeadlessJsService" android:foregroundServiceType="dataSync" /> -->
     </application>
 
 
