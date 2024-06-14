@@ -201,9 +201,9 @@ public class DriveFileUploadProvider {
                     RequestBody payloadBody;
 
                     if(keyHeader == null) {
-                        payloadBody = RequestBody.create(thumb.getPayload(), MediaType.parse(thumb.getContentType()));
+                        payloadBody = new StreamRequestBody(thumb.getOutputStream(), MediaType.parse(thumb.getContentType()));
                     } else {
-                        ByteArrayOutputStream encryptedPayload = CryptoUtil.encryptWithKeyheader(thumb.getPayload(), getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey()));
+                        ByteArrayOutputStream encryptedPayload = CryptoUtil.encryptWithKeyheader(thumb.getInputStream(), getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey()));
                         payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(thumb.getContentType()));
                     }
 

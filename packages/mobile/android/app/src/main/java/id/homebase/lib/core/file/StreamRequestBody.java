@@ -35,17 +35,7 @@ public class StreamRequestBody extends RequestBody {
     }
 
     private InputStream convertOutputStreamToInputStream() throws IOException {
-        PipedInputStream in = new PipedInputStream();
-        final PipedOutputStream out = new PipedOutputStream(in);
-
-        new Thread(() -> {
-            try {
-                inputStream.writeTo(out);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
-
-        return in;
+        return StreamUtil.convertOutputStreamToInputStream(inputStream);
     }
 }
+

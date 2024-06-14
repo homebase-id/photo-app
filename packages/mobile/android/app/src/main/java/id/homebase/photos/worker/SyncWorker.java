@@ -3,7 +3,6 @@ package id.homebase.photos.worker;
 import static id.homebase.photos.MediaProvider.uploadMedia;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.database.Cursor;
 import android.net.Uri;
@@ -64,7 +63,7 @@ public class SyncWorker extends Worker {
 
         // Find all photos that have been added since the last sync
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED};
+        String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED, MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media._ID, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT};
         String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
         double lastSyncTimeSeconds = lastSyncTime / 1000;
         String lastSyncTimeString = String.valueOf(lastSyncTimeSeconds);
@@ -83,13 +82,22 @@ public class SyncWorker extends Worker {
                 try {
                     String filePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
                     String timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+
+                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
+                    String identifier = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                    String width = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH));
+                    String height = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT));
+
+
                     // Do something with the filePath and timestamp
                     Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
 
 
-                    uploadMedia(dotYouClient,filePath, timestamp);
+                    uploadMedia(dotYouClient,filePath, timestamp, mimeType,
+                            identifier,
+                            width,height
+                            );
 
-                    // Retrieve the latest photo information
 
                     // Upload the photo to the server
                     // Example: uploadPhoto(filePath, timestamp, identity, CAT, SharedSecret);

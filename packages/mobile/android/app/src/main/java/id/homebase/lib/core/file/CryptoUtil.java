@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 
@@ -40,33 +41,43 @@ public class CryptoUtil {
         return innerEncrypt(iv, secretKey, data);
     }
 
-    public static ByteArrayOutputStream cbcEncryptStream(File inputFile, byte[] iv, byte[] key) throws Exception {
+    public static ByteArrayOutputStream cbcEncryptStream(InputStream inputStream, byte[] iv, byte[] key) throws Exception {
         SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
 
-        try (FileInputStream fis = new FileInputStream(inputFile);
-             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             byte[] buffer = new byte[16]; // Block size for AES
 
             while (true) {
-                int bytesRead = fis.read(buffer);
+                int bytesRead = inputStream.read(buffer);
                 if (bytesRead == -1) {
                     break; // End of file
                 }
 
                 byte[] encryptedBytes = cipher.update(buffer, 0, bytesRead);
-                baos.write(encryptedBytes);
+                outputStream.write(encryptedBytes);
             }
 
             // Write the last block of encrypted data (with padding)
             byte[] finalEncryptedBytes = cipher.doFinal();
-            baos.write(finalEncryptedBytes);
+            outputStream.write(finalEncryptedBytes);
 
-            return baos;
+            return outputStream;
 
+        } catch (IOException e) {
+            System.out.println("Error reading file: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error reading file", e);
+        }
+    }
+
+    public static ByteArrayOutputStream cbcEncryptFile(File inputFile, byte[] iv, byte[] key) throws Exception {
+        try (FileInputStream fis = new FileInputStream(inputFile);) {
+            return cbcEncryptStream(fis, iv, key);
         } catch (IOException e) {
             throw new RuntimeException("Error reading file", e);
         }
@@ -104,8 +115,21 @@ public class CryptoUtil {
     }
 
     public static ByteArrayOutputStream encryptWithKeyheader(File contentBytes, KeyHeader keyHeader) throws Exception {
-        return cbcEncryptStream(contentBytes, keyHeader.iv(), keyHeader.aesKey());
+        try {
+            return cbcEncryptFile(contentBytes, keyHeader.iv(), keyHeader.aesKey());
+        }catch(Exception e) {
+            System.out.println("Error encrypting file with KeyHeader: " + e.getMessage());
+            throw e;
+        }
+    }
 
+    public static ByteArrayOutputStream encryptWithKeyheader(InputStream outputStream, KeyHeader keyHeader) throws Exception {
+        try {
+            return cbcEncryptStream(outputStream, keyHeader.iv(), keyHeader.aesKey());
+        }catch(Exception e) {
+            System.out.println("Error encrypting stream with KeyHeader: " + e.getMessage());
+            throw e;
+        }
     }
 
 

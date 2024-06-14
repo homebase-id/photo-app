@@ -1,22 +1,33 @@
 package id.homebase.lib.core.file;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import kotlin.NotImplementedError;
 
 public class ThumbnailFile {
     private String key;
-    private String filePath; // Storing file path as a URI or local path
-
+    private ByteArrayOutputStream outputStream;
     private int pixelHeight;
     private int pixelWidth;
     private String contentType;
 
-    public ThumbnailFile(String key, String filePath, int pixelHeight, int pixelWidth) {
+    public ThumbnailFile(String key, String filePath, int pixelHeight, int pixelWidth, String contentType) {
         this.key = key;
-        this.filePath = filePath;
         this.pixelHeight = pixelHeight;
         this.pixelWidth = pixelWidth;
+        this.contentType = contentType;
+    }
+
+    public ThumbnailFile(String key, ByteArrayOutputStream outputStream, int pixelHeight, int pixelWidth, String contentType) {
+        this.key = key;
+        this.outputStream = outputStream;
+        this.pixelHeight = pixelHeight;
+        this.pixelWidth = pixelWidth;
+        this.contentType = contentType;
     }
     
     public int getPixelHeight() {
@@ -31,19 +42,23 @@ public class ThumbnailFile {
         return key;
     }
 
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public File getPayload() {
-        return new File(filePath);
-    }
-
     public String getContentType() {
         return contentType;
     }
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public ByteArrayOutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    public InputStream getInputStream() throws IOException {
+            return StreamUtil.convertOutputStreamToInputStream(outputStream);
+    }
+
+    public String getBase64() {
+        return CryptoUtil.byteArrayToBase64(outputStream.toByteArray());
     }
 }

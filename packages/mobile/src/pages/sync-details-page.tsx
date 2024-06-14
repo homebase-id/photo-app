@@ -27,7 +27,6 @@ import { Colors } from '../app/Colors';
 import { CloudIcon, Cog } from '../components/ui/Icons/icons';
 import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
 import { useDarkMode } from '../hooks/useDarkMode';
-import BackgroundFetch from 'react-native-background-fetch';
 import { Modal } from '../components/ui/Modal/Modal';
 import { ErrorNotification } from '../components/ui/Alert/ErrorNotification';
 
@@ -50,27 +49,27 @@ const SyncDetailsPage = (_props: SettingsProps) => {
 
   const { setSyncFromCameraRoll, syncFromCameraRoll, lastCameraRollSyncTime } =
     useKeyValueStorage();
-  const { forceSync } = useSyncFromCameraRoll(false);
+  const { forceSync } = useSyncFromCameraRoll();
 
-  const doSyncNow = async () => {
-    if (Platform.OS === 'android') {
-      // on Android we can trigger the background task
+  // const doSyncNow = async () => {
+  //   if (Platform.OS === 'android') {
+  //     // on Android we can trigger the background task
 
-      // Step 2:  Schedule a custom "oneshot" task "id.homebase.id.sync-now" to execute 2500ms from now.
-      BackgroundFetch.scheduleTask({
-        taskId: 'id.homebase.id.sync-now',
-        forceAlarmManager: true,
-        delay: 2500, // <-- milliseconds
-      });
-    } else {
-      setSyncNowState('pending');
-      const errors = await forceSync();
-      if (errors && errors.length > 0) {
-        Alert.alert('Error', errors.join('\n'));
-      }
-      setSyncNowState('finished');
-    }
-  };
+  //     // Step 2:  Schedule a custom "oneshot" task "id.homebase.id.sync-now" to execute 2500ms from now.
+  //     BackgroundFetch.scheduleTask({
+  //       taskId: 'id.homebase.id.sync-now',
+  //       forceAlarmManager: true,
+  //       delay: 2500, // <-- milliseconds
+  //     });
+  //   } else {
+  //     setSyncNowState('pending');
+  //     const errors = await forceSync();
+  //     if (errors && errors.length > 0) {
+  //       Alert.alert('Error', errors.join('\n'));
+  //     }
+  //     setSyncNowState('finished');
+  //   }
+  // };
 
   // On open, directly check for permissions
   useEffect(() => {
@@ -148,7 +147,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                 </View>
 
                 <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
-                  <Button title="Sync now" onPress={doSyncNow} />
+                  {/* <Button title="Sync now" onPress={doSyncNow} /> */}
                 </View>
               </View>
             </Container>
