@@ -1,5 +1,7 @@
 package id.homebase.lib.core.file;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -28,6 +30,7 @@ public class UploadInstructionSet {
 
     public String toJsonString() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         return objectMapper.writeValueAsString(this);
     }
 }
