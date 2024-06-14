@@ -5,13 +5,14 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class DotYouClient {
-    private BaseProviderOptions options;
+    private final BaseProviderOptions options;
 
-    public DotYouClient(BaseProviderOptions options) {
-        this.options = options;
+    public DotYouClient(ApiType api, byte[] sharedSecret, String identity, Map<String, String> headers) {
+        this.options = new BaseProviderOptions(api, sharedSecret, identity, headers);
     }
 
     public byte[] getSharedSecret() {

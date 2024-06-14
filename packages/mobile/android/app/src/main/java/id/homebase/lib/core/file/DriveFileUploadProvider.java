@@ -9,7 +9,10 @@ import static id.homebase.lib.core.file.KeyHeaderGenerator.getRandom16ByteArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -23,7 +26,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class DriveFileUploadProvider {
-    public static CompletableFuture<UploadResult> uploadFile(
+    public static UploadResult uploadFile(
             DotYouClient dotYouClient,
             UploadInstructionSet instructions,
             UploadFileMetadata<String> metadata,
@@ -50,15 +53,27 @@ public class DriveFileUploadProvider {
         instructions.setTransferIv(instructions.getTransferIv() != null ?
                 instructions.getTransferIv() : getRandom16ByteArray());
 
+        if (isDebug()) {
+            System.out.println("instructions: " + instructions.toString());
+        }
+
         // Build package
         byte[] encryptedDescriptor = buildDescriptor(
                 dotYouClient, keyHeader, instructions, metadata
         );
 
+        if (isDebug()) {
+            System.out.println("encryptedDescriptor: " + encryptedDescriptor.toString());
+        }
+
         // Upload
         MultipartBody data = buildFormData(
                     instructions, encryptedDescriptor, payloads, thumbnails, keyHeader, manifest
             );
+
+        if (isDebug()) {
+            System.out.println("formData: " + data.toString());
+        }
 
         return pureUpload(dotYouClient, data);
     }
@@ -164,21 +179,31 @@ public class DriveFileUploadProvider {
 
             if (payloads != null) {
                 for (PayloadFile payload : payloads) {
-                    byte[] encryptedPayload = (keyHeader != null) ?
-                            CryptoUtil.encryptWithKeyheader(payload.getPayload(), getUpdatedKeyHeader(keyHeader, manifest, payload.getKey())) :
-                            payload.getPayload();
+                    RequestBody payloadBody;
 
-                    builder.addFormDataPart("payload", payload.getKey(), RequestBody.create(encryptedPayload, MediaType.parse("application/octet-stream")));
+                    if(keyHeader == null) {
+                        payloadBody = RequestBody.create(payload.getPayload(), MediaType.parse(payload.getContentType()));
+                    } else {
+                        ByteArrayOutputStream encryptedPayload = CryptoUtil.encryptWithKeyheader(payload.getPayload(), getUpdatedKeyHeader(keyHeader, manifest, payload.getKey()));
+                        payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(payload.getContentType()));
+                    }
+
+                    builder.addFormDataPart("payload", payload.getKey(), payloadBody);
                 }
             }
 
             if (thumbnails != null) {
                 for (ThumbnailFile thumb : thumbnails) {
-                    byte[] encryptedThumb = (keyHeader != null) ?
-                            CryptoUtil.encryptWithKeyheader(thumb.getPayload(), getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey())) :
-                            thumb.getPayload();
+                    RequestBody payloadBody;
 
-                    builder.addFormDataPart("thumbnail", thumb.getKey() + thumb.getPixelWidth(), RequestBody.create(encryptedThumb, MediaType.parse("application/octet-stream")));
+                    if(keyHeader == null) {
+                        payloadBody = RequestBody.create(thumb.getPayload(), MediaType.parse(thumb.getContentType()));
+                    } else {
+                        ByteArrayOutputStream encryptedPayload = CryptoUtil.encryptWithKeyheader(thumb.getPayload(), getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey()));
+                        payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(thumb.getContentType()));
+                    }
+
+                    builder.addFormDataPart("thumbnail", thumb.getKey(), payloadBody);
                 }
             }
 
@@ -199,7 +224,7 @@ public class DriveFileUploadProvider {
         return keyHeader;
     }
 
-    private static CompletableFuture<UploadResult> pureUpload(
+    private static UploadResult pureUpload(
             DotYouClient dotYouClient,
             MultipartBody data
 

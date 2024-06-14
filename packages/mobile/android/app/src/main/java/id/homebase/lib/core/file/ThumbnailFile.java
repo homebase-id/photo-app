@@ -1,5 +1,7 @@
 package id.homebase.lib.core.file;
 
+import java.io.File;
+
 import kotlin.NotImplementedError;
 
 public class ThumbnailFile {
@@ -8,6 +10,7 @@ public class ThumbnailFile {
 
     private int pixelHeight;
     private int pixelWidth;
+    private String contentType;
 
     public ThumbnailFile(String key, String filePath, int pixelHeight, int pixelWidth) {
         this.key = key;
@@ -15,8 +18,7 @@ public class ThumbnailFile {
         this.pixelHeight = pixelHeight;
         this.pixelWidth = pixelWidth;
     }
-
-
+    
     public int getPixelHeight() {
         return pixelHeight;
     }
@@ -33,8 +35,15 @@ public class ThumbnailFile {
         return filePath;
     }
 
-    public byte[] getPayload() {
-        throw new NotImplementedError("Method not implemented");
-        return new byte[0];
+    public File getPayload() {
+        return new File(filePath);
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

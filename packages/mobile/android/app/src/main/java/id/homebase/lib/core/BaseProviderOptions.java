@@ -8,35 +8,29 @@ public class BaseProviderOptions {
     private String identity;
     private Map<String, String> headers;
 
-    public ApiType getApi() {
-        return api;
+    public BaseProviderOptions(ApiType api, byte[] sharedSecret, String identity, Map<String, String> headers) {
+        this.api = api;
+        this.sharedSecret = sharedSecret;
+        this.identity = identity;
+        this.headers = headers;
     }
 
-    public void setApi(ApiType api) {
-        this.api = api;
+    public ApiType getApi() {
+        return api;
     }
 
     public byte[] getSharedSecret() {
         return sharedSecret;
     }
 
-    public void setSharedSecret(byte[] sharedSecret) {
-        this.sharedSecret = sharedSecret;
-    }
 
     public String getIdentity() {
         return identity;
     }
 
-    public void setIdentity(String identity) {
-        this.identity = identity;
-    }
 
     public Map<String, String> getHeaders() {
         return headers;
     }
 
-    public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
-    }
 }

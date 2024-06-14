@@ -1,17 +1,19 @@
 package id.homebase.lib.core.file;
 
-import kotlin.NotImplementedError;
+import java.io.File;
 
 public class PayloadFile {
     private String key;
     private String filePath; // Storing file path as a URI or local path
     private EmbeddedThumb previewThumbnail;
+    private String contentType;
     private String descriptorContent;
 
-    public PayloadFile(String key, String filePath, EmbeddedThumb previewThumbnail, String descriptorContent) {
+    public PayloadFile(String key, String filePath, EmbeddedThumb previewThumbnail, String contentType, String descriptorContent) {
         this.key = key;
         this.filePath = filePath;
         this.previewThumbnail = previewThumbnail;
+        this.contentType = contentType;
         this.descriptorContent = descriptorContent;
     }
 
@@ -57,8 +59,15 @@ public class PayloadFile {
                 '}';
     }
 
-    public byte[] getPayload() {
-        throw new NotImplementedError("Method not implemented");
-        return new byte[0];
+    public File getPayload() {
+        return new File(filePath);
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

@@ -6,6 +6,10 @@ public class StorageOptions {
     private Long expiresTimestamp;
     private String storageIntent;
 
+    public StorageOptions(TargetDrive drive) {
+        this.drive = drive;
+    }
+
     public StorageOptions(TargetDrive drive, String overwriteFileId, Long expiresTimestamp, String storageIntent) {
         this.drive = drive;
         this.overwriteFileId = overwriteFileId;

@@ -1,5 +1,7 @@
 package id.homebase.photos.worker;
 
+import static id.homebase.photos.MediaProvider.uploadMedia;
+
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -14,6 +16,12 @@ import androidx.work.WorkerParameters;
 import com.ammarahmed.mmkv.MMKV;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+import id.homebase.lib.core.ApiType;
+import id.homebase.lib.core.DotYouClient;
+import id.homebase.lib.core.file.CryptoUtil;
 
 public class SyncWorker extends Worker {
 
@@ -39,10 +47,20 @@ public class SyncWorker extends Worker {
         String SharedSecret = mmkv.decodeString("APSS","");
         double lastSyncTime = 1717664076909L;//mmkv.decodeDouble("lastSyncTimeAsNumber");
 
+        assert SharedSecret != null;
+        assert identity != null;
+        assert CAT != null;
+
         Log.v(null, "[SyncWorker] identity: " + identity);
         Log.v(null, "[SyncWorker] CAT: " + CAT);
         Log.v(null, "[SyncWorker] SharedSecret: " + SharedSecret);
         Log.v(null, "[SyncWorker] lastSync (plain double): " + new BigDecimal(lastSyncTime).toPlainString());
+
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("bx0900", CAT);
+
+        DotYouClient dotYouClient = new DotYouClient(ApiType.App, CryptoUtil.stringToByteArray(SharedSecret), identity, headers);
 
         // Find all photos that have been added since the last sync
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -62,16 +80,23 @@ public class SyncWorker extends Worker {
             Log.v(null, "[SyncWorker] cursor: " + cursor.getCount());
 
             while (cursor.moveToNext()) {
-                String filePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-                String timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
-                // Do something with the filePath and timestamp
-                Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
+                try {
+                    String filePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+                    String timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+                    // Do something with the filePath and timestamp
+                    Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
 
 
-                // Retrieve the latest photo information
+                    uploadMedia(dotYouClient,filePath, timestamp);
 
-                // Upload the photo to the server
-                // Example: uploadPhoto(filePath, timestamp, identity, CAT, SharedSecret);
+                    // Retrieve the latest photo information
+
+                    // Upload the photo to the server
+                    // Example: uploadPhoto(filePath, timestamp, identity, CAT, SharedSecret);
+                } catch (Exception e) {
+                    Log.e(null, "[SyncWorker] Error uploading photo: " + e.getMessage());
+                    // Ignore any errors and continue with the next photo
+                }
             }
 
             cursor.close();
