@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 import id.homebase.photos.worker.PhotoInfoModule;
-import id.homebase.photos.worker.RNSyncTrigger;
 
 public class MyAppPackage implements ReactPackage {
 
@@ -25,7 +24,7 @@ public class MyAppPackage implements ReactPackage {
 
         modules.add(new OdinBlobModule(reactContext));
         modules.add(new PhotoInfoModule(reactContext));
-        modules.add(new RNSyncTrigger(reactContext));
+        modules.add(new SyncTrigger(reactContext));
 
         return modules;
     }

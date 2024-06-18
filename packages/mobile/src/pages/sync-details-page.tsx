@@ -30,7 +30,7 @@ import { useDarkMode } from '../hooks/useDarkMode';
 import { Modal } from '../components/ui/Modal/Modal';
 import { ErrorNotification } from '../components/ui/Alert/ErrorNotification';
 import { NativeModules } from 'react-native';
-const { RNSyncTrigger } = NativeModules;
+const { SyncTrigger } = NativeModules;
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'SyncDetails'>;
 
@@ -53,7 +53,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
     useKeyValueStorage();
 
   const doSyncNow = async () => {
-    RNSyncTrigger.runSync();
+    SyncTrigger.runSync();
   };
 
   // On open, directly check for permissions
