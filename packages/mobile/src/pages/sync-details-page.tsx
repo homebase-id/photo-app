@@ -21,7 +21,7 @@ import { useSyncFrom } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import { hasAndroidPermission } from '../hooks/cameraRoll/permissionHelper';
 import { useCameraRoll } from '../hooks/cameraRoll/useCameraRoll';
 import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
-import { PhotoConfig, useFileHeaderByUniqueId } from 'photo-app-common';
+import { PhotoConfig, t, useFileHeaderByUniqueId } from 'photo-app-common';
 import { getUniqueId } from '../provider/photos/RNPhotoProvider';
 import { Colors } from '../app/Colors';
 import { CloudIcon, Cog } from '../components/ui/Icons/icons';
@@ -46,15 +46,12 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 const SyncDetailsPage = (_props: SettingsProps) => {
   const navigation = _props.navigation;
   const { isDarkMode } = useDarkMode();
-  const [syncNowState, setSyncNowState] = React.useState<'idle' | 'pending' | 'finished'>('idle');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const { setSyncFromCameraRoll, syncFromCameraRoll, lastCameraRollSyncTime } =
     useKeyValueStorage();
 
-  const doSyncNow = async () => {
-    SyncTrigger.runSync();
-  };
+  const doSyncNow = async () => SyncTrigger.runSync();
 
   // On open, directly check for permissions
   useEffect(() => {
@@ -108,26 +105,17 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                   }}
                 >
                   <Text>
-                    {syncNowState === 'idle' ? (
-                      <>
-                        {lastCameraRollSyncTime ? (
-                          <>
-                            Last sync:{' '}
-                            {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
-                          </>
-                        ) : (
-                          'Last sync: did not sync yet'
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {syncNowState === 'pending'
-                          ? 'Syncing...'
-                          : syncNowState === 'finished'
-                          ? 'Last sync: Just now'
-                          : null}
-                      </>
-                    )}
+                    <>
+                      {lastCameraRollSyncTime ? (
+                        <>
+                          {t('Last sync')}
+                          {': '}
+                          {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
+                        </>
+                      ) : (
+                        t('Last sync: did not sync yet')
+                      )}
+                    </>
                   </Text>
                 </View>
 
@@ -143,7 +131,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                   marginVertical: 16,
                 }}
               >
-                Back-up your cameraroll into your identity. Your photos will remain secured and only
+                Back-up your cameraroll into your identity. Your photos will remain secure and only
                 acessible by you.
               </Text>
               <Text style={{ opacity: 0.4 }}>

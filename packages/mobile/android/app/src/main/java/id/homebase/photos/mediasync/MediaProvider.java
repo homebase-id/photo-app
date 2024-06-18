@@ -34,7 +34,7 @@ public class MediaProvider {
             new ImageResizer.ResizeInstruction(1200, 1200, 95, "jpg"),
     };
 
-    public static UploadResult uploadMedia(DotYouClient dotYouClient, String filePath, Long timestampInMs, String mimeType, String identifier, String width, String height) throws Exception {
+    public static UploadResult uploadMedia(DotYouClient dotYouClient, String filePath, Long timestampInMs, String mimeType, String identifier, String width, String height, boolean forceLowerQuality) throws Exception {
         UploadInstructionSet instructions = new UploadInstructionSet(new StorageOptions(PHOTO_DRIVE));
 
         // Retrieve the latest photo information
@@ -47,6 +47,7 @@ public class MediaProvider {
 
         UploadFileMetadata<String> metadata = new UploadFileMetadata<>(false, ENCRYPT_MEDIA, OWNER_ONLY_ACL, new UploadAppFileMetaData<>(uniqueId, new String[0], 0, 0, timestampInMs, null, ArchivalStatus.None, "", previewThumbnail), null, null);
 
+        // TODO: forceLowerQuality to resize the payload before uploading
         List<PayloadFile> payloads = List.of(new PayloadFile(DEFAULT_PAYLOAD_KEY, filePath, null, mimeType, ""));
         List<ThumbnailFile> thumbnails = new ArrayList<>(ImageResizer.resizeImage(filePath, List.of(DEFAULT_IMAGE_SIZES), DEFAULT_PAYLOAD_KEY));
 

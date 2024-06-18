@@ -33,8 +33,6 @@ public class MediaSync {
 
     public void syncMedia() {
         Log.v(null, "[SyncWorker] doWork");
-        // Perform your background task here
-        // Example: upload new photos to a server
 
         System.loadLibrary("rnmmkv");
         MMKV.initialize(this.context);
@@ -42,21 +40,28 @@ public class MediaSync {
 
         assert mmkv != null;
         // Loading key-value pairs from MMKV
+        boolean SyncEnabled = mmkv.decodeInt("syncFromCameraRollAsBoolean", 0) == 1;
         String identity = mmkv.decodeString("identity", "");
         String CAT = mmkv.decodeString("bx0900", "");
         String SharedSecret = mmkv.decodeString("APSS", "");
-        double lastSyncTime = mmkv.decodeDouble("lastSyncTimeAsNumber");
+        double lastSyncTime = mmkv.decodeDouble("lastSyncTimeAsNumber", new Date().getTime() - 1000 * 60 * 60 * 24 * 7);
+        boolean forceLowerQuality = mmkv.decodeInt("forceLowerQualityAsBoolean", 0) == 1;
 
         assert SharedSecret != null;
         assert identity != null;
         assert CAT != null;
 
         if (isDebug()) {
+            Log.v(null, "[SyncWorker] syncEnabled: " + SyncEnabled);
             Log.v(null, "[SyncWorker] identity: " + identity);
             Log.v(null, "[SyncWorker] CAT: " + CAT);
             Log.v(null, "[SyncWorker] SharedSecret: " + SharedSecret);
             Log.v(null, "[SyncWorker] lastSyncTime: " + BigDecimal.valueOf(lastSyncTime).toPlainString());
 //        lastSyncTime = 1717664076909L;
+        }
+
+        if (!SyncEnabled) {
+            return;
         }
 
         Map<String, String> headers = new HashMap<>();
@@ -104,7 +109,7 @@ public class MediaSync {
                         Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
                     }
 
-                    UploadResult result = uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height);
+                    UploadResult result = uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, forceLowerQuality);
 
                     if (result instanceof SuccessfullUploadResult) {
                         Log.v(null, "[SyncWorker] MediaItem uploaded: " + result.toString());
