@@ -1,5 +1,8 @@
 package id.homebase.lib.core.file;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public enum ScheduleOptions {
     SEND_NOW_AWAIT_RESPONSE("sendNowAwaitResponse"),
     SEND_LATER("sendAsync");

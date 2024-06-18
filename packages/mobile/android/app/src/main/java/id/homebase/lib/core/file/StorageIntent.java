@@ -2,14 +2,13 @@ package id.homebase.lib.core.file;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum ArchivalStatus {
-    None(0),
-    Archived(1),
-    Removed(2);
+public enum StorageIntent {
+    NewFileOrOverwrite(0),
+    MetadataOnly(1);
 
     private int value = 0;
 
-    ArchivalStatus(int value) {
+    StorageIntent(int value) {
         this.value = value;
     }
 
@@ -24,6 +23,6 @@ public enum ArchivalStatus {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Invalid ArchivalStatus value: " + value);
+        throw new IllegalArgumentException("Invalid StorageIntent value: " + value);
     }
 }

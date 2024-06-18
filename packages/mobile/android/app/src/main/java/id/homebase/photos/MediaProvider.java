@@ -15,6 +15,7 @@ import id.homebase.lib.core.file.ArchivalStatus;
 import id.homebase.lib.core.file.EmbeddedThumb;
 import id.homebase.lib.core.file.PayloadFile;
 import id.homebase.lib.core.file.SecurityGroupType;
+import id.homebase.lib.core.file.StorageIntent;
 import id.homebase.lib.core.file.StorageOptions;
 import id.homebase.lib.core.file.TargetDrive;
 import id.homebase.lib.core.file.ThumbnailFile;
@@ -28,15 +29,14 @@ public class MediaProvider {
     private static final boolean ENCRYPT_MEDIA = true;
     private static final TargetDrive PHOTO_DRIVE = new TargetDrive("6483b7b1f71bd43eb6896c86148668cc", "2af68fe72fb84896f39f97c59d60813a");
     private static final AccessControlList OWNER_ONLY_ACL = new AccessControlList(SecurityGroupType.OWNER);
-    private static final ImageResizer.ResizeInstruction TINY_THUMB_INSTRUCTION = new ImageResizer.ResizeInstruction(20, 20, 10, "JPEG");
+    private static final ImageResizer.ResizeInstruction TINY_THUMB_INSTRUCTION = new ImageResizer.ResizeInstruction(20, 20, 10, "jpg");
     private static final ImageResizer.ResizeInstruction[] DEFAULT_IMAGE_SIZES  = new ImageResizer.ResizeInstruction[] {
-            new ImageResizer.ResizeInstruction(300, 300, 95, "JPEG"),
-            new ImageResizer.ResizeInstruction(1200, 1200, 95, "JPEG"),
+            new ImageResizer.ResizeInstruction(300, 300, 95, "jpg"),
+            new ImageResizer.ResizeInstruction(1200, 1200, 95, "jpg"),
         };
 
     public static id.homebase.lib.core.file.UploadResult uploadMedia (DotYouClient dotYouClient, String filePath , String timestamp, String mimeType, String identifier, String width, String height) throws Exception {
-        UploadInstructionSet instructions = new UploadInstructionSet(new StorageOptions(PHOTO_DRIVE),
-                new TransitOptions());
+        UploadInstructionSet instructions = new UploadInstructionSet(new StorageOptions(PHOTO_DRIVE));
 
         // Retrieve the latest photo information
         String fileName = Paths.get(filePath).getFileName().toString();

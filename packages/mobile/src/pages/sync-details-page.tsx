@@ -17,7 +17,7 @@ import { SettingsStackParamList } from '../app/App';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
-import { useSyncFrom, useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
+import { useSyncFrom } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import { hasAndroidPermission } from '../hooks/cameraRoll/permissionHelper';
 import { useCameraRoll } from '../hooks/cameraRoll/useCameraRoll';
 import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
@@ -29,6 +29,8 @@ import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { Modal } from '../components/ui/Modal/Modal';
 import { ErrorNotification } from '../components/ui/Alert/ErrorNotification';
+import { NativeModules } from 'react-native';
+const { RNSyncTrigger } = NativeModules;
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'SyncDetails'>;
 
@@ -49,27 +51,10 @@ const SyncDetailsPage = (_props: SettingsProps) => {
 
   const { setSyncFromCameraRoll, syncFromCameraRoll, lastCameraRollSyncTime } =
     useKeyValueStorage();
-  const { forceSync } = useSyncFromCameraRoll();
 
-  // const doSyncNow = async () => {
-  //   if (Platform.OS === 'android') {
-  //     // on Android we can trigger the background task
-
-  //     // Step 2:  Schedule a custom "oneshot" task "id.homebase.id.sync-now" to execute 2500ms from now.
-  //     BackgroundFetch.scheduleTask({
-  //       taskId: 'id.homebase.id.sync-now',
-  //       forceAlarmManager: true,
-  //       delay: 2500, // <-- milliseconds
-  //     });
-  //   } else {
-  //     setSyncNowState('pending');
-  //     const errors = await forceSync();
-  //     if (errors && errors.length > 0) {
-  //       Alert.alert('Error', errors.join('\n'));
-  //     }
-  //     setSyncNowState('finished');
-  //   }
-  // };
+  const doSyncNow = async () => {
+    RNSyncTrigger.runSync();
+  };
 
   // On open, directly check for permissions
   useEffect(() => {
@@ -147,7 +132,7 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                 </View>
 
                 <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
-                  {/* <Button title="Sync now" onPress={doSyncNow} /> */}
+                  <Button title="Sync now" onPress={doSyncNow} />
                 </View>
               </View>
             </Container>

@@ -1,17 +1,12 @@
 package id.homebase.lib.core.file;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.concurrent.CompletableFuture;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -19,15 +14,22 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import id.homebase.lib.core.DotYouClient;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import okio.BufferedSink;
-import okio.Okio;
 
 public class CryptoUtil {
 
     public static SecretKey importKey(byte[] keyBytes) {
         return new SecretKeySpec(keyBytes, "AES");
+    }
+
+    public static byte[] innerDecrypt(byte[] iv, SecretKey key, byte[] data) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
+        return cipher.doFinal(data);
+    }
+
+    public static byte[] cbcDecrypt(byte[] data, byte[] iv, byte[] key) throws Exception {
+        SecretKey secretKey = importKey(key);
+        return innerDecrypt(iv, secretKey, data);
     }
 
     public static byte[] innerEncrypt(byte[] iv, SecretKey key, byte[] data) throws Exception {
@@ -92,6 +94,10 @@ public class CryptoUtil {
     // Method to convert a byte array to a base64 string
     public static String byteArrayToBase64(byte[] input) {
         return Base64.getEncoder().encodeToString(input);
+    }
+
+    public static byte[] base64ToByteArray(String input) {
+        return Base64.getDecoder().decode(input.getBytes(StandardCharsets.UTF_8));
     }
 
     // Encrypt metadata method

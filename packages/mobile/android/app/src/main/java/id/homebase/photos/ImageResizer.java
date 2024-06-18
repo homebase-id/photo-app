@@ -43,7 +43,7 @@ public class ImageResizer {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             writeBitmapToStream(resizedBitmap, instruction.quality, instruction.format, outputStream);
 
-            outputThumbs.add(new ThumbnailFile(payloadKey, outputStream, resizedHeight, resizedWidth, instruction.format));
+            outputThumbs.add(new ThumbnailFile(payloadKey, outputStream, resizedHeight, resizedWidth, "image/" + instruction.format));
         }
 
         // Recycle the original bitmap to free memory

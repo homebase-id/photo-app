@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+
 public class UploadInstructionSet {
     private StorageOptions storageOptions;
     private TransitOptions transitOptions;
@@ -14,6 +16,10 @@ public class UploadInstructionSet {
     public UploadInstructionSet(StorageOptions storageOptions, TransitOptions transitOptions) {
         this.storageOptions = storageOptions;
         this.transitOptions = transitOptions;
+    }
+
+    public UploadInstructionSet(StorageOptions storageOptions) {
+        this.storageOptions = storageOptions;
     }
 
     public void setTransferIv(byte[] transferIv) {
