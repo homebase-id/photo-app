@@ -116,22 +116,5 @@ public class ImageResizer {
             this.format = format;
         }
     }
-
-//    public static void main(String[] args) {
-//        // Example usage
-//        List<ResizeInstruction> instructions = List.of(
-//                new ResizeInstruction(200, 200, "jpg"),
-//                new ResizeInstruction(400, 300, "png"),
-//                new ResizeInstruction(100, 100, "webp")
-//        );
-//
-//        List<ByteArrayOutputStream> outputStreams = resizeImage("path/to/your/image.jpg", instructions);
-//
-//        // Example of how to use the output streams
-//        for (ByteArrayOutputStream outputStream : outputStreams) {
-//            byte[] imageBytes = outputStream.toByteArray();
-//            // Do something with the byte array (e.g., send it in a network request)
-//        }
-//    }
 }
 
