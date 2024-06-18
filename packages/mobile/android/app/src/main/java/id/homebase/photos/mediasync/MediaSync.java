@@ -73,7 +73,7 @@ public class MediaSync {
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED, MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media._ID, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT};
         String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
-        double lastSyncTimeSeconds = lastSyncTime / 1000;
+        double lastSyncTimeSeconds = lastSyncTime / 1000 - (60 * 30); // 30 minutes buffer
         String lastSyncTimeString = String.valueOf(lastSyncTimeSeconds);
         String[] selectionArgs = {lastSyncTimeString};
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
@@ -104,6 +104,12 @@ public class MediaSync {
                     String width = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH));
                     String height = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT));
 
+
+                    if (mimeType.startsWith("video/")) {
+                        // Skip videos for now
+                        Log.v(null, "[SyncWorker] Skipping video: " + filePath);
+                        continue;
+                    }
 
                     if (isDebug()) {
                         Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);

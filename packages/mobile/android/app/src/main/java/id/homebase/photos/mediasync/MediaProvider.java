@@ -13,15 +13,18 @@ import id.homebase.lib.core.DotYouClient;
 import id.homebase.lib.core.file.types.AccessControlList;
 import id.homebase.lib.core.file.types.ArchivalStatus;
 import id.homebase.lib.core.file.types.EmbeddedThumb;
-import id.homebase.lib.core.file.types.PayloadFile;
 import id.homebase.lib.core.file.types.SecurityGroupType;
 import id.homebase.lib.core.file.types.StorageOptions;
 import id.homebase.lib.core.file.types.TargetDrive;
-import id.homebase.lib.core.file.types.ThumbnailFile;
 import id.homebase.lib.core.file.types.UploadAppFileMetaData;
 import id.homebase.lib.core.file.types.UploadFileMetadata;
 import id.homebase.lib.core.file.types.UploadInstructionSet;
 import id.homebase.lib.core.file.types.UploadResult;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadBase;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadFile;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadStream;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.ThumbnailBase;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.ThumbnailStream;
 
 public class MediaProvider {
     private static final String DEFAULT_PAYLOAD_KEY = "dflt_key";
@@ -42,16 +45,21 @@ public class MediaProvider {
         String uniqueId = toGuidId(identifier != null ? identifier : fileName + "_" + width + "x" + height);
 
         // Generate thumbnails
-        ThumbnailFile tinyThumb = ImageResizer.resizeImage(filePath, List.of(TINY_THUMB_INSTRUCTION), DEFAULT_PAYLOAD_KEY).get(0);
-        EmbeddedThumb previewThumbnail = new EmbeddedThumb(TINY_THUMB_INSTRUCTION.height, TINY_THUMB_INSTRUCTION.width, TINY_THUMB_INSTRUCTION.format, tinyThumb.getBase64());
+        ThumbnailStream tinyThumb = ImageResizer.resizeImage(filePath, TINY_THUMB_INSTRUCTION, DEFAULT_PAYLOAD_KEY, true);
+        EmbeddedThumb previewThumbnail = new EmbeddedThumb(tinyThumb.getPixelHeight(), tinyThumb.getPixelWidth(), TINY_THUMB_INSTRUCTION.format, tinyThumb.getBase64());
 
         UploadFileMetadata<String> metadata = new UploadFileMetadata<>(false, ENCRYPT_MEDIA, OWNER_ONLY_ACL, new UploadAppFileMetaData<>(uniqueId, new String[0], 0, 0, timestampInMs, null, ArchivalStatus.None, "", previewThumbnail), null, null);
 
-        // TODO: forceLowerQuality to resize the payload before uploading
-        List<PayloadFile> payloads = List.of(new PayloadFile(DEFAULT_PAYLOAD_KEY, filePath, null, mimeType, ""));
-        List<ThumbnailFile> thumbnails = new ArrayList<>(ImageResizer.resizeImage(filePath, List.of(DEFAULT_IMAGE_SIZES), DEFAULT_PAYLOAD_KEY));
+        PayloadBase payload;
+        if (forceLowerQuality) {
+            ThumbnailStream payloadStream = ImageResizer.resizeImage(filePath, new ImageResizer.ResizeInstruction(1200, 1200, 80, "jpg"), DEFAULT_PAYLOAD_KEY, false);
+            payload = new PayloadStream(DEFAULT_PAYLOAD_KEY, payloadStream.getOutputStream(), null, mimeType, fileName);
+        } else {
+            payload = new PayloadFile(DEFAULT_PAYLOAD_KEY, filePath, null, mimeType, fileName);
+        }
+        List<ThumbnailBase> thumbnails = new ArrayList<>(ImageResizer.resizeImage(filePath, List.of(DEFAULT_IMAGE_SIZES), DEFAULT_PAYLOAD_KEY));
 
-        return uploadFile(dotYouClient, instructions, metadata, payloads, thumbnails, ENCRYPT_MEDIA);
+        return uploadFile(dotYouClient, instructions, metadata, List.of(payload), thumbnails, ENCRYPT_MEDIA);
     }
 
     private static String toGuidId(String input) throws NoSuchAlgorithmException {

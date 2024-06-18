@@ -1,55 +1,77 @@
 package id.homebase.photos.mediasync;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Bitmap.CompressFormat;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import id.homebase.lib.core.file.types.ThumbnailFile;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.ThumbnailStream;
 
 public class ImageResizer {
 
-    public static class ResizeInstruction {
-        public int width;
-        public int height;
-        public int quality;
-        public String format;
-
-        public ResizeInstruction(int width, int height, int quality, String format) {
-            this.width = width;
-            this.height = height;
-            this.quality = quality;
-            this.format = format;
-        }
-    }
-
-    public static List<ThumbnailFile> resizeImage(String inputFilePath, List<ResizeInstruction> instructions, String payloadKey) {
-        List<ThumbnailFile> outputThumbs = new ArrayList<>();
+    public static List<ThumbnailStream> resizeImage(String inputFilePath, List<ResizeInstruction> instructions, String payloadKey) {
+        List<ThumbnailStream> outputThumbs = new ArrayList<>();
         // Decode the original image from the file
         Bitmap originalBitmap = BitmapFactory.decodeFile(inputFilePath);
 
-        for (ResizeInstruction instruction : instructions) {
-            // Create a resized version of the bitmap
-            Bitmap resizedBitmap = resize(originalBitmap, instruction.width, instruction.height);
+        int originalWidth = originalBitmap.getWidth();
+        int originalHeight = originalBitmap.getHeight();
 
-            int resizedWidth = resizedBitmap.getWidth();
-            int resizedHeight = resizedBitmap.getHeight();
+        for (ResizeInstruction instruction : instructions) {
+
+            // Create a resized version of the bitmap
+            int[] scaledSize = calculateScaledSize(originalWidth, originalHeight, instruction.width, instruction.height);
+            Bitmap resizedBitmap = resize(originalBitmap, scaledSize[0], scaledSize[1]);
 
             // Write the resized bitmap to a ByteArrayOutputStream
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             writeBitmapToStream(resizedBitmap, instruction.quality, instruction.format, outputStream);
 
-            outputThumbs.add(new ThumbnailFile(payloadKey, outputStream, resizedHeight, resizedWidth, "image/" + instruction.format));
+            outputThumbs.add(new ThumbnailStream(payloadKey, outputStream, scaledSize[1], scaledSize[0], "image/" + instruction.format));
         }
 
         // Recycle the original bitmap to free memory
         originalBitmap.recycle();
 
         return outputThumbs;
+    }
+
+    public static ThumbnailStream resizeImage(String inputFilePath, ResizeInstruction instruction, String payloadKey, boolean keepDimensions) {
+        // Decode the original image from the file
+        Bitmap originalBitmap = BitmapFactory.decodeFile(inputFilePath);
+
+        int originalWidth = originalBitmap.getWidth();
+        int originalHeight = originalBitmap.getHeight();
+
+        int[] scaledSize = calculateScaledSize(originalWidth, originalHeight, instruction.width, instruction.height);
+        // Create a resized version of the bitmap
+        Bitmap resizedBitmap = resize(originalBitmap, scaledSize[0], scaledSize[1]);
+
+        // Write the resized bitmap to a ByteArrayOutputStream
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        writeBitmapToStream(resizedBitmap, instruction.quality, instruction.format, outputStream);
+
+        // Recycle the original bitmap to free memory
+        originalBitmap.recycle();
+
+        return new ThumbnailStream(payloadKey, outputStream, keepDimensions ? originalHeight : scaledSize[1], keepDimensions ? originalWidth : scaledSize[0], "image/" + instruction.format);
+    }
+
+    private static int[] calculateScaledSize(int originalWidth, int originalHeight, int targetWidth, int targetHeight) {
+        float widthScale = (float) targetWidth / originalWidth;
+        float heightScale = (float) targetHeight / originalHeight;
+        float scale = Math.min(widthScale, heightScale);
+
+        // Calculate the new dimensions
+        int scaledWidth = Math.round(originalWidth * scale);
+        int scaledHeight = Math.round(originalHeight * scale);
+
+        return new int[]{scaledWidth, scaledHeight};
     }
 
     private static Bitmap resize(Bitmap originalBitmap, int width, int height) {
@@ -79,6 +101,20 @@ public class ImageResizer {
 
         // Recycle the resized bitmap to free memory
         bitmap.recycle();
+    }
+
+    public static class ResizeInstruction {
+        public int width;
+        public int height;
+        public int quality;
+        public String format;
+
+        public ResizeInstruction(int width, int height, int quality, String format) {
+            this.width = width;
+            this.height = height;
+            this.quality = quality;
+            this.format = format;
+        }
     }
 
 //    public static void main(String[] args) {

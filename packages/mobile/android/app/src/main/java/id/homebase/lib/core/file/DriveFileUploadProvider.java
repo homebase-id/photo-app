@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,16 +28,19 @@ import id.homebase.lib.core.crypto.CryptoUtil;
 import id.homebase.lib.core.file.types.BadRequestUploadResult;
 import id.homebase.lib.core.file.types.EncryptedKeyHeader;
 import id.homebase.lib.core.file.types.KeyHeader;
-import id.homebase.lib.core.file.types.PayloadFile;
 import id.homebase.lib.core.file.types.StreamRequestBody;
 import id.homebase.lib.core.file.types.SuccessfullUploadResult;
-import id.homebase.lib.core.file.types.ThumbnailFile;
 import id.homebase.lib.core.file.types.UploadFileMetadata;
 import id.homebase.lib.core.file.types.UploadInstructionSet;
 import id.homebase.lib.core.file.types.UploadManifest;
 import id.homebase.lib.core.file.types.UploadPayloadDescriptor;
 import id.homebase.lib.core.file.types.UploadResult;
 import id.homebase.lib.core.file.types.UploadThumbnailDescriptor;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadBase;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadOrThumbnailBase;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadOrThumbnailFile;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadOrThumbnailStream;
+import id.homebase.lib.core.file.types.payloadorthumbnailbase.ThumbnailBase;
 import kotlin.NotImplementedError;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -49,8 +54,8 @@ public class DriveFileUploadProvider {
             DotYouClient dotYouClient,
             UploadInstructionSet instructions,
             UploadFileMetadata<String> metadata,
-            List<PayloadFile> payloads,
-            List<ThumbnailFile> thumbnails,
+            List<PayloadBase> payloads,
+            List<ThumbnailBase> thumbnails,
             boolean encrypt
     ) throws Exception {
         // Debug information
@@ -91,8 +96,8 @@ public class DriveFileUploadProvider {
     }
 
     private static UploadManifest buildManifest(
-            List<PayloadFile> payloads,
-            List<ThumbnailFile> thumbnails,
+            List<PayloadBase> payloads,
+            List<ThumbnailBase> thumbnails,
             boolean generateIv
     ) {
         List<UploadPayloadDescriptor> payloadDescriptors = payloads.stream()
@@ -152,8 +157,8 @@ public class DriveFileUploadProvider {
     private static MultipartBody buildFormData(
             UploadInstructionSet instructions,
             byte[] encryptedDescriptor,
-            List<PayloadFile> payloads,
-            List<ThumbnailFile> thumbnails,
+            List<PayloadBase> payloads,
+            List<ThumbnailBase> thumbnails,
             KeyHeader keyHeader,
             UploadManifest manifest
     )
@@ -168,13 +173,16 @@ public class DriveFileUploadProvider {
         }
 
         if (payloads != null) {
-            for (PayloadFile payload : payloads) {
+            for (PayloadBase payload : payloads) {
                 RequestBody payloadBody;
 
                 if (keyHeader == null) {
-                    payloadBody = RequestBody.create(payload.getPayload(), MediaType.parse(payload.getContentType()));
+                    payloadBody = getFileOrStreamRequestBody(payload);
                 } else {
-                    ByteArrayOutputStream encryptedPayload = CryptoUtil.encryptWithKeyheader(payload.getPayload(), getUpdatedKeyHeader(keyHeader, manifest, payload.getKey()));
+                    java.io.File payloadFile = payload instanceof PayloadOrThumbnailFile ? ((PayloadOrThumbnailFile) payload).getPayload() : null;
+                    InputStream payloadStream = payload instanceof PayloadOrThumbnailStream ? ((PayloadOrThumbnailStream) payload).getInputStream() : null;
+
+                    ByteArrayOutputStream encryptedPayload = payloadFile != null ? CryptoUtil.encryptWithKeyheader(payloadFile, getUpdatedKeyHeader(keyHeader, manifest, payload.getKey())) : CryptoUtil.encryptWithKeyheader(payloadStream, getUpdatedKeyHeader(keyHeader, manifest, payload.getKey()));
                     payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(payload.getContentType()));
                 }
 
@@ -183,13 +191,16 @@ public class DriveFileUploadProvider {
         }
 
         if (thumbnails != null) {
-            for (ThumbnailFile thumb : thumbnails) {
+            for (ThumbnailBase thumb : thumbnails) {
                 RequestBody payloadBody;
 
                 if (keyHeader == null) {
-                    payloadBody = new StreamRequestBody(thumb.getOutputStream(), MediaType.parse(thumb.getContentType()));
+                    payloadBody = getFileOrStreamRequestBody(thumb);
                 } else {
-                    ByteArrayOutputStream encryptedPayload = CryptoUtil.encryptWithKeyheader(thumb.getInputStream(), getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey()));
+                    java.io.File thumbFile = thumb instanceof PayloadOrThumbnailFile ? ((PayloadOrThumbnailFile) thumb).getPayload() : null;
+                    InputStream thumbStream = thumb instanceof PayloadOrThumbnailStream ? ((PayloadOrThumbnailStream) thumb).getInputStream() : null;
+
+                    ByteArrayOutputStream encryptedPayload = thumbFile != null ? CryptoUtil.encryptWithKeyheader(thumbFile, getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey())) : CryptoUtil.encryptWithKeyheader(thumbStream, getUpdatedKeyHeader(keyHeader, manifest, thumb.getKey()));
                     payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(thumb.getContentType()));
                 }
 
@@ -199,6 +210,15 @@ public class DriveFileUploadProvider {
 
         return builder.build();
 
+    }
+
+    private static RequestBody getFileOrStreamRequestBody(PayloadOrThumbnailBase payloadOrThumbnailBase) {
+        if (payloadOrThumbnailBase instanceof PayloadOrThumbnailStream) {
+            return new StreamRequestBody(((PayloadOrThumbnailStream) payloadOrThumbnailBase).getOutputStream(), MediaType.parse(payloadOrThumbnailBase.getContentType()));
+        } else if (payloadOrThumbnailBase instanceof PayloadOrThumbnailFile) {
+            return RequestBody.create(((PayloadOrThumbnailFile) payloadOrThumbnailBase).getPayload(), MediaType.parse(payloadOrThumbnailBase.getContentType()));
+        }
+        return null;
     }
 
     private static KeyHeader getUpdatedKeyHeader(KeyHeader keyHeader, UploadManifest manifest, String payloadKey) {
@@ -245,7 +265,7 @@ public class DriveFileUploadProvider {
 
         } catch (Exception e) {
             // TODO
-            Log.e(null, "Error: " + e.getMessage());
+            Log.e(null, "Error: " + e.getMessage() + Arrays.toString(e.getStackTrace()));
         }
 
         throw new NotImplementedError();

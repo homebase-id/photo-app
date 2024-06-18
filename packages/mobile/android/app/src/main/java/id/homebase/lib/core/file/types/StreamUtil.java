@@ -9,7 +9,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 public class StreamUtil {
-    static InputStream convertOutputStreamToInputStream(ByteArrayOutputStream outputStream) throws IOException {
+    public static InputStream convertOutputStreamToInputStream(ByteArrayOutputStream outputStream) throws IOException {
         try {
             PipedInputStream in = new PipedInputStream();
             final PipedOutputStream out = new PipedOutputStream(in);

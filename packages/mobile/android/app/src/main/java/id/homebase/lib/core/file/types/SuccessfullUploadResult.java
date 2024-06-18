@@ -17,8 +17,9 @@ public class SuccessfullUploadResult extends UploadResult {
         super(200);
 
         JSONObject keyHeader = uploadResult.optJSONObject("keyHeader");
-        assert keyHeader != null;
-        this.keyHeader = new KeyHeader(base64ToByteArray(keyHeader.optString("iv")), base64ToByteArray(keyHeader.optString("aesKey")));
+        if (keyHeader != null) {
+            this.keyHeader = new KeyHeader(base64ToByteArray(keyHeader.optString("iv")), base64ToByteArray(keyHeader.optString("aesKey")));
+        }
 
         JSONObject file = uploadResult.optJSONObject("file");
         assert file != null;
