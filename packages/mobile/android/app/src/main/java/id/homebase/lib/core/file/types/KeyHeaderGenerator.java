@@ -17,8 +17,6 @@ public class KeyHeaderGenerator {
 
     public static void main(String[] args) {
         KeyHeader keyHeader = generateKeyHeader();
-        System.out.println("IV: " + byteArrayToHex(keyHeader.iv()));
-        System.out.println("AES Key: " + byteArrayToHex(keyHeader.aesKey()));
     }
 
     // Utility method to convert byte array to hex string for printing

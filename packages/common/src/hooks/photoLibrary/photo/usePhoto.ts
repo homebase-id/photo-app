@@ -5,7 +5,7 @@ import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { updatePhoto } from '../../../provider/photos/PhotoProvider';
 import { LibraryType, PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { useInfintePhotosReturn } from '../photos/usePhotos';
-import { usePhotoLibrary } from '../library/usePhotoLibrary';
+import { useManagePhotoLibrary } from '../library/usePhotoLibrary';
 import { useAlbumThumbnail } from '../album/useAlbum';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
@@ -15,10 +15,9 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
 
   const invalidateAlbumCover = useAlbumThumbnail().invalidateAlbumCover;
 
-  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+  const invalidateLibrary = useManagePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    type: 'photos',
-  }).addDay;
+  }).invalidateLibrary;
 
   const removePhoto = async ({ photoFileId }: { photoFileId: string }) => {
     if (!targetDrive) return null;
@@ -123,7 +122,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
             }
           });
       },
-      onSuccess: (_param, _data) => {
+      onSuccess: (_param) => {
         queryClient.invalidateQueries({
           queryKey: ['photos', targetDrive?.alias, 'bin'],
         });
@@ -131,7 +130,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
           queryKey: ['photos-infinite', targetDrive?.alias],
         });
 
-        if (_param?.date) addDayToLibrary({ type: 'bin', date: _param.date });
+        if (_param?.date) invalidateLibrary('bin');
       },
       onError: (ex) => {
         console.error(ex);
@@ -162,7 +161,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
             });
           });
       },
-      onSuccess: (_param, _data) => {
+      onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ['photos', targetDrive?.alias, 'bin'],
         });
@@ -202,7 +201,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
             }
           });
       },
-      onSettled: (_param, _error, data) => {
+      onSettled: (_param) => {
         queryClient.invalidateQueries({
           queryKey: ['photos', targetDrive?.alias, undefined],
         }); // Removed from the photos library
@@ -214,7 +213,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
           queryKey: ['photos-infinte', targetDrive?.alias, 'archive'],
         }); // Added to the archive photoPreview
 
-        if (_param?.date) addDayToLibrary({ type: 'archive', date: _param.date });
+        if (_param?.date) invalidateLibrary('archive');
       },
       onError: (ex) => {
         console.error(ex);
@@ -248,7 +247,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
             }
           });
       },
-      onSettled: (returnVal, _data) => {
+      onSettled: (returnVal) => {
         // Clear photo queries
         queryClient.invalidateQueries({
           queryKey: ['photos', targetDrive?.alias, 'photos'],
@@ -258,7 +257,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
         });
 
         // Add day to the meta file
-        if (returnVal?.date) addDayToLibrary({ type: 'photos', date: returnVal.date });
+        if (returnVal?.date) invalidateLibrary('photos');
       },
       onError: (ex) => {
         console.error(ex);
@@ -312,10 +311,7 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
             exact: false,
           });
 
-          addDayToLibrary({
-            type: 'favorites',
-            date: data?.date,
-          });
+          invalidateLibrary('favorites');
         }
       },
     }),

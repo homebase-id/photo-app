@@ -9,12 +9,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import Refresh from '../../components/ui/Icons/Refresh/Refresh';
 
 const Debug = () => {
-  const {
-    fetchLibrary: { data: lib, refetch: refetchLib },
-  } = usePhotoLibrary({
+  const { data: lib, refetch: refetchLib } = usePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
     type: 'photos',
-  });
+  }).fetchLibrary;
 
   const queryClient = useQueryClient();
   const dotYouClient = useDotYouClientContext();

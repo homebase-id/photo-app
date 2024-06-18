@@ -22,6 +22,17 @@ import { jsonStringify64, getRandom16ByteArray } from '@youfoundation/js-lib/hel
 
 import { LibraryType, PhotoConfig, PhotoFile } from './PhotoTypes';
 
+export const getArchivalStatusFromType = (type: LibraryType, album?: string): ArchivalStatus[] =>
+  type === 'bin'
+    ? [2]
+    : type === 'archive'
+    ? [1]
+    : type === 'apps'
+    ? [3]
+    : album || type === 'favorites'
+    ? [0, 1, 3]
+    : [0];
+
 export const getPhotos = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
@@ -31,16 +42,7 @@ export const getPhotos = async (
   cursorState?: string,
   ordering?: 'older' | 'newer'
 ) => {
-  const archivalStatus: ArchivalStatus[] =
-    type === 'bin'
-      ? [2]
-      : type === 'archive'
-      ? [1]
-      : type === 'apps'
-      ? [3]
-      : album || type === 'favorites'
-      ? [0, 1, 3]
-      : [0];
+  const archivalStatus = getArchivalStatusFromType(type, album);
 
   const reponse = await queryBatch(
     dotYouClient,
@@ -171,8 +173,11 @@ export const getPhoto = async (
       targetDrive,
       fileId,
       DEFAULT_PAYLOAD_KEY,
-      size,
-      isProbablyEncrypted
+      isProbablyEncrypted,
+      undefined,
+      {
+        size,
+      }
     ),
   };
 };
@@ -191,8 +196,11 @@ const dsrToPhoto = async (
       targetDrive,
       dsr.fileId,
       DEFAULT_PAYLOAD_KEY,
-      size,
-      isProbablyEncrypted
+      isProbablyEncrypted,
+      undefined,
+      {
+        size,
+      }
     ),
   };
 };

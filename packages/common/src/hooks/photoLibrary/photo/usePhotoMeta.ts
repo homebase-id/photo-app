@@ -9,17 +9,16 @@ import {
   updatePhotoMetadata,
 } from '../../../provider/photos/PhotoProvider';
 import { useInfintePhotosReturn } from '../photos/usePhotos';
-import { usePhotoLibrary } from '../library/usePhotoLibrary';
+import { useManagePhotoLibrary } from '../library/usePhotoLibrary';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+  const invalidateLibrary = useManagePhotoLibrary({
     targetDrive: targetDrive,
-    type: 'photos',
-  }).addDay;
+  }).invalidateLibrary;
 
   const fetchPhotoMeta = async ({
     targetDrive,
@@ -54,7 +53,7 @@ export const usePhotoMetadata = (targetDrive?: TargetDrive, fileId?: string) => 
   }) => {
     if (!targetDrive) return null;
 
-    addDayToLibrary({ type: 'photos', date: new Date(newDate) });
+    invalidateLibrary('photos');
     return await updatePhoto(dotYouClient, targetDrive, photoFileId, {
       userDate: newDate,
     });

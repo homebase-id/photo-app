@@ -1,5 +1,7 @@
 package id.homebase.lib.core.file.types;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,14 +19,14 @@ public class StreamUtil {
                     outputStream.writeTo(out);
                     out.close(); // Close the PipedOutputStream to signal end of data
                 } catch (IOException e) {
-                    System.out.println("Error writing output stream to input stream: " + e.getMessage());
+                    Log.e(null, "Error writing output stream to input stream: " + e.getMessage());
                     throw new RuntimeException(e);
                 }
             }).start();
 
             return in;
         } catch (Exception e) {
-            System.out.println("Error converting output stream to input stream: " + e.getMessage());
+            Log.e(null, "Error converting output stream to input stream: " + e.getMessage());
             throw new IOException(e);
         }
     }

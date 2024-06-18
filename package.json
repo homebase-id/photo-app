@@ -9,7 +9,8 @@
     "scripts": {
         "postinstall": "patch-package",
         "start:mobile": "npm run start --w packages/mobile",
-        "start:web": "npm run start --w packages/web"
+        "start:web": "npm run start --w packages/web",
+        "build": "npm run build -workspaces --if-present"
     },
     "dependencies": {
         "@youfoundation/js-lib": "0.0.3-alpha.7"

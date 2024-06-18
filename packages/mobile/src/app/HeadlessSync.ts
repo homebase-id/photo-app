@@ -75,9 +75,10 @@ module.exports = async (taskData?: any) => {
         newPhoto,
         forceLowerQuality
       );
-      if (uploadResult && currentLib) {
-        currentLib = addDay(currentLib, uploadResult.userDate);
-      }
+      // TODO: Replace by invalidation of photo library cache
+      // if (uploadResult && currentLib) {
+      //   currentLib = addDay(currentLib, uploadResult.userDate);
+      // }
       return uploadResult;
     };
 

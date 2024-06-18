@@ -12,6 +12,7 @@ import {
   createDateObject,
   PhotoMetaDay,
   LibraryType,
+  useManagePhotoLibrary,
 } from 'photo-app-common';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorNotification } from '../ui/Alert/ErrorNotification';
@@ -186,9 +187,8 @@ export const PhotoMonth = memo(
       [photosInfinte]
     );
 
-    const { mutate: updateCount, error: updateCountError } = usePhotoLibrary({
+    const { mutate: updateCount, error: updateCountError } = useManagePhotoLibrary({
       targetDrive: targetDrive,
-      type,
     }).updateCount;
 
     useEffect(() => {

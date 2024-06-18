@@ -1,5 +1,6 @@
 package id.homebase.photos.mediasync;
 
+import static id.homebase.lib.core.file.DriveFileUploadProvider.isDebug;
 import static id.homebase.photos.mediasync.MediaProvider.uploadMedia;
 
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.util.Log;
 import com.ammarahmed.mmkv.MMKV;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +25,7 @@ import id.homebase.lib.core.file.types.SuccessfullUploadResult;
 import id.homebase.lib.core.file.types.UploadResult;
 
 public class MediaSync {
-    private Context context;
+    private final Context context;
 
     public MediaSync(Context context) {
         this.context = context;
@@ -49,12 +51,13 @@ public class MediaSync {
         assert identity != null;
         assert CAT != null;
 
-        Log.v(null, "[SyncWorker] identity: " + identity);
-        Log.v(null, "[SyncWorker] CAT: " + CAT);
-        Log.v(null, "[SyncWorker] SharedSecret: " + SharedSecret);
-        Log.v(null, "[SyncWorker] lastSyncTime: " + BigDecimal.valueOf(lastSyncTime).toPlainString());
-
-        lastSyncTime = 1717664076909L;
+        if (isDebug()) {
+            Log.v(null, "[SyncWorker] identity: " + identity);
+            Log.v(null, "[SyncWorker] CAT: " + CAT);
+            Log.v(null, "[SyncWorker] SharedSecret: " + SharedSecret);
+            Log.v(null, "[SyncWorker] lastSyncTime: " + BigDecimal.valueOf(lastSyncTime).toPlainString());
+//        lastSyncTime = 1717664076909L;
+        }
 
         Map<String, String> headers = new HashMap<>();
         headers.put("bx0900", CAT);
@@ -75,14 +78,21 @@ public class MediaSync {
 
         // For each photo, upload it to the server
         if (cursor != null) {
-            Log.v(null, "[SyncWorker] cursor: " + cursor.getCount());
+            if (isDebug()) {
+                Log.v(null, "[SyncWorker] cursor: " + cursor.getCount());
+            }
+
+            if (cursor.getCount() == 0) {
+                // No new photos to sync so we set current time as last sync time
+                mmkv.encode("lastSyncTimeAsNumber", new Date().getTime());
+            }
 
             while (cursor.moveToNext()) {
                 try {
                     String filePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
                     String timestampInSeconds = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
                     // parse timestamp in seconds to double in milliseconds
-                    Long timestampInMillis = Long.parseLong(timestampInSeconds) * 1000L;
+                    long timestampInMillis = Long.parseLong(timestampInSeconds) * 1000L;
 
                     String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
                     String identifier = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
@@ -90,8 +100,9 @@ public class MediaSync {
                     String height = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT));
 
 
-                    // Do something with the filePath and timestamp
-                    Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
+                    if (isDebug()) {
+                        Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
+                    }
 
                     UploadResult result = uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height);
 
@@ -107,8 +118,8 @@ public class MediaSync {
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(null, "[SyncWorker] Error uploading photo: " + e.getMessage());
                     // Ignore any errors and continue with the next photo
+                    Log.e(null, "[SyncWorker] Error uploading photo: " + e.getMessage());
                 }
             }
 

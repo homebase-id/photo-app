@@ -45,14 +45,10 @@ public class MediaProvider {
         ThumbnailFile tinyThumb = ImageResizer.resizeImage(filePath, List.of(TINY_THUMB_INSTRUCTION), DEFAULT_PAYLOAD_KEY).get(0);
         EmbeddedThumb previewThumbnail = new EmbeddedThumb(TINY_THUMB_INSTRUCTION.height, TINY_THUMB_INSTRUCTION.width, TINY_THUMB_INSTRUCTION.format, tinyThumb.getBase64());
 
-        System.out.println("previewThumbnail " + previewThumbnail.content());
-
-        UploadFileMetadata<String> metadata = new UploadFileMetadata<String>(false, ENCRYPT_MEDIA, OWNER_ONLY_ACL, new UploadAppFileMetaData<String>(uniqueId, new String[0], 0, 0, timestampInMs, null, ArchivalStatus.None, "", previewThumbnail), null, null);
+        UploadFileMetadata<String> metadata = new UploadFileMetadata<>(false, ENCRYPT_MEDIA, OWNER_ONLY_ACL, new UploadAppFileMetaData<>(uniqueId, new String[0], 0, 0, timestampInMs, null, ArchivalStatus.None, "", previewThumbnail), null, null);
 
         List<PayloadFile> payloads = List.of(new PayloadFile(DEFAULT_PAYLOAD_KEY, filePath, null, mimeType, ""));
-        List<ThumbnailFile> thumbnails = new ArrayList<>(
-                ImageResizer.resizeImage(filePath, List.of(DEFAULT_IMAGE_SIZES), DEFAULT_PAYLOAD_KEY)
-        );
+        List<ThumbnailFile> thumbnails = new ArrayList<>(ImageResizer.resizeImage(filePath, List.of(DEFAULT_IMAGE_SIZES), DEFAULT_PAYLOAD_KEY));
 
         return uploadFile(dotYouClient, instructions, metadata, payloads, thumbnails, ENCRYPT_MEDIA);
     }

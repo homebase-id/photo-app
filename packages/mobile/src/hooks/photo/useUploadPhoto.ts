@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { uploadNew } from '../../provider/photos/RNPhotoProvider';
 import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
-import { PhotoConfig, t, useDotYouClientContext, usePhotoLibrary } from 'photo-app-common';
+import { PhotoConfig, t, useDotYouClientContext, useManagePhotoLibrary, usePhotoLibrary } from 'photo-app-common';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
 import { useErrors } from '../errors/useErrors';
 
@@ -10,10 +10,9 @@ export const useUploadPhoto = () => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+  const invalidateLibrary = useManagePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    type: 'photos',
-  }).addDay;
+  }).invalidateLibrary;
 
   const { forceLowerQuality } = useKeyValueStorage();
 
@@ -28,7 +27,7 @@ export const useUploadPhoto = () => {
           forceLowerQuality
         );
         try {
-          await addDayToLibrary({ date: uploadResult.userDate, type: 'photos' });
+          invalidateLibrary('photos');
         } catch (err) {
           useErrors().add(err, t('Failed to update library index'));
         }

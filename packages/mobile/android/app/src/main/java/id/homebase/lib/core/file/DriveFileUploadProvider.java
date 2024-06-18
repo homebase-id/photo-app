@@ -1,12 +1,13 @@
 package id.homebase.lib.core.file;
 
-import static id.homebase.lib.core.crypto.CryptoUtil.byteArrayToBase64;
 import static id.homebase.lib.core.crypto.CryptoUtil.cbcEncrypt;
 import static id.homebase.lib.core.crypto.CryptoUtil.encryptKeyHeader;
 import static id.homebase.lib.core.crypto.CryptoUtil.encryptMetaData;
 import static id.homebase.lib.core.crypto.CryptoUtil.stringToByteArray;
 import static id.homebase.lib.core.file.types.KeyHeaderGenerator.generateKeyHeader;
 import static id.homebase.lib.core.file.types.KeyHeaderGenerator.getRandom16ByteArray;
+
+import android.util.Log;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -54,7 +55,7 @@ public class DriveFileUploadProvider {
     ) throws Exception {
         // Debug information
         if (isDebug()) {
-            System.out.println("request: " + dotYouClient.getEndpoint() + "/drive/files/upload" +
+            Log.v(null, "request: " + dotYouClient.getEndpoint() + "/drive/files/upload" +
                     " instructions: " + instructions +
                     " metadata: " + metadata +
                     " payloads: " + payloads +
@@ -71,18 +72,10 @@ public class DriveFileUploadProvider {
         instructions.setTransferIv(instructions.getTransferIv() != null ?
                 instructions.getTransferIv() : getRandom16ByteArray());
 
-        if (isDebug()) {
-            System.out.println("instructions (JSON): " + instructions.toJsonString());
-        }
-
         // Build package
         byte[] encryptedDescriptor = buildDescriptor(
                 dotYouClient, keyHeader, instructions, metadata
         );
-
-        if (isDebug()) {
-            System.out.println("EncryptedDescriptor (base64): " + byteArrayToBase64(encryptedDescriptor));
-        }
 
         // Upload
         MultipartBody data = buildFormData(
@@ -92,7 +85,7 @@ public class DriveFileUploadProvider {
         return pureUpload(dotYouClient, data);
     }
 
-    private static boolean isDebug() {
+    public static boolean isDebug() {
         // Return your debug flag
         return true;
     }
@@ -151,13 +144,6 @@ public class DriveFileUploadProvider {
             throw new IllegalStateException("Attempting to encrypt but missing the shared secret");
         }
 
-//        if(isDebug()) {
-//        System.out.println("DescriptorData (JSON): " + data.toJsonString());
-//        System.out.println("DescriptorData (IV): " + Arrays.toString(iv));
-//        System.out.println("DescriptorData (SS): " + Arrays.toString(ss));
-//        System.out.println("Dummy encrypted" + Arrays.toString(cbcEncrypt("Hello".getBytes(), iv, ss)));
-//        System.out.println("Dummy decrypted" + Arrays.toString(cbcDecrypt(cbcEncrypt("Hello".getBytes(), iv, ss), iv, ss)));
-//        }
         byte[] content = data.toJsonString().getBytes();
 
         return cbcEncrypt(content, iv, ss);
@@ -243,7 +229,6 @@ public class DriveFileUploadProvider {
 
             if (body != null) {
                 String jsonData = body.string();
-                System.out.println("Response: " + jsonData);
                 JSONObject uploadResultObject = new JSONObject(jsonData);
 
                 if (response.isSuccessful()) {
@@ -251,33 +236,26 @@ public class DriveFileUploadProvider {
                 } else if (response.code() == 400) {
                     return new BadRequestUploadResult(uploadResultObject);
                 }
+
                 // TODO
-                System.out.println("Error: " + jsonData);
+                Log.e(null, "Error: " + jsonData);
             }
 
             // Do something if the body is `null`
 
         } catch (Exception e) {
             // TODO
-            System.out.println("Error: " + e.getMessage());
+            Log.e(null, "Error: " + e.getMessage());
         }
 
         throw new NotImplementedError();
-
-// return new UploadResult();
-    }
-
-    private static String jsonStringify64(Object data) {
-        // Implement your JSON stringify logic here
-        // Example placeholder implementation:
-        return ""; // Placeholder for JSON stringify
     }
 
     private static class DescriptorData {
         private final EncryptedKeyHeader encryptedKeyHeader;
-        private final UploadFileMetadata fileMetadata;
+        private final UploadFileMetadata<String> fileMetadata;
 
-        public DescriptorData(EncryptedKeyHeader encryptedKeyHeader, UploadFileMetadata fileMetadata) {
+        public DescriptorData(EncryptedKeyHeader encryptedKeyHeader, UploadFileMetadata<String> fileMetadata) {
             this.encryptedKeyHeader = encryptedKeyHeader;
             this.fileMetadata = fileMetadata;
         }

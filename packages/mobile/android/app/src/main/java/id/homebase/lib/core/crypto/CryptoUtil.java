@@ -1,11 +1,14 @@
 package id.homebase.lib.core.crypto;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
@@ -74,8 +77,7 @@ public class CryptoUtil {
             return outputStream;
 
         } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
-            e.printStackTrace();
+            Log.e(null, "Error reading file: " + Arrays.toString(e.getStackTrace()));
             throw new RuntimeException("Error reading file", e);
         }
     }
@@ -126,8 +128,8 @@ public class CryptoUtil {
     public static ByteArrayOutputStream encryptWithKeyheader(File contentBytes, KeyHeader keyHeader) throws Exception {
         try {
             return cbcEncryptFile(contentBytes, keyHeader.iv(), keyHeader.aesKey());
-        }catch(Exception e) {
-            System.out.println("Error encrypting file with KeyHeader: " + e.getMessage());
+        } catch (Exception e) {
+            Log.e(null, "Error encrypting file with KeyHeader: " + e.getMessage());
             throw e;
         }
     }
@@ -135,8 +137,8 @@ public class CryptoUtil {
     public static ByteArrayOutputStream encryptWithKeyheader(InputStream outputStream, KeyHeader keyHeader) throws Exception {
         try {
             return cbcEncryptStream(outputStream, keyHeader.iv(), keyHeader.aesKey());
-        }catch(Exception e) {
-            System.out.println("Error encrypting stream with KeyHeader: " + e.getMessage());
+        } catch (Exception e) {
+            Log.e(null, "Error encrypting stream with KeyHeader: " + e.getMessage());
             throw e;
         }
     }
