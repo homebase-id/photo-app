@@ -43,7 +43,7 @@ public class MediaSync {
         String identity = mmkv.decodeString("identity", "");
         String CAT = mmkv.decodeString("bx0900", "");
         String SharedSecret = mmkv.decodeString("APSS", "");
-        double lastSyncTime = 1717664076909L;//mmkv.decodeDouble("lastSyncTimeAsNumber");
+        double lastSyncTime = mmkv.decodeDouble("lastSyncTimeAsNumber");
 
         assert SharedSecret != null;
         assert identity != null;
@@ -52,8 +52,9 @@ public class MediaSync {
         Log.v(null, "[SyncWorker] identity: " + identity);
         Log.v(null, "[SyncWorker] CAT: " + CAT);
         Log.v(null, "[SyncWorker] SharedSecret: " + SharedSecret);
-        Log.v(null, "[SyncWorker] lastSync (plain double): " + BigDecimal.valueOf(mmkv.decodeDouble("lastSyncTimeAsNumber")).toPlainString());
-//        Log.v(null, "[SyncWorker] lastSync (): " + new BigDecimal(lastSyncTime).toPlainString());
+        Log.v(null, "[SyncWorker] lastSyncTime: " + BigDecimal.valueOf(lastSyncTime).toPlainString());
+
+        lastSyncTime = 1717664076909L;
 
         Map<String, String> headers = new HashMap<>();
         headers.put("bx0900", CAT);
