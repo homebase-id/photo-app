@@ -119,13 +119,13 @@ public class MediaSync {
 
                     if (result instanceof SuccessfullUploadResult) {
                         Log.v(null, "[SyncWorker] MediaItem uploaded: " + result.toString());
-                        mmkv.encode("lastSyncTimeAsNumber", timestampInMillis);
+                        mmkv.encode("lastSyncTimeAsNumber", timestampInMillis); // We update the last sync time to the timestamp of the photo so we can continue where we left of if the task is interrupted
                     } else if (result instanceof BadRequestUploadResult) {
                         if (!Objects.equals(((BadRequestUploadResult) result).getErrorCode(), "existingFileWithUniqueId")) {
                             Log.v(null, "[SyncWorker] MediaItem failed to upload: " + result.toString());
                         } else {
                             Log.v(null, "[SyncWorker] MediaItem was already uploaded: " + result.toString());
-                            mmkv.encode("lastSyncTimeAsNumber", timestampInMillis);
+                            mmkv.encode("lastSyncTimeAsNumber", timestampInMillis); // We update the last sync time to the timestamp of the photo so we can continue where we left of if the task is interrupted
                         }
                     }
                 } catch (Exception e) {
@@ -133,6 +133,9 @@ public class MediaSync {
                     Log.e(null, "[SyncWorker] Error uploading photo: " + e.getMessage());
                 }
             }
+
+            // Everything is processed, so we set current time as last sync time
+            mmkv.encode("lastSyncTimeAsNumber", new Date().getTime());
 
             cursor.close();
         }
