@@ -150,7 +150,6 @@ struct ThumbnailStream: ThumbnailBase {
 }
 
 protocol PayloadBase {
-  var metadata: String? { get }
   var contentType: String { get }
   var descriptorContent: String? {get}
   var previewThumbnail: EmbeddedThumb? {get}
@@ -160,8 +159,7 @@ protocol PayloadBase {
 struct PayloadStream: PayloadBase {
   let descriptorContent: String?
   let previewThumbnail: EmbeddedThumb?
-  
-  let metadata: String?
+
   let contentType: String
   let key: String
   
@@ -172,7 +170,6 @@ struct PayloadFile: PayloadBase {
   let descriptorContent: String?
   let previewThumbnail: EmbeddedThumb?
   
-  let metadata: String?
   let contentType: String
   let key: String
   

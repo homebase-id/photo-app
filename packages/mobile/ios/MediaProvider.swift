@@ -34,7 +34,7 @@ class MediaProvider {
       isPublic: false,
       isEncrypted: encryptMedia,
       acl: ownerOnlyACL,
-      metaData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileSize: 0, resolution: 0, timestamp: timestampInMs, additionalMetaData: nil, archivalStatus: .none, comments: "", embeddedThumb: previewThumbnail),
+      metaData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileSize: 0, resolution: 0, timestamp: timestampInMs, additionalMetaData: nil, archivalStatus: .none, comments: "", embeddedThumb: previewThumbnail, content: ""),
       extra: nil,
       thumbnail: nil
     )
@@ -42,14 +42,14 @@ class MediaProvider {
     let payload: PayloadBase
     if forceLowerQuality {
       let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpg"), key: defaultPayloadKey)
-      payload = PayloadStream(metadata: defaultPayloadKey, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream)
+      payload = PayloadStream(descriptorContent: nil, previewThumbnail: nil, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream)
     } else {
-      payload = PayloadFile(metadata: defaultPayloadKey, contentType: mimeType, key: defaultPayloadKey, filePath: fileName)
+      payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: fileName)
     }
     
     let thumbnails = try ImageResizer.resizeImage(filePath: filePath, instructions: defaultImageSizes, key: defaultPayloadKey)
     
-    return DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encryptMedia: encryptMedia)
+    return try DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encrypt: encryptMedia)
   }
   
   static func toGuidId(input: String) throws -> String {

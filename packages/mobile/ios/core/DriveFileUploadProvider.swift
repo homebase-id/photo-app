@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import Alamofire
 
 extension DriveFileUploadProvider {
   static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], encrypt: Bool) throws -> UploadResult  {
@@ -65,8 +66,8 @@ extension DriveFileUploadProvider {
     return Data()
   }
   
-  static func buildFormData(instructions: UploadInstructionSet, encryptedDescriptor: Data, payloads: [PayloadBase], thumbnails: [ThumbnailBase], keyHeader: KeyHeader?, manifest: UploadManifest) throws -> Data {
-    var formData = Data()
+  static func buildFormData(instructions: UploadInstructionSet, encryptedDescriptor: Data, payloads: [PayloadBase], thumbnails: [ThumbnailBase], keyHeader: KeyHeader?, manifest: UploadManifest) throws -> MultipartFormData {
+    var formData = MultipartFormData()
     
     let boundary = "Boundary-\(UUID().uuidString)"
     
@@ -88,117 +89,63 @@ extension DriveFileUploadProvider {
       return partData
     }
     
-    var body = Data()
-    
     // Add instructions
     if let instructionsData = instructions.toJsonString().data(using: .utf8) {
-      body.append(addFormDataPart("instructions", instructionsData, "instructions.json", "application/octet-stream"))
+      formData.append(instructionsData, withName: "instructions", fileName: "instructions.json", mimeType: "application/octet-stream")
     }
     
     // Add encrypted descriptor if available
-    body.append(addFormDataPart("metaData", encryptedDescriptor, "metadata.bin", "application/octet-stream"))
-    
-    // Create a pipe to stream the data
-    let pipe = Pipe()
+    formData.append(encryptedDescriptor, withName: "metaData", fileName: "metadata.bin", mimeType: "application/octet-stream")
     
     // Add payloads and thumbnails as streams
     for payload in payloads {
-      var payloadStreamOutput: InputStream
       if let keyHeader = keyHeader {
         if let payloadFile = payload as? PayloadFile {
           let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(file: payloadFile.filePath, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
-          payloadStreamOutput = InputStream(data: encryptedPayload)
+          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
+
         } else if let payloadStream = payload as? PayloadStream {
           let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(stream: payloadStream.inputStream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
-          payloadStreamOutput = InputStream(data: encryptedPayload)
+          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
         } else {
           continue
         }
       } else {
         if let payloadFile = payload as? PayloadFile {
           if #available(iOS 16.0, *) {
-            payloadStreamOutput = InputStream(url: URL.init(filePath: payloadFile.filePath))!
+            formData.append(InputStream(url: URL.init(filePath: payloadFile.filePath))! , withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
           } else {
             // Fallback on earlier versions
           }
         } else if let payloadStream = payload as? PayloadStream {
-          payloadStreamOutput = payloadStream.inputStream
+          formData.append(payloadStream.inputStream, withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
         } else {
           continue
         }
       }
-      
-      let filename = payload.key
-      let contentType = payload.contentType
-      body.append("--\(boundary)\r\n".data(using: .utf8)!)
-      body.append("Content-Disposition: form-data; name=\"payload\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-      body.append("Content-Type: \(contentType)\r\n\r\n".data(using: .utf8)!)
-      
-      body.append("\r\n".data(using: .utf8)!)
     }
     
     for thumb in thumbnails {
-      let thumbStreamOutput: InputStream
       if let keyHeader = keyHeader {
         if let thumbStream = thumb as? ThumbnailStream {
           let encryptedThumb = try CryptoUtil.encryptWithKeyHeader(stream: thumbStream.inputStream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: thumb.key))
-          thumbStreamOutput = InputStream(data: encryptedThumb)
+          formData.append(encryptedThumb, withLength: 0, name: "thumbnail", fileName: thumb.key + String(thumb.pixelWidth), mimeType: thumb.contentType);
         } else {
           continue
         }
       } else {
         if let thumbStream = thumb as? ThumbnailStream {
-          thumbStreamOutput = thumbStream.inputStream
+          formData.append(thumbStream.inputStream, withLength: 0, name: "thumbnail", fileName: thumb.key + String(thumb.pixelWidth), mimeType: thumb.contentType);
         } else {
           continue
         }
       }
-      
-      let filename = thumb.key + String(thumb.pixelWidth)
-      let contentType = thumb.contentType
-      body.append("--\(boundary)\r\n".data(using: .utf8)!)
-      body.append("Content-Disposition: form-data; name=\"thumbnail\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-      body.append("Content-Type: \(contentType)\r\n\r\n".data(using: .utf8)!)
-      
-      body.append("\r\n".data(using: .utf8)!)
     }
     
-    body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-    
-    return body
+    return formData
   }
   
-  // Helper function to stream data
-  static func streamData(from input: InputStream, to output: OutputStream) throws {
-      input.open()
-      defer { input.close() }
-      
-      output.open()
-      defer { output.close() }
-      
-      let bufferSize = 1024
-      var buffer = [UInt8](repeating: 0, count: bufferSize)
-      
-      while input.hasBytesAvailable {
-          let bytesRead = input.read(&buffer, maxLength: bufferSize)
-          if bytesRead < 0, let error = input.streamError {
-              throw error
-          }
-          if bytesRead == 0 {
-              break
-          }
-          var bytesWritten = 0
-          while bytesWritten < bytesRead {
-              let bytes = output.write(&buffer + bytesWritten, maxLength: bytesRead - bytesWritten)
-              if bytes < 0, let error = output.streamError {
-                  throw error
-              }
-              bytesWritten += bytes
-          }
-      }
-  }
-  
-  static func pureUpload(dotYouClient: DotYouClient, data: Data) throws -> UploadResult  {
+  static func pureUpload(dotYouClient: DotYouClient, data: MultipartFormData) throws -> UploadResult  {
     var request = URLRequest(url: URL(string: dotYouClient.endpoint + "/drive/files/upload")!)
     request.httpMethod = "POST"
     request.httpBody = data

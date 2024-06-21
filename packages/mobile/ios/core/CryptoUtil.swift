@@ -10,14 +10,14 @@ import Foundation
 class CryptoUtil {
   // Assuming you have the following methods and types:
   
-  static func encryptWithKeyHeader(file: String, keyHeader: KeyHeader) throws -> Data {
+  static func encryptWithKeyHeader(file: String, keyHeader: KeyHeader) throws -> InputStream {
     // Implement encryption
-    return Data()
+    return InputStream()
   }
   
-  static func encryptWithKeyHeader(stream: InputStream, keyHeader: KeyHeader) throws -> Data {
+  static func encryptWithKeyHeader(stream: InputStream, keyHeader: KeyHeader) throws -> InputStream {
     // Implement encryption
-    return Data()
+    return InputStream()
   }
   
   static func getUpdatedKeyHeader(keyHeader: KeyHeader, manifest: UploadManifest, payloadKey: String) -> KeyHeader {

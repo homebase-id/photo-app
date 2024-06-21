@@ -17,6 +17,7 @@
 		12D851E12C23288000236484 /* DriveFileUploadProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E02C23288000236484 /* DriveFileUploadProvider.swift */; };
 		12D851E32C2328E900236484 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E22C2328E900236484 /* ImageResizer.swift */; };
 		12D851E52C25913800236484 /* CryptoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E42C25913800236484 /* CryptoUtil.swift */; };
+		12D851E82C25C0F500236484 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 12D851E72C25C0F500236484 /* Alamofire */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -93,6 +94,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F98D1801233E0B43BC818328 /* libPods-HomebasePhotos.a in Frameworks */,
+				12D851E82C25C0F500236484 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,6 +268,9 @@
 			dependencies = (
 			);
 			name = HomebasePhotos;
+			packageProductDependencies = (
+				12D851E72C25C0F500236484 /* Alamofire */,
+			);
 			productName = HomebasePhotos;
 			productReference = 13B07F961A680F5B00A75B9A /* HomebasePhotos.app */;
 			productType = "com.apple.product-type.application";
@@ -296,6 +301,9 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
+			packageReferences = (
+				12D851E62C25C0F500236484 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -914,6 +922,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		12D851E62C25C0F500236484 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		12D851E72C25C0F500236484 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12D851E62C25C0F500236484 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }
