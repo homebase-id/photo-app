@@ -8,11 +8,41 @@
 import Foundation
 
 class DotYouClient {
+  let apiType: ApiType
+  let identity: String
+  let sharedSecret: Data?
+  let headers: [String: String]
+  let endpoint: String
+  
   init(apiType: ApiType, sharedSecret: Data, identity: String, headers: [String: String]) {
-        // Your implementation here
+    // Your implementation her
+    self.apiType = apiType
+    self.identity = identity
+    self.sharedSecret = sharedSecret
+    
+    self.headers = headers
+    
+    var endpoint = "https://" + identity
+    
+    switch (apiType) {
+      //case .app:
+      //    endpoint += "/api/owner/v1";
+      //    break;
+    case .app:
+      endpoint += "/api/apps/v1";
+      break;
+      //case Guest:
+      //    endpoint+ = "/api/guest/v1";
+      //    break;
     }
+    self.endpoint = endpoint
+  }
+  
+  func createHttpClient() -> URLSession {
+    return URLSession.shared
+  }
 }
 
 enum ApiType {
-    case app
+  case app
 }

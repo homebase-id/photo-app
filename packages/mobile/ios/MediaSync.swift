@@ -39,15 +39,13 @@ class MediaSync {
     lastSyncTimeInMiliseconds = 1717664076909
     
     var headers = [String: String]()
-       headers["bx0900"] = cat
-
+    headers["bx0900"] = cat
+    
     guard let sharedSecretBytes = Data(base64Encoded: sharedSecret) else {
-        print("[SyncWorker] Failed to decode base64 string for sharedSecret")
-        return
+      print("[SyncWorker] Failed to decode base64 string for sharedSecret")
+      return
     }
     let dotYouClient = DotYouClient(apiType: .app, sharedSecret: sharedSecretBytes, identity: identity, headers: headers)
-
-    let mediaProvider = MediaProvider()
     
     // Find all photos that have been added since the last sync
     let fetchOptions = PHFetchOptions()
@@ -83,7 +81,7 @@ class MediaSync {
         if #available(iOS 14.0, *) {
           mimeType = UTType(uniformTypeIdentifier)?.preferredMIMEType ?? mimeType
         }
-
+        
         let identifier = asset.localIdentifier
         let width = asset.pixelWidth
         let height = asset.pixelHeight
@@ -98,21 +96,28 @@ class MediaSync {
           print("[SyncWorker] MediaItem filePath: \(filePath)")
         }
         
-        let result = mediaProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestamp: timestampInMillis, mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality)
-        
-        switch result {
-        case is SuccessfulUploadResult:
-          print("[SyncWorker] MediaItem uploaded: \(result)")
-          //mmkv.set(timestampInMillis, forKey: "lastSyncTimeAsNumber") // We update the last sync time to the timestamp of the photo so we can continue where we left off if the task is interrupted
-        case let badResult as BadRequestUploadResult:
-          if badResult.errorCode != "existingFileWithUniqueId" {
-            print("[SyncWorker] MediaItem failed to upload: \(result)")
-          } else {
-            print("[SyncWorker] MediaItem was already uploaded: \(result)")
+        do {
+          let result = try MediaProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality)
+          
+          
+          switch result {
+          case is SuccessfulUploadResult:
+            print("[SyncWorker] MediaItem uploaded: \(result)")
             //mmkv.set(timestampInMillis, forKey: "lastSyncTimeAsNumber") // We update the last sync time to the timestamp of the photo so we can continue where we left off if the task is interrupted
+          case let badResult as BadRequestUploadResult:
+            if badResult.errorCode != "existingFileWithUniqueId" {
+              print("[SyncWorker] MediaItem failed to upload: \(result)")
+            } else {
+              print("[SyncWorker] MediaItem was already uploaded: \(result)")
+              //mmkv.set(timestampInMillis, forKey: "lastSyncTimeAsNumber") // We update the last sync time to the timestamp of the photo so we can continue where we left off if the task is interrupted
+            }
+          default:
+            break
           }
-        default:
-          break
+          
+        } catch {
+          print("[SyncWorker] Error uploading media: \(error.localizedDescription)")
+          // Continue with the next iteration of the loop
         }
       }
     }

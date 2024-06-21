@@ -18,18 +18,21 @@ class MediaProvider {
     ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 95, format: "jpg")
   ]
   
-  static func uploadMedia(dotYouClient: DotYouClient, filePath: String, timestampInMs: Int64, mimeType: String, identifier: String?, width: String, height: String, forceLowerQuality: Bool) throws -> UploadResult {
-    let instructions = UploadInstructionSet(storageOptions: StorageOptions(targetDrive: photoDrive))
+  static func uploadMedia(dotYouClient: DotYouClient, filePath: String, timestampInMs: Int64, mimeType: String, identifier: String?, width: Int, height: Int, forceLowerQuality: Bool) throws -> UploadResult {
+    let instructions = UploadInstructionSet(storageOptions: StorageOptions(targetDrive: photoDrive), transitOptions: nil, transferIv: nil, manifest: nil)
     
     let fileName = (filePath as NSString).lastPathComponent
     let uniqueId = try toGuidId(input: identifier ?? "\(fileName)_\(width)x\(height)")
     
-    let tinyThumb = try ImageResizer.resizeImage(filePath: filePath, instruction: tinyThumbInstruction, key: defaultPayloadKey, encrypt: true)
-    let previewThumbnail = EmbeddedThumb(pixelHeight: tinyThumb.pixelHeight, pixelWidth: tinyThumb.pixelWidth, format: tinyThumb.format, base64: tinyThumb.base64)
+    let tinyThumb = try ImageResizer.resizeImage(filePath: filePath, instruction: tinyThumbInstruction, key: defaultPayloadKey)
+    var previewThumbnail: EmbeddedThumb?
+    if(tinyThumb != nil) {
+      previewThumbnail = EmbeddedThumb(pixelHeight: tinyThumb!.pixelHeight, pixelWidth: tinyThumb!.pixelWidth, contentType: tinyThumb!.contentType, base64: ImageResizer.base64Encode(stream: tinyThumb!.inputStream)!)
+    }
     
     let metadata = UploadFileMetadata<String>(
       isPublic: false,
-      encryptMedia: encryptMedia,
+      isEncrypted: encryptMedia,
       acl: ownerOnlyACL,
       metaData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileSize: 0, resolution: 0, timestamp: timestampInMs, additionalMetaData: nil, archivalStatus: .none, comments: "", embeddedThumb: previewThumbnail),
       extra: nil,
@@ -38,15 +41,15 @@ class MediaProvider {
     
     let payload: PayloadBase
     if forceLowerQuality {
-      let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpg"), key: defaultPayloadKey, encrypt: false)
-      payload = PayloadStream(key: defaultPayloadKey, outputStream: payloadStream.outputStream, metadata: nil, mimeType: mimeType, fileName: fileName)
+      let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpg"), key: defaultPayloadKey)
+      payload = PayloadStream(metadata: defaultPayloadKey, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream)
     } else {
-      payload = PayloadFile(key: defaultPayloadKey, filePath: filePath, metadata: nil, mimeType: mimeType, fileName: fileName)
+      payload = PayloadFile(metadata: defaultPayloadKey, contentType: mimeType, key: defaultPayloadKey, filePath: fileName)
     }
     
     let thumbnails = try ImageResizer.resizeImage(filePath: filePath, instructions: defaultImageSizes, key: defaultPayloadKey)
     
-    return uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encryptMedia: encryptMedia)
+    return DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encryptMedia: encryptMedia)
   }
   
   static func toGuidId(input: String) throws -> String {
@@ -57,10 +60,17 @@ class MediaProvider {
       }
     }
     
-    let msb = digest[0..<8].reduce(0) { ($0 << 8) | UInt64($1) }
-    let lsb = digest[8..<16].reduce(0) { ($0 << 8) | UInt64($1) }
-    
-    return UUID(uuid: (msb: msb, lsb: lsb)).uuidString
+    let uuid = UUID(digest: digest)
+    return uuid.uuidString
   }
 }
 
+extension UUID {
+  init(digest: [UInt8]) {
+    precondition(digest.count == 16, "MD5 digest should be 16 bytes")
+    self = digest.withUnsafeBytes {
+      let bytes = $0.bindMemory(to: UInt8.self)
+      return UUID(uuid: (bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]))
+    }
+  }
+}

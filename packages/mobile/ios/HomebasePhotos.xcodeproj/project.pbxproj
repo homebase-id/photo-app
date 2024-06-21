@@ -16,6 +16,7 @@
 		12D851DE2C23159400236484 /* MediaProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851DD2C23159400236484 /* MediaProvider.swift */; };
 		12D851E12C23288000236484 /* DriveFileUploadProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E02C23288000236484 /* DriveFileUploadProvider.swift */; };
 		12D851E32C2328E900236484 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E22C2328E900236484 /* ImageResizer.swift */; };
+		12D851E52C25913800236484 /* CryptoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E42C25913800236484 /* CryptoUtil.swift */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -62,6 +63,7 @@
 		12D851DD2C23159400236484 /* MediaProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaProvider.swift; sourceTree = "<group>"; };
 		12D851E02C23288000236484 /* DriveFileUploadProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveFileUploadProvider.swift; sourceTree = "<group>"; };
 		12D851E22C2328E900236484 /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
+		12D851E42C25913800236484 /* CryptoUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtil.swift; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* HomebasePhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomebasePhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = HomebasePhotos/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = HomebasePhotos/AppDelegate.mm; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				12D851E02C23288000236484 /* DriveFileUploadProvider.swift */,
+				12D851E42C25913800236484 /* CryptoUtil.swift */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -474,6 +477,7 @@
 				12D851D72C2306F700236484 /* Bridge.m in Sources */,
 				1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */,
 				12D851E12C23288000236484 /* DriveFileUploadProvider.swift in Sources */,
+				12D851E52C25913800236484 /* CryptoUtil.swift in Sources */,
 				12D851DC2C23154600236484 /* DotYouClient.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
