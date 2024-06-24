@@ -11,7 +11,7 @@ class DotYouClient {
   let apiType: ApiType
   let identity: String
   let sharedSecret: Data?
-  let headers: [String: String]
+  var headers: [String: String]
   let endpoint: String
   
   init(apiType: ApiType, sharedSecret: Data, identity: String, headers: [String: String]) {
@@ -21,6 +21,7 @@ class DotYouClient {
     self.sharedSecret = sharedSecret
     
     self.headers = headers
+    self.headers["X-ODIN-FILE-SYSTEM-TYPE"] = headers["X-ODIN-FILE-SYSTEM-TYPE"] ?? "Standard"
     
     var endpoint = "https://" + identity
     

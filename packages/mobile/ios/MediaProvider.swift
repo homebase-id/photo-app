@@ -10,7 +10,7 @@ import Foundation
 class MediaProvider {
   static let defaultPayloadKey = "dflt_key"
   static let encryptMedia = true
-  static let photoDrive = TargetDrive(id: "6483b7b1f71bd43eb6896c86148668cc", key: "2af68fe72fb84896f39f97c59d60813a")
+  static let photoDrive = TargetDrive(alias: "6483b7b1f71bd43eb6896c86148668cc", type: "2af68fe72fb84896f39f97c59d60813a")
   static let ownerOnlyACL = AccessControlList(type: .owner)
   static let tinyThumbInstruction = ImageResizer.ResizeInstruction(width: 20, height: 20, quality: 10, format: "jpg")
   static let defaultImageSizes = [
@@ -19,7 +19,7 @@ class MediaProvider {
   ]
   
   static func uploadMedia(dotYouClient: DotYouClient, filePath: String, timestampInMs: Int64, mimeType: String, identifier: String?, width: Int, height: Int, forceLowerQuality: Bool) throws -> UploadResult {
-    let instructions = UploadInstructionSet(storageOptions: StorageOptions(targetDrive: photoDrive), transitOptions: nil, transferIv: nil, manifest: nil)
+    let instructions = UploadInstructionSet(storageOptions: StorageOptions(drive: photoDrive), transitOptions: nil, transferIv: nil, manifest: nil)
     
     let fileName = (filePath as NSString).lastPathComponent
     let uniqueId = try toGuidId(input: identifier ?? "\(fileName)_\(width)x\(height)")
@@ -44,7 +44,7 @@ class MediaProvider {
       let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpg"), key: defaultPayloadKey)
       payload = PayloadStream(descriptorContent: nil, previewThumbnail: nil, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream)
     } else {
-      payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: fileName)
+      payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: filePath)
     }
     
     let thumbnails = try ImageResizer.resizeImage(filePath: filePath, instructions: defaultImageSizes, key: defaultPayloadKey)

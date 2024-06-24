@@ -11,20 +11,28 @@ import Alamofire
 
 extension DriveFileUploadProvider {
   static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], encrypt: Bool) throws -> UploadResult  {
+    print("[SyncWorker] Upload");
+
     // Implement the uploadFile logic
     var mutableMetadata = metadata
     mutableMetadata.setIsEncrypted(encrypt)
-    
+
     let keyHeader = encrypt ? generateKeyHeader() : nil
     let manifest = buildManifest(payloads: payloads, thumbnails: thumbnails, generateIv: encrypt)
+    print("[SyncWorker] Got manifest");
+
     let updatedInstructions = UploadInstructionSet(storageOptions: instructions.storageOptions, transitOptions: instructions.transitOptions, transferIv: instructions.transferIv ?? getRandom16ByteArray(), manifest: manifest)
-    
-    let encryptedDescriptor = try buildDescriptor(dotYouClient: dotYouClient, keyHeader: keyHeader, instructions: instructions, metadata: mutableMetadata)
-    let data = try buildFormData(instructions: instructions, encryptedDescriptor: encryptedDescriptor, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader, manifest: manifest)
-    
-    return try pureUpload(dotYouClient: dotYouClient, data: data)
+    print("[SyncWorker] Got updatedInstructions");
+
+    let encryptedDescriptor = try buildDescriptor(dotYouClient: dotYouClient, keyHeader: keyHeader, instructions: updatedInstructions, metadata: mutableMetadata)
+    print("[SyncWorker] Got encryptedDescriptor");
+    let formData = try buildFormData(instructions: updatedInstructions, encryptedDescriptor: encryptedDescriptor, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader, manifest: manifest)
+    print("[SyncWorker] Got Form Data");
+
+
+    return try pureUpload(dotYouClient: dotYouClient, data: formData)
   }
-  
+
   static func buildManifest(payloads: [PayloadBase], thumbnails: [ThumbnailBase], generateIv: Bool) -> UploadManifest {
     let payloadDescriptors: [UploadPayloadDescriptor] = payloads.map { payload in
       let relatedThumbnails: [UploadThumbnailDescriptor] = thumbnails.filter { thumb in
@@ -36,7 +44,7 @@ extension DriveFileUploadProvider {
           pixelWidth: thumb.pixelWidth
         )
       }
-      
+
       return UploadPayloadDescriptor(
         payloadKey: payload.key,
         descriptorContent: payload.descriptorContent ?? nil,
@@ -45,86 +53,64 @@ extension DriveFileUploadProvider {
         iv: generateIv ? getRandom16ByteArray() : nil
       )
     }
-    
+
     return UploadManifest(payloadDescriptors: payloadDescriptors)
   }
-  
+
   static func buildDescriptor(dotYouClient: DotYouClient, keyHeader: KeyHeader?, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>) throws -> Data {
     guard let transferIv = instructions.transferIv else {
       throw NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Transfer IV is required"])
     }
-    
+
     let descriptorData = DescriptorData(encryptedKeyHeader: Data(), fileMetadata: metadata)
     let jsonString = descriptorData.toJsonString()
     let content = jsonString.data(using: .utf8)
-    
-    return try cbcEncrypt(content: content!, iv: transferIv, key: dotYouClient.sharedSecret!)
+
+    return try CryptoUtil.cbcEncrypt(data: content!, iv: transferIv, key: dotYouClient.sharedSecret!)
   }
-  
-  static func cbcEncrypt(content: Data, iv: Data, key: Data) throws -> Data {
-    // Implement CBC encryption
-    return Data()
-  }
-  
+
   static func buildFormData(instructions: UploadInstructionSet, encryptedDescriptor: Data, payloads: [PayloadBase], thumbnails: [ThumbnailBase], keyHeader: KeyHeader?, manifest: UploadManifest) throws -> MultipartFormData {
-    var formData = MultipartFormData()
-    
-    let boundary = "Boundary-\(UUID().uuidString)"
-    
-    let addFormField = { (name: String, value: String) -> Data in
-      var data = Data()
-      data.append("--\(boundary)\r\n")
-      data.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n")
-      data.append("\(value)\r\n")
-      return data
-    }
-    
-    let addFormDataPart = { (name: String, data: Data, filename: String, contentType: String) -> Data in
-      var partData = Data()
-      partData.append("--\(boundary)\r\n")
-      partData.append("Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n")
-      partData.append("Content-Type: \(contentType)\r\n\r\n")
-      partData.append(data)
-      partData.append("\r\n")
-      return partData
-    }
-    
+    let formData = MultipartFormData()
+
     // Add instructions
     if let instructionsData = instructions.toJsonString().data(using: .utf8) {
       formData.append(instructionsData, withName: "instructions", fileName: "instructions.json", mimeType: "application/octet-stream")
     }
-    
+    print("[SyncWorker] Appended instructions");
+
     // Add encrypted descriptor if available
     formData.append(encryptedDescriptor, withName: "metaData", fileName: "metadata.bin", mimeType: "application/octet-stream")
-    
+    print("[SyncWorker] Appended encrypteDescriptor");
+
     // Add payloads and thumbnails as streams
     for payload in payloads {
       if let keyHeader = keyHeader {
         if let payloadFile = payload as? PayloadFile {
           let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(file: payloadFile.filePath, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
-          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
+          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
 
         } else if let payloadStream = payload as? PayloadStream {
           let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(stream: payloadStream.inputStream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
-          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
+          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
         } else {
           continue
         }
       } else {
         if let payloadFile = payload as? PayloadFile {
           if #available(iOS 16.0, *) {
-            formData.append(InputStream(url: URL.init(filePath: payloadFile.filePath))! , withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
+            formData.append(InputStream(url: URL.init(filePath: payloadFile.filePath))! , withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
           } else {
             // Fallback on earlier versions
           }
         } else if let payloadStream = payload as? PayloadStream {
-          formData.append(payloadStream.inputStream, withLength: 10, name: "payload", fileName: "", mimeType: payload.contentType)
+          formData.append(payloadStream.inputStream, withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
         } else {
           continue
         }
       }
     }
-    
+    print("[SyncWorker] Appended payloads");
+
     for thumb in thumbnails {
       if let keyHeader = keyHeader {
         if let thumbStream = thumb as? ThumbnailStream {
@@ -141,34 +127,34 @@ extension DriveFileUploadProvider {
         }
       }
     }
-    
+    print("[SyncWorker] Appended thumbnails");
+
     return formData
   }
-  
+
   static func pureUpload(dotYouClient: DotYouClient, data: MultipartFormData) throws -> UploadResult  {
-    var request = URLRequest(url: URL(string: dotYouClient.endpoint + "/drive/files/upload")!)
-    request.httpMethod = "POST"
-    request.httpBody = data
-    request.setValue("multipart/form-data", forHTTPHeaderField: "Content-Type")
-    
-    let (responseData, response, error) = URLSession.shared.synchronousDataTask(with: request)
-    guard let responseData = responseData, error == nil else {
-      throw NSError(domain: "DriveFileUploadProvider", code: 3, userInfo: [NSLocalizedDescriptionKey: "Upload failed"])
-    }
-    
-    // Process response
-    
+    print("formData size: " + String(data.contentLength))
+    AF.upload(
+      multipartFormData: data,
+      to:dotYouClient.endpoint + "/drive/files/upload",
+      usingThreshold: UInt64.init(),
+      method: .post,
+      headers: HTTPHeaders(dotYouClient.headers)
+    ).responseString { response in
+      debugPrint("Response: \(response)")
+  }
+
     return BadRequestUploadResult()
   }
-  
+
   static func generateKeyHeader() -> KeyHeader {
     // Generate key header
-    return KeyHeader(iv: Data(), aesKey: SymmetricKey(size: .bits256))
+    return KeyHeader(iv: Data(), aesKey: SymmetricKey(size: .bits128))
   }
-  
+
   static func getRandom16ByteArray() -> Data {
     // Generate random 16-byte array
-    return Data()
+    return SymmetricKey(size: .bits128).withUnsafeBytes { Data($0) }
   }
 }
 
@@ -178,15 +164,15 @@ extension Data {
       append(data)
     }
   }
-  
+
   init(reading input: InputStream) throws {
     self.init()
     input.open()
     defer { input.close() }
-    
+
     let bufferSize = 1024
     var buffer = [UInt8](repeating: 0, count: bufferSize)
-    
+
     while input.hasBytesAvailable {
       let read = input.read(&buffer, maxLength: bufferSize)
       if read > 0 {
@@ -207,26 +193,26 @@ extension URLSession {
     var data: Data?
     var response: URLResponse?
     var error: Error?
-    
+
     let semaphore = DispatchSemaphore(value: 0)
-    
+
     let dataTask = self.dataTask(with: request) {
       data = $0
       response = $1
       error = $2
       semaphore.signal()
     }
-    
+
     dataTask.resume()
     semaphore.wait()
-    
+
     return (data, response, error)
   }
 }
 
 struct TargetDrive  :Codable {
-  let id: String
-  let key: String
+  let alias: String
+  let type: String
 }
 
 struct AccessControlList : Codable {
@@ -242,7 +228,7 @@ struct DriveFileUploadProvider {
 
 
 struct StorageOptions  :Codable {
-  let targetDrive: TargetDrive
+  let drive: TargetDrive
 }
 
 struct UploadManifest  :Codable {
@@ -269,17 +255,18 @@ struct UploadInstructionSet :Codable {
   var transitOptions: TransitOptions?
   var transferIv: Data?
   var manifest: UploadManifest?
-  
+
   func toJsonString() -> String {
       let encoder = JSONEncoder()
       encoder.outputFormatting = .prettyPrinted
-      
+
       // Custom data encoding strategy for `Data`
       encoder.dataEncodingStrategy = .base64
-      
+
       do {
           let jsonData = try encoder.encode(self)
           if let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("UploadInstructionSet: " + jsonString)
               return jsonString
           }
       } catch {
@@ -317,7 +304,7 @@ struct UploadFileMetadata<T: Codable>: Codable {
   let metaData: UploadAppFileMetaData<T>
   let extra: String?
   let thumbnail: String?
-  
+
   mutating func setIsEncrypted(_ encrypt: Bool) {
     self.isEncrypted = encrypt
   }
@@ -339,14 +326,14 @@ struct KeyHeader {
 struct DescriptorData : Codable {
   var encryptedKeyHeader: Data
   var fileMetadata: UploadFileMetadata<String>
-  
+
   func toJsonString() -> String {
       let encoder = JSONEncoder()
       encoder.outputFormatting = .prettyPrinted
-      
+
       // Custom data encoding strategy for `Data`
       encoder.dataEncodingStrategy = .base64
-      
+
       do {
           let jsonData = try encoder.encode(self)
           if let jsonString = String(data: jsonData, encoding: .utf8) {
