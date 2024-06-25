@@ -97,9 +97,6 @@ class CryptoUtil {
         throw NSError(domain: "Encryption failed", code: Int(result), userInfo: nil)
       }
       
-      if(numBytesEncrypted < 2 * blockSize) {
-        print("It's going bad...");
-      }
       
       // Get the last 16 bytes (padding) of the encrypted data
       lastPadding = Data(encryptedBuffer[(numBytesEncrypted - blockSize)..<numBytesEncrypted])
@@ -108,9 +105,8 @@ class CryptoUtil {
       numBytesEncrypted -= blockSize
       
       if(numBytesEncrypted == 0) {
-        print("number of bytes is zero");
-        break;
         // Appaerently this is expected at the end... :shrug:
+        break;
       } else {
         // Copy the last block of the encrypted data into the iv (without padding)
         iv = Data(encryptedBuffer[(numBytesEncrypted - blockSize)..<numBytesEncrypted])
