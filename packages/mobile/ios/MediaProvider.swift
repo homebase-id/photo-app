@@ -21,12 +21,6 @@ class MediaProvider {
   static func uploadMedia(dotYouClient: DotYouClient, filePath: String, timestampInMs: Int64, mimeType: String, identifier: String?, width: Int, height: Int, forceLowerQuality: Bool) async throws -> UploadResult {
     let instructions = UploadInstructionSet(storageOptions: StorageOptions(drive: photoDrive), transitOptions: nil, transferIv: nil, manifest: nil)
 
-    if #available(iOS 15.0, *) {
-      print("Timestamp " + timestampInMs.formatted())
-    } else {
-      // Fallback on earlier versions
-    }
-
     let fileName = (filePath as NSString).lastPathComponent
     let uniqueId = try toGuidId(input: identifier ?? "\(fileName)_\(width)x\(height)")
 
