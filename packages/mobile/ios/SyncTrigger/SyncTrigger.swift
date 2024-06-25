@@ -9,17 +9,20 @@ import Foundation
 
 @objc(SyncTrigger)
 class SyncTrigger: NSObject {
- @objc
-  func runSync() -> Void {
-   print("[SyncTrigger]: runSync");
-   let mediaSync = MediaSync();
-   mediaSync.syncMedia();
- }
+  @objc
+  func runSync() async -> Void {
+    print("[SyncTrigger]: runSync");
+    let mediaSync = MediaSync();
+    await mediaSync.syncMedia();
+  }
   
   @objc
-  static func runStaticSync() -> Void {
-   print("[SyncTrigger]: runSync");
-   let mediaSync = MediaSync();
-   mediaSync.syncMedia();
- }
+  static func runStaticSync(completion: @escaping (Bool) -> Void) {
+    Task {
+      print("[SyncTrigger]: runSync");
+      let mediaSync = MediaSync();
+      await mediaSync.syncMedia();
+      completion(true)
+    }
+  }
 }

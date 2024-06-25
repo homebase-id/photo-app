@@ -15,10 +15,10 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
-
+  
   // Register the background task
   [[BGTaskScheduler sharedScheduler] registerForTaskWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync" usingQueue:nil launchHandler:^(__kindof BGTask * _Nonnull task) {
-      [self handleMediaSync:task];
+    [self handleMediaSync:task];
   }];
   
   [self scheduleMediaSync];
@@ -42,36 +42,36 @@
 }
 
 - (BOOL)application:(UIApplication *)application
-   openURL:(NSURL *)url
-   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
   return [RCTLinkingManager application:application openURL:url options:options];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    [self scheduleMediaSync];
+  [self scheduleMediaSync];
 }
 
 - (void)scheduleMediaSync {
-    BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync"];
-    request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15 * 60]; // 15 minutes from now
-
-    NSError *error = nil;
-    BOOL success = [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
-    if (!success) {
-        NSLog(@"Could not schedule media sync: %@", error);
-    }
+  BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync"];
+  request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15 * 60]; // 15 minutes from now
+  
+  NSError *error = nil;
+  BOOL success = [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
+  if (!success) {
+    NSLog(@"Could not schedule media sync: %@", error);
+  }
 }
 
 - (void)handleMediaSync:(BGAppRefreshTask *)task {
-    task.expirationHandler = ^{
-        // Clean up any unfinished business before the task expires
-    };
-
-    [SyncTrigger runStaticSync];
-
-    [task setTaskCompletedWithSuccess:YES];
+  task.expirationHandler = ^{
+    // Clean up any unfinished business before the task expires
+  };
+  
+  [SyncTrigger runStaticSyncWithCompletion:^(BOOL success) {
+    [task setTaskCompletedWithSuccess:success];
     [self scheduleMediaSync]; // Schedule the next background task
+  }];
 }
 
 @end

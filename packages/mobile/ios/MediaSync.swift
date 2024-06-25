@@ -11,8 +11,7 @@ import Photos
 import UniformTypeIdentifiers
 
 class MediaSync {
-
-  func syncMedia () -> Void {
+  func syncMedia () async -> Void {
     let isDebug: Bool = true
     let storage = getStorage()
 
@@ -62,7 +61,7 @@ class MediaSync {
       storage?.set(Date().timeIntervalSince1970 * 1000, forKey: "lastSyncTimeAsNumber")
     }
 
-    Task {
+    
       await withTaskGroup(of: Void.self) { taskGroup in
         for index in 0..<fetchResult.count {
           taskGroup.addTask {
@@ -123,7 +122,7 @@ class MediaSync {
           // Wait for the current task to complete before starting the next one
           await taskGroup.waitForAll()
         }
-      }
+      
 
       print("[SyncWorker] MediaSync finished")
       // Everything is processed, so we set current time as last sync time
