@@ -10,7 +10,7 @@ import CryptoKit
 import Alamofire
 
 extension DriveFileUploadProvider {
-  static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], encrypt: Bool) throws -> UploadResult  {
+  static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], encrypt: Bool, completion: @escaping UploadCompletionHandler) throws -> Void  {
     print("[SyncWorker] Upload");
 
     // Implement the uploadFile logic
@@ -25,7 +25,7 @@ extension DriveFileUploadProvider {
     let encryptedDescriptor = try buildDescriptor(dotYouClient: dotYouClient, keyHeader: keyHeader, instructions: updatedInstructions, metadata: mutableMetadata)
     let formData = try buildFormData(instructions: updatedInstructions, encryptedDescriptor: encryptedDescriptor, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader, manifest: manifest)
 
-    return try pureUpload(dotYouClient: dotYouClient, data: formData)
+    return try pureUpload(dotYouClient: dotYouClient, data: formData, completion: completion)
   }
 
   static func buildManifest(payloads: [PayloadBase], thumbnails: [ThumbnailBase], generateIv: Bool) -> UploadManifest {
@@ -123,18 +123,34 @@ extension DriveFileUploadProvider {
     return formData
   }
 
-  static func pureUpload(dotYouClient: DotYouClient, data: MultipartFormData) throws -> UploadResult  {
+  typealias UploadCompletionHandler = (Result<String?, Error>) -> Void
+  static func pureUpload(dotYouClient: DotYouClient, data: MultipartFormData, completion: @escaping UploadCompletionHandler
+) throws -> Void  {
     AF.upload(
       multipartFormData: data,
       to:dotYouClient.endpoint + "/drive/files/upload",
       usingThreshold: UInt64.init(),
       method: .post,
       headers: HTTPHeaders(dotYouClient.headers)
-    ).responseString { response in
-      debugPrint("Response: \(response)")
+    )
+    .validate(statusCode: 200..<401)
+    .responseString { response in
+      // Handle the response
+      switch response.result {
+      case .success(let data):
+        let result = JsonParser.parseJson(jsonString: data);
+        
+        if(response.response?.statusCode == 200 ){
+          completion(.success(data))
+        } else if(result?["errorCode"] as! String == "existingFileWithUniqueId"){
+          completion(.success(data))
+        } else {
+          completion(.failure(NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Upload failed with a bad request"])))
+        }
+      case .failure(let error):
+          completion(.failure(error))
+      }
     }
-
-    return BadRequestUploadResult()
   }
 
   static func generateKeyHeader() -> KeyHeader {
@@ -338,4 +354,38 @@ struct DescriptorData : Codable {
     }
     return "{}"
   }
+}
+
+class JsonParser {
+  static func parseJson(jsonString: String) -> [String: Any]? {
+    if let jsonData = jsonString.data(using: .utf8) {
+      do {
+        let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
+        if let dictionary = jsonObject as? [String: Any] {
+            return dictionary
+        }
+      } catch {
+        print("Failed to parse JSON: \(error.localizedDescription)")
+      }
+    }
+    
+    return nil
+  }
+  
+ static func traverseJSON(_ json: Any, parentKey: String = "") {
+      if let dictionary = json as? [String: Any] {
+          for (key, value) in dictionary {
+              let fullKey = parentKey.isEmpty ? key : "\(parentKey).\(key)"
+              traverseJSON(value, parentKey: fullKey)
+          }
+      } else if let array = json as? [Any] {
+          for (index, value) in array.enumerated() {
+              let fullKey = "\(parentKey)[\(index)]"
+              traverseJSON(value, parentKey: fullKey)
+          }
+      } else {
+          print("\(parentKey): \(json)")
+      }
+  }
+
 }

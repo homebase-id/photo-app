@@ -73,7 +73,7 @@ class MediaSync {
         guard let input = input, let fileURL = input.fullSizeImageURL else { return }
         
         let filePath = fileURL.path
-        let timestampInMillis = asset.creationDate?.timeIntervalSince1970 ?? 0 * 1000
+        let timestampInMillis = (asset.creationDate?.timeIntervalSince1970 ?? 0) * 1000
         
         let resources = PHAssetResource.assetResources(for: asset)
         let uniformTypeIdentifier = resources.first?.uniformTypeIdentifier ?? "public.jpeg"
@@ -97,24 +97,18 @@ class MediaSync {
         }
         
         do {
-          let result = try MediaProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality)
-          
-          
-          switch result {
-          case is SuccessfulUploadResult:
-            print("[SyncWorker] MediaItem uploaded: \(result)")
-            //mmkv.set(timestampInMillis, forKey: "lastSyncTimeAsNumber") // We update the last sync time to the timestamp of the photo so we can continue where we left off if the task is interrupted
-          case let badResult as BadRequestUploadResult:
-            if badResult.errorCode != "existingFileWithUniqueId" {
-              print("[SyncWorker] MediaItem failed to upload: \(result)")
-            } else {
-              print("[SyncWorker] MediaItem was already uploaded: \(result)")
-              //mmkv.set(timestampInMillis, forKey: "lastSyncTimeAsNumber") // We update the last sync time to the timestamp of the photo so we can continue where we left off if the task is interrupted
+          try MediaProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality) { result in
+            switch result {
+            case .success(let data):
+              if let data = data {
+                print("Upload successful! Response data: \(data)")
+              } else {
+                print("Upload successful! No response data.")
+              }
+            case .failure(let error):
+              print("Upload failed with error: \(error.localizedDescription)")
             }
-          default:
-            break
           }
-          
         } catch {
           print("[SyncWorker] Error uploading media: \(error.localizedDescription)")
           // Continue with the next iteration of the loop
