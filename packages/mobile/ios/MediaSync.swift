@@ -65,11 +65,12 @@ class MediaSync {
       storage?.set(Date().timeIntervalSince1970, forKey: "lastSyncTimeAsNumber")
     }
     
-    fetchResult.enumerateObjects { (asset, index, stop) in
-      let options = PHContentEditingInputRequestOptions()
-      options.isNetworkAccessAllowed = true
-      
-      asset.requestContentEditingInput(with: options) { (input, info) in
+    fetchResult.enumerateObjects { asset, index, stop in
+      Task {
+        let options = PHContentEditingInputRequestOptions()
+        options.isNetworkAccessAllowed = true
+        
+        let (input, info) = await self.requestContentEditingInput(asset: asset)
         guard let input = input, let fileURL = input.fullSizeImageURL else { return }
         
         let filePath = fileURL.path
@@ -97,17 +98,17 @@ class MediaSync {
         }
         
         do {
-          try MediaProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality) { result in
-            switch result {
-            case .success(let data):
-              if let data = data {
-                print("Upload successful! Response data: \(data)")
-              } else {
-                print("Upload successful! No response data.")
-              }
-            case .failure(let error):
-              print("Upload failed with error: \(error.localizedDescription)")
+          let result = try await MediaProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality);
+          
+          if(result is SuccessfulUploadResult) {
+            print("Upload successful!")
+
+          } else if(result is BadRequestUploadResult) {
+            if((result as! BadRequestUploadResult).errorCode == "existingFileWithUniqueId") {
+              print("Upload failed! Media already exists")
             }
+          }else{
+            print("Upload failed! :shrug:")
           }
         } catch {
           print("[SyncWorker] Error uploading media: \(error.localizedDescription)")
@@ -127,5 +128,15 @@ class MediaSync {
     let path = (first as NSString).appendingPathComponent("mmkv")
     MMKV.initialize(rootDir: path as String)
     return MMKV.init(mmapID: "default")
+  }
+  
+  func requestContentEditingInput(asset: PHAsset) async -> (input: PHContentEditingInput?, info: [AnyHashable : Any]?) {
+    await withCheckedContinuation { continuation in
+      let options = PHContentEditingInputRequestOptions()
+      options.isNetworkAccessAllowed = true
+      asset.requestContentEditingInput(with: options) { input, info in
+        continuation.resume(returning: (input, info))
+      }
+    }
   }
 }

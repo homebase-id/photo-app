@@ -18,7 +18,7 @@ class MediaProvider {
     ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 95, format: "jpeg")
   ]
 
-  static func uploadMedia(dotYouClient: DotYouClient, filePath: String, timestampInMs: Int64, mimeType: String, identifier: String?, width: Int, height: Int, forceLowerQuality: Bool, completion: @escaping DriveFileUploadProvider.UploadCompletionHandler) throws -> Void {
+  static func uploadMedia(dotYouClient: DotYouClient, filePath: String, timestampInMs: Int64, mimeType: String, identifier: String?, width: Int, height: Int, forceLowerQuality: Bool) async throws -> UploadResult {
     let instructions = UploadInstructionSet(storageOptions: StorageOptions(drive: photoDrive), transitOptions: nil, transferIv: nil, manifest: nil)
 
     if #available(iOS 15.0, *) {
@@ -54,7 +54,7 @@ class MediaProvider {
 
     let thumbnails = try ImageResizer.resizeImage(filePath: filePath, instructions: defaultImageSizes, key: defaultPayloadKey)
 
-    try DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encrypt: encryptMedia, completion: completion)
+    return try await DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encrypt: encryptMedia)
   }
 
   static func toGuidId(input: String) throws -> String {
