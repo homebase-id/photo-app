@@ -4,6 +4,8 @@
 // iOS 9.x or newer
 #import <React/RCTLinkingManager.h>
 #import <CodePush/CodePush.h>
+#import <BackgroundTasks/BackgroundTasks.h>
+#import "HomebasePhotos-Swift.h"
 
 @implementation AppDelegate
 
@@ -14,6 +16,13 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
 
+  // Register the background task
+  [[BGTaskScheduler sharedScheduler] registerForTaskWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync" usingQueue:nil launchHandler:^(__kindof BGTask * _Nonnull task) {
+      [self handleMediaSync:task];
+  }];
+  
+  [self scheduleMediaSync];
+  
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
@@ -37,6 +46,32 @@
    options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
   return [RCTLinkingManager application:application openURL:url options:options];
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    [self scheduleMediaSync];
+}
+
+- (void)scheduleMediaSync {
+    BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync"];
+    request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15 * 60]; // 15 minutes from now
+
+    NSError *error = nil;
+    BOOL success = [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
+    if (!success) {
+        NSLog(@"Could not schedule media sync: %@", error);
+    }
+}
+
+- (void)handleMediaSync:(BGAppRefreshTask *)task {
+    task.expirationHandler = ^{
+        // Clean up any unfinished business before the task expires
+    };
+
+    [SyncTrigger runStaticSync];
+
+    [task setTaskCompletedWithSuccess:YES];
+    [self scheduleMediaSync]; // Schedule the next background task
 }
 
 @end

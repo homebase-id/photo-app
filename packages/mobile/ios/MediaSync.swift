@@ -16,8 +16,6 @@ class MediaSync {
     let isDebug: Bool = true
     let storage = getStorage()
 
-
-
     let syncEnabled: Bool = storage?.bool(forKey: "syncFromCameraRollAsBoolean") ?? false
     let identity: String = storage?.string(forKey: "identity") ?? ""
     let cat: String = storage?.string(forKey: "bx0900") ?? ""
