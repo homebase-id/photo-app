@@ -19,16 +19,11 @@ extension DriveFileUploadProvider {
 
     let keyHeader = encrypt ? generateKeyHeader() : nil
     let manifest = buildManifest(payloads: payloads, thumbnails: thumbnails, generateIv: encrypt)
-    print("[SyncWorker] Got manifest");
 
     let updatedInstructions = UploadInstructionSet(storageOptions: instructions.storageOptions, transitOptions: instructions.transitOptions, transferIv: instructions.transferIv ?? getRandom16ByteArray(), manifest: manifest)
-    print("[SyncWorker] Got updatedInstructions");
 
     let encryptedDescriptor = try buildDescriptor(dotYouClient: dotYouClient, keyHeader: keyHeader, instructions: updatedInstructions, metadata: mutableMetadata)
-    print("[SyncWorker] Got encryptedDescriptor");
     let formData = try buildFormData(instructions: updatedInstructions, encryptedDescriptor: encryptedDescriptor, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader, manifest: manifest)
-    print("[SyncWorker] Got Form Data");
-
 
     return try pureUpload(dotYouClient: dotYouClient, data: formData)
   }
@@ -62,7 +57,7 @@ extension DriveFileUploadProvider {
       throw NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Transfer IV is required"])
     }
 
-    let descriptorData = DescriptorData(encryptedKeyHeader: Data(), fileMetadata: metadata)
+    let descriptorData = DescriptorData(encryptedKeyHeader: try CryptoUtil.encryptKeyHeader( dotYouClient: dotYouClient, keyHeader: keyHeader != nil ? keyHeader! : getEmptyKeyHeader(), transferIv: instructions.transferIv!), fileMetadata: metadata)
     let jsonString = descriptorData.toJsonString()
     let content = jsonString.data(using: .utf8)
 
@@ -76,64 +71,59 @@ extension DriveFileUploadProvider {
     if let instructionsData = instructions.toJsonString().data(using: .utf8) {
       formData.append(instructionsData, withName: "instructions", fileName: "instructions.json", mimeType: "application/octet-stream")
     }
-    print("[SyncWorker] Appended instructions");
 
     // Add encrypted descriptor if available
     formData.append(encryptedDescriptor, withName: "metaData", fileName: "metadata.bin", mimeType: "application/octet-stream")
-    print("[SyncWorker] Appended encrypteDescriptor");
 
     // Add payloads and thumbnails as streams
     for payload in payloads {
       if let keyHeader = keyHeader {
         if let payloadFile = payload as? PayloadFile {
           let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(file: payloadFile.filePath, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
-          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
+          formData.append(encryptedPayload.stream, withLength: encryptedPayload.count, name: "payload", fileName: payload.key, mimeType: payload.contentType)
 
         } else if let payloadStream = payload as? PayloadStream {
-          let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(stream: payloadStream.inputStream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
-          formData.append(encryptedPayload, withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
+          let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(stream: payloadStream.inputStream.stream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
+          formData.append(encryptedPayload.stream, withLength: encryptedPayload.count, name: "payload", fileName: payload.key, mimeType: payload.contentType)
         } else {
           continue
         }
       } else {
         if let payloadFile = payload as? PayloadFile {
           if #available(iOS 16.0, *) {
-            formData.append(InputStream(url: URL.init(filePath: payloadFile.filePath))! , withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
+            formData.append(InputStream(fileAtPath: payloadFile.filePath)!, withLength: try FileManager.default.attributesOfItem(atPath: payloadFile.filePath)[.size] as! UInt64, name: "payload", fileName: payload.key, mimeType: payload.contentType)
           } else {
             // Fallback on earlier versions
           }
         } else if let payloadStream = payload as? PayloadStream {
-          formData.append(payloadStream.inputStream, withLength: 10, name: "payload", fileName: payload.key, mimeType: payload.contentType)
+          formData.append(payloadStream.inputStream.stream, withLength: payloadStream.inputStream.count, name: "payload", fileName: payload.key, mimeType: payload.contentType)
         } else {
           continue
         }
       }
     }
-    print("[SyncWorker] Appended payloads");
 
     for thumb in thumbnails {
       if let keyHeader = keyHeader {
         if let thumbStream = thumb as? ThumbnailStream {
-          let encryptedThumb = try CryptoUtil.encryptWithKeyHeader(stream: thumbStream.inputStream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: thumb.key))
-          formData.append(encryptedThumb, withLength: 0, name: "thumbnail", fileName: thumb.key + String(thumb.pixelWidth), mimeType: thumb.contentType);
+          let encryptedThumb = try CryptoUtil.encryptWithKeyHeader(stream: thumbStream.inputStream.stream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: thumb.key))
+          formData.append(encryptedThumb.stream, withLength: encryptedThumb.count, name: "thumbnail", fileName: thumb.key + String(thumb.pixelWidth), mimeType: thumb.contentType);
         } else {
           continue
         }
       } else {
         if let thumbStream = thumb as? ThumbnailStream {
-          formData.append(thumbStream.inputStream, withLength: 0, name: "thumbnail", fileName: thumb.key + String(thumb.pixelWidth), mimeType: thumb.contentType);
+          formData.append(thumbStream.inputStream.stream, withLength: thumbStream.inputStream.count, name: "thumbnail", fileName: thumb.key + String(thumb.pixelWidth), mimeType: thumb.contentType);
         } else {
           continue
         }
       }
     }
-    print("[SyncWorker] Appended thumbnails");
 
     return formData
   }
 
   static func pureUpload(dotYouClient: DotYouClient, data: MultipartFormData) throws -> UploadResult  {
-    print("formData size: " + String(data.contentLength))
     AF.upload(
       multipartFormData: data,
       to:dotYouClient.endpoint + "/drive/files/upload",
@@ -142,19 +132,23 @@ extension DriveFileUploadProvider {
       headers: HTTPHeaders(dotYouClient.headers)
     ).responseString { response in
       debugPrint("Response: \(response)")
-  }
+    }
 
     return BadRequestUploadResult()
   }
 
   static func generateKeyHeader() -> KeyHeader {
     // Generate key header
-    return KeyHeader(iv: Data(), aesKey: SymmetricKey(size: .bits128))
+    return KeyHeader(iv: getRandom16ByteArray(), aesKey: getRandom16ByteArray())
   }
 
   static func getRandom16ByteArray() -> Data {
     // Generate random 16-byte array
     return SymmetricKey(size: .bits128).withUnsafeBytes { Data($0) }
+  }
+  
+  static func getEmptyKeyHeader() -> KeyHeader {
+    return KeyHeader(iv: Data(repeating: 0, count: 16), aesKey: Data(repeating: 0, count: 16) )
   }
 }
 
@@ -257,22 +251,21 @@ struct UploadInstructionSet :Codable {
   var manifest: UploadManifest?
 
   func toJsonString() -> String {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = .prettyPrinted
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .prettyPrinted
 
-      // Custom data encoding strategy for `Data`
-      encoder.dataEncodingStrategy = .base64
+    // Custom data encoding strategy for `Data`
+    encoder.dataEncodingStrategy = .base64
 
-      do {
-          let jsonData = try encoder.encode(self)
-          if let jsonString = String(data: jsonData, encoding: .utf8) {
-            print("UploadInstructionSet: " + jsonString)
-              return jsonString
-          }
-      } catch {
-          print("Failed to convert to JSON string: \(error)")
+    do {
+      let jsonData = try encoder.encode(self)
+      if let jsonString = String(data: jsonData, encoding: .utf8) {
+        return jsonString
       }
-      return "{}"
+    } catch {
+      print("Failed to convert to JSON string: \(error)")
+    }
+    return "{}"
   }
 }
 
@@ -283,27 +276,21 @@ struct TransitOptions  :Codable {
 struct UploadAppFileMetaData<T: Codable> :Codable {
   let uniqueId: String
   let tags: [String]
-  let fileSize: Int
-  let resolution: Int
-  let timestamp: Int64
-  let additionalMetaData: String?
-  let archivalStatus: ArchivalStatus
-  let comments: String
-  let embeddedThumb: EmbeddedThumb?
-  let content:  String
-}
-
-enum ArchivalStatus :Codable {
-  case none
+  let fileType: Int
+  let dataType: Int
+  let userDate: Int64
+  let groupId: String?
+  let archivalStatus: Int
+  var content:  String
+  var previewThumbnail: EmbeddedThumb?
 }
 
 struct UploadFileMetadata<T: Codable>: Codable {
-  let isPublic: Bool
+  let allowDistribution: Bool
   var isEncrypted: Bool
   let acl: AccessControlList
-  let metaData: UploadAppFileMetaData<T>
-  let extra: String?
-  let thumbnail: String?
+  var appData: UploadAppFileMetaData<T>
+  let referencedFile: String?
 
   mutating func setIsEncrypted(_ encrypt: Bool) {
     self.isEncrypted = encrypt
@@ -320,28 +307,35 @@ class BadRequestUploadResult: UploadResult {
 
 struct KeyHeader {
   var iv: Data
-  var aesKey: SymmetricKey
+  var aesKey: Data
+}
+
+struct EncryptedKeyHeader : Codable {
+  var iv: Data
+  var encryptedAesKey: Data
+  var encryptionVersion: Int
+  var type: Int
 }
 
 struct DescriptorData : Codable {
-  var encryptedKeyHeader: Data
+  var encryptedKeyHeader: EncryptedKeyHeader
   var fileMetadata: UploadFileMetadata<String>
 
   func toJsonString() -> String {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = .prettyPrinted
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .prettyPrinted
 
-      // Custom data encoding strategy for `Data`
-      encoder.dataEncodingStrategy = .base64
+    // Custom data encoding strategy for `Data`
+    encoder.dataEncodingStrategy = .base64
 
-      do {
-          let jsonData = try encoder.encode(self)
-          if let jsonString = String(data: jsonData, encoding: .utf8) {
-              return jsonString
-          }
-      } catch {
-          print("Failed to convert to JSON string: \(error)")
+    do {
+      let jsonData = try encoder.encode(self)
+      if let jsonString = String(data: jsonData, encoding: .utf8) {
+        return jsonString
       }
-      return "{}"
+    } catch {
+      print("Failed to convert to JSON string: \(error)")
+    }
+    return "{}"
   }
 }

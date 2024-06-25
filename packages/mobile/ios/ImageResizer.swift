@@ -22,7 +22,7 @@ extension ImageResizer {
     }
     
     if let stream = createImageStream(from: resizedImage, format: instruction.format) {
-      return ThumbnailStream(pixelHeight: resizedImage.height, pixelWidth: resizedImage.width, contentType: instruction.format, key: key, inputStream: stream)
+      return ThumbnailStream(pixelHeight: resizedImage.height, pixelWidth: resizedImage.width, contentType: "image/" + instruction.format, key: key, inputStream: stream)
     }
     
     return nil;
@@ -42,7 +42,7 @@ extension ImageResizer {
       }
       
       if let stream = createImageStream(from: resizedImage, format: instruction.format) {
-        streams.append(ThumbnailStream(pixelHeight: resizedImage.height, pixelWidth: resizedImage.width, contentType: instruction.format, key: key, inputStream: stream))
+        streams.append(ThumbnailStream(pixelHeight: resizedImage.height, pixelWidth: resizedImage.width, contentType: "image/" + instruction.format, key: key, inputStream: stream))
       }
     }
     
@@ -68,7 +68,7 @@ extension ImageResizer {
     return context?.makeImage()
   }
   
-  static func createImageStream(from image: CGImage, format: String) -> InputStream? {
+  static func createImageStream(from image: CGImage, format: String) -> (stream: InputStream, count:UInt64)? {
     let data = NSMutableData()
     guard let destination = CGImageDestinationCreateWithData(data as CFMutableData, formatUTI(for: format) as CFString, 1, nil) else {
       print("Failed to create image destination.")
@@ -81,7 +81,7 @@ extension ImageResizer {
       return nil
     }
     
-    return InputStream(data: data as Data)
+    return (stream: InputStream(data: data as Data), count: UInt64(data.count))
   }
   
   static func formatUTI(for format: String) -> String {
@@ -96,32 +96,6 @@ extension ImageResizer {
       return kUTTypeJPEG as String
     }
   }
-
-  static func base64Encode(stream: InputStream) -> String? {
-      stream.open()
-      defer {
-          stream.close()
-      }
-      
-      let bufferSize = 1024
-      var buffer = [UInt8](repeating: 0, count: bufferSize)
-      var data = Data()
-      
-      while stream.hasBytesAvailable {
-          let read = stream.read(&buffer, maxLength: bufferSize)
-          if read < 0 {
-              print("Error reading stream: \(stream.streamError?.localizedDescription ?? "Unknown error")")
-              return nil
-          } else if read == 0 {
-              break
-          }
-          data.append(buffer, count: read)
-      }
-      
-      return data.base64EncodedString()
-  }
-
-  
 }
 
 struct ImageResizer {
@@ -146,7 +120,7 @@ struct ThumbnailStream: ThumbnailBase {
   let contentType: String
   let key: String
   
-  let inputStream: InputStream
+  let inputStream: (stream: InputStream, count: UInt64)
 }
 
 protocol PayloadBase {
@@ -163,7 +137,7 @@ struct PayloadStream: PayloadBase {
   let contentType: String
   let key: String
   
-  let inputStream: InputStream
+  let inputStream: (stream: InputStream, count: UInt64)
 }
 
 struct PayloadFile: PayloadBase {
@@ -180,5 +154,5 @@ struct EmbeddedThumb :Codable {
   let pixelHeight: Int
   let pixelWidth: Int
   let contentType: String
-  let base64: String
+  let content: String
 }

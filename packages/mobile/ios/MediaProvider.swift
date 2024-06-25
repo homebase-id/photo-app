@@ -27,16 +27,15 @@ class MediaProvider {
     let tinyThumb = try ImageResizer.resizeImage(filePath: filePath, instruction: tinyThumbInstruction, key: defaultPayloadKey)
     var previewThumbnail: EmbeddedThumb?
     if(tinyThumb != nil) {
-      previewThumbnail = EmbeddedThumb(pixelHeight: tinyThumb!.pixelHeight, pixelWidth: tinyThumb!.pixelWidth, contentType: tinyThumb!.contentType, base64: ImageResizer.base64Encode(stream: tinyThumb!.inputStream)!)
+      previewThumbnail = EmbeddedThumb(pixelHeight: tinyThumb!.pixelHeight, pixelWidth: tinyThumb!.pixelWidth, contentType: tinyThumb!.contentType, content: CryptoUtil.base64Encode(stream: tinyThumb!.inputStream.stream)!)
     }
     
     let metadata = UploadFileMetadata<String>(
-      isPublic: false,
+      allowDistribution: false,
       isEncrypted: encryptMedia,
       acl: ownerOnlyACL,
-      metaData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileSize: 0, resolution: 0, timestamp: timestampInMs, additionalMetaData: nil, archivalStatus: .none, comments: "", embeddedThumb: previewThumbnail, content: ""),
-      extra: nil,
-      thumbnail: nil
+      appData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileType: 0, dataType: 0, userDate: timestampInMs, groupId: nil, archivalStatus: 0, content: "", previewThumbnail: previewThumbnail),
+      referencedFile: nil
     )
     
     let payload: PayloadBase

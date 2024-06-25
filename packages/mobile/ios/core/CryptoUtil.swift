@@ -10,9 +10,38 @@ import CryptoKit
 import CommonCrypto
 
 class CryptoUtil {
-  // Assuming you have the following methods and types:
+  static func encryptKeyHeader(dotYouClient: DotYouClient, keyHeader: KeyHeader, transferIv: Data) throws -> EncryptedKeyHeader {
+      guard let sharedSecret = dotYouClient.sharedSecret else {
+          throw NSError(domain: "MissingSharedSecret", code: -1, userInfo: [NSLocalizedDescriptionKey: "Attempting to encrypt but missing the shared secret"])
+      }
+
+      // Combine keyHeader.iv and keyHeader.aesKey
+      var combined = Data()
+      combined.append(keyHeader.iv)
+      combined.append(keyHeader.aesKey)
+
+      // Perform the encryption using cbcEncrypt
+      let cipher = try cbcEncrypt(data: combined, iv: transferIv, key: sharedSecret)
+
+      return EncryptedKeyHeader(
+          iv: transferIv,
+          encryptedAesKey: cipher,
+          encryptionVersion: 1,
+          type: 11
+      )
+  }
   
-  static func encryptWithKeyHeader(file: String, keyHeader: KeyHeader) throws -> InputStream {
+ 
+  static func encryptMetaData(metadata: UploadFileMetadata<String>, keyHeader: KeyHeader ) throws -> UploadFileMetadata<String> {
+    var encryptedMetadata = metadata
+    
+    let encryptedContent = try encryptWithKeyHeader(file: encryptedMetadata.appData.content, keyHeader: keyHeader);
+    encryptedMetadata.appData.content = base64Encode(stream: encryptedContent.stream)!;
+    
+    return encryptedMetadata;
+  }
+  
+  static func encryptWithKeyHeader(file: String, keyHeader: KeyHeader) throws -> (stream: InputStream, count: UInt64) {
     print("[SyncWorker] file: " + file);
     
     guard let inputStream = InputStream(fileAtPath: file) else {
@@ -22,9 +51,8 @@ class CryptoUtil {
     return try encryptWithKeyHeader(stream: inputStream, keyHeader: keyHeader)
   }
   
-  static func encryptWithKeyHeader(stream: InputStream, keyHeader: KeyHeader) throws -> InputStream {
-    // Initialize the encryption operation
-    let keyData = keyHeader.aesKey.withUnsafeBytes { Data($0) }
+  static func encryptWithKeyHeader(stream: InputStream, keyHeader: KeyHeader) throws -> (stream: InputStream, count: UInt64) {
+    let keyData = keyHeader.aesKey
     var iv = keyHeader.iv
     
     let outputStream = OutputStream(toMemory: ())
@@ -50,7 +78,7 @@ class CryptoUtil {
       let bufferSize = inputData.count + blockSize
       var encryptedBuffer = [UInt8](repeating: 0, count: bufferSize)
       
-      var numBytesEncrypted: size_t = -1
+      var numBytesEncrypted: size_t = 0
       let result = encryptedBuffer.withUnsafeMutableBytes { encryptedBytes in
         CCCrypt(CCOperation(kCCEncrypt),
                 CCAlgorithm(kCCAlgorithmAES),
@@ -69,17 +97,23 @@ class CryptoUtil {
         throw NSError(domain: "Encryption failed", code: Int(result), userInfo: nil)
       }
       
+      if(numBytesEncrypted < 2 * blockSize) {
+        print("It's going bad...");
+      }
+      
       // Get the last 16 bytes (padding) of the encrypted data
       lastPadding = Data(encryptedBuffer[(numBytesEncrypted - blockSize)..<numBytesEncrypted])
       
       // Remove the padding from the encrypted data
       numBytesEncrypted -= blockSize
       
-      if(numBytesEncrypted < (blockSize * 2)) {
+      if(numBytesEncrypted == 0) {
+        print("number of bytes is zero");
+        break;
         // Appaerently this is expected at the end... :shrug:
-      }else{
-      // Copy the last block of the encrypted data into the iv (without padding)
-      iv = Data(encryptedBuffer[(numBytesEncrypted - blockSize)..<numBytesEncrypted])
+      } else {
+        // Copy the last block of the encrypted data into the iv (without padding)
+        iv = Data(encryptedBuffer[(numBytesEncrypted - blockSize)..<numBytesEncrypted])
       }
       
       // Write the encrypted data to the output stream
@@ -93,11 +127,11 @@ class CryptoUtil {
     }
     
     let encryptedData = outputStream.property(forKey: .dataWrittenToMemoryStreamKey) as! Data
-    return InputStream(data: encryptedData)
+    return (stream: InputStream(data: encryptedData), count: UInt64(encryptedData.count))
   }
   
   static func innerEncrypt(iv: Data, key: Data, data: Data) throws -> Data {
-    let keyLength = kCCKeySizeAES256
+    let keyLength = kCCKeySizeAES128
     let ivLength = kCCBlockSizeAES128
     let options = CCOptions(kCCOptionPKCS7Padding)
 
@@ -143,12 +177,38 @@ class CryptoUtil {
     let payloadDescriptors = manifest.payloadDescriptors;
 
     for descriptor in payloadDescriptors {
-        if descriptor.payloadKey == payloadKey, let descriptorIV = descriptor.iv {
-            return KeyHeader(iv: descriptorIV, aesKey: keyHeader.aesKey)
+        if descriptor.payloadKey == payloadKey {
+          if(descriptor.iv != nil) {
+            return KeyHeader(iv: descriptor.iv!, aesKey: keyHeader.aesKey)
+          }
         }
     }
 
     return keyHeader
+  }
+
+  static func base64Encode(stream: InputStream) -> String? {
+      stream.open()
+      defer {
+          stream.close()
+      }
+      
+      let bufferSize = 1024
+      var buffer = [UInt8](repeating: 0, count: bufferSize)
+      var data = Data()
+      
+      while stream.hasBytesAvailable {
+          let read = stream.read(&buffer, maxLength: bufferSize)
+          if read < 0 {
+              print("Error reading stream: \(stream.streamError?.localizedDescription ?? "Unknown error")")
+              return nil
+          } else if read == 0 {
+              break
+          }
+          data.append(buffer, count: read)
+      }
+      
+      return data.base64EncodedString()
   }
 
 }
