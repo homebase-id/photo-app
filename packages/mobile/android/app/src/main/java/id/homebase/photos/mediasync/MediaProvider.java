@@ -31,10 +31,10 @@ public class MediaProvider {
     private static final boolean ENCRYPT_MEDIA = true;
     private static final TargetDrive PHOTO_DRIVE = new TargetDrive("6483b7b1f71bd43eb6896c86148668cc", "2af68fe72fb84896f39f97c59d60813a");
     private static final AccessControlList OWNER_ONLY_ACL = new AccessControlList(SecurityGroupType.OWNER);
-    private static final ImageResizer.ResizeInstruction TINY_THUMB_INSTRUCTION = new ImageResizer.ResizeInstruction(20, 20, 10, "jpg");
+    private static final ImageResizer.ResizeInstruction TINY_THUMB_INSTRUCTION = new ImageResizer.ResizeInstruction(20, 20, 10, "jpeg");
     private static final ImageResizer.ResizeInstruction[] DEFAULT_IMAGE_SIZES = new ImageResizer.ResizeInstruction[]{
-            new ImageResizer.ResizeInstruction(300, 300, 95, "jpg"),
-            new ImageResizer.ResizeInstruction(1200, 1200, 95, "jpg"),
+            new ImageResizer.ResizeInstruction(300, 300, 95, "jpeg"),
+            new ImageResizer.ResizeInstruction(1200, 1200, 95, "jpeg"),
     };
 
     public static UploadResult uploadMedia(DotYouClient dotYouClient, String filePath, Long timestampInMs, String mimeType, String identifier, String width, String height, boolean forceLowerQuality) throws Exception {
@@ -52,7 +52,7 @@ public class MediaProvider {
 
         PayloadBase payload;
         if (forceLowerQuality) {
-            ThumbnailStream payloadStream = ImageResizer.resizeImage(filePath, new ImageResizer.ResizeInstruction(1200, 1200, 80, "jpg"), DEFAULT_PAYLOAD_KEY, false);
+            ThumbnailStream payloadStream = ImageResizer.resizeImage(filePath, new ImageResizer.ResizeInstruction(1200, 1200, 80, "jpeg"), DEFAULT_PAYLOAD_KEY, false);
             payload = new PayloadStream(DEFAULT_PAYLOAD_KEY, payloadStream.getOutputStream(), null, mimeType, fileName);
         } else {
             payload = new PayloadFile(DEFAULT_PAYLOAD_KEY, filePath, null, mimeType, fileName);
