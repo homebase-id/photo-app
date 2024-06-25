@@ -11,7 +11,7 @@ import ImageIO
 import MobileCoreServices
 
 extension ImageResizer {
-  static func resizeImage(filePath: String, instruction: ResizeInstruction, key: String) throws -> ThumbnailStream? {
+  static func resizeImage(filePath: String, instruction: ResizeInstruction, key: String, keepDimensions: Bool) throws -> ThumbnailStream? {
     guard let imageSource = CGImageSourceCreateWithURL(URL(fileURLWithPath: filePath) as CFURL, nil) else {
       print("Failed to create image source.")
       return nil;
@@ -21,8 +21,12 @@ extension ImageResizer {
       return nil;
     }
     
+    let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as Dictionary?
+    let originalWidth = imageProperties?[kCGImagePropertyPixelWidth] as? Int
+    let originalHeight = imageProperties?[kCGImagePropertyPixelHeight] as? Int
+    
     if let stream = createImageStream(from: resizedImage, format: instruction.format) {
-      return ThumbnailStream(pixelHeight: resizedImage.height, pixelWidth: resizedImage.width, contentType: "image/" + instruction.format, key: key, inputStream: stream)
+      return ThumbnailStream(pixelHeight: (keepDimensions ? originalHeight : resizedImage.height)!, pixelWidth: (keepDimensions ? originalWidth : resizedImage.width)!, contentType: "image/" + instruction.format, key: key, inputStream: stream)
     }
     
     return nil;
@@ -60,12 +64,30 @@ extension ImageResizer {
       return nil
     }
     
-    let context = CGContext(data: nil, width: instruction.width, height: instruction.height, bitsPerComponent: thumbnail.bitsPerComponent, bytesPerRow: 0, space: thumbnail.colorSpace ?? CGColorSpaceCreateDeviceRGB(), bitmapInfo: thumbnail.bitmapInfo.rawValue)
+    let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as Dictionary?
+    let originalWidth = imageProperties?[kCGImagePropertyPixelWidth] as? Int ?? 0
+    let originalHeight = imageProperties?[kCGImagePropertyPixelHeight] as? Int ?? 0
+    
+    let scaledSize = calculateScaledSize(originalWidth: originalWidth, originalHeight: originalHeight, targetWidth: instruction.width, targetHeight: instruction.height)
+
+    let context = CGContext(data: nil, width: scaledSize.width, height: scaledSize.height, bitsPerComponent: thumbnail.bitsPerComponent, bytesPerRow: 0, space: thumbnail.colorSpace ?? CGColorSpaceCreateDeviceRGB(), bitmapInfo: thumbnail.bitmapInfo.rawValue)
     
     context?.interpolationQuality = .high
     context?.draw(thumbnail, in: CGRect(x: 0, y: 0, width: instruction.width, height: instruction.height))
     
     return context?.makeImage()
+  }
+  
+  static func calculateScaledSize(originalWidth: Int, originalHeight: Int, targetWidth: Int, targetHeight: Int) -> (width: Int, height: Int) {
+      let widthScale = CGFloat(targetWidth) / CGFloat(originalWidth)
+      let heightScale = CGFloat(targetHeight) / CGFloat(originalHeight)
+      let scale = min(widthScale, heightScale)
+
+      // Calculate the new dimensions
+      let width = Int(round(CGFloat(originalWidth) * scale))
+      let height = Int(round(CGFloat(originalHeight) * scale))
+
+      return (width, height)
   }
   
   static func createImageStream(from image: CGImage, format: String) -> (stream: InputStream, count:UInt64)? {

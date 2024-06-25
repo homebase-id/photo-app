@@ -24,7 +24,7 @@ class MediaProvider {
     let fileName = (filePath as NSString).lastPathComponent
     let uniqueId = try toGuidId(input: identifier ?? "\(fileName)_\(width)x\(height)")
     
-    let tinyThumb = try ImageResizer.resizeImage(filePath: filePath, instruction: tinyThumbInstruction, key: defaultPayloadKey)
+    let tinyThumb = try ImageResizer.resizeImage(filePath: filePath, instruction: tinyThumbInstruction, key: defaultPayloadKey, keepDimensions: true)
     var previewThumbnail: EmbeddedThumb?
     if(tinyThumb != nil) {
       previewThumbnail = EmbeddedThumb(pixelHeight: tinyThumb!.pixelHeight, pixelWidth: tinyThumb!.pixelWidth, contentType: tinyThumb!.contentType, content: CryptoUtil.base64Encode(stream: tinyThumb!.inputStream.stream)!)
@@ -40,7 +40,7 @@ class MediaProvider {
     
     let payload: PayloadBase
     if forceLowerQuality {
-      let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpg"), key: defaultPayloadKey)
+      let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpg"), key: defaultPayloadKey, keepDimensions: false)
       payload = PayloadStream(descriptorContent: nil, previewThumbnail: nil, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream)
     } else {
       payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: filePath)
