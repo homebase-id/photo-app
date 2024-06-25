@@ -14,10 +14,13 @@ import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
 import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
 
-const headlessSync = async () => {
+const MAX_BATCH = 10;
+module.exports = async (taskData?: any) => {
   const storage = new MMKVLoader().initialize();
   const customLog: string[] = [];
-  customLog.push(`Start sync ${new Date().toISOString()}`);
+  const log = (...msg: string[]) =>
+    customLog.push(...msg) && console.log(`[SyncWorker][HeadlessSync]`, msg);
+  log(`Start sync ${new Date().toISOString()}, args: ${JSON.stringify(taskData)}`);
 
   try {
     const getFromStorage = (key: string) =>
@@ -36,6 +39,7 @@ const headlessSync = async () => {
     const syncFromCameraRoll = await getBooleanFromStorage(SYNC_FROM_CAMERA_ROLL);
     if (!syncFromCameraRoll) return;
 
+    // Last sync time or starting last week
     const fromTime =
       (await getIntFromStorage(LAST_SYNC_TIME)) || new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
     const sharedSecret = await getFromStorage(APP_SHARED_SECRET);
@@ -71,34 +75,30 @@ const headlessSync = async () => {
         newPhoto,
         forceLowerQuality
       );
-      if (uploadResult && currentLib) {
-        currentLib = addDay(currentLib, uploadResult.userDate);
-      }
+      // TODO: Replace by invalidation of photo library cache
+      // if (uploadResult && currentLib) {
+      //   currentLib = addDay(currentLib, uploadResult.userDate);
+      // }
       return uploadResult;
     };
 
-    const { uploaded, errors } = await fetchAndUpload(fromTime, uploadPhoto);
+    const { uploaded, errors, lastTimestamp } = await fetchAndUpload(
+      fromTime,
+      MAX_BATCH,
+      uploadPhoto
+    );
     if (uploaded > 0 && currentLib) {
       await savePhotoLibraryMetadata(dotYouClient, currentLib, 'photos');
     }
 
-    customLog.push(
-      `Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`
-    );
-    customLog.push(...errors);
+    log(`Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`);
+    if (errors?.length) log(...errors);
 
-    console.log(
-      `Sync from ${fromTime}, uploaded ${uploaded} photos, with ${errors.length} errors.`
-    );
-    await storage.setInt(LAST_SYNC_TIME, new Date().getTime());
+    log(`Sync done with ${lastTimestamp}`);
+    await storage.setInt(LAST_SYNC_TIME, lastTimestamp);
   } catch (e: any) {
-    console.error('Error in headlessSync', e);
-    customLog.push('Error in headlessSync');
-    customLog.push(e.toString());
-    return;
+    log('Error in headlessSync', e.toString());
   }
 
   await storage.setItem('headlessSyncLog', JSON.stringify(customLog));
 };
-
-export default headlessSync;

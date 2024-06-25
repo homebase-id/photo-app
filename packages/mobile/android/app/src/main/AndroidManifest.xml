@@ -23,7 +23,9 @@
                 <data android:scheme="homebase-photos"/>
             </intent-filter>
         </activity>
+        <service android:name="id.homebase.photos.worker.PhotoMonitoringService" />
     </application>
+
 
     <supports-screens
             android:smallScreens="true"

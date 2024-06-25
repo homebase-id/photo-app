@@ -9,12 +9,12 @@ import {
 
 import { MediaUploadMeta } from '@youfoundation/js-lib/media';
 import {
-  usePhotoLibrary,
   PhotoConfig,
   FileLike,
   getPhotoMetadata,
   useDotYouClientContext,
   LibraryType,
+  useManagePhotoLibrary,
 } from 'photo-app-common';
 import { uploadNew } from '../../provider/photos/WebPhotoProvider';
 
@@ -22,10 +22,9 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
-  const { mutateAsync: addDayToLibrary } = usePhotoLibrary({
+  const invalidateLibrary = useManagePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    type: 'photos',
-  }).addDay;
+  }).invalidateLibrary;
 
   const uploadNewMedia = async ({
     newPhoto,
@@ -58,7 +57,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
       type = 'archive';
     }
 
-    await addDayToLibrary({ type, date: uploadResult.userDate });
+    invalidateLibrary(type);
 
     return { ...uploadResult, type };
   };

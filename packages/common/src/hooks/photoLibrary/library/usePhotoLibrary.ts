@@ -1,16 +1,30 @@
-import { DotYouClient, TargetDrive, UploadResult } from '@youfoundation/js-lib/core';
-import { getPhotos } from '../../../provider/photos/PhotoProvider';
+import {
+  DotYouClient,
+  HomebaseFile,
+  TargetDrive,
+  UploadResult,
+  queryBatch,
+  queryModified,
+} from '@youfoundation/js-lib/core';
+import { getArchivalStatusFromType, getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { LibraryType, PhotoLibraryMetadata } from '../../../provider/photos/PhotoTypes';
+import {
+  LibraryType,
+  PhotoConfig,
+  PhotoLibraryMetadata,
+} from '../../../provider/photos/PhotoTypes';
 import {
   addDay,
   buildMetaStructure,
   getPhotoLibrary,
-  mergeLibrary,
   savePhotoLibraryMetadata,
   updateCount,
 } from '../../../provider/photos/PhotoLibraryMetaProvider';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
+import {
+  getQueryBatchCursorFromTime,
+  getQueryModifiedCursorFromTime,
+} from '@youfoundation/js-lib/helpers';
 
 let saveScheduled = false;
 const isDebug = false;
@@ -44,44 +58,92 @@ export const usePhotoLibrary = ({
   type: LibraryType;
 }) => {
   const dotYouClient = useDotYouClientContext();
-  const queryClient = useQueryClient();
 
   const fetch = async (type: LibraryType): Promise<PhotoLibraryMetadata | null> => {
     if (!dotYouClient || !targetDrive) return null;
-    // Get meta file from client
-    const photoLibOnClient = queryClient.getQueryData<PhotoLibraryMetadata>([
-      'photo-library',
-      targetDrive.alias,
-      type,
-    ]);
 
     // Get meta file from server
     const photoLibOnServer = await getPhotoLibrary(
       dotYouClient,
       type,
-      photoLibOnClient?.lastCursor
     );
 
-    if (photoLibOnServer) {
-      // Merge with local cache
-      if (photoLibOnClient) {
-        const mergedLib = mergeLibrary(photoLibOnServer, photoLibOnClient);
-        isDebug && console.debug('[Metadata] get merged lib', mergedLib, { type });
-        return mergedLib;
-      }
+    if (photoLibOnServer && photoLibOnServer.lastUpdated) {
+      const newFilesSinceLastUpdate = await queryFilesSince(
+        photoLibOnServer.lastUpdated,
+        type
+      );
 
-      isDebug && console.debug('[Metadata] get lib from server', photoLibOnServer, { type });
-      return photoLibOnServer;
-    }
+      let runningServerLib = photoLibOnServer;
+      newFilesSinceLastUpdate.forEach((file) => {
+        if(file.fileMetadata.appData.userDate)
+          runningServerLib = addDay(photoLibOnServer, new Date(file.fileMetadata.appData.userDate));
+      });
 
-    if (photoLibOnClient) {
-      isDebug && console.debug('[Metadata] Server has no "new" lib, local cache is up to date');
-      return photoLibOnClient;
+      isDebug && console.debug('[Metadata] get lib from server', runningServerLib, { type });
+      return runningServerLib;
     }
 
     // No local cache and no server version... => rebuild
     return rebuildLibrary({ dotYouClient, targetDrive, type });
   };
+
+  const BATCH_SIZE = 2000;
+  const queryFilesSince = async (sinceInIms: number, type: LibraryType) => {
+    const modifiedCursor = getQueryModifiedCursorFromTime(sinceInIms); // Friday, 31 May 2024 09:38:54.678
+    const batchCursor = getQueryBatchCursorFromTime(new Date().getTime(), sinceInIms);
+
+    const archivalStatus = getArchivalStatusFromType(type);
+
+    const newData = await queryBatch(
+      dotYouClient,
+      {
+        targetDrive: PhotoConfig.PhotoDrive,
+        archivalStatus: archivalStatus,
+      },
+      {
+        maxRecords: BATCH_SIZE,
+        cursorState: batchCursor,
+        includeMetadataHeader: true,
+      }
+    );
+
+    const modifieData = await queryModified(
+      dotYouClient,
+      {
+        targetDrive: PhotoConfig.PhotoDrive,
+        archivalStatus: archivalStatus,
+      },
+      {
+        maxRecords: BATCH_SIZE,
+        cursor: modifiedCursor,
+        excludePreviewThumbnail: false,
+        includeHeaderContent: true,
+      }
+    );
+
+    return [...newData.searchResults, ...modifieData.searchResults].filter(
+      (dsr) => dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType && dsr.fileState !== 'deleted'
+    ) as HomebaseFile<string>[];
+  };
+
+  return {
+    fetchLibrary: useQuery({
+      queryKey: ['photo-library', targetDrive?.alias, type],
+      queryFn: () => fetch(type),
+      gcTime: Infinity, // Never => react query will never remove the data from the cache
+      enabled: !!targetDrive,
+    })
+  };
+};
+
+export const useManagePhotoLibrary = ({
+  targetDrive,
+}:{
+  targetDrive?: TargetDrive;
+}) => {
+  const dotYouClient = useDotYouClientContext();
+  const queryClient = useQueryClient();
 
   const debouncedSaveOfLibs = async () => {
     if (saveScheduled) return;
@@ -183,32 +245,13 @@ export const usePhotoLibrary = ({
     debouncedSaveOfLibs();
   };
 
-  const saveNewDay = async ({ type, date }: { type: LibraryType; date: Date }) => {
-    const photoLibOnClient =
-      queryClient.getQueryData<PhotoLibraryMetadata>(['photo-library', targetDrive?.alias, type]) ||
-      (await getPhotoLibrary(dotYouClient, type));
-    if (!photoLibOnClient) return;
-
-    const updatedLib = addDay(photoLibOnClient, date);
-    if (!updatedLib) return;
-
-    queryClient.setQueryData<PhotoLibraryMetadata>(
-      ['photo-library', targetDrive?.alias, type],
-      updatedLib
-    );
-
-    isDebug && console.debug('[Metadata] Added (to)', date, type, updatedLib);
-    debouncedSaveOfLibs();
-  };
-
   return {
-    fetchLibrary: useQuery({
-      queryKey: ['photo-library', targetDrive?.alias, type],
-      queryFn: () => fetch(type),
-      gcTime: Infinity, // Never => react query will never remove the data from the cache
-      enabled: !!targetDrive,
-    }),
     updateCount: useMutation({ mutationFn: saveNewCount }),
-    addDay: useMutation({ mutationFn: saveNewDay }),
+    invalidateLibrary: (type: LibraryType) => {
+      queryClient.invalidateQueries({
+        queryKey: ['photo-library', targetDrive?.alias, type],
+        exact: false,
+      });
+    }
   };
-};
+}

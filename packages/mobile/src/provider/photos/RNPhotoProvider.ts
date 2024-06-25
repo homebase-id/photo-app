@@ -138,7 +138,7 @@ const getMimeType = (fileName?: string) => {
 export const getUniqueId = (item: PhotoIdentifier) => {
   return item.node.id
     ? toGuidId(item.node.id as string)
-    : toGuidId(`${item.node.image.filename}x${item.node.image.width}x${item.node.image.height}`);
+    : toGuidId(`${item.node.image.filename}_${item.node.image.width}x${item.node.image.height}`);
 };
 
 const uploadNewPhoto = async (

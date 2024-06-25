@@ -29,7 +29,8 @@ export const drives = [
   },
 ];
 export const appName = 'Homebase - Photos';
-export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
+// export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
+export const appId = '107d8520-9636-4f3d-af3f-c69629c9762b';
 
 export const APP_SHARED_SECRET = 'APSS';
 export const APP_AUTH_TOKEN = 'BX0900';

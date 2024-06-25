@@ -1,0 +1,72 @@
+diff --git a/node_modules/react-native-mmkv-storage/android/src/main/java/com/ammarahmed/mmkv/MMKV.java b/node_modules/react-native-mmkv-storage/android/src/main/java/com/ammarahmed/mmkv/MMKV.java
+index ab56410..b5e31df 100644
+--- a/node_modules/react-native-mmkv-storage/android/src/main/java/com/ammarahmed/mmkv/MMKV.java
++++ b/node_modules/react-native-mmkv-storage/android/src/main/java/com/ammarahmed/mmkv/MMKV.java
+@@ -225,6 +225,20 @@ public class MMKV {
+
+     private native boolean encodeSet(long handle, String key, @Nullable String[] value);
+
++    @Nullable
++    private native String decodeString(long handle, String key, String defaultValue);
++
++    @Nullable
++    public String decodeString(String key, @Nullable String defaultValue) {
++        return decodeString(nativeHandle, key, defaultValue);
++    }
++    public double decodeDouble(String key) {
++        return decodeDouble(nativeHandle, key, 0);
++    }
+
++    public double decodeDouble(String key, double defaultValue) {
++        return decodeDouble(nativeHandle, key, defaultValue);
++    }
+
++    private native double decodeDouble(long handle, String key, double defaultValue);
+ }
+diff --git a/node_modules/react-native-mmkv-storage/android/src/main/rnmmkv/rnmmkv-adapter.cpp b/node_modules/react-native-mmkv-storage/android/src/main/rnmmkv/rnmmkv-adapter.cpp
+index 57b5d1c..e531bc1 100644
+--- a/node_modules/react-native-mmkv-storage/android/src/main/rnmmkv/rnmmkv-adapter.cpp
++++ b/node_modules/react-native-mmkv-storage/android/src/main/rnmmkv/rnmmkv-adapter.cpp
+@@ -603,6 +603,21 @@ Java_com_ammarahmed_mmkv_MMKV_removeValueForKey(JNIEnv *env, jobject instance, j
+     }
+ }
+
++extern "C"
++JNIEXPORT jstring JNICALL
++Java_com_ammarahmed_mmkv_MMKV_decodeString(JNIEnv *env, jobject obj, jlong handle, jstring oKey,
++                                           jstring default_value) {
++    MMKV *kv = reinterpret_cast<MMKV *>(handle);
++    if (kv && oKey) {
++        string key = jstring2string(env, oKey);
++        string value;
++        if (kv->getString(key, value)) {
++            return string2jstring(env, value);
++        }
++    }
++    return default_value;
++}
++
+ extern "C"
+ JNIEXPORT jobjectArray JNICALL
+ Java_com_ammarahmed_mmkv_MMKV_decodeStringSet(JNIEnv *env, jobject, jlong handle, jstring oKey) {
+@@ -704,3 +719,20 @@ JNIEXPORT void JNICALL
+ Java_com_ammarahmed_mmkv_RNMMKVModule_destroy(JNIEnv *env, jobject thiz) {
+     env->DeleteGlobalRef(mmkvobject);
+ }
++
++extern "C"
++JNIEXPORT jdouble JNICALL
++Java_com_ammarahmed_mmkv_MMKV_decodeDouble(JNIEnv *env, jobject obj, jlong handle, jstring oKey,
++                                           jdouble default_value) {
++    MMKV *kv = reinterpret_cast<MMKV *>(handle);
++    if (kv && oKey) {
++        string key = jstring2string(env, oKey);
++        bool hasValue;
++        double value = kv->getDouble(key, 0, &hasValue);
++
++        if (hasValue) {
++            return value;
++        }
++    }
++    return default_value;
++}

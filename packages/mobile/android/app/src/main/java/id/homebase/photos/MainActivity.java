@@ -1,11 +1,15 @@
 package id.homebase.photos;
 
 import android.os.Bundle;
+import android.content.Intent;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+
+import id.homebase.photos.worker.WorkerScheduler;
+import id.homebase.photos.worker.PhotoMonitoringService;
 
 public class MainActivity extends ReactActivity {
 
@@ -36,5 +40,9 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(null);
+
+      WorkerScheduler.scheduleWorker(this);
+      startService(new Intent(this, PhotoMonitoringService.class));
+
   }
 }

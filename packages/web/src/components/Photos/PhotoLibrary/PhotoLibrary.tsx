@@ -12,6 +12,7 @@ import {
   usePhotosByMonth,
   PhotoMetaDay,
   LibraryType,
+  useManagePhotoLibrary,
 } from 'photo-app-common';
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -224,9 +225,8 @@ export const PhotoMonth = ({
     date: monthInDateObj,
   }).fetchPhotos;
 
-  const { mutate: updateCount } = usePhotoLibrary({
+  const { mutate: updateCount } = useManagePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
-    type,
   }).updateCount;
 
   const photos = useMemo(
