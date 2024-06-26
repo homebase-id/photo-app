@@ -1,11 +1,5 @@
 import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
-
-import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
-
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
-import { hasAndroidPermission } from './permissionHelper';
-import { useUploadPhoto } from '../photo/useUploadPhoto';
 
 const ONE_MINUTE = 60000;
 const TEN_MINUTES = ONE_MINUTE * 10;

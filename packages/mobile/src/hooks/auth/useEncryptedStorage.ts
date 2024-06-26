@@ -1,3 +1,5 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { useRef } from 'react';
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 
 export const APP_AUTH_TOKEN = 'bx0900';
@@ -52,6 +54,15 @@ export const useEncrtypedStorage = () => {
 };
 
 export const useKeyValueStorage = () => {
+  const lastMemoryClear = useRef<number>();
+  useFocusEffect(() => {
+    const now = new Date().getTime();
+    if (now - (lastMemoryClear.current || 0) < 1000 * 60 * 1) return;
+
+    lastMemoryClear.current = now;
+    storage.clearMemoryCache();
+  });
+
   // Sync
   const [lastCameraRollSyncTime, setLastCameraRollSyncTime] = useMMKVStorage<number>(
     LAST_SYNC_TIME,
