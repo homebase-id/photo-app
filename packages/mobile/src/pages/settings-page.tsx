@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Platform,
   StyleProp,
   TouchableOpacity,
   View,
@@ -15,7 +14,7 @@ import { getVersion, getBuildNumber } from 'react-native-device-info';
 import { version } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
-import { CloudIcon, Download, Profile, RecycleBin, Times } from '../components/ui/Icons/icons';
+import { CloudIcon, Download, Logout, RecycleBin, Times } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
@@ -75,7 +74,7 @@ const SettingsPage = (_props: SettingsProps) => {
               paddingVertical: 12,
             }}
           >
-            <Profile size={'lg'} />
+            <Logout size={'lg'} />
             <Text
               style={{
                 marginLeft: 16,
