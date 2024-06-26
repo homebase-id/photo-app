@@ -73,7 +73,7 @@ extension ImageResizer {
     let context = CGContext(data: nil, width: scaledSize.width, height: scaledSize.height, bitsPerComponent: thumbnail.bitsPerComponent, bytesPerRow: 0, space: thumbnail.colorSpace ?? CGColorSpaceCreateDeviceRGB(), bitmapInfo: thumbnail.bitmapInfo.rawValue)
 
     context?.interpolationQuality = .high
-    context?.draw(thumbnail, in: CGRect(x: 0, y: 0, width: instruction.width, height: instruction.height))
+    context?.draw(thumbnail, in: CGRect(x: 0, y: 0, width: scaledSize.width, height: scaledSize.height))
 
     return context?.makeImage()
   }
