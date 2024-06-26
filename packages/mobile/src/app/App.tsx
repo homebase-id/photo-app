@@ -15,7 +15,6 @@ import AlbumPage from '../pages/album';
 import SettingsPage from '../pages/settings-page';
 import SyncDetailsPage from '../pages/sync-details-page';
 import TypePage from '../pages/type';
-import { useSyncFromCameraRoll } from '../hooks/cameraRoll/useSyncFromCameraRoll';
 import CodePush from 'react-native-code-push';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useAuth, useValidTokenCheck } from '../hooks/auth/useAuth';
@@ -59,6 +58,7 @@ let App = () => {
     </OdinQueryClient>
   );
 };
+
 const codePushOptions = { checkFrequency: CodePush.CheckFrequency.MANUAL };
 App = CodePush(codePushOptions)(App);
 
@@ -70,7 +70,7 @@ const RootStack = () => {
     <NavigationContainer>
       <StackedRoot.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <StackedRoot.Screen name="Authenticated" component={AuthenticatedStack} />
+          <StackedRoot.Screen name="Authenticated" component={AuthenticatedRoot} />
         ) : (
           <StackedRoot.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
         )}
@@ -80,12 +80,24 @@ const RootStack = () => {
   );
 };
 
-const StackAuthenticated = createNativeStackNavigator<RootStackParamList>();
-const AuthenticatedStack = memo(() => {
+const AuthenticatedRoot = memo(() => {
+  return (
+    <DotYouClientProvider>
+      <AppStackScreen />
+    </DotYouClientProvider>
+  );
+});
+
+const AppStackScreen = memo(() => {
   useValidTokenCheck();
   useRefetchOnFocus();
   useOnlineManager();
-  useSyncFromCameraRoll();
+
+  return <AuthenticatedStack />;
+});
+
+const StackAuthenticated = createNativeStackNavigator<RootStackParamList>();
+const AuthenticatedStack = memo(() => {
   const { isDarkMode } = useDarkMode();
 
   return (

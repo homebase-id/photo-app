@@ -63,20 +63,14 @@ export const usePhotoLibrary = ({
     if (!dotYouClient || !targetDrive) return null;
 
     // Get meta file from server
-    const photoLibOnServer = await getPhotoLibrary(
-      dotYouClient,
-      type,
-    );
+    const photoLibOnServer = await getPhotoLibrary(dotYouClient, type);
 
     if (photoLibOnServer && photoLibOnServer.lastUpdated) {
-      const newFilesSinceLastUpdate = await queryFilesSince(
-        photoLibOnServer.lastUpdated,
-        type
-      );
+      const newFilesSinceLastUpdate = await queryFilesSince(photoLibOnServer.lastUpdated, type);
 
       let runningServerLib = photoLibOnServer;
       newFilesSinceLastUpdate.forEach((file) => {
-        if(file.fileMetadata.appData.userDate)
+        if (file.fileMetadata.appData.userDate)
           runningServerLib = addDay(photoLibOnServer, new Date(file.fileMetadata.appData.userDate));
       });
 
@@ -123,7 +117,9 @@ export const usePhotoLibrary = ({
     );
 
     return [...newData.searchResults, ...modifieData.searchResults].filter(
-      (dsr) => dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType && dsr.fileState !== 'deleted'
+      (dsr) =>
+        dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType &&
+        dsr.fileState !== 'deleted'
     ) as HomebaseFile<string>[];
   };
 
@@ -133,15 +129,12 @@ export const usePhotoLibrary = ({
       queryFn: () => fetch(type),
       gcTime: Infinity, // Never => react query will never remove the data from the cache
       enabled: !!targetDrive,
-    })
+      staleTime: 1000 * 60 * 5, // 5min
+    }),
   };
 };
 
-export const useManagePhotoLibrary = ({
-  targetDrive,
-}:{
-  targetDrive?: TargetDrive;
-}) => {
+export const useManagePhotoLibrary = ({ targetDrive }: { targetDrive?: TargetDrive }) => {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
@@ -252,6 +245,6 @@ export const useManagePhotoLibrary = ({
         queryKey: ['photo-library', targetDrive?.alias, type],
         exact: false,
       });
-    }
+    },
   };
-}
+};

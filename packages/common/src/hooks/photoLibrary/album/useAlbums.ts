@@ -9,6 +9,7 @@ export const useAlbums = () => {
   return {
     fetch: useQuery({
       queryKey: ['albums'],
+      staleTime: 1000 * 60 * 5, // 5 minute
       queryFn: () => fetchAllAlbums(),
     }),
   };

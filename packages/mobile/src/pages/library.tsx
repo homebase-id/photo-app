@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { Dimensions, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { Colors } from '../app/Colors';
@@ -21,11 +21,11 @@ import {
 
 type LibraryProps = NativeStackScreenProps<TabStackParamList, 'Library'>;
 
-export const LibraryPage = (_props: LibraryProps) => {
+export const LibraryPage = memo((_props: LibraryProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: albums } = useAlbums().fetch;
 
-  const toggleOpen = useCallback(() => setIsOpen(!isOpen), [isOpen]);
+  const toggleOpen = useCallback(() => setIsOpen((isOpen) => !isOpen), []);
 
   return (
     <SafeAreaView>
@@ -76,7 +76,7 @@ export const LibraryPage = (_props: LibraryProps) => {
       <NewAlbumDialog isOpen={isOpen} onClose={toggleOpen} />
     </SafeAreaView>
   );
-};
+});
 
 const TypeLink = ({
   children,

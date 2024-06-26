@@ -18,12 +18,7 @@ const useParams = (returnUrl: string) => {
 export const LoginBox = () => {
   const { data: authParams, isLoading } = useParams('/');
 
-  if (isLoading)
-    return (
-      <>
-        <LoadingBlock className="h-[16rem] w-full " />
-      </>
-    );
+  if (isLoading) return <LoadingBlock className="h-[16rem] w-full " />;
 
   return (
     <>

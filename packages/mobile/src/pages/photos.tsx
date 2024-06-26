@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { TabStackParamList } from '../app/App';
 import PhotoLibrary from '../components/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
@@ -8,7 +8,7 @@ import { usePhotoSelection } from 'photo-app-common';
 
 type PhotosProps = NativeStackScreenProps<TabStackParamList, 'Photos'>;
 
-const PhotosPage = (_props: PhotosProps) => {
+const PhotosPage = memo((_props: PhotosProps) => {
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
@@ -37,7 +37,7 @@ const PhotosPage = (_props: PhotosProps) => {
       />
     </SafeAreaView>
   );
-};
+});
 
 // import { Camera } from '../components/ui/Icons/icons';
 // import { Colors } from '../app/Colors';

@@ -156,37 +156,36 @@ export const PhotoItem = memo(
             aspectRatio: 1,
           }}
         >
-          <TouchableHighlight onPress={doPress} onLongPress={doLongPress}>
-            <View>
-              {photoDsr.fileMetadata.payloads
-                .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
-                ?.contentType.startsWith('video/') ? (
-                <VideoWithLoader
-                  fileId={photoDsr.fileId}
-                  targetDrive={targetDrive}
-                  previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
-                  imageSize={{
-                    width: size,
-                    height: size,
-                  }}
-                  fit="cover"
-                  preview={true}
-                />
-              ) : (
-                <PhotoWithLoader
-                  fileId={photoDsr.fileId}
-                  targetDrive={targetDrive}
-                  previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
-                  fit="cover"
-                  imageSize={{
-                    width: size,
-                    height: size,
-                  }}
-                />
-              )}
-            </View>
-          </TouchableHighlight>
-          {/* </Link> */}
+          <View>
+            {photoDsr.fileMetadata.payloads
+              .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+              ?.contentType.startsWith('video/') ? (
+              <VideoWithLoader
+                fileId={photoDsr.fileId}
+                targetDrive={targetDrive}
+                previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
+                imageSize={{
+                  width: size,
+                  height: size,
+                }}
+                fit="cover"
+                preview={true}
+              />
+            ) : (
+              <PhotoWithLoader
+                fileId={photoDsr.fileId}
+                targetDrive={targetDrive}
+                previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
+                fit="cover"
+                imageSize={{
+                  width: size,
+                  height: size,
+                }}
+                onPress={doPress}
+                onLongPress={doLongPress}
+              />
+            )}
+          </View>
         </View>
       </View>
     );

@@ -52,6 +52,7 @@ const useVideo = (videoFileId?: string | undefined, videoDrive?: TargetDrive) =>
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       enabled: !!videoFileId && videoFileId !== '',
+      staleTime: 1000 * 60 * 60 * 24, // 24h
     }),
   };
 };
