@@ -18,7 +18,7 @@ export const VideoWithLoader = memo(
     fit = 'cover',
     preview,
     imageSize,
-    onClick,
+    onPress,
   }: {
     fileId: string;
     targetDrive: TargetDrive;
@@ -26,7 +26,7 @@ export const VideoWithLoader = memo(
     fit?: 'cover' | 'contain';
     preview?: boolean;
     imageSize?: { width: number; height: number };
-    onClick?: () => void;
+    onPress?: () => void;
   }) => {
     const [loadVideo, setLoadVideo] = useState(false);
     const doLoadVideo = useCallback(() => setLoadVideo(true), []);
@@ -48,7 +48,7 @@ export const VideoWithLoader = memo(
               previewThumbnail={previewThumbnail}
               fit={fit}
               imageSize={imageSize}
-              onClick={onClick}
+              onPress={onPress}
               avoidPayload={true}
             />
             <View
@@ -89,7 +89,7 @@ export const VideoWithLoader = memo(
               previewThumbnail={previewThumbnail}
               fit={fit}
               imageSize={imageSize}
-              onClick={doLoadVideo}
+              onPress={doLoadVideo}
               avoidPayload={true}
             />
             <View

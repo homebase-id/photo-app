@@ -275,7 +275,7 @@ const PreviewSlider = memo(
                   width: windowSize.width,
                   height: windowSize.height,
                 }}
-                onClick={doToggleHeader}
+                onPress={doToggleHeader}
               />
             ) : (
               <PhotoWithLoader
@@ -287,7 +287,7 @@ const PreviewSlider = memo(
                   height: windowSize.height,
                 }}
                 enableZoom={Platform.OS === 'android'}
-                onClick={doToggleHeader}
+                onPress={doToggleHeader}
               />
             )}
           </Pressable>
