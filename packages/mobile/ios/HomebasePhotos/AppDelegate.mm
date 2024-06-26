@@ -15,14 +15,14 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
-  
+
   // Register the background task
   [[BGTaskScheduler sharedScheduler] registerForTaskWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync" usingQueue:nil launchHandler:^(__kindof BGTask * _Nonnull task) {
     [self handleMediaSync:task];
   }];
-  
+
   [self scheduleMediaSync];
-  
+
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
@@ -53,13 +53,16 @@
 }
 
 - (void)scheduleMediaSync {
-  BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync"];
+  BGProcessingTaskRequest *request = [[BGProcessingTaskRequest alloc] initWithIdentifier:@"id.homebase.photos.SyncTrigger.runSync"];
+  request.requiresNetworkConnectivity = true;
   request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15 * 60]; // 15 minutes from now
-  
+
   NSError *error = nil;
   BOOL success = [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
   if (!success) {
-    NSLog(@"Could not schedule media sync: %@", error);
+    NSLog(@"[SyncTrigger]: Could not schedule media sync: %@", error);
+  } else {
+    NSLog(@"[SyncTrigger]: Scheduled");
   }
 }
 
@@ -67,7 +70,8 @@
   task.expirationHandler = ^{
     // Clean up any unfinished business before the task expires
   };
-  
+
+  NSLog(@"[SyncTrigger]: handleMediaSync");
   [SyncTrigger runStaticSyncWithCompletion:^(BOOL success) {
     [task setTaskCompletedWithSuccess:success];
     [self scheduleMediaSync]; // Schedule the next background task
