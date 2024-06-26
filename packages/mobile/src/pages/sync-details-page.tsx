@@ -317,13 +317,8 @@ const GalleryItem = memo(
 );
 
 const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
-  const {
-    syncFromCameraRoll,
-    setSyncFromCameraRoll,
-    setForceLowerQuality,
-    forceLowerQuality,
-    headlessSyncLog,
-  } = useKeyValueStorage();
+  const { syncFromCameraRoll, setSyncFromCameraRoll, setForceLowerQuality, forceLowerQuality } =
+    useKeyValueStorage();
 
   return (
     <Modal onClose={onClose} title="Sync settings">
@@ -392,18 +387,6 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
             </Text>
           </TouchableOpacity>
         )}
-
-        <TouchableOpacity
-          onPress={() => {
-            Alert.alert('Sync log', headlessSyncLog.toString() || 'No log found', [
-              {
-                text: 'Ok',
-              },
-            ]);
-          }}
-        >
-          <Text>Show log</Text>
-        </TouchableOpacity>
       </View>
     </Modal>
   );
