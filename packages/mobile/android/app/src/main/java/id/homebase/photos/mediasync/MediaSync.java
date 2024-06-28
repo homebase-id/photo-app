@@ -129,7 +129,7 @@ public class MediaSync {
                         }
                     }
                 } catch (Exception e) {
-                    // Ignore any errors and continue with the next photo
+                    // Ignore any errors and continue with the next media item
                     Log.e(null, "[SyncWorker] Error uploading photo: " + e.getMessage());
                 }
             }
