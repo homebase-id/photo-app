@@ -96,11 +96,6 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
         if (thumbBytes) return thumbBytes;
       }
 
-      console.log({
-        fileId: dsr.fileId,
-        targetDrive,
-        key: DEFAULT_PAYLOAD_KEY,
-      });
       const decryptedPayload = await getPayloadBytes(
         dotYouClient,
         targetDrive,
