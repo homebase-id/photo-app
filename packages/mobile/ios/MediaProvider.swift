@@ -46,7 +46,11 @@ class MediaProvider {
       payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: filePath)
     }
 
-    let thumbnails = try ImageResizer.resizeImage(filePath: filePath, instructions: defaultImageSizes, key: defaultPayloadKey)
+    var imageSizeInstructions = defaultImageSizes
+    if(mimeType == "image/heic") {
+      imageSizeInstructions.append(ImageResizer.ResizeInstruction(width: width, height: height, quality: 100, format: "jpeg"))
+    }
+    let thumbnails = try ImageResizer.resizeImage(filePath: filePath, instructions: imageSizeInstructions, key: defaultPayloadKey)
 
     return try await DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: [payload], thumbnails: thumbnails, encrypt: encryptMedia)
   }
