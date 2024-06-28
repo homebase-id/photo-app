@@ -48,7 +48,7 @@ public class MediaProvider {
         ThumbnailStream tinyThumb = ImageResizer.resizeImage(filePath, TINY_THUMB_INSTRUCTION, DEFAULT_PAYLOAD_KEY, true);
         EmbeddedThumb previewThumbnail = new EmbeddedThumb(tinyThumb.getPixelHeight(), tinyThumb.getPixelWidth(), TINY_THUMB_INSTRUCTION.format, tinyThumb.getBase64());
 
-        UploadFileMetadata<String> metadata = new UploadFileMetadata<>(false, ENCRYPT_MEDIA, OWNER_ONLY_ACL, new UploadAppFileMetaData<>(uniqueId, new String[0], 0, 0, timestampInMs, null, ArchivalStatus.None, "", previewThumbnail), null, null);
+        UploadFileMetadata<String> metadata = new UploadFileMetadata<>(false, ENCRYPT_MEDIA, OWNER_ONLY_ACL, new UploadAppFileMetaData<>(uniqueId, new String[0], 0, 0, timestampInMs, null, ArchivalStatus.None, "{\"originalFileName\":\"" + fileName + "\"}", previewThumbnail), null, null);
 
         PayloadBase payload;
         if (forceLowerQuality) {

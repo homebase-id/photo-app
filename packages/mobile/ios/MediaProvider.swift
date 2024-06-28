@@ -34,7 +34,7 @@ class MediaProvider {
       allowDistribution: false,
       isEncrypted: encryptMedia,
       acl: ownerOnlyACL,
-      appData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileType: 0, dataType: 0, userDate: timestampInMs, groupId: nil, archivalStatus: 0, content: "", previewThumbnail: previewThumbnail),
+      appData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileType: 0, dataType: 0, userDate: timestampInMs, groupId: nil, archivalStatus: 0, content: "{\"originalFileName\":\"" + fileName + "\"}", previewThumbnail: previewThumbnail),
       referencedFile: nil
     )
 

@@ -33,10 +33,15 @@ class CryptoUtil {
 
 
   static func encryptMetaData(metadata: UploadFileMetadata<String>, keyHeader: KeyHeader ) throws -> UploadFileMetadata<String> {
+    if(metadata.appData.content == nil){
+      return metadata;
+    }
     var encryptedMetadata = metadata
 
-    let encryptedContent = try encryptWithKeyHeader(file: encryptedMetadata.appData.content, keyHeader: keyHeader);
-    encryptedMetadata.appData.content = base64Encode(stream: encryptedContent.stream)!;
+    print("encryptMetaData", encryptedMetadata.appData.content)
+    
+    let encryptedContent = try innerEncrypt(iv:keyHeader.iv, key: keyHeader.aesKey, data: metadata.appData.content.data(using: .utf8)!)
+    encryptedMetadata.appData.content = encryptedContent.base64EncodedString()
 
     return encryptedMetadata;
   }

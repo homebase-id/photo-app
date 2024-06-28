@@ -57,7 +57,10 @@ extension DriveFileUploadProvider {
       throw NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Transfer IV is required"])
     }
 
-    let descriptorData = DescriptorData(encryptedKeyHeader: try CryptoUtil.encryptKeyHeader( dotYouClient: dotYouClient, keyHeader: keyHeader != nil ? keyHeader! : getEmptyKeyHeader(), transferIv: instructions.transferIv!), fileMetadata: metadata)
+    let ensuredKeyHeader = keyHeader != nil ? keyHeader! : getEmptyKeyHeader()
+    
+    let descriptorData = DescriptorData(encryptedKeyHeader: try CryptoUtil.encryptKeyHeader( dotYouClient: dotYouClient, keyHeader: ensuredKeyHeader, transferIv: instructions.transferIv!), fileMetadata: try CryptoUtil.encryptMetaData(metadata: metadata, keyHeader: ensuredKeyHeader))
+    
     let jsonString = descriptorData.toJsonString()
     let content = jsonString.data(using: .utf8)
 
