@@ -5,6 +5,7 @@ import {
   ThumbnailFile,
   getPayloadBytes,
   DEFAULT_PAYLOAD_KEY,
+  getThumbBytes,
 } from '@youfoundation/js-lib/core';
 
 import { MediaUploadMeta } from '@youfoundation/js-lib/media';
@@ -73,18 +74,48 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
 
     const photoMeta = await getPhotoMetadata(dotYouClient, targetDrive, dsr.fileId);
 
-    const decryptedPayload = await getPayloadBytes(
-      dotYouClient,
-      targetDrive,
-      dsr.fileId,
-      DEFAULT_PAYLOAD_KEY
-    );
+    const decryptedData = await (async () => {
+      const defaultPayload = dsr.fileMetadata.payloads.find(
+        (payload) => payload.key === DEFAULT_PAYLOAD_KEY
+      );
+      if (defaultPayload?.contentType === 'image/heic') {
+        const biggestThumb = defaultPayload.thumbnails.reduce((prev, current) => {
+          return prev.pixelWidth > current.pixelWidth ? prev : current;
+        }, defaultPayload.thumbnails[0]);
 
-    if (!decryptedPayload) return null;
+        const thumbBytes = await getThumbBytes(
+          dotYouClient,
+          targetDrive,
+          dsr.fileId,
+          DEFAULT_PAYLOAD_KEY,
+          biggestThumb.pixelWidth,
+          biggestThumb.pixelHeight,
+          {}
+        );
+
+        if (thumbBytes) return thumbBytes;
+      }
+
+      console.log({
+        fileId: dsr.fileId,
+        targetDrive,
+        key: DEFAULT_PAYLOAD_KEY,
+      });
+      const decryptedPayload = await getPayloadBytes(
+        dotYouClient,
+        targetDrive,
+        dsr.fileId,
+        DEFAULT_PAYLOAD_KEY
+      );
+
+      return decryptedPayload;
+    })();
+
+    if (!decryptedData) return null;
 
     const url = window.URL.createObjectURL(
-      new Blob([decryptedPayload.bytes], {
-        type: decryptedPayload.contentType,
+      new Blob([decryptedData.bytes], {
+        type: decryptedData.contentType,
       })
     );
 

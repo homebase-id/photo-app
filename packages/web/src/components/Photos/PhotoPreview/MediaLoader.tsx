@@ -54,7 +54,6 @@ const CustomOdinImage = ({
 
   original?: boolean;
 }) => {
-  console.log('fileId', fileId, 'original', original);
   const dotYouClient = useDotYouClientContext();
   const [tinyLoaded, setTinyLoaded] = useState(false);
   const [finalLoaded, setFinalLoaded] = useState(false);
