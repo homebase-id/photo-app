@@ -87,7 +87,7 @@ public class ImageResizer {
 
     private static void writeBitmapToStream(Bitmap bitmap, int quality, String format, ByteArrayOutputStream outputStream) {
         CompressFormat compressFormat = CompressFormat.PNG;
-        if (format.equalsIgnoreCase("jpg") || format.equalsIgnoreCase("jpeg")) {
+        if (format.equalsIgnoreCase("jpeg")) {
             compressFormat = CompressFormat.JPEG;
         } else if (format.equalsIgnoreCase("webp")) {
             compressFormat = CompressFormat.WEBP;
@@ -117,4 +117,3 @@ public class ImageResizer {
         }
     }
 }
-

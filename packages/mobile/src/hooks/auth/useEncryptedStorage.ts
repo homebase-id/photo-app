@@ -1,3 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 
 export const APP_AUTH_TOKEN = 'bx0900';
@@ -8,7 +11,6 @@ export const LAST_SYNC_TIME = 'lastSyncTimeAsNumber';
 export const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRollAsBoolean';
 export const FORCE_LOWER_QUALITY = 'forceLowerQualityAsBoolean';
 export const MIN_CONNECTION_TYPE = 'minConnectionType';
-export const HEADLESS_SYNC_LOG = 'headlessSyncLog';
 const LAST_LOGGED_OUT_IDENTITY = 'lastLoggedOutIdentity';
 
 const storage = new MMKVLoader().initialize();
@@ -52,12 +54,28 @@ export const useEncrtypedStorage = () => {
 };
 
 export const useKeyValueStorage = () => {
-  // Sync
-  const [lastCameraRollSyncTime, setLastCameraRollSyncTime] = useMMKVStorage<number>(
+  const lastMemoryClear = useRef<number>();
+  // This one doesn't work on iOS :shrug:
+  const [androidLastCameraRollSyncTime] = useMMKVStorage<number>(
     LAST_SYNC_TIME,
     storage,
     undefined
   );
+  const [lastCameraRollSyncTime, setLastSyncTime] = useState<number>(androidLastCameraRollSyncTime);
+
+  useFocusEffect(() => {
+    const now = new Date().getTime();
+    if (now - (lastMemoryClear.current || 0) < 1000 * 60 * 1) return;
+
+    lastMemoryClear.current = now;
+    storage.clearMemoryCache();
+
+    if (Platform.OS === 'ios') {
+      storage.getInt(LAST_SYNC_TIME, (err, value) => {
+        if (!err && value !== undefined && value !== null && value !== 0) setLastSyncTime(value);
+      });
+    }
+  });
 
   const [syncFromCameraRoll, setSyncFromCameraRoll] = useMMKVStorage<boolean>(
     SYNC_FROM_CAMERA_ROLL,
@@ -71,18 +89,13 @@ export const useKeyValueStorage = () => {
     false
   );
 
-  const [headlessSyncLog] = useMMKVStorage<string>('headlessSyncLog', storage, '');
-
   return {
     lastCameraRollSyncTime,
-    setLastCameraRollSyncTime,
 
     syncFromCameraRoll,
     setSyncFromCameraRoll,
 
     forceLowerQuality,
     setForceLowerQuality,
-
-    headlessSyncLog,
   };
 };

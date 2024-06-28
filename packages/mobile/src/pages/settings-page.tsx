@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Platform,
   StyleProp,
   TouchableOpacity,
   View,
@@ -15,7 +14,7 @@ import { getVersion, getBuildNumber } from 'react-native-device-info';
 import { version } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
-import { CloudIcon, Download, Profile, RecycleBin, Times } from '../components/ui/Icons/icons';
+import { CloudIcon, Download, Logout, RecycleBin, Times } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
@@ -75,7 +74,7 @@ const SettingsPage = (_props: SettingsProps) => {
               paddingVertical: 12,
             }}
           >
-            <Profile size={'lg'} />
+            <Logout size={'lg'} />
             <Text
               style={{
                 marginLeft: 16,
@@ -85,56 +84,56 @@ const SettingsPage = (_props: SettingsProps) => {
             </Text>
             {logoutPending ? <ActivityIndicator style={{ marginLeft: 'auto' }} /> : null}
           </TouchableOpacity>
-          {Platform.OS === 'android' ? (
-            <TouchableOpacity
-              onPress={() => navigate('SyncDetails')}
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingVertical: 12,
-                width: '100%',
-              }}
-            >
-              <CloudIcon size={'lg'} />
-              <View style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+
+          <TouchableOpacity
+            onPress={() => navigate('SyncDetails')}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingVertical: 12,
+              width: '100%',
+            }}
+          >
+            <CloudIcon size={'lg'} />
+            <View style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Text
+                style={{
+                  marginLeft: 16,
+                }}
+              >
+                Backup
+              </Text>
+              {syncFromCameraRoll ? (
                 <Text
                   style={{
                     marginLeft: 16,
+                    opacity: 0.5,
                   }}
                 >
-                  Backup
+                  {lastCameraRollSyncTime ? (
+                    <>
+                      Last sync:{' '}
+                      {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
+                    </>
+                  ) : (
+                    'Last sync: not synced yet'
+                  )}
                 </Text>
-                {syncFromCameraRoll ? (
-                  <Text
-                    style={{
-                      marginLeft: 16,
-                      opacity: 0.5,
-                    }}
-                  >
-                    {lastCameraRollSyncTime ? (
-                      <>
-                        Last sync:{' '}
-                        {new Date(lastCameraRollSyncTime).toLocaleString(undefined, dateFormat)}
-                      </>
-                    ) : (
-                      'Last sync: not synced yet'
-                    )}
-                  </Text>
-                ) : null}
-              </View>
-              {syncFromCameraRoll ? (
-                <View style={{ marginLeft: 'auto' }}>
-                  <CheckBox
-                    value={syncFromCameraRoll}
-                    style={{ marginLeft: 'auto' }}
-                    aria-label="Sync with your camera roll"
-                    disabled={syncFromCameraRoll}
-                  />
-                </View>
               ) : null}
-            </TouchableOpacity>
-          ) : null}
+            </View>
+            {syncFromCameraRoll ? (
+              <View style={{ marginLeft: 'auto' }}>
+                <CheckBox
+                  value={syncFromCameraRoll}
+                  style={{ marginLeft: 'auto' }}
+                  aria-label="Sync with your camera roll"
+                  disabled={syncFromCameraRoll}
+                />
+              </View>
+            ) : null}
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => doClearLocalData()}
             style={{

@@ -40,34 +40,34 @@ public class MediaSync {
 
         assert mmkv != null;
         // Loading key-value pairs from MMKV
-        boolean SyncEnabled = mmkv.decodeInt("syncFromCameraRollAsBoolean", 0) == 1;
+        boolean syncEnabled = mmkv.decodeInt("syncFromCameraRollAsBoolean", 0) == 1;
         String identity = mmkv.decodeString("identity", "");
         String CAT = mmkv.decodeString("bx0900", "");
-        String SharedSecret = mmkv.decodeString("APSS", "");
+        String sharedSecret = mmkv.decodeString("APSS", "");
         double lastSyncTime = mmkv.decodeDouble("lastSyncTimeAsNumber", new Date().getTime() - 1000 * 60 * 60 * 24 * 7);
         boolean forceLowerQuality = mmkv.decodeInt("forceLowerQualityAsBoolean", 0) == 1;
 
-        assert SharedSecret != null;
+        assert sharedSecret != null;
         assert identity != null;
         assert CAT != null;
 
         if (isDebug()) {
-            Log.v(null, "[SyncWorker] syncEnabled: " + SyncEnabled);
+            Log.v(null, "[SyncWorker] syncEnabled: " + syncEnabled);
             Log.v(null, "[SyncWorker] identity: " + identity);
             Log.v(null, "[SyncWorker] CAT: " + CAT);
-            Log.v(null, "[SyncWorker] SharedSecret: " + SharedSecret);
+            Log.v(null, "[SyncWorker] sharedSecret: " + sharedSecret);
             Log.v(null, "[SyncWorker] lastSyncTime: " + BigDecimal.valueOf(lastSyncTime).toPlainString());
 //        lastSyncTime = 1717664076909L;
         }
 
-        if (!SyncEnabled) {
+        if (!syncEnabled) {
             return;
         }
 
         Map<String, String> headers = new HashMap<>();
         headers.put("bx0900", CAT);
 
-        DotYouClient dotYouClient = new DotYouClient(ApiType.App, CryptoUtil.base64ToByteArray(SharedSecret), identity, headers);
+        DotYouClient dotYouClient = new DotYouClient(ApiType.App, CryptoUtil.base64ToByteArray(sharedSecret), identity, headers);
 
         // Find all photos that have been added since the last sync
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -129,7 +129,7 @@ public class MediaSync {
                         }
                     }
                 } catch (Exception e) {
-                    // Ignore any errors and continue with the next photo
+                    // Ignore any errors and continue with the next media item
                     Log.e(null, "[SyncWorker] Error uploading photo: " + e.getMessage());
                 }
             }

@@ -1,12 +1,13 @@
 import { HeaderBackButton, Header } from '@react-navigation/elements';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { ReactElement, useEffect, useMemo, useState } from 'react';
+import React, { ReactElement, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Button,
   Dimensions,
   FlatList,
   Image,
+  ListRenderItemInfo,
   Platform,
   TouchableOpacity,
   View,
@@ -25,7 +26,6 @@ import { PhotoConfig, t, useFileHeaderByUniqueId } from 'photo-app-common';
 import { getUniqueId } from '../provider/photos/RNPhotoProvider';
 import { Colors } from '../app/Colors';
 import { CloudIcon, Cog } from '../components/ui/Icons/icons';
-import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { Modal } from '../components/ui/Modal/Modal';
 import { ErrorNotification } from '../components/ui/Alert/ErrorNotification';
@@ -149,7 +149,9 @@ const SyncDetailsPage = (_props: SettingsProps) => {
   );
 };
 
-const GalleryView = ({ children }: { children: ReactElement }) => {
+const GalleryView = memo(({ children }: { children: ReactElement }) => {
+  const fromTime = useSyncFrom();
+
   const {
     data: cameraRoll,
     fetchNextPage,
@@ -168,27 +170,41 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
 
   // Upload queue
   const [uploadIndex, setUploadIndex] = useState(0);
-  const [uploadQueue, setUploadQueue] = useState<PhotoIdentifier[]>([]);
+  // const [uploadQueue, setUploadQueue] = useState<PhotoIdentifier[]>([]);
 
-  const {
-    mutate: uploadPhoto,
-    status: uploadStatus,
-    reset: resetUpload,
-    error: uploadError,
-  } = useUploadPhoto().upload;
+  // const {
+  //   mutate: uploadPhoto,
+  //   status: uploadStatus,
+  //   reset: resetUpload,
+  //   error: uploadError,
+  // } = useUploadPhoto().upload;
 
-  const currentFile = uploadQueue[uploadIndex];
-  useEffect(() => {
-    if (!currentFile) return;
-    uploadPhoto(currentFile);
-  }, [currentFile, uploadPhoto]);
+  // const currentFile = uploadQueue[uploadIndex];
+  // useEffect(() => {
+  //   if (!currentFile) return;
+  //   uploadPhoto(currentFile);
+  // }, [currentFile, uploadPhoto]);
 
-  useEffect(() => {
-    if (uploadStatus === 'success' || uploadStatus === 'error') {
-      resetUpload();
-      setUploadIndex((currentIndex) => currentIndex + 1);
-    }
-  }, [uploadStatus, resetUpload, setUploadIndex]);
+  // useEffect(() => {
+  //   if (uploadStatus === 'success' || uploadStatus === 'error') {
+  //     resetUpload();
+  //     setUploadIndex((currentIndex) => currentIndex + 1);
+  //   }
+  // }, [uploadStatus, resetUpload, setUploadIndex]);
+
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<PhotoIdentifier>) => {
+    return (
+      <GalleryItem
+        size={size}
+        item={item}
+        key={item.node.id}
+        // addToUpload={(item: PhotoIdentifier) =>
+        //   setUploadQueue((currentUploadQueue) => [...currentUploadQueue, item])
+        // }
+        fromTime={fromTime}
+      />
+    );
+  }, []);
 
   return (
     <View
@@ -196,7 +212,7 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
         margin: -1,
       }}
     >
-      <ErrorNotification error={uploadError} />
+      {/* <ErrorNotification error={uploadError} /> */}
       <FlatList
         data={flatPhotos}
         key={numColums}
@@ -204,29 +220,18 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
           minHeight: '100%',
         }}
         ListHeaderComponent={children}
-        renderItem={(item) => (
-          <GalleryItem
-            size={size}
-            item={item.item}
-            key={item.item.node.id}
-            addToUpload={(item: PhotoIdentifier) =>
-              setUploadQueue((currentUploadQueue) => [...currentUploadQueue, item])
-            }
-          />
-        )}
+        renderItem={renderItem}
         ListEmptyComponent={
-          <>
-            <Text
-              style={{
-                paddingHorizontal: 5,
-                paddingBottom: 5,
-                textAlign: 'center',
-                opacity: 0.5,
-              }}
-            >
-              No available media
-            </Text>
-          </>
+          <Text
+            style={{
+              paddingHorizontal: 5,
+              paddingBottom: 5,
+              textAlign: 'center',
+              opacity: 0.5,
+            }}
+          >
+            No available media
+          </Text>
         }
         numColumns={numColums}
         onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
@@ -234,89 +239,86 @@ const GalleryView = ({ children }: { children: ReactElement }) => {
       />
     </View>
   );
-};
+});
 
-const GalleryItem = ({
-  item,
-  size,
-  addToUpload,
-}: {
-  item: PhotoIdentifier;
-  size: number;
-  addToUpload: (photo: PhotoIdentifier) => void;
-}) => {
-  const uniqueId = getUniqueId(item);
-  const { data, isFetched } = useFileHeaderByUniqueId({
-    targetDrive: PhotoConfig.PhotoDrive,
-    photoUniqueId: uniqueId,
-  });
+const GalleryItem = memo(
+  ({
+    item,
+    size,
+    // addToUpload,
+    fromTime,
+  }: {
+    item: PhotoIdentifier;
+    size: number;
+    // addToUpload: (photo: PhotoIdentifier) => void;
+    fromTime: number;
+  }) => {
+    const uniqueId = getUniqueId(item);
+    const { data, isFetched } = useFileHeaderByUniqueId({
+      targetDrive: PhotoConfig.PhotoDrive,
+      photoUniqueId: uniqueId,
+    });
 
-  const [forceUpload, setForceUpload] = useState(false);
-  const alreadyUploaded = isFetched && data !== null;
+    // const [forceUpload, setForceUpload] = useState(false);
+    const alreadyUploaded = isFetched && data !== null;
+    const pendingUploadInSync = item.node.timestamp * 1000 > fromTime;
 
-  const fromTime = useSyncFrom();
-  const pendingUploadInSync = item.node.timestamp * 1000 > fromTime;
+    // const onRequestSync = () => {
+    //   if (alreadyUploaded || pendingUploadInSync || forceUpload) return;
+    //   setForceUpload(true);
 
-  const onRequestSync = () => {
-    if (alreadyUploaded || pendingUploadInSync || forceUpload) return;
-    setForceUpload(true);
+    //   console.log('uploading', uniqueId, item.node.id);
+    //   addToUpload(item);
+    // };
 
-    console.log('uploading', uniqueId, item.node.id);
-    addToUpload(item);
-  };
-
-  return (
-    <TouchableOpacity
-      style={{
-        width: size,
-        height: size,
-        padding: 1,
-        position: 'relative',
-        opacity: alreadyUploaded ? 0.5 : 1,
-      }}
-      onPress={onRequestSync}
-    >
-      {alreadyUploaded ? (
-        <View style={{ position: 'absolute', bottom: 7, right: 7, zIndex: 10 }}>
-          <CloudIcon color={Colors.white} size={'sm'} />
-        </View>
-      ) : (
-        <View
-          style={{
-            position: 'absolute',
-            top: 7,
-            left: 7,
-            backgroundColor: forceUpload || pendingUploadInSync ? Colors.indigo[500] : undefined,
-            width: 15,
-            height: 15,
-            borderRadius: 50,
-            zIndex: 10,
-            opacity: 1,
-            borderColor: Colors.slate[200],
-            borderWidth: 1,
-          }}
-        />
-      )}
-      <Image
-        key={item.node.id}
+    return (
+      <View
         style={{
-          width: size - 2,
-          height: size - 2,
+          width: size,
+          height: size,
+          padding: 1,
+          position: 'relative',
+          opacity: alreadyUploaded ? 0.5 : 1,
         }}
-        source={{ uri: item.node.image.uri }}
-      />
-    </TouchableOpacity>
-  );
-};
+        // onPress={onRequestSync}
+      >
+        {alreadyUploaded ? (
+          <View style={{ position: 'absolute', bottom: 7, right: 7, zIndex: 10 }}>
+            <CloudIcon color={Colors.white} size={'sm'} />
+          </View>
+        ) : pendingUploadInSync ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: 7,
+              left: 7,
+              backgroundColor: pendingUploadInSync ? Colors.indigo[500] : undefined,
+              width: 15,
+              height: 15,
+              borderRadius: 50,
+              zIndex: 10,
+              opacity: 1,
+              borderColor: Colors.slate[200],
+              borderWidth: 1,
+            }}
+          />
+        ) : null}
+        <Image
+          key={item.node.id}
+          style={{
+            width: size - 2,
+            height: size - 2,
+          }}
+          source={{ uri: item.node.image.uri }}
+        />
+      </View>
+    );
+  }
+);
 
-const SettingsModal = ({ onClose }: { onClose: () => void }) => {
-  const {
-    syncFromCameraRoll,
-    setSyncFromCameraRoll,
-    setForceLowerQuality,
-    forceLowerQuality,
-    headlessSyncLog,
-  } = useKeyValueStorage();
+const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
+  const { syncFromCameraRoll, setSyncFromCameraRoll, setForceLowerQuality, forceLowerQuality } =
+    useKeyValueStorage();
 
   return (
     <Modal onClose={onClose} title="Sync settings">
@@ -385,21 +387,9 @@ const SettingsModal = ({ onClose }: { onClose: () => void }) => {
             </Text>
           </TouchableOpacity>
         )}
-
-        <TouchableOpacity
-          onPress={() => {
-            Alert.alert('Sync log', headlessSyncLog.toString() || 'No log found', [
-              {
-                text: 'Ok',
-              },
-            ]);
-          }}
-        >
-          <Text>Show log</Text>
-        </TouchableOpacity>
       </View>
     </Modal>
   );
-};
+});
 
 export default SyncDetailsPage;

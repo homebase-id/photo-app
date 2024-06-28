@@ -43,7 +43,11 @@ const PhotoLibPreview = ({
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [loadOriginal, setLoadOriginal] = useState(false);
+  const [loadOriginal, setLoadOriginal] = useState(localStorage.getItem('original') === '1');
+
+  useEffect(() => {
+    localStorage.setItem('original', loadOriginal ? '1' : '0');
+  }, [loadOriginal]);
 
   const currentDate = fileHeader
     ? new Date(fileHeader?.fileMetadata.appData.userDate || fileHeader?.fileMetadata.created)

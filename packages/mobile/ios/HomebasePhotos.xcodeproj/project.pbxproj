@@ -9,6 +9,16 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* HomebasePhotosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* HomebasePhotosTests.m */; };
 		1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */; };
+		121C38422C2B0EDC0020F8CE /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */; };
+		12D851D52C2305E400236484 /* SyncTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D42C2305E400236484 /* SyncTrigger.swift */; };
+		12D851D72C2306F700236484 /* Bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D62C2306F700236484 /* Bridge.m */; };
+		12D851DA2C23096100236484 /* MediaSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D92C23096100236484 /* MediaSync.swift */; };
+		12D851DC2C23154600236484 /* DotYouClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851DB2C23154600236484 /* DotYouClient.swift */; };
+		12D851DE2C23159400236484 /* MediaProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851DD2C23159400236484 /* MediaProvider.swift */; };
+		12D851E12C23288000236484 /* DriveFileUploadProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E02C23288000236484 /* DriveFileUploadProvider.swift */; };
+		12D851E32C2328E900236484 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E22C2328E900236484 /* ImageResizer.swift */; };
+		12D851E52C25913800236484 /* CryptoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E42C25913800236484 /* CryptoUtil.swift */; };
+		12D851E82C25C0F500236484 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 12D851E72C25C0F500236484 /* Alamofire */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -47,6 +57,16 @@
 		0404990F6F069703266226B6 /* libPods-HomebasePhotos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HomebasePhotos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1205763A2B6A342C0029FB57 /* RCTOdinBlobModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTOdinBlobModule.h; sourceTree = "<group>"; };
 		1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RCTOdinBlobModule.m; path = OdinBlob/RCTOdinBlobModule.m; sourceTree = "<group>"; };
+		121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
+		12D851D32C2305E400236484 /* HomebasePhotos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HomebasePhotos-Bridging-Header.h"; sourceTree = "<group>"; };
+		12D851D42C2305E400236484 /* SyncTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTrigger.swift; sourceTree = "<group>"; };
+		12D851D62C2306F700236484 /* Bridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Bridge.m; path = SyncTrigger/Bridge.m; sourceTree = "<group>"; };
+		12D851D92C23096100236484 /* MediaSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSync.swift; sourceTree = "<group>"; };
+		12D851DB2C23154600236484 /* DotYouClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotYouClient.swift; sourceTree = "<group>"; };
+		12D851DD2C23159400236484 /* MediaProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaProvider.swift; sourceTree = "<group>"; };
+		12D851E02C23288000236484 /* DriveFileUploadProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveFileUploadProvider.swift; sourceTree = "<group>"; };
+		12D851E22C2328E900236484 /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
+		12D851E42C25913800236484 /* CryptoUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtil.swift; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* HomebasePhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomebasePhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = HomebasePhotos/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = HomebasePhotos/AppDelegate.mm; sourceTree = "<group>"; };
@@ -76,6 +96,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F98D1801233E0B43BC818328 /* libPods-HomebasePhotos.a in Frameworks */,
+				12D851E82C25C0F500236484 /* Alamofire in Frameworks */,
+				121C38422C2B0EDC0020F8CE /* BackgroundTasks.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +130,36 @@
 			name = OdinBlob;
 			sourceTree = "<group>";
 		};
+		12D851D22C2305C800236484 /* SyncTrigger */ = {
+			isa = PBXGroup;
+			children = (
+				12D851D42C2305E400236484 /* SyncTrigger.swift */,
+				12D851D32C2305E400236484 /* HomebasePhotos-Bridging-Header.h */,
+				12D851D62C2306F700236484 /* Bridge.m */,
+			);
+			path = SyncTrigger;
+			sourceTree = "<group>";
+		};
+		12D851D82C23095200236484 /* MediaSync */ = {
+			isa = PBXGroup;
+			children = (
+				12D851D92C23096100236484 /* MediaSync.swift */,
+				12D851DB2C23154600236484 /* DotYouClient.swift */,
+				12D851DD2C23159400236484 /* MediaProvider.swift */,
+				12D851E22C2328E900236484 /* ImageResizer.swift */,
+			);
+			name = MediaSync;
+			sourceTree = "<group>";
+		};
+		12D851DF2C23286E00236484 /* core */ = {
+			isa = PBXGroup;
+			children = (
+				12D851E02C23288000236484 /* DriveFileUploadProvider.swift */,
+				12D851E42C25913800236484 /* CryptoUtil.swift */,
+			);
+			path = core;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* HomebasePhotos */ = {
 			isa = PBXGroup;
 			children = (
@@ -124,6 +176,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				0404990F6F069703266226B6 /* libPods-HomebasePhotos.a */,
 				31C16126578260B539F02DB6 /* libPods-HomebasePhotos-HomebasePhotosTests.a */,
@@ -134,6 +187,9 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				12D851DF2C23286E00236484 /* core */,
+				12D851D82C23095200236484 /* MediaSync */,
+				12D851D22C2305C800236484 /* SyncTrigger */,
 				1205763B2B6A346D0029FB57 /* OdinBlob */,
 			);
 			name = Libraries;
@@ -216,6 +272,9 @@
 			dependencies = (
 			);
 			name = HomebasePhotos;
+			packageProductDependencies = (
+				12D851E72C25C0F500236484 /* Alamofire */,
+			);
 			productName = HomebasePhotos;
 			productReference = 13B07F961A680F5B00A75B9A /* HomebasePhotos.app */;
 			productType = "com.apple.product-type.application";
@@ -233,7 +292,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1540;
 					};
 				};
 			};
@@ -246,6 +305,9 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
+			packageReferences = (
+				12D851E62C25C0F500236484 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -420,7 +482,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				12D851DE2C23159400236484 /* MediaProvider.swift in Sources */,
+				12D851E32C2328E900236484 /* ImageResizer.swift in Sources */,
+				12D851DA2C23096100236484 /* MediaSync.swift in Sources */,
+				12D851D52C2305E400236484 /* SyncTrigger.swift in Sources */,
+				12D851D72C2306F700236484 /* Bridge.m in Sources */,
 				1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */,
+				12D851E12C23288000236484 /* DriveFileUploadProvider.swift in Sources */,
+				12D851E52C25913800236484 /* CryptoUtil.swift in Sources */,
+				12D851DC2C23154600236484 /* DotYouClient.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -440,6 +510,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3BFC0DF1283E4737040AD76A /* Pods-HomebasePhotos-HomebasePhotosTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -467,6 +538,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 23AC5A94C54ABB8A0E6ABF4C /* Pods-HomebasePhotos-HomebasePhotosTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = HomebasePhotosTests/Info.plist;
@@ -493,9 +565,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = JNJ85M8JM6;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -571,6 +644,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = id.homebase.photos;
 				PRODUCT_NAME = HomebasePhotos;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "SyncTrigger/HomebasePhotos-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -583,9 +657,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = JNJ85M8JM6;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Flipper-DoubleConversion/Frameworks\"",
@@ -671,6 +746,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = id.homebase.photos;
 				PRODUCT_NAME = HomebasePhotos;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "SyncTrigger/HomebasePhotos-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -745,10 +821,7 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -816,10 +889,7 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -858,6 +928,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		12D851E62C25C0F500236484 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		12D851E72C25C0F500236484 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12D851E62C25C0F500236484 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

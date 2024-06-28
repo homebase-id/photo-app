@@ -1,6 +1,6 @@
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
 import { VideoWithLoader } from './VideoWithLoader';
-import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
+import { PhotoConfig, t, useDotYouClientContext } from 'photo-app-common';
 import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@youfoundation/ui-lib';
 import { useState } from 'react';
 
@@ -58,6 +58,18 @@ const CustomOdinImage = ({
   const [tinyLoaded, setTinyLoaded] = useState(false);
   const [finalLoaded, setFinalLoaded] = useState(false);
 
+  if (
+    original &&
+    media.fileMetadata.payloads.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+      ?.contentType === 'image/heic'
+  ) {
+    return (
+      <div className="relative h-full w-full flex flex-row items-center justify-center">
+        <p className="text-white">{t('Unsupported file format: "image/heic"')}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-full w-full">
       <OdinPreviewImage
@@ -70,6 +82,7 @@ const CustomOdinImage = ({
         fileKey={DEFAULT_PAYLOAD_KEY}
         blur="auto"
         onLoad={() => setTinyLoaded(true)}
+        key={'preview'}
       />
       {tinyLoaded ? (
         original ? (

@@ -19,9 +19,7 @@ RCT_EXPORT_MODULE();
 
 Boolean encryptFileWithAES_CBC(NSString *inputFilePath, NSString *outputFilePath, NSData *key, NSData *initialIV) {
   // Initialize the encryption operation
-  CCOptions options = kCCOptionPKCS7Padding;
   const void *keyPtr = [key bytes];
-
   size_t keyLength = [key length];
 
   // Check if the file path starts with "file://"
@@ -78,7 +76,7 @@ Boolean encryptFileWithAES_CBC(NSString *inputFilePath, NSString *outputFilePath
         size_t numBytesEncrypted = 0;
         CCCryptorStatus result = CCCrypt(kCCEncrypt,
                                         kCCAlgorithmAES,
-                                        options,
+                                        kCCOptionPKCS7Padding,
                                         keyPtr,
                                         keyLength,
                                         [iv bytes],

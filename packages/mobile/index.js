@@ -46,6 +46,3 @@ import App from './src/app/App';
 import { name as appName } from './app.json';
 
 AppRegistry.registerComponent(appName, () => App);
-
-// Register your BackgroundFetch HeadlessTask
-AppRegistry.registerHeadlessTask('HeadlessSyncTask', () => require('./src/app/HeadlessSync'));

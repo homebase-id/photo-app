@@ -28,9 +28,10 @@ export const drives = [
     p: DrivePermissionType.Read + DrivePermissionType.Write,
   },
 ];
-export const appName = 'Homebase - Photos';
-export const appId = '32f0bdbf-017f-4fc0-8004-2d4631182d1e';
-// export const appId = '107d8520-9636-4f3d-af3f-c69629c9762b';
+export const appName = `Homebase - Photos${import.meta.env.PROD ? '' : ' (Local Dev)'}`;
+export const appId = import.meta.env.PROD
+  ? '32f0bdbf-017f-4fc0-8004-2d4631182d1e'
+  : '107d8520-9636-4f3d-af3f-c69629c9762b'; // Local appID for different CORS host
 
 export const APP_SHARED_SECRET = 'APSS';
 export const APP_AUTH_TOKEN = 'BX0900';
