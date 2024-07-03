@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { memo, useCallback, useState } from 'react';
-import { Dimensions, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { Colors } from '../app/Colors';
 import { RootStackParamList, TabStackParamList } from '../app/App';
@@ -68,7 +68,7 @@ export const LibraryPage = memo((_props: LibraryProps) => {
               {albums?.map((album, index) => {
                 return <AlbumItem album={album} key={album.fileId ?? index} />;
               })}
-              <NewAlbumItem onPress={toggleOpen} />
+              {Platform.OS === 'android' ? <NewAlbumItem onPress={toggleOpen} /> : null}
             </View>
           </Container>
         </ScrollView>
