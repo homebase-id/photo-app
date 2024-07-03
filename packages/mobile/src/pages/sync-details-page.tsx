@@ -119,9 +119,11 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                   </Text>
                 </View>
 
-                <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
-                  <Button title="Sync now" onPress={doSyncNow} />
-                </View>
+                {Platform.OS === 'android' ? (
+                  <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
+                    <Button title="Sync now" onPress={doSyncNow} />
+                  </View>
+                ) : null}
               </View>
             </Container>
           ) : (
