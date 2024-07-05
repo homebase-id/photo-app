@@ -55,21 +55,25 @@ export const LibraryPage = memo((_props: LibraryProps) => {
               </TypeLink>
             </View>
 
-            <Text style={{ fontSize: 18, marginBottom: 5 }}>Albums</Text>
-            <View
-              style={{
-                margin: -5,
-                paddingVertical: 4,
-                display: 'flex',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-              }}
-            >
-              {albums?.map((album, index) => {
-                return <AlbumItem album={album} key={album.fileId ?? index} />;
-              })}
-              {Platform.OS === 'android' ? <NewAlbumItem onPress={toggleOpen} /> : null}
-            </View>
+            {Platform.OS !== 'ios' ? (
+              <>
+                <Text style={{ fontSize: 18, marginBottom: 5 }}>Albums</Text>
+                <View
+                  style={{
+                    margin: -5,
+                    paddingVertical: 4,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {albums?.map((album, index) => {
+                    return <AlbumItem album={album} key={album.fileId ?? index} />;
+                  })}
+                  {Platform.OS === 'android' ? <NewAlbumItem onPress={toggleOpen} /> : null}
+                </View>
+              </>
+            ) : null}
           </Container>
         </ScrollView>
       </View>

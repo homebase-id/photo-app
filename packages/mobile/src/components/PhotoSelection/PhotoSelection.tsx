@@ -1,4 +1,4 @@
-import { GestureResponderEvent, TouchableOpacity, View } from 'react-native';
+import { GestureResponderEvent, Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { RecycleBin, Archive, OpenHearth, Times, SolidHearth } from '../ui/Icons/icons';
 import { ReactNode, useState } from 'react';
@@ -213,7 +213,7 @@ const PhotoSelection = ({
                 </SelectionBarButton>
               </>
             ) : null}
-            {albums && !albumKey ? (
+            {albums && !albumKey && Platform.OS !== 'ios' ? (
               <SelectionBarButton onPress={() => setIsAlbumSelectionOpen(true)}>
                 <Text
                   style={{
