@@ -74,7 +74,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
 
     const photoMeta = await getPhotoMetadata(dotYouClient, targetDrive, dsr.fileId);
 
-    const decryptedData = await (async () => {
+    const imageData = await (async () => {
       const defaultPayload = dsr.fileMetadata.payloads.find(
         (payload) => payload.key === DEFAULT_PAYLOAD_KEY
       );
@@ -93,7 +93,11 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
           {}
         );
 
-        if (thumbBytes) return thumbBytes;
+        if (thumbBytes)
+          return {
+            data: thumbBytes,
+            fileName: photoMeta?.originalFileName?.split('.')[0] + '.jpg',
+          };
       }
 
       const decryptedPayload = await getPayloadBytes(
@@ -103,21 +107,21 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
         DEFAULT_PAYLOAD_KEY
       );
 
-      return decryptedPayload;
+      return { data: decryptedPayload, fileName: photoMeta?.originalFileName };
     })();
 
-    if (!decryptedData) return null;
+    if (!imageData?.data) return null;
 
     const url = window.URL.createObjectURL(
-      new Blob([decryptedData.bytes], {
-        type: decryptedData.contentType,
+      new Blob([imageData.data.bytes], {
+        type: imageData.data.contentType,
       })
     );
 
     // Dirty hack for easy download
     const link = document.createElement('a');
     link.href = url;
-    link.download = photoMeta?.originalFileName || url.substring(url.lastIndexOf('/') + 1);
+    link.download = imageData.fileName || url.substring(url.lastIndexOf('/') + 1);
     link.click();
   };
 
