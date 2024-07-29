@@ -6,6 +6,7 @@ import Archive from '../../ui/Icons/Archive/Archive';
 import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
 import { usePhoto, PhotoConfig, useAlbums, LibraryType } from 'photo-app-common';
+import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 
 const PhotoSelection = ({
   selection,
@@ -21,12 +22,12 @@ const PhotoSelection = ({
   type: LibraryType;
 }) => {
   const {
-    remove: { mutateAsync: removePhoto },
-    deleteFile: { mutateAsync: deletePhoto },
-    archive: { mutateAsync: archivePhoto },
-    restore: { mutateAsync: restorePhoto },
-    addTags: { mutateAsync: addTagsToPhoto },
-    removeTags: { mutateAsync: removeTagsFromPhoto },
+    remove: { mutateAsync: removePhoto, error: removeError },
+    deleteFile: { mutateAsync: deletePhoto, error: deleteError },
+    archive: { mutateAsync: archivePhoto, error: archiveError },
+    restore: { mutateAsync: restorePhoto, error: restoreError },
+    addTags: { mutateAsync: addTagsToPhoto, error: addTagsError },
+    removeTags: { mutateAsync: removeTagsFromPhoto, error: removeTagsError },
   } = usePhoto(PhotoConfig.PhotoDrive);
   const { data: albums } = useAlbums().fetch;
 
@@ -136,88 +137,100 @@ const PhotoSelection = ({
   };
 
   return (
-    <div className="sticky top-0 z-10 -mx-2 -mt-10 flex flex-row items-center bg-indigo-400 p-3 shadow-md sm:-mx-10">
-      <button className="mr-2 px-1 text-white" onClick={clearSelection}>
-        <Times className="w-h-6 h-6" />
-      </button>
-      <p className="text-white">
-        {selection.length} {t('Selected')}
-      </p>
-      <div className="ml-auto flex flex-row-reverse gap-2">
-        {type !== 'bin' ? (
-          <ActionButton
-            icon={'trash'}
-            onClick={async () => {
-              removeSelection();
-            }}
-            className="p-3"
-            size="square"
-            type="secondary"
-            confirmOptions={{
-              type: 'warning',
-              title: t('Remove Photos'),
-              body: `${t('Are you sure you want to remove')} ${selection.length} ${t('photos?')}`,
-              buttonText: t('Remove'),
-            }}
-          />
-        ) : null}
-        {type !== 'archive' ? (
-          <ActionButton
-            icon={Archive}
-            onClick={async () => {
-              archiveSelection();
-            }}
-            className="p-3"
-            size="square"
-            type="secondary"
-            confirmOptions={{
-              type: 'info',
-              title: t('Archive Photos'),
-              body: `${t('Are you sure you want to archive')} ${selection.length} ${t('photos?')}`,
-              buttonText: t('Archive'),
-            }}
-          />
-        ) : null}
-
-        {type === 'bin' ? (
-          <ActionButton onClick={() => deleteSelection()}>{t('Delete permanently')}</ActionButton>
-        ) : null}
-        {type === 'archive' || type === 'bin' ? (
-          <ActionButton onClick={() => restoreSelection()}>{t('Restore')}</ActionButton>
-        ) : (
-          <>
+    <>
+      <ErrorNotification
+        error={
+          removeError ||
+          deleteError ||
+          archiveError ||
+          restoreError ||
+          addTagsError ||
+          removeTagsError
+        }
+      />
+      <div className="sticky top-0 z-10 -mx-2 -mt-10 flex flex-row items-center bg-indigo-400 p-3 shadow-md sm:-mx-10">
+        <button className="mr-2 px-1 text-white" onClick={clearSelection}>
+          <Times className="w-h-6 h-6" />
+        </button>
+        <p className="text-white">
+          {selection.length} {t('Selected')}
+        </p>
+        <div className="ml-auto flex flex-row-reverse gap-2">
+          {type !== 'bin' ? (
             <ActionButton
-              icon={Heart}
+              icon={'trash'}
+              onClick={async () => {
+                removeSelection();
+              }}
               className="p-3"
               size="square"
               type="secondary"
-              onClick={() => favoriteSelection()}
+              confirmOptions={{
+                type: 'warning',
+                title: t('Remove Photos'),
+                body: `${t('Are you sure you want to remove')} ${selection.length} ${t('photos?')}`,
+                buttonText: t('Remove'),
+              }}
             />
-            {albums && albums?.length && !albumKey ? (
-              <ActionButtonWithOptions
+          ) : null}
+          {type !== 'archive' ? (
+            <ActionButton
+              icon={Archive}
+              onClick={async () => {
+                archiveSelection();
+              }}
+              className="p-3"
+              size="square"
+              type="secondary"
+              confirmOptions={{
+                type: 'info',
+                title: t('Archive Photos'),
+                body: `${t('Are you sure you want to archive')} ${selection.length} ${t('photos?')}`,
+                buttonText: t('Archive'),
+              }}
+            />
+          ) : null}
+
+          {type === 'bin' ? (
+            <ActionButton onClick={() => deleteSelection()}>{t('Delete permanently')}</ActionButton>
+          ) : null}
+          {type === 'archive' || type === 'bin' ? (
+            <ActionButton onClick={() => restoreSelection()}>{t('Restore')}</ActionButton>
+          ) : (
+            <>
+              <ActionButton
+                icon={Heart}
+                className="p-3"
+                size="square"
                 type="secondary"
-                options={albums.map((album) => {
-                  return { name: album.name, onClick: () => addSelectionToAlbum(album.tag) };
-                })}
-              >
-                {t('Add to album')}
-              </ActionButtonWithOptions>
-            ) : null}
-            {albumKey ? (
-              albumKey === PhotoConfig.FavoriteTag ? (
-                <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
-                  {t('Remove from favorites')}
-                </ActionButton>
-              ) : (
-                <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
-                  {t('Remove from album')}
-                </ActionButton>
-              )
-            ) : null}
-          </>
-        )}
+                onClick={() => favoriteSelection()}
+              />
+              {albums && albums?.length && !albumKey ? (
+                <ActionButtonWithOptions
+                  type="secondary"
+                  options={albums.map((album) => {
+                    return { name: album.name, onClick: () => addSelectionToAlbum(album.tag) };
+                  })}
+                >
+                  {t('Add to album')}
+                </ActionButtonWithOptions>
+              ) : null}
+              {albumKey ? (
+                albumKey === PhotoConfig.FavoriteTag ? (
+                  <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+                    {t('Remove from favorites')}
+                  </ActionButton>
+                ) : (
+                  <ActionButton onClick={() => removeSelectionFromAlbum(albumKey)}>
+                    {t('Remove from album')}
+                  </ActionButton>
+                )
+              ) : null}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

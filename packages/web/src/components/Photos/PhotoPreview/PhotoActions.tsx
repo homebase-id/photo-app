@@ -12,6 +12,7 @@ import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { PhotoConfig, usePhoto } from 'photo-app-common';
 import useAuth from '../../../hooks/auth/useAuth';
 import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
+import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -39,11 +40,16 @@ export const PhotoActions = ({
   const navigate = useNavigate();
 
   const {
-    remove: { mutateAsync: removePhoto, status: removePhotoStatus, reset: resetRemove },
-    archive: { mutateAsync: archivePhoto },
-    restore: { mutateAsync: restorePhoto },
-    addTags: { mutateAsync: addTagsToPhoto },
-    removeTags: { mutateAsync: removeTagsFromPhoto },
+    remove: {
+      mutateAsync: removePhoto,
+      status: removePhotoStatus,
+      reset: resetRemove,
+      error: removeError,
+    },
+    archive: { mutateAsync: archivePhoto, error: archiveError },
+    restore: { mutateAsync: restorePhoto, error: restoreError },
+    addTags: { mutateAsync: addTagsToPhoto, error: addTagsError },
+    removeTags: { mutateAsync: removeTagsFromPhoto, error: removeTagsError },
   } = usePhoto(targetDrive);
   const {
     download: { mutateAsync: downloadPhoto },
@@ -97,6 +103,9 @@ export const PhotoActions = ({
 
   return (
     <>
+      <ErrorNotification
+        error={removeError || archiveError || restoreError || addTagsError || removeTagsError}
+      />
       <div
         className="absolute right-3 top-3 z-10 flex w-[50%] flex-row-reverse gap-2"
         onClick={(e) => e.stopPropagation()}

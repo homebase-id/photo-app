@@ -125,9 +125,15 @@ export const usePhoto = (targetDrive?: TargetDrive) => {
       onSuccess: (_param) => {
         queryClient.invalidateQueries({
           queryKey: ['photos', targetDrive?.alias, 'bin'],
+          exact: false,
         });
         queryClient.invalidateQueries({
           queryKey: ['photos-infinite', targetDrive?.alias],
+          exact: false,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['flat-photos', targetDrive?.alias],
+          exact: false,
         });
 
         if (_param?.date) invalidateLibrary('bin');
