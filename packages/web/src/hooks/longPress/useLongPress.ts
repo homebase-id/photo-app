@@ -50,6 +50,9 @@ export const useLongPress = (
       if (shouldPreventDefault && target.current) {
         target.current.removeEventListener('touchend', preventDefault);
       }
+      event.preventDefault();
+      event.stopPropagation();
+      event.bubbles = false;
     },
     [shouldPreventDefault, onClick, longPressTriggered]
   );
@@ -60,6 +63,10 @@ export const useLongPress = (
     onMouseUp: (e: React.MouseEvent<HTMLElement>) => clear(e),
     onTouchEnd: (e: React.TouchEvent<HTMLElement>) => clear(e),
     onMouseLeave: (e: React.MouseEvent<HTMLElement>) => clear(e, false),
+    oncontextmenu: (e: React.MouseEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+    },
   };
 };
 
