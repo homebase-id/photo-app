@@ -7,6 +7,8 @@ import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
 import { usePhoto, PhotoConfig, useAlbums, LibraryType } from 'photo-app-common';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
+import { ActionGroup } from '../../ui/Buttons/ActionGroup';
+import { ArrowDown } from '../../ui/Icons/Arrow/Arrow';
 
 const PhotoSelection = ({
   selection,
@@ -153,7 +155,13 @@ const PhotoSelection = ({
           <Times className="w-h-6 h-6" />
         </button>
         <p className="text-white">
-          {selection.length} {t('Selected')}
+          {selection?.length ? (
+            <>
+              {selection.length} {t('Selected')}
+            </>
+          ) : (
+            t('Tap to select photos')
+          )}
         </p>
         <div className="ml-auto flex flex-row-reverse gap-2">
           {type !== 'bin' ? (
@@ -162,7 +170,6 @@ const PhotoSelection = ({
               onClick={async () => {
                 removeSelection();
               }}
-              className="p-3"
               size="square"
               type="secondary"
               confirmOptions={{
@@ -179,7 +186,6 @@ const PhotoSelection = ({
               onClick={async () => {
                 archiveSelection();
               }}
-              className="p-3"
               size="square"
               type="secondary"
               confirmOptions={{
@@ -200,27 +206,24 @@ const PhotoSelection = ({
             <>
               <ActionButton
                 icon={Heart}
-                className="p-3"
                 size="square"
                 type="secondary"
                 onClick={() => favoriteSelection()}
               />
               {albums && albums?.length && !albumKey ? (
-                <ActionButtonWithOptions
+                <ActionGroup
                   type="secondary"
                   options={albums.map((album) => {
                     return {
-                      name: album.name,
+                      label: album.name,
                       value: album.name,
                       onClick: () => addSelectionToAlbum(album.tag),
                     };
                   })}
-                  onClick={() => {
-                    throw new Error('Function not implemented.');
-                  }}
+                  icon={ArrowDown}
                 >
                   {t('Add to album')}
-                </ActionButtonWithOptions>
+                </ActionGroup>
               ) : null}
               {albumKey ? (
                 albumKey === PhotoConfig.FavoriteTag ? (
