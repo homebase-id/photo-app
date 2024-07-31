@@ -63,7 +63,7 @@ export const useLongPress = (
     onMouseUp: (e: React.MouseEvent<HTMLElement>) => clear(e),
     onTouchEnd: (e: React.TouchEvent<HTMLElement>) => clear(e),
     onMouseLeave: (e: React.MouseEvent<HTMLElement>) => clear(e, false),
-    oncontextmenu: (e: React.MouseEvent<HTMLElement>) => {
+    onContextMenu: (e: React.MouseEvent<HTMLElement>) => {
       e.preventDefault();
       e.stopPropagation();
     },
