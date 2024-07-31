@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import ActionButton from '../../ui/Buttons/ActionButton';
-import ActionButtonWithOptions from '../../ui/Buttons/ActionButtonWithOptions';
+import { ActionButtonWithOptions } from '../../ui/Buttons/ActionButtonWithOptions';
 import Archive from '../../ui/Icons/Archive/Archive';
 import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
@@ -209,8 +209,15 @@ const PhotoSelection = ({
                 <ActionButtonWithOptions
                   type="secondary"
                   options={albums.map((album) => {
-                    return { name: album.name, onClick: () => addSelectionToAlbum(album.tag) };
+                    return {
+                      name: album.name,
+                      value: album.name,
+                      onClick: () => addSelectionToAlbum(album.tag),
+                    };
                   })}
+                  onClick={() => {
+                    throw new Error('Function not implemented.');
+                  }}
                 >
                   {t('Add to album')}
                 </ActionButtonWithOptions>

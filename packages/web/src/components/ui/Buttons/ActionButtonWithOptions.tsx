@@ -1,24 +1,23 @@
 import { FC, useRef, useState } from 'react';
 import useOutsideTrigger from '../../../hooks/clickedOutsideTrigger/useClickedOutsideTrigger';
 import ActionButton, { ActionButtonProps } from './ActionButton';
+import { ArrowDown } from '../Icons/Arrow/Arrow';
+import { useMostSpace } from '../../../hooks/intersection/useMostSpace';
 
-interface ActionButtonWithOptionsProps extends ActionButtonProps {
-  options: {
-    name: string;
-    group?: string;
-    onClick?: React.MouseEventHandler<HTMLElement>;
-  }[];
-  innerClassName?: string;
+interface ActionButtonWithOptionsProps extends Omit<Omit<ActionButtonProps, 'icon'>, 'onClick'> {
+  options: { value: string; name: string; group?: string }[];
+  onClick: (value: string) => void;
 }
 
-const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
+export const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
   options,
+  onClick,
   className,
-  innerClassName,
   ...actionButtonProps
 }) => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef(null);
   useOutsideTrigger(options ? wrapperRef : undefined, () => setIsOpen(false));
+  const { verticalSpace, horizontalSpace } = useMostSpace(wrapperRef);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -36,18 +35,12 @@ const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
     return { name: group, options: options.filter((option) => option.group === group) };
   });
 
-  const renderOptions = (
-    options: {
-      name: string;
-      group?: string;
-      onClick?: React.MouseEventHandler<HTMLElement>;
-    }[]
-  ) => {
+  const renderOptions = (options: { value: string; name: string; group?: string }[]) => {
     return options.map((option) => (
       <li
-        onClick={option.onClick}
-        className="cursor-pointer px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800"
-        key={option.name}
+        onClick={() => onClick(option.value)}
+        className="cursor-pointer px-2 py-2 leading-tight hover:bg-slate-200 dark:hover:bg-slate-700"
+        key={option.value}
       >
         {option.name}
       </li>
@@ -57,29 +50,33 @@ const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
   return (
     <div className={`relative ${className ?? ''}`} ref={wrapperRef}>
       <ActionButton
-        icon="down"
         {...actionButtonProps}
-        className={`w-full sm:w-full ${innerClassName ?? ''}`}
+        className="w-full sm:w-full"
         onClick={() => setIsOpen(!isOpen)}
+        icon={ArrowDown}
       />
       {optionGroups?.length ? (
         <ul
-          className={`absolute right-0 top-[100%] w-60 shadow-md ${
-            isOpen ? 'max-h-[15rem]' : 'max-h-0'
-          } overflow-auto bg-white dark:bg-slate-900`}
+          className={`absolute ${
+            verticalSpace === 'top' ? 'bottom-[100%]' : 'top-[100%]'
+          } ${horizontalSpace === 'left' ? 'right-0' : 'left-0'}  w-full shadow-md ${
+            isOpen ? 'max-h-[15.5rem]' : 'max-h-0'
+          } overflow-auto bg-white text-black dark:bg-slate-900 dark:text-white`}
         >
           {optionGroups.map((group) => (
             <li className="px-2 py-1" key={group.name}>
-              <p className="font-bold">{group.name}</p>
+              <p className="font-bold text-slate-400 dark:text-slate-500">{group.name}</p>
               <ul>{renderOptions(group.options)}</ul>
             </li>
           ))}
         </ul>
       ) : options ? (
         <ul
-          className={`absolute right-0 top-[100%] w-60 rounded-lg shadow-md ${
+          className={`absolute ${
+            verticalSpace === 'top' ? 'bottom-[100%]' : 'top-[100%]'
+          } right-0 w-full ${
             isOpen ? 'max-h-[15rem]' : 'max-h-0'
-          } overflow-auto bg-white dark:bg-slate-900`}
+          } overflow-auto bg-white text-black`}
         >
           {renderOptions(options)}
         </ul>
@@ -87,5 +84,3 @@ const ActionButtonWithOptions: FC<ActionButtonWithOptionsProps> = ({
     </div>
   );
 };
-
-export default ActionButtonWithOptions;
