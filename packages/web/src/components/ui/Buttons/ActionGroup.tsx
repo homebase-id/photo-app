@@ -74,7 +74,11 @@ export const ActionGroup = ({
             />
           );
         })}
-        <ActionOption onClick={() => setIsOpen(false)} label={'Close'} className="md:hidden" />
+        <ActionOption
+          onClick={() => setIsOpen(false)}
+          label={'Close'}
+          className="text-foreground/60 md:hidden"
+        />
       </ul>
     </div>
   );
