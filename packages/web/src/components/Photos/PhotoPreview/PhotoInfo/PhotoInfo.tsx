@@ -136,6 +136,7 @@ export const PhotoInfo = ({
                 </p>
               </li>
             ) : null}
+            <PhotoFileSize mediaFile={current} />
             <li>
               <p>
                 {t('Unique identifier')}
@@ -195,6 +196,31 @@ const PhotoGeoLocation = ({ metadata }: { metadata: ImageMetadata }) => {
     <li>
       <p>
         {latitude} (lat), {longitude} (lng), {altitude}m
+      </p>
+    </li>
+  );
+};
+
+const bytesToSize = (bytes: number) => {
+  return bytes < 1024
+    ? `${bytes} B`
+    : bytes < 1024 * 1024
+      ? `${(bytes / 1024).toFixed(2)} KB`
+      : `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const PhotoFileSize = ({ mediaFile }: { mediaFile: HomebaseFile }) => {
+  const totalSize = useMemo(
+    () => mediaFile.fileMetadata.payloads?.reduce((acc, payload) => acc + payload.bytesWritten, 0),
+    [mediaFile]
+  );
+  if (!mediaFile) return null;
+
+  return (
+    <li>
+      <p>
+        {t('File size')}
+        <small className="block text-sm text-slate-400">{bytesToSize(totalSize || 0)}</small>
       </p>
     </li>
   );
