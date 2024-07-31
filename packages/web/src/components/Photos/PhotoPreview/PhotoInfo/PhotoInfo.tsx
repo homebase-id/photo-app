@@ -7,7 +7,6 @@ import EditDateDialog from '../../../Dialog/EditDateDialog/EditDateDialog';
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
 import { ImageMetadata } from '@youfoundation/js-lib/media';
 import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
-import useAuth from '../../../../hooks/auth/useAuth';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -209,9 +208,9 @@ const bytesToSize = (bytes: number) => {
       : `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 };
 
-const PhotoFileSize = ({ mediaFile }: { mediaFile: HomebaseFile }) => {
+const PhotoFileSize = ({ mediaFile }: { mediaFile: HomebaseFile | null | undefined }) => {
   const totalSize = useMemo(
-    () => mediaFile.fileMetadata.payloads?.reduce((acc, payload) => acc + payload.bytesWritten, 0),
+    () => mediaFile?.fileMetadata.payloads?.reduce((acc, payload) => acc + payload.bytesWritten, 0),
     [mediaFile]
   );
   if (!mediaFile) return null;
