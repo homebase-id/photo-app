@@ -57,7 +57,7 @@ export const ActionGroup = ({
     <div
       className={`${horizontalSpace === 'left' ? 'right-0' : 'left-0'} ${
         verticalSpace === 'top' ? 'bottom-[100%]' : 'top-[100%]'
-      } z-20 ${isOpen ? 'max-h-[15rem] border' : 'max-h-0'} ${
+      } z-50 ${isOpen ? 'max-h-[15rem] border' : 'max-h-0'} ${
         isSm ? 'w-full' : 'absolute w-[14rem]'
       } overflow-auto rounded-md border-gray-200 border-opacity-80 shadow-md dark:border-gray-700`}
     >
@@ -110,7 +110,7 @@ export const ActionGroup = ({
               <div
                 className={
                   isOpen
-                    ? 'bg-background/70 z-20 px-4 fixed inset-0 flex flex-col items-center justify-center lg:contents'
+                    ? 'bg-background/70 z-50 px-4 fixed inset-0 flex flex-col items-center justify-center lg:contents'
                     : 'fixed lg:contents'
                 }
                 onClick={() => setIsOpen(false)}

@@ -10,7 +10,6 @@ import Info from '../../ui/Icons/Info/Info';
 import { HomebaseFile } from '@youfoundation/js-lib/core';
 import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
 import { PhotoConfig, usePhoto } from 'photo-app-common';
-import useAuth from '../../../hooks/auth/useAuth';
 import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 
@@ -131,7 +130,7 @@ export const PhotoActions = ({
               : []),
           ]}
           state={removePhotoStatus}
-          innerClassname="p-3 text-white"
+          buttonClassName="p-3 text-white"
           size="square"
           type="hybrid"
         />
