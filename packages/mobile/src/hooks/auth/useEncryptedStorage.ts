@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 
@@ -61,9 +61,9 @@ export const useKeyValueStorage = () => {
     storage,
     undefined
   );
-  const [lastCameraRollSyncTime, setLastSyncTime] = useState<number>(androidLastCameraRollSyncTime);
+  const [lastCameraRollSyncTime, setLastSyncTime] = useState<number>();
 
-  useFocusEffect(() => {
+  const clearMemoryCache = useCallback(() => {
     const now = new Date().getTime();
     if (now - (lastMemoryClear.current || 0) < 1000 * 60 * 1) return;
 
@@ -75,7 +75,15 @@ export const useKeyValueStorage = () => {
         if (!err && value !== undefined && value !== null && value !== 0) setLastSyncTime(value);
       });
     }
+  },[]);
+
+  useFocusEffect(() => {
+    clearMemoryCache()
   });
+
+  useEffect(() => {
+    clearMemoryCache();
+  }, []);
 
   const [syncFromCameraRoll, setSyncFromCameraRoll] = useMMKVStorage<boolean>(
     SYNC_FROM_CAMERA_ROLL,
@@ -90,7 +98,7 @@ export const useKeyValueStorage = () => {
   );
 
   return {
-    lastCameraRollSyncTime,
+    lastCameraRollSyncTime: lastCameraRollSyncTime || androidLastCameraRollSyncTime,
 
     syncFromCameraRoll,
     setSyncFromCameraRoll,

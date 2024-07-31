@@ -4,9 +4,12 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,14 +22,17 @@ public class ImageResizer {
         // Decode the original image from the file
         Bitmap originalBitmap = BitmapFactory.decodeFile(inputFilePath);
 
-        int originalWidth = originalBitmap.getWidth();
-        int originalHeight = originalBitmap.getHeight();
+        // Read the EXIF orientation tag and apply the rotation if necessary
+        Bitmap rotatedBitmap = rotateImageIfRequired(inputFilePath, originalBitmap);
+
+        int originalWidth = rotatedBitmap.getWidth();
+        int originalHeight = rotatedBitmap.getHeight();
 
         for (ResizeInstruction instruction : instructions) {
 
             // Create a resized version of the bitmap
             int[] scaledSize = calculateScaledSize(originalWidth, originalHeight, instruction.width, instruction.height);
-            Bitmap resizedBitmap = resize(originalBitmap, scaledSize[0], scaledSize[1]);
+            Bitmap resizedBitmap = resize(rotatedBitmap, scaledSize[0], scaledSize[1]);
 
             // Write the resized bitmap to a ByteArrayOutputStream
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -37,6 +43,7 @@ public class ImageResizer {
 
         // Recycle the original bitmap to free memory
         originalBitmap.recycle();
+        rotatedBitmap.recycle();
 
         return outputThumbs;
     }
@@ -45,12 +52,15 @@ public class ImageResizer {
         // Decode the original image from the file
         Bitmap originalBitmap = BitmapFactory.decodeFile(inputFilePath);
 
-        int originalWidth = originalBitmap.getWidth();
-        int originalHeight = originalBitmap.getHeight();
+        // Read the EXIF orientation tag and apply the rotation if necessary
+        Bitmap rotatedBitmap = rotateImageIfRequired(inputFilePath, originalBitmap);
+
+        int originalWidth = rotatedBitmap.getWidth();
+        int originalHeight = rotatedBitmap.getHeight();
 
         int[] scaledSize = calculateScaledSize(originalWidth, originalHeight, instruction.width, instruction.height);
         // Create a resized version of the bitmap
-        Bitmap resizedBitmap = resize(originalBitmap, scaledSize[0], scaledSize[1]);
+        Bitmap resizedBitmap = resize(rotatedBitmap, scaledSize[0], scaledSize[1]);
 
         // Write the resized bitmap to a ByteArrayOutputStream
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -58,6 +68,7 @@ public class ImageResizer {
 
         // Recycle the original bitmap to free memory
         originalBitmap.recycle();
+        rotatedBitmap.recycle();
 
         return new ThumbnailStream(payloadKey, outputStream, keepDimensions ? originalHeight : scaledSize[1], keepDimensions ? originalWidth : scaledSize[0], "image/" + instruction.format);
     }
@@ -101,6 +112,36 @@ public class ImageResizer {
 
         // Recycle the resized bitmap to free memory
         bitmap.recycle();
+    }
+
+
+    private static Bitmap rotateImageIfRequired(String filePath, Bitmap bitmap) {
+        ExifInterface exif;
+        try {
+            exif = new ExifInterface(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return bitmap;
+        }
+
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        Matrix matrix = new Matrix();
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.postRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.postRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.postRotate(270);
+                break;
+            default:
+                return bitmap;
+        }
+
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     public static class ResizeInstruction {

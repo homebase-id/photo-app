@@ -28,7 +28,6 @@ import { Colors } from '../app/Colors';
 import { CloudIcon, Cog } from '../components/ui/Icons/icons';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { Modal } from '../components/ui/Modal/Modal';
-import { ErrorNotification } from '../components/ui/Alert/ErrorNotification';
 import { NativeModules } from 'react-native';
 const { SyncTrigger } = NativeModules;
 
