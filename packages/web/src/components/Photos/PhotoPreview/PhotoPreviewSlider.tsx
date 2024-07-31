@@ -38,7 +38,7 @@ const PhotoPreviewSlider = ({
   const navigate = useNavigate();
 
   const fileIndex = flatPhotos.findIndex((photo) => stringGuidsEqual(photo.fileId, fileId));
-  const slideWidth = scrollContainer.current?.parentElement?.clientWidth || window.innerWidth; // Not widow.clientWidth as the scrollbar is removed by disabled scrolling on the body
+  const slideWidth = scrollContainer.current?.parentElement?.clientWidth || window.innerWidth; // Not widow.clientWidth as the scrollbar is removed by disabling scrolling on the body
 
   // Get the current, next and previous photos;
   // TODO: Check if we need to preload more than 1 photo
@@ -95,10 +95,15 @@ const PhotoPreviewSlider = ({
       className="no-scrollbar flex h-full snap-x snap-mandatory flex-row overflow-y-hidden overflow-x-scroll"
       ref={scrollContainer}
     >
-      {photosToShow.map((photo) => {
+      {photosToShow.map((photo, index) => {
         return (
-          <div className="h-full w-screen" key={photo.fileId}>
-            <div className="relative flex h-screen w-screen snap-start">
+          <div
+            className="h-full w-screen relative"
+            key={photo.fileId}
+            data-fileid={photo.fileId}
+            data-index={index}
+          >
+            <div className="relative flex overflow-hidden h-screen w-screen snap-start">
               <MediaWithLoader
                 media={photo}
                 fileId={photo.fileId}
