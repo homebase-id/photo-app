@@ -23,6 +23,7 @@ import { useAuth } from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { useQueryClient } from '@tanstack/react-query';
+import { Audio } from 'react-native-compressor';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
@@ -55,7 +56,7 @@ const SettingsPage = (_props: SettingsProps) => {
   return (
     <SafeAreaView>
       <Container>
-        <View style={{ display: 'flex', flexDirection: 'column' }}>
+        <View style={{ display: 'flex', height:'100%',flexDirection: 'column', paddingBottom:12 }}>
           <Text
             style={{
               fontSize: 18,
@@ -66,24 +67,6 @@ const SettingsPage = (_props: SettingsProps) => {
           >
             {getIdentity()}
           </Text>
-          <TouchableOpacity
-            onPress={() => doLogout()}
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              paddingVertical: 12,
-            }}
-          >
-            <Logout size={'lg'} />
-            <Text
-              style={{
-                marginLeft: 16,
-              }}
-            >
-              Logout
-            </Text>
-            {logoutPending ? <ActivityIndicator style={{ marginLeft: 'auto' }} /> : null}
-          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigate('SyncDetails')}
@@ -154,6 +137,25 @@ const SettingsPage = (_props: SettingsProps) => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={() => doLogout()}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              paddingVertical: 12,
+              marginTop:'auto'
+            }}
+          >
+            <Logout size={'lg'} />
+            <Text
+              style={{
+                marginLeft: 16,
+              }}
+            >
+              Logout
+            </Text>
+            {logoutPending ? <ActivityIndicator style={{ marginLeft: 'auto' }} /> : null}
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={() => {
               Alert.alert(
                 'Delete your account?',
@@ -198,6 +200,7 @@ const SettingsPage = (_props: SettingsProps) => {
             style={{
               alignItems: 'center',
               paddingVertical: 12,
+
               width: '100%',
             }}
           />
