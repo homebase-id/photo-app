@@ -47,7 +47,9 @@ const PhotoPreviewSlider = ({
   const currentPhoto = flatPhotos[fileIndex];
   const nextPhoto = flatPhotos[fileIndex + 1];
   const [photosToShow, setPhotosToShow] = useState<HomebaseFile[]>(
-    [...flatPhotos.slice(0, fileIndex), currentPhoto, nextPhoto].filter((photo) => photo)
+    Array.from(new Set([...flatPhotos.slice(0, fileIndex), currentPhoto, nextPhoto])).filter(
+      (photo) => photo
+    )
   );
   useEffect(() => {
     const indexInPhotosToshow = photosToShow.findIndex((photo) =>
@@ -61,6 +63,8 @@ const PhotoPreviewSlider = ({
       // We're first, we need to prepend the previous photo
       const prevPhoto = flatPhotos[fileIndex - 1];
       if (prevPhoto) setPhotosToShow([prevPhoto, ...photosToShow]);
+    } else if (indexInPhotosToshow === -1) {
+      console.log('Photo not found in photosToShow');
     }
   }, [fileIndex]);
 
@@ -70,6 +74,10 @@ const PhotoPreviewSlider = ({
     if (isFetching) return;
     if (fileIndex >= flatPhotos.length - 1 && hasOlderPage) fetchOlderPage();
     if (fileIndex <= 1 && hasNewerPage && fetchNewerPage) fetchNewerPage();
+    if (fileIndex === -1) {
+      if (hasOlderPage) fetchOlderPage();
+      else if (hasNewerPage && fetchNewerPage) fetchNewerPage();
+    }
   }, [fileIndex, flatPhotos, hasNewerPage, hasOlderPage, fetchNewerPage, fetchOlderPage]);
 
   // Update the url with the current fileId when scrolling
