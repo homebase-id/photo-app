@@ -23,7 +23,6 @@ import { useAuth } from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { useQueryClient } from '@tanstack/react-query';
-import { Audio } from 'react-native-compressor';
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'Profile'>;
 
@@ -49,14 +48,16 @@ const SettingsPage = (_props: SettingsProps) => {
   };
 
   const doClearLocalData = async () => {
-    queryClient.removeQueries();
+    queryClient.clear();
     console.log('Local data cleared');
   };
 
   return (
     <SafeAreaView>
       <Container>
-        <View style={{ display: 'flex', height:'100%',flexDirection: 'column', paddingBottom:12 }}>
+        <View
+          style={{ display: 'flex', height: '100%', flexDirection: 'column', paddingBottom: 12 }}
+        >
           <Text
             style={{
               fontSize: 18,
@@ -142,7 +143,7 @@ const SettingsPage = (_props: SettingsProps) => {
               display: 'flex',
               flexDirection: 'row',
               paddingVertical: 12,
-              marginTop:'auto'
+              marginTop: 'auto',
             }}
           >
             <Logout size={'lg'} />

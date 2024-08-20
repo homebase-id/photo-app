@@ -37,8 +37,8 @@ const INCLUDED_QUERY_KEYS = [
   'photos-infinite',
 
   // Small data (blobs to local file Uri)
-  'image',
-  // Big data (base64 uri's)
+  // 'image', // We can't persist images, as they are objectUrls => Cleared on page reload
+  // "Big data" (base64 uri's)
   'tinyThumb',
 ];
 

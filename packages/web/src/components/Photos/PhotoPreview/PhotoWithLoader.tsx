@@ -29,6 +29,8 @@ export const PhotoWithLoader = ({
       previewThumbnail={previewThumbnail}
       fit={fit}
       className={className}
+      preferObjectUrl={true}
+      // => Prefer image urls over base64
     />
   );
 };

@@ -95,7 +95,7 @@ const PhotoLibrary = ({
     count: (monthsToShow?.length || 0) + 1, // Add 1 so we have an index for the 'no more photos row'
     estimateSize: () => 1000, // Rough size of a photoSection
     scrollMargin: parentOffsetRef.current,
-    overscan: 0, // Overscan as small as possible as the months are expected to span more than one screen height
+    overscan: 3, // Overscan as small as possible as the months are expected to span more than one screen height
   });
 
   const items = virtualizer.getVirtualItems();

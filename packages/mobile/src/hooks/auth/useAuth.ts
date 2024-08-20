@@ -104,7 +104,7 @@ export const useAuth = () => {
     setAuthToken('');
     setIdentity('');
 
-    queryClient.removeQueries();
+    queryClient.clear();
   }, [getDotYouClient, queryClient, setAuthToken, setIdentity, setPrivateKey, setSharedSecret]);
 
   return {

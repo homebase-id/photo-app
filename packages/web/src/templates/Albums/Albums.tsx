@@ -56,6 +56,7 @@ const AlbumItem = ({ album }: { album: AlbumDefinition }) => {
           lastModified={undefined}
           fit="cover"
           className="aspect-square"
+          preferObjectUrl={true}
         />
       ) : (
         <div className="bg-slate-100">
