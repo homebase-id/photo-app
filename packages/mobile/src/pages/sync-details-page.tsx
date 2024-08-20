@@ -318,8 +318,13 @@ const GalleryItem = memo(
 );
 
 const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
-  const { syncFromCameraRoll, setSyncFromCameraRoll, setForceLowerQuality, forceLowerQuality } =
-    useKeyValueStorage();
+  const {
+    syncFromCameraRoll,
+    setSyncFromCameraRoll,
+    setForceLowerQuality,
+    forceLowerQuality,
+    setLastCameraRollSyncTime,
+  } = useKeyValueStorage();
 
   return (
     <Modal onClose={onClose} title="Sync settings">
@@ -357,6 +362,31 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
           <Text>Backup quality</Text>
           <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
             {forceLowerQuality ? 'High quality' : 'Original quality'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              'Sync all',
+              `This will include all your media since the year 2000, it may take a while (hours/days/weeks) before everything it synced.`,
+              [
+                {
+                  text: 'Continue',
+                  onPress: () => setLastCameraRollSyncTime(946684800000), // 1 Jan 2000 GMT
+                  style: 'default',
+                },
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+              ]
+            );
+          }}
+        >
+          <Text>Sync all</Text>
+          <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
+            Reset the sync from time to include all your media
           </Text>
         </TouchableOpacity>
 

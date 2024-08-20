@@ -77,9 +77,15 @@ public class MediaSync {
         String lastSyncTimeString = String.valueOf(lastSyncTimeSeconds);
         String[] selectionArgs = {lastSyncTimeString};
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
+        int maxBatchSize = 700;
+        String limit = " LIMIT " + maxBatchSize;
 
-        Cursor cursor = this.context.getContentResolver().query(uri, projection, selection,
-                selectionArgs, sortOrder);
+        Cursor cursor = this.context.getContentResolver().query(
+                uri.buildUpon().encodedQuery(limit).build(),
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder);
 
         // For each photo, upload it to the server
         if (cursor != null) {
@@ -134,8 +140,10 @@ public class MediaSync {
                 }
             }
 
-            // Everything is processed, so we set current time as last sync time
-            mmkv.encode("lastSyncTimeAsNumber", new Date().getTime());
+            if (cursor.getCount() < maxBatchSize) {
+                // Everything is processed and the batch was smaller than max, so we set current time as last sync time
+                mmkv.encode("lastSyncTimeAsNumber", new Date().getTime());
+            }
 
             cursor.close();
         }

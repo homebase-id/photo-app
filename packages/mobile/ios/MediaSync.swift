@@ -48,8 +48,10 @@ class MediaSync {
     // Find all photos that have been added since the last sync
     let fetchOptions = PHFetchOptions()
     let lastSyncTimeSeconds = lastSyncTimeInMiliseconds / 1000 - (60 * 30) // 30 minutes buffer
+    let maxBatchSize = 700
     fetchOptions.predicate = NSPredicate(format: "creationDate > %@", NSDate(timeIntervalSince1970: lastSyncTimeSeconds))
     fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+    fetchOptions.fetchLimit = maxBatchSize
 
     let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
 
@@ -126,8 +128,10 @@ class MediaSync {
 
 
       print("[SyncWorker] MediaSync finished")
-      // Everything is processed, so we set current time as last sync time
-      storage?.set(Date().timeIntervalSince1970 * 1000, forKey: "lastSyncTimeAsNumber")
+      if(fetchResult.count < maxBatchSize) {
+        // Everything is processed and the batch was smaller than max, so we set current time as last sync time
+        storage?.set(Date().timeIntervalSince1970 * 1000, forKey: "lastSyncTimeAsNumber")
+      }
     }
   }
 

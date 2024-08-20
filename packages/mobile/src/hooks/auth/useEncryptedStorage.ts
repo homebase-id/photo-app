@@ -56,7 +56,7 @@ export const useEncrtypedStorage = () => {
 export const useKeyValueStorage = () => {
   const lastMemoryClear = useRef<number>();
   // This one doesn't work on iOS :shrug:
-  const [androidLastCameraRollSyncTime] = useMMKVStorage<number>(
+  const [androidLastCameraRollSyncTime, setLastCameraRollSyncTime] = useMMKVStorage<number>(
     LAST_SYNC_TIME,
     storage,
     undefined
@@ -75,10 +75,10 @@ export const useKeyValueStorage = () => {
         if (!err && value !== undefined && value !== null && value !== 0) setLastSyncTime(value);
       });
     }
-  },[]);
+  }, []);
 
   useFocusEffect(() => {
-    clearMemoryCache()
+    clearMemoryCache();
   });
 
   useEffect(() => {
@@ -99,6 +99,7 @@ export const useKeyValueStorage = () => {
 
   return {
     lastCameraRollSyncTime: lastCameraRollSyncTime || androidLastCameraRollSyncTime,
+    setLastCameraRollSyncTime,
 
     syncFromCameraRoll,
     setSyncFromCameraRoll,
