@@ -17,10 +17,16 @@ Once you have the back-end and front-end web apps running, you can start the mob
 npm install
 ```
 
-### Start Metro
+### Start Metro for Native (React Native)
 
 ```bash
-npm start
+npm start:mobile
+```
+
+### Start Vite for Web (React)
+
+```bash
+npm start:web
 ```
 
 #### Log in with local identities on Android
