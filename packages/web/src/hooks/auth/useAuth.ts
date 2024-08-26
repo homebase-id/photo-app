@@ -1,5 +1,5 @@
-import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
-import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
+import { ApiType, DotYouClient } from '@homebase-id/js-lib/core';
+import { base64ToUint8Array } from '@homebase-id/js-lib/helpers';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useVerifyToken from './useVerifyToken';
@@ -15,8 +15,8 @@ import {
   saveEccKey,
   retrieveEccKey,
   throwAwayTheECCKey,
-} from '@youfoundation/js-lib/auth';
-import { DrivePermissionType } from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/auth';
+import { DrivePermissionType } from '@homebase-id/js-lib/core';
 import { REACT_QUERY_CACHE_KEY } from '../../app/App';
 
 export const drives = [

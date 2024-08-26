@@ -4,10 +4,10 @@ import AlbumIcon from '../../components/ui/Icons/Album/Album';
 import Plus from '../../components/ui/Icons/Plus/Plus';
 import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
 import { t } from '../../helpers/i18n/dictionary';
-import { OdinImage } from '@youfoundation/ui-lib';
+import { OdinImage } from '@homebase-id/ui-lib';
 import { ImageIcon } from '../../components/ui/Icons/ImageIcon/ImageIcon';
 import ActionLink from '../../components/ui/Buttons/ActionLink';
-import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY } from '@homebase-id/js-lib/core';
 import {
   AlbumDefinition,
   PhotoConfig,

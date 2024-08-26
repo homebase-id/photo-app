@@ -1,5 +1,5 @@
-import { HomebaseFile } from '@youfoundation/js-lib/core';
-import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { HomebaseFile } from '@homebase-id/js-lib/core';
+import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import useDebounce from '../../../hooks/debounce/useDebounce';
 import MediaWithLoader from './MediaLoader';

@@ -1,13 +1,8 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  TargetDrive,
-  HomebaseFile,
-  DotYouClient,
-  CursoredResult,
-} from '@youfoundation/js-lib/core';
+import { TargetDrive, HomebaseFile, DotYouClient, CursoredResult } from '@homebase-id/js-lib/core';
 import { createDateObject, getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useFlatMonthsFromMeta } from '../library/usePhotoLibraryRange';
-import { getQueryBatchCursorFromTime } from '@youfoundation/js-lib/helpers';
+import { getQueryBatchCursorFromTime } from '@homebase-id/js-lib/helpers';
 import { LibraryType, PhotoConfig } from '../../../provider';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 

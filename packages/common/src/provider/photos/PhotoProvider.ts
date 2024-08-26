@@ -10,15 +10,15 @@ import {
   getFileHeader,
   queryBatch,
   uploadHeader,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 import {
   ImageMetadata,
   MediaConfig,
   MediaUploadMeta,
   getDecryptedImageMetadata,
   getDecryptedImageUrl,
-} from '@youfoundation/js-lib/media';
-import { jsonStringify64, getRandom16ByteArray } from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/media';
+import { jsonStringify64, getRandom16ByteArray } from '@homebase-id/js-lib/helpers';
 
 import { LibraryType, PhotoConfig, PhotoFile } from './PhotoTypes';
 

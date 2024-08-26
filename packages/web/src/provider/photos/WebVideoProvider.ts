@@ -9,15 +9,15 @@ import {
   DEFAULT_PAYLOAD_KEY,
   UploadFileMetadata,
   uploadFile,
-} from '@youfoundation/js-lib/core';
-import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/core';
+import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@homebase-id/js-lib/helpers';
 import {
   PlainVideoMetadata,
   SegmentedVideoMetadata,
   VideoContentType,
   VideoUploadResult,
   createThumbnails,
-} from '@youfoundation/js-lib/media';
+} from '@homebase-id/js-lib/media';
 
 export const uploadVideo = async (
   dotYouClient: DotYouClient,

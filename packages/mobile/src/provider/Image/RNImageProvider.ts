@@ -12,14 +12,14 @@ import {
   ImageSize,
   SystemFileType,
   decryptKeyHeader,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 import {
   ImageMetadata,
   MediaUploadMeta,
   ThumbnailInstruction,
   ImageUploadResult,
   MediaConfig,
-} from '@youfoundation/js-lib/media';
+} from '@homebase-id/js-lib/media';
 import {
   getRandom16ByteArray,
   getNewId,
@@ -31,7 +31,7 @@ import {
   cbcEncrypt,
   uint8ArrayToBase64,
   splitSharedSecretEncryptedKeyHeader,
-} from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/helpers';
 import { createThumbnails } from './RNThumbnailProvider';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { AxiosRequestConfig } from 'axios';

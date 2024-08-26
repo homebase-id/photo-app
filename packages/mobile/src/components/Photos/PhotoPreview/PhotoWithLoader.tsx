@@ -1,4 +1,4 @@
-import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@homebase-id/js-lib/core';
 import { memo } from 'react';
 import { OdinImage } from '../../ui/OdinImage/OdinImage';
 

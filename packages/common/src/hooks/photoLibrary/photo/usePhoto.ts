@@ -1,6 +1,6 @@
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, getFileHeader, HomebaseFile, deleteFile } from '@youfoundation/js-lib/core';
-import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { TargetDrive, getFileHeader, HomebaseFile, deleteFile } from '@homebase-id/js-lib/core';
+import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 
 import { updatePhoto } from '../../../provider/photos/PhotoProvider';
 import { LibraryType, PhotoConfig } from '../../../provider/photos/PhotoTypes';

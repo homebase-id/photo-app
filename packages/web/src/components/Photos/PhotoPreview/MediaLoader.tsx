@@ -1,7 +1,7 @@
-import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
 import { VideoWithLoader } from './VideoWithLoader';
 import { PhotoConfig, t, useDotYouClientContext } from 'photo-app-common';
-import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@youfoundation/ui-lib';
+import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@homebase-id/ui-lib';
 import { useState } from 'react';
 
 const targetDrive = PhotoConfig.PhotoDrive;

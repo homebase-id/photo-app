@@ -9,15 +9,15 @@ import {
   uploadFile,
   getFileHeader,
   ImageContentType,
-} from '@youfoundation/js-lib/core';
-import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/core';
+import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@homebase-id/js-lib/helpers';
 import {
   MediaConfig,
   MediaUploadMeta,
   PlainVideoMetadata,
   SegmentedVideoMetadata,
   VideoUploadResult,
-} from '@youfoundation/js-lib/media';
+} from '@homebase-id/js-lib/media';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { ImageSource } from './RNImageProvider';
 import { createThumbnails } from './RNThumbnailProvider';

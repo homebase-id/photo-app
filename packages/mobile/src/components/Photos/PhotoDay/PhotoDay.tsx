@@ -1,4 +1,4 @@
-import { DEFAULT_PAYLOAD_KEY, HomebaseFile, TargetDrive } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile, TargetDrive } from '@homebase-id/js-lib/core';
 import { memo, useCallback, useMemo } from 'react';
 import { View, Dimensions, TouchableHighlight } from 'react-native';
 import { Text } from '../../ui/Text/Text';

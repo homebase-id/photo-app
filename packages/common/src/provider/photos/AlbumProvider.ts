@@ -8,9 +8,9 @@ import {
   uploadFile,
   UploadFileMetadata,
   UploadInstructionSet,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 import { AlbumDefinition, PhotoConfig } from './PhotoTypes';
-import { getRandom16ByteArray, jsonStringify64 } from '@youfoundation/js-lib/helpers';
+import { getRandom16ByteArray, jsonStringify64 } from '@homebase-id/js-lib/helpers';
 
 const encryptAlbums = true;
 

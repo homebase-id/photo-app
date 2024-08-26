@@ -1,5 +1,5 @@
-import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
-import { OdinImage } from '@youfoundation/ui-lib';
+import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@homebase-id/js-lib/core';
+import { OdinImage } from '@homebase-id/ui-lib';
 import { useDotYouClientContext } from 'photo-app-common';
 
 export const PhotoWithLoader = ({

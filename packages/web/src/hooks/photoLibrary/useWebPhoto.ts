@@ -6,9 +6,9 @@ import {
   getPayloadBytes,
   DEFAULT_PAYLOAD_KEY,
   getThumbBytes,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 
-import { MediaUploadMeta } from '@youfoundation/js-lib/media';
+import { MediaUploadMeta } from '@homebase-id/js-lib/media';
 import {
   PhotoConfig,
   FileLike,

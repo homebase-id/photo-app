@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PhotoInfo } from './PhotoInfo/PhotoInfo';
 import { PhotoActions } from './PhotoActions';
-import { HomebaseFile } from '@youfoundation/js-lib/core';
+import { HomebaseFile } from '@homebase-id/js-lib/core';
 import PhotoPreviewSlider from './PhotoPreviewSlider';
 import {
   LibraryType,

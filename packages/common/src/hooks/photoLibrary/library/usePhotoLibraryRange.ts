@@ -1,5 +1,5 @@
-import { HomebaseFile, TargetDrive } from '@youfoundation/js-lib/core';
-import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { HomebaseFile, TargetDrive } from '@homebase-id/js-lib/core';
+import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPhotosByMonth, usePhotosByMonth } from '../photos/usePhotos';
 import { usePhotoLibrary } from './usePhotoLibrary';

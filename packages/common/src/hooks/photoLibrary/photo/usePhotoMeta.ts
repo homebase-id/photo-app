@@ -1,7 +1,7 @@
 import { InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, HomebaseFile } from '@youfoundation/js-lib/core';
-import { ImageMetadata } from '@youfoundation/js-lib/media';
-import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { TargetDrive, HomebaseFile } from '@homebase-id/js-lib/core';
+import { ImageMetadata } from '@homebase-id/js-lib/media';
+import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 
 import {
   getPhotoMetadata,

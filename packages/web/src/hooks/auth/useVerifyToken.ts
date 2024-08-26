@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { hasValidToken } from '@youfoundation/js-lib/auth';
-import { DotYouClient } from '@youfoundation/js-lib/core';
+import { hasValidToken } from '@homebase-id/js-lib/auth';
+import { DotYouClient } from '@homebase-id/js-lib/core';
 import { APP_SHARED_SECRET } from './useAuth';
 
 const MINUTE_IN_MS = 60000;

@@ -1,15 +1,15 @@
 import { debounce, set } from 'lodash-es';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../../app/Colors';
 import { Pencil } from '../ui/Icons/icons';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { ImageMetadata } from '@youfoundation/js-lib/media';
-import { getLargestThumbOfPayload } from '@youfoundation/js-lib/helpers';
+import { ImageMetadata } from '@homebase-id/js-lib/media';
+import { getLargestThumbOfPayload } from '@homebase-id/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
 import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
