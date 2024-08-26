@@ -5,7 +5,7 @@ import {
   UploadResult,
   queryBatch,
   queryModified,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 import { getArchivalStatusFromType, getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -24,7 +24,7 @@ import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 import {
   getQueryBatchCursorFromTime,
   getQueryModifiedCursorFromTime,
-} from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/helpers';
 
 let saveScheduled = false;
 const isDebug = false;

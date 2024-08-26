@@ -17,7 +17,7 @@ import { PhotoWithLoader } from '../components/Photos/PhotoPreview/PhotoWithLoad
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
-import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
 
 import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoader';
 

@@ -15,7 +15,7 @@ import { AuthStackParamList } from '../app/App';
 import { Container } from '../components/ui/Container/Container';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Colors } from '../app/Colors';
-import { stringifyToQueryParams } from '@youfoundation/js-lib/helpers';
+import { stringifyToQueryParams } from '@homebase-id/js-lib/helpers';
 import { useAuth, useYouAuthAuthorization } from '../hooks/auth/useAuth';
 import { doCheckIdentity } from '../hooks/checkIdentity/useCheckIdentity';
 import { CheckForUpdates, VersionInfo } from './settings-page';
@@ -23,7 +23,7 @@ import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 import logo from '../assets/homebase-photos.png';
 import { Input } from '../components/ui/Form/Input';
-import { YouAuthorizationParams } from '@youfoundation/js-lib/auth';
+import { YouAuthorizationParams } from '@homebase-id/js-lib/auth';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { Divider } from '../components/ui/Divider';
 import { PublicAvatar } from '../components/ui/Avatars/PublicAvatar';

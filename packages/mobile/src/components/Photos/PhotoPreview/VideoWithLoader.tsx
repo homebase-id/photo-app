@@ -1,4 +1,4 @@
-import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@homebase-id/js-lib/core';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../../app/Colors';
@@ -6,7 +6,7 @@ import WebView from 'react-native-webview';
 import { TouchableWithoutFeedback } from 'react-native';
 import { Play } from '../../ui/Icons/icons';
 import { useAuth, corsHost } from '../../../hooks/auth/useAuth';
-import { uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
+import { uint8ArrayToBase64 } from '@homebase-id/js-lib/helpers';
 import { OdinImage } from '../../ui/OdinImage/OdinImage';
 
 // Memo to performance optimize the FlatList

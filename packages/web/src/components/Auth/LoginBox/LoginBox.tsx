@@ -1,7 +1,7 @@
 import { useYouAuthAuthorization } from '../../../hooks/auth/useAuth';
 import { IS_DARK_CLASSNAME } from '../../../hooks/useDarkMode';
 import LoadingBlock from '../../ui/Layout/Loaders/LoadingBlock/LoadingBlock';
-import { stringifyToQueryParams } from '@youfoundation/js-lib/helpers';
+import { stringifyToQueryParams } from '@homebase-id/js-lib/helpers';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 

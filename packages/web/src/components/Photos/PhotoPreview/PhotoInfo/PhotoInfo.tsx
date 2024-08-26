@@ -4,8 +4,8 @@ import { useState, useMemo, useRef } from 'react';
 import { t } from '../../../../helpers/i18n/dictionary';
 import ActionButton from '../../../ui/Buttons/ActionButton';
 import EditDateDialog from '../../../Dialog/EditDateDialog/EditDateDialog';
-import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@youfoundation/js-lib/core';
-import { ImageMetadata } from '@youfoundation/js-lib/media';
+import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
+import { ImageMetadata } from '@homebase-id/js-lib/media';
 import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
 
 const targetDrive = PhotoConfig.PhotoDrive;

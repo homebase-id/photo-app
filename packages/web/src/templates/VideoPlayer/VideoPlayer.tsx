@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
 import useAuth from '../../hooks/auth/useAuth';
-import { OdinVideo } from '@youfoundation/ui-lib';
+import { OdinVideo } from '@homebase-id/ui-lib';
 import { ErrorBoundary } from '../../components/ui/Layout/ErrorBoundary/ErrorBoundary';
-import { DEFAULT_PAYLOAD_KEY } from '@youfoundation/js-lib/core';
+import { DEFAULT_PAYLOAD_KEY } from '@homebase-id/js-lib/core';
 import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
 
 const targetDrive = PhotoConfig.PhotoDrive;

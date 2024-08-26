@@ -3,7 +3,7 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { t } from '../../../helpers/i18n/dictionary';
 import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoDay/PhotoDay';
-import { HomebaseFile, TargetDrive } from '@youfoundation/js-lib/core';
+import { HomebaseFile, TargetDrive } from '@homebase-id/js-lib/core';
 import { usePhotosInfinte, PhotoConfig, useSiblingsRangeInfinte } from 'photo-app-common';
 
 const gridClasses = `grid grid-cols-4 md:grid-cols-6 lg:flex lg:flex-row gap-[0.1rem] md:gap-1 `;

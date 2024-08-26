@@ -1,10 +1,10 @@
-import { ApiType, DotYouClient } from '@youfoundation/js-lib/core';
+import { ApiType, DotYouClient } from '@homebase-id/js-lib/core';
 import {
   base64ToUint8Array,
   byteArrayToString,
   stringToUint8Array,
   uint8ArrayToBase64,
-} from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/helpers';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useVerifyToken from './useVerifyToken';
 import {
@@ -12,10 +12,10 @@ import {
   getRegistrationParams as getRegistrationParamsYouAuth,
   finalizeAuthentication as finalizeAuthenticationYouAuth,
 } from '../../provider/auth/RNAuthenticationProvider';
-import { logout as logoutYouauth } from '@youfoundation/js-lib/auth';
+import { logout as logoutYouauth } from '@homebase-id/js-lib/auth';
 import { useEncrtypedStorage } from './useEncryptedStorage';
 import { Platform } from 'react-native';
-import { DrivePermissionType } from '@youfoundation/js-lib/core';
+import { DrivePermissionType } from '@homebase-id/js-lib/core';
 import { useQueryClient } from '@tanstack/react-query';
 
 export const drives = [

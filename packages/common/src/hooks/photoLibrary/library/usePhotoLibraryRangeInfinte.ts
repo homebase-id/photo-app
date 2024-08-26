@@ -1,7 +1,7 @@
 // Hooks for infinte data without meta files
 import { useQuery } from '@tanstack/react-query';
 import { usePhotosInfinte } from '../photos/usePhotos';
-import { TargetDrive } from '@youfoundation/js-lib/core';
+import { TargetDrive } from '@homebase-id/js-lib/core';
 
 export const useSiblingsRangeInfinte = ({
   targetDrive,

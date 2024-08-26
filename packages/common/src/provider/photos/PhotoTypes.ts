@@ -1,6 +1,6 @@
-import { TargetDrive, ImageContentType } from '@youfoundation/js-lib/core';
-import { toGuidId } from '@youfoundation/js-lib/helpers';
-import { VideoContentType } from '@youfoundation/js-lib/media';
+import { TargetDrive, ImageContentType } from '@homebase-id/js-lib/core';
+import { toGuidId } from '@homebase-id/js-lib/helpers';
+import { VideoContentType } from '@homebase-id/js-lib/media';
 
 export class PhotoConfig {
   static readonly DriveType: string = toGuidId('photos_drive');

@@ -3,9 +3,9 @@ import {
   SecurityGroupType,
   TargetDrive,
   ThumbnailFile,
-} from '@youfoundation/js-lib/core';
-import { ImageMetadata, MediaUploadMeta, VideoContentType } from '@youfoundation/js-lib/media';
-import { toGuidId } from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/core';
+import { ImageMetadata, MediaUploadMeta, VideoContentType } from '@homebase-id/js-lib/media';
+import { toGuidId } from '@homebase-id/js-lib/helpers';
 
 import { FileLike } from 'photo-app-common';
 import exifr from 'exifr/dist/full.esm.mjs'; // to use ES Modules
@@ -112,7 +112,7 @@ const uploadNewVideo = async (
   const userDate = (newVideo as File).lastModified || new Date().getTime();
 
   // Segment video file
-  const segmentVideoFileWithFfmpeg = (await import('@youfoundation/js-lib/media'))
+  const segmentVideoFileWithFfmpeg = (await import('@homebase-id/js-lib/media'))
     .segmentVideoFileWithFfmpeg;
   const { data: segmentedVideoData, metadata } = await segmentVideoFileWithFfmpeg(
     'bytes' in newVideo ? new Blob([newVideo.bytes], { type: newVideo.type }) : newVideo

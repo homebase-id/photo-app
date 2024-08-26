@@ -3,7 +3,7 @@ import {
   TargetDrive,
   HomebaseFile,
   DEFAULT_PAYLOAD_KEY,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 import { useState, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useIntersection } from '../../../hooks/intersection/useIntersection';

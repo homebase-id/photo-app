@@ -8,8 +8,8 @@ import {
   getFileHeader,
   UploadFileMetadata,
   uploadFile,
-} from '@youfoundation/js-lib/core';
-import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/core';
+import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@homebase-id/js-lib/helpers';
 import {
   ImageMetadata,
   MediaUploadMeta,
@@ -17,7 +17,7 @@ import {
   ImageUploadResult,
   createThumbnails,
   MediaConfig,
-} from '@youfoundation/js-lib/media';
+} from '@homebase-id/js-lib/media';
 
 export const uploadImage = async (
   dotYouClient: DotYouClient,

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { DEFAULT_PAYLOAD_KEY, getPayloadBytes, TargetDrive } from '@youfoundation/js-lib/core';
-import { uint8ArrayToBase64 } from '@youfoundation/js-lib/helpers';
+import { DEFAULT_PAYLOAD_KEY, getPayloadBytes, TargetDrive } from '@homebase-id/js-lib/core';
+import { uint8ArrayToBase64 } from '@homebase-id/js-lib/helpers';
 import { useDotYouClientContext } from 'photo-app-common';
 import RNFS from 'react-native-fs';
 

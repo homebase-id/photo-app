@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
-import { getNewId } from '@youfoundation/js-lib/helpers';
+import { getNewId } from '@homebase-id/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
 import { useAlbum } from 'photo-app-common';

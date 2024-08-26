@@ -1,10 +1,10 @@
-import { OdinImage, OdinVideo } from '@youfoundation/ui-lib';
+import { OdinImage, OdinVideo } from '@homebase-id/ui-lib';
 import {
   DEFAULT_PAYLOAD_KEY,
   EmbeddedThumb,
   ImageSize,
   TargetDrive,
-} from '@youfoundation/js-lib/core';
+} from '@homebase-id/js-lib/core';
 import { useDotYouClientContext } from 'photo-app-common';
 
 export const VideoWithLoader = ({

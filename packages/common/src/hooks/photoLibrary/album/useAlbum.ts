@@ -3,7 +3,7 @@ import { removeAlbumDefintion, saveAlbum } from '../../../provider/photos/AlbumP
 import { AlbumDefinition, PhotoConfig } from '../../../provider/photos/PhotoTypes';
 import { useAlbums } from './useAlbums';
 import { getAlbumThumbnail } from '../../../provider/photos/PhotoProvider';
-import { stringGuidsEqual } from '@youfoundation/js-lib/helpers';
+import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export const useAlbum = (albumKey?: string) => {

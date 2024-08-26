@@ -1,5 +1,5 @@
-import { DEFAULT_PAYLOAD_KEY, ThumbnailFile } from '@youfoundation/js-lib/core';
-import { base64ToUint8Array } from '@youfoundation/js-lib/helpers';
+import { DEFAULT_PAYLOAD_KEY, ThumbnailFile } from '@homebase-id/js-lib/core';
+import { base64ToUint8Array } from '@homebase-id/js-lib/helpers';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { getImagesFromPasteEvent } from '../../../helpers/pasteHelper';
 import ActionButton from '../../ui/Buttons/ActionButton';

@@ -4,9 +4,9 @@ import {
   SecurityGroupType,
   TargetDrive,
   getFileHeaderByUniqueId,
-} from '@youfoundation/js-lib/core';
-import { ImageMetadata, VideoContentType } from '@youfoundation/js-lib/media';
-import { toGuidId } from '@youfoundation/js-lib/helpers';
+} from '@homebase-id/js-lib/core';
+import { ImageMetadata, VideoContentType } from '@homebase-id/js-lib/media';
+import { toGuidId } from '@homebase-id/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
