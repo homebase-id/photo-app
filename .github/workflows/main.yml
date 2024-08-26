@@ -1,4 +1,4 @@
-name: 'CI to netlify'
+name: 'Build web release and deploy to Netlify'
 
 on:
   workflow_dispatch:

@@ -1,35 +1,29 @@
-# Photo App Monorepo
+# ODIN Photo App
 
-## Run on ios
+##### Open Decentralized Identity Network
 
-```
-cd ios && pod install && cd -
-npm run ios -- --simulator="iPhone 15"
-```
+## Running Locally
 
-## Copy video to ios
+If you wanna run the identities locally you'll need the back-end web server, see the [Odin](https://github.com/YouFoundation/dotyoucore) repository to get started.
 
-Emulator: drag and drop
-Device: air drop
+Once you have the back-end and front-end web apps running, you can start the mobile app by following the instructions below.
 
-## Run in android
+> [!Note]
+> You don't need the full platform running locally as you can use a production identity during development of any app on ODIN
 
-```
-npm run android
-```
+### Install dependencies
 
-## Deploy release build to android
-
-```
-./gradlew clean assembleRelease
-adb install app/build/outputs/apk/release/app-release.apk
+```bash
+npm install
 ```
 
-## Copy video to android
+### Start Metro
 
-`adb push /Users/seb/tmp/BigBuckBunny.mp4 /sdcard/Download/`
+```bash
+npm start
+```
 
-## Log in as `frodo.dotyou.cloud` on Android
+#### Log in with local identities on Android
 
 ```
 # run adb as root:
@@ -39,25 +33,19 @@ adb root
 adb reverse tcp:443 tcp:443
 ```
 
-Now you can login with `frodo.dotyou.cloud`.
+Now you can log in with local identities such as `frodo.dotyou.cloud`.
 
-## React Native Video Libraries
+> [!Note]
+> No such configuration is required for iOS simulators.
 
-- react-native-ffmpeg
-- react-native-compressor
+## Communications
 
-## IOS Video Libraries (for reference)
+Please use the [issue tracker](https://github.com/YouFoundation/feed-mobile-app/issues) on GitHub to report bugs.
 
-- AVFoundation
-- FFmpeg
-- MobileFFmpeg / MobileVLCKit
-- GPUImage
+## Security Disclosures
 
-## Android Video Libraries (for reference)
+If you discover any security issues, please send an email to [security@homebase.id](mailto:security@homebase.id). The email is automatically CCed to the entire team and we'll respond promptly.
 
-- FFmpeg for Android
-- MediaCodec API
-- ExoPlayer
-- Glide
-- Litr
-- Telegram's Video Compression Library (JavaCPP Preset for FFmpeg)
+## License
+
+This project is licensed under the terms of the AGPL3 license. See the [LICENSE](LICENSE) file.

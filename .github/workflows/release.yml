@@ -1,4 +1,4 @@
-name: Build release
+name: Build native release
 
 on:
   workflow_dispatch:
