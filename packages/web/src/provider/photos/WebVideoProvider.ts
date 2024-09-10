@@ -12,10 +12,7 @@ import {
   KeyHeader,
 } from '@homebase-id/js-lib/core';
 import { getRandom16ByteArray, getNewId } from '@homebase-id/js-lib/helpers';
-import {
-  VideoContentType,
-  VideoUploadResult,
-} from '@homebase-id/js-lib/media';
+import { processVideoFile, VideoContentType, VideoUploadResult } from '@homebase-id/js-lib/media';
 
 export const uploadVideo = async (
   dotYouClient: DotYouClient,
@@ -58,12 +55,17 @@ export const uploadVideo = async (
   };
 
   // Segment video file
-  const processVideoFile = (await import('@homebase-id/js-lib/media')).processVideoFile;
+  // const processVideoFile = (await import('@homebase-id/js-lib/media')).processVideoFile;
   const {
     tinyThumb,
     thumbnails: thumbnailsFromVideo,
     payloads: payloadsFromVideo,
-  } = await processVideoFile({ file: file, thumbnail: thumb }, DEFAULT_PAYLOAD_KEY, keyHeader);
+  } = await processVideoFile(
+    { file: file, thumbnail: thumb },
+    DEFAULT_PAYLOAD_KEY,
+    keyHeader,
+    true
+  );
 
   const metadata: UploadFileMetadata = {
     versionTag: uploadMeta?.versionTag,

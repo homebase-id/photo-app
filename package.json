@@ -13,7 +13,7 @@
         "build": "npm run build -workspaces --if-present"
     },
     "dependencies": {
-        "@homebase-id/js-lib": "0.0.4-alpha.24"
+        "@homebase-id/js-lib": "0.0.4-alpha.27"
     },
     "devDependencies": {
         "patch-package": "^7.0.2"
