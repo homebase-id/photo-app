@@ -15,6 +15,10 @@
     "dependencies": {
         "@homebase-id/js-lib": "0.0.4-alpha.27"
     },
+    "overrides": {
+        "browserify-sign": "4.2.2",
+        "readable-stream": "^3.6.2"
+    },
     "devDependencies": {
         "patch-package": "^7.0.2"
     }
