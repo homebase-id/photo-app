@@ -38,12 +38,7 @@ export const uploadVideo = async (
     acl.requiredSecurityGroup === SecurityGroupType.Authenticated
   );
 
-  const keyHeader: KeyHeader | undefined = encrypt
-    ? {
-        iv: getRandom16ByteArray(),
-        aesKey: getRandom16ByteArray(),
-      }
-    : undefined;
+  const aesKey: Uint8Array | undefined = encrypt ? getRandom16ByteArray() : undefined;
 
   const instructionSet: UploadInstructionSet = {
     transferIv: getRandom16ByteArray(),
@@ -60,12 +55,7 @@ export const uploadVideo = async (
     tinyThumb,
     thumbnails: thumbnailsFromVideo,
     payloads: payloadsFromVideo,
-  } = await processVideoFile(
-    { file: file, thumbnail: thumb },
-    DEFAULT_PAYLOAD_KEY,
-    keyHeader,
-    true
-  );
+  } = await processVideoFile({ file: file, thumbnail: thumb }, DEFAULT_PAYLOAD_KEY, aesKey, true);
 
   const metadata: UploadFileMetadata = {
     versionTag: uploadMeta?.versionTag,
@@ -92,7 +82,7 @@ export const uploadVideo = async (
     encrypt,
     undefined,
     {
-      keyHeader: keyHeader,
+      aesKey,
     }
   );
   if (!result) throw new Error(`Upload failed`);

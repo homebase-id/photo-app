@@ -13,7 +13,7 @@
         "build": "npm run build -workspaces --if-present"
     },
     "dependencies": {
-        "@homebase-id/js-lib": "0.0.4-alpha.27"
+        "@homebase-id/js-lib": "0.0.4-alpha.28"
     },
     "overrides": {
         "browserify-sign": "4.2.2",
