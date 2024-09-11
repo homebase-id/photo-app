@@ -11,8 +11,12 @@ import Alamofire
 
 extension DriveFileUploadProvider {
   static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], encrypt: Bool) async throws -> UploadResult  {
-    let keyHeader = encrypt ? generateKeyHeader() : nil
-
+    var keyHeader = encrypt ? generateKeyHeader() : nil
+    return try await uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader)
+  }
+  
+  static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], aesKey: Data?) async throws -> UploadResult  {
+    var keyHeader = aesKey != nil ? generateKeyHeader(aesKey:aesKey) : nil
     return try await uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader)
   }
 
@@ -51,7 +55,7 @@ extension DriveFileUploadProvider {
         descriptorContent: payload.descriptorContent ?? nil,
         thumbnails: relatedThumbnails,
         previewThumbnail: payload.previewThumbnail,
-        iv: generateIv ? getRandom16ByteArray() : nil,
+        iv: payload.iv != nil ? payload.iv : generateIv ? getRandom16ByteArray() : nil,
         contentType: payload.contentType
       )
     }
@@ -167,6 +171,11 @@ extension DriveFileUploadProvider {
   static func generateKeyHeader() -> KeyHeader {
     // Generate key header
     return KeyHeader(iv: getRandom16ByteArray(), aesKey: getRandom16ByteArray())
+  }
+  
+  static func generateKeyHeader(aesKey:Data?) -> KeyHeader {
+    // Generate key header
+    return KeyHeader(iv: getRandom16ByteArray(), aesKey: (aesKey != nil ? aesKey : getRandom16ByteArray())!)
   }
 
   static func getRandom16ByteArray() -> Data {

@@ -53,8 +53,8 @@ class MediaSync {
     fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
     fetchOptions.fetchLimit = maxBatchSize
 
-    // let fetchResult = PHAsset.fetchAssets(with: fetchOptions)
-    let fetchResult = PHAsset.fetchAssets(with: .video, options: fetchOptions)
+    let fetchResult = PHAsset.fetchAssets(with: fetchOptions)
+    // let fetchResult = PHAsset.fetchAssets(with: .video, options: fetchOptions)
 
     if isDebug {
       print("[SyncWorker] fetchResult count: \(fetchResult.count)")

@@ -65,7 +65,7 @@ class VideoProvider {
       // Convert dictionary to JSON data
       let jsonMetadata = try JSONSerialization.data(withJSONObject: metadata, options: .prettyPrinted)
 
-      let payloadStream = PayloadFile(descriptorContent: String(data: jsonMetadata, encoding: .utf8), previewThumbnail: nil, contentType: "video/mp2t", key: defaultPayloadKey, filePath: segments.filepath, skipEncryption: true)
+      let payloadStream = PayloadFile(descriptorContent: String(data: jsonMetadata, encoding: .utf8), previewThumbnail: nil, contentType: "video/mp2t", key: defaultPayloadKey, filePath: segments.filepath, skipEncryption: true, iv: keyHeader?.iv)
       payloads = [payloadStream]
     } else {
       // Single video file
@@ -75,7 +75,7 @@ class VideoProvider {
       payloads = [payloadFile]
     }
 
-    return try await DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader)
+    return try await DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: payloads, thumbnails: thumbnails, aesKey: keyHeader?.aesKey)
   }
 
   static func toGuidId(input: String) throws -> String {
@@ -182,7 +182,7 @@ class VideoProvider {
         let returnCode = session!.getReturnCode()
 
         if state == .failed || !(returnCode?.isValueSuccess())! {
-          let error = NSError(domain: "com.yourdomain.app", code: -1, userInfo: [NSLocalizedDescriptionKey: "ffmpeg process failed with state: \(state) and returnCode: \(returnCode)"])
+          let error = NSError(domain: "com.yourdomain.app", code: -1, userInfo: [NSLocalizedDescriptionKey: "ffmpeg process failed with state: \(state) and returnCode: \(String(describing: returnCode))"])
           continuation.resume(throwing: error)
         } else {
           continuation.resume(returning: (playlistUrl, segmentsUrl))

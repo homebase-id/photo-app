@@ -202,6 +202,7 @@ protocol PayloadBase {
   var previewThumbnail: EmbeddedThumb? {get}
   var key: String { get }
   var skipEncryption: Bool { get }
+  var iv: Data? { get }
 }
 
 struct PayloadStream: PayloadBase {
@@ -214,6 +215,7 @@ struct PayloadStream: PayloadBase {
 
   let inputStream: (stream: InputStream, count: UInt64)
   var skipEncryption: Bool
+  var iv: Data?
 }
 
 struct PayloadFile: PayloadBase {
@@ -225,6 +227,7 @@ struct PayloadFile: PayloadBase {
 
   let filePath: String
   var skipEncryption: Bool
+  var iv: Data?
 }
 
 struct EmbeddedThumb :Codable {
