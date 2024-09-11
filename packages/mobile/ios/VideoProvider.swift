@@ -198,14 +198,13 @@ class VideoProvider {
     let keyInfoFileUrl = directory.appendingPathComponent("hls-key-info\(id).txt")
 
     // Convert aesKey and iv (Data) to base64 or hex strings
-    let aesKeyBase64 = keyHeader.aesKey.base64EncodedString()  // or hexEncodedString if needed
     let ivHexString = keyHeader.iv.map { String(format: "%02hhx", $0) }.joined()  // Convert to hex string
 
     // Write aesKey to the key file in base64 format
-    try aesKeyBase64.write(to: keyFileUrl, atomically: true, encoding: .utf8)
+    try keyHeader.aesKey.write(to: keyFileUrl)
 
     // Create the key info content
-    let keyInfo = "data:application/octet-stream;base64,\(aesKeyBase64)\n\(keyFileUrl.path)\n\(ivHexString)"
+    let keyInfo = "http://example.com/path/to/encryption.key\n\(keyFileUrl.path)\n\(ivHexString)"
 
     // Write keyInfo to the key-info file
     try keyInfo.write(to: keyInfoFileUrl, atomically: true, encoding: .utf8)
