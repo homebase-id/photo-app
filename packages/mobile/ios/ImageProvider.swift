@@ -1,5 +1,5 @@
 //
-//  MediaProvider.swift
+//  ImageProvider.swift
 //  HomebasePhotos
 //
 //  Created by Stef Coenen on 19/06/2024.
@@ -7,11 +7,11 @@
 
 import Foundation
 
-class MediaProvider {
+class ImageProvider {
   static let defaultPayloadKey = "dflt_key"
   static let encryptMedia = true
   static let photoDrive = TargetDrive(alias: "6483b7b1f71bd43eb6896c86148668cc", type: "2af68fe72fb84896f39f97c59d60813a")
-  static let ownerOnlyACL = AccessControlList(type: .owner)
+  static let ownerOnlyACL = AccessControlList(requiredSecurityGroup: .owner)
   static let tinyThumbInstruction = ImageResizer.ResizeInstruction(width: 20, height: 20, quality: 10, format: "jpeg")
   static let defaultImageSizes = [
     ImageResizer.ResizeInstruction(width: 300, height: 300, quality: 95, format: "jpeg"),
@@ -33,7 +33,7 @@ class MediaProvider {
     let metadata = UploadFileMetadata<String>(
       allowDistribution: false,
       isEncrypted: encryptMedia,
-      acl: ownerOnlyACL,
+      accessControlList: ownerOnlyACL,
       appData: UploadAppFileMetaData(uniqueId: uniqueId, tags: [], fileType: 0, dataType: 0, userDate: timestampInMs, groupId: nil, archivalStatus: 0, content: "{\"originalFileName\":\"" + fileName + "\"}", previewThumbnail: previewThumbnail),
       referencedFile: nil
     )
@@ -41,9 +41,9 @@ class MediaProvider {
     let payload: PayloadBase
     if forceLowerQuality {
       let payloadStream = try ImageResizer.resizeImage(filePath: filePath, instruction: ImageResizer.ResizeInstruction(width: 1200, height: 1200, quality: 80, format: "jpeg"), key: defaultPayloadKey, keepDimensions: false)
-      payload = PayloadStream(descriptorContent: nil, previewThumbnail: nil, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream)
+      payload = PayloadStream(descriptorContent: nil, previewThumbnail: nil, contentType: payloadStream!.contentType, key: defaultPayloadKey, inputStream: payloadStream!.inputStream, skipEncryption: false)
     } else {
-      payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: filePath)
+      payload = PayloadFile(descriptorContent: nil, previewThumbnail: nil, contentType: mimeType, key: defaultPayloadKey, filePath: filePath, skipEncryption: false)
     }
 
     var imageSizeInstructions = defaultImageSizes

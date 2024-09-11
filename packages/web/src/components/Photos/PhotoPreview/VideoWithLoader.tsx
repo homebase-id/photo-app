@@ -56,7 +56,7 @@ export const VideoWithLoader = ({
           fileKey={DEFAULT_PAYLOAD_KEY}
           lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
-          probablyEncrypted={true}
+          // probablyEncrypted={true}
           className="max-h-[inherit]"
         />
       )}

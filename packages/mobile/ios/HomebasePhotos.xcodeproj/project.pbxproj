@@ -10,11 +10,12 @@
 		00E356F31AD99517003FC87E /* HomebasePhotosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* HomebasePhotosTests.m */; };
 		1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */; };
 		121C38422C2B0EDC0020F8CE /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */; };
+		124F3A5C2C918CCA002815B7 /* VideoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124F3A5B2C918CCA002815B7 /* VideoProvider.swift */; };
 		12D851D52C2305E400236484 /* SyncTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D42C2305E400236484 /* SyncTrigger.swift */; };
 		12D851D72C2306F700236484 /* Bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D62C2306F700236484 /* Bridge.m */; };
 		12D851DA2C23096100236484 /* MediaSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D92C23096100236484 /* MediaSync.swift */; };
 		12D851DC2C23154600236484 /* DotYouClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851DB2C23154600236484 /* DotYouClient.swift */; };
-		12D851DE2C23159400236484 /* MediaProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851DD2C23159400236484 /* MediaProvider.swift */; };
+		12D851DE2C23159400236484 /* ImageProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851DD2C23159400236484 /* ImageProvider.swift */; };
 		12D851E12C23288000236484 /* DriveFileUploadProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E02C23288000236484 /* DriveFileUploadProvider.swift */; };
 		12D851E32C2328E900236484 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E22C2328E900236484 /* ImageResizer.swift */; };
 		12D851E52C25913800236484 /* CryptoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851E42C25913800236484 /* CryptoUtil.swift */; };
@@ -58,12 +59,13 @@
 		1205763A2B6A342C0029FB57 /* RCTOdinBlobModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTOdinBlobModule.h; sourceTree = "<group>"; };
 		1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RCTOdinBlobModule.m; path = OdinBlob/RCTOdinBlobModule.m; sourceTree = "<group>"; };
 		121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
+		124F3A5B2C918CCA002815B7 /* VideoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoProvider.swift; sourceTree = "<group>"; };
 		12D851D32C2305E400236484 /* HomebasePhotos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HomebasePhotos-Bridging-Header.h"; sourceTree = "<group>"; };
 		12D851D42C2305E400236484 /* SyncTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTrigger.swift; sourceTree = "<group>"; };
 		12D851D62C2306F700236484 /* Bridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Bridge.m; path = SyncTrigger/Bridge.m; sourceTree = "<group>"; };
 		12D851D92C23096100236484 /* MediaSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSync.swift; sourceTree = "<group>"; };
 		12D851DB2C23154600236484 /* DotYouClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotYouClient.swift; sourceTree = "<group>"; };
-		12D851DD2C23159400236484 /* MediaProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaProvider.swift; sourceTree = "<group>"; };
+		12D851DD2C23159400236484 /* ImageProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProvider.swift; sourceTree = "<group>"; };
 		12D851E02C23288000236484 /* DriveFileUploadProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveFileUploadProvider.swift; sourceTree = "<group>"; };
 		12D851E22C2328E900236484 /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
 		12D851E42C25913800236484 /* CryptoUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtil.swift; sourceTree = "<group>"; };
@@ -145,8 +147,9 @@
 			children = (
 				12D851D92C23096100236484 /* MediaSync.swift */,
 				12D851DB2C23154600236484 /* DotYouClient.swift */,
-				12D851DD2C23159400236484 /* MediaProvider.swift */,
+				12D851DD2C23159400236484 /* ImageProvider.swift */,
 				12D851E22C2328E900236484 /* ImageResizer.swift */,
+				124F3A5B2C918CCA002815B7 /* VideoProvider.swift */,
 			);
 			name = MediaSync;
 			sourceTree = "<group>";
@@ -481,8 +484,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				124F3A5C2C918CCA002815B7 /* VideoProvider.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
-				12D851DE2C23159400236484 /* MediaProvider.swift in Sources */,
+				12D851DE2C23159400236484 /* ImageProvider.swift in Sources */,
 				12D851E32C2328E900236484 /* ImageResizer.swift in Sources */,
 				12D851DA2C23096100236484 /* MediaSync.swift in Sources */,
 				12D851D52C2305E400236484 /* SyncTrigger.swift in Sources */,

@@ -11,13 +11,18 @@ import Alamofire
 
 extension DriveFileUploadProvider {
   static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], encrypt: Bool) async throws -> UploadResult  {
-    print("[SyncWorker] Upload");
+    let keyHeader = encrypt ? generateKeyHeader() : nil
 
+    return try await uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: payloads, thumbnails: thumbnails, keyHeader: keyHeader)
+  }
+
+  static func uploadFile(dotYouClient: DotYouClient, instructions: UploadInstructionSet, metadata: UploadFileMetadata<String>, payloads: [PayloadBase], thumbnails: [ThumbnailBase], keyHeader: KeyHeader?) async throws -> UploadResult  {
+    print("[SyncWorker] Upload");
+    let encrypt = keyHeader != nil
     // Implement the uploadFile logic
     var mutableMetadata = metadata
     mutableMetadata.setIsEncrypted(encrypt)
 
-    let keyHeader = encrypt ? generateKeyHeader() : nil
     let manifest = buildManifest(payloads: payloads, thumbnails: thumbnails, generateIv: encrypt)
 
     let updatedInstructions = UploadInstructionSet(storageOptions: instructions.storageOptions, transitOptions: instructions.transitOptions, transferIv: instructions.transferIv ?? getRandom16ByteArray(), manifest: manifest)
@@ -36,7 +41,8 @@ extension DriveFileUploadProvider {
         UploadThumbnailDescriptor(
           thumbnailKey: thumb.key + String(thumb.pixelWidth),
           pixelHeight: thumb.pixelHeight,
-          pixelWidth: thumb.pixelWidth
+          pixelWidth: thumb.pixelWidth,
+          contentType: thumb.contentType
         )
       }
 
@@ -45,7 +51,8 @@ extension DriveFileUploadProvider {
         descriptorContent: payload.descriptorContent ?? nil,
         thumbnails: relatedThumbnails,
         previewThumbnail: payload.previewThumbnail,
-        iv: generateIv ? getRandom16ByteArray() : nil
+        iv: generateIv ? getRandom16ByteArray() : nil,
+        contentType: payload.contentType
       )
     }
 
@@ -58,9 +65,9 @@ extension DriveFileUploadProvider {
     }
 
     let ensuredKeyHeader = keyHeader != nil ? keyHeader! : getEmptyKeyHeader()
-    
+
     let descriptorData = DescriptorData(encryptedKeyHeader: try CryptoUtil.encryptKeyHeader( dotYouClient: dotYouClient, keyHeader: ensuredKeyHeader, transferIv: instructions.transferIv!), fileMetadata: try CryptoUtil.encryptMetaData(metadata: metadata, keyHeader: ensuredKeyHeader))
-    
+
     let jsonString = descriptorData.toJsonString()
     let content = jsonString.data(using: .utf8)
 
@@ -80,19 +87,20 @@ extension DriveFileUploadProvider {
 
     // Add payloads and thumbnails as streams
     for payload in payloads {
-      if let keyHeader = keyHeader {
+      if ((keyHeader != nil) && !payload.skipEncryption) {
         if let payloadFile = payload as? PayloadFile {
-          let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(file: payloadFile.filePath, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
+          let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(file: payloadFile.filePath, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader!, manifest: manifest, payloadKey: payload.key))
           formData.append(encryptedPayload.stream, withLength: encryptedPayload.count, name: "payload", fileName: payload.key, mimeType: payload.contentType)
 
         } else if let payloadStream = payload as? PayloadStream {
-          let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(stream: payloadStream.inputStream.stream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader, manifest: manifest, payloadKey: payload.key))
+          let encryptedPayload = try CryptoUtil.encryptWithKeyHeader(stream: payloadStream.inputStream.stream, keyHeader: CryptoUtil.getUpdatedKeyHeader(keyHeader: keyHeader!, manifest: manifest, payloadKey: payload.key))
           formData.append(encryptedPayload.stream, withLength: encryptedPayload.count, name: "payload", fileName: payload.key, mimeType: payload.contentType)
         } else {
           continue
         }
       } else {
         if let payloadFile = payload as? PayloadFile {
+          print("skipping encryption \(payloadFile.filePath)")
           if #available(iOS 16.0, *) {
             formData.append(InputStream(fileAtPath: payloadFile.filePath)!, withLength: try FileManager.default.attributesOfItem(atPath: payloadFile.filePath)[.size] as! UInt64, name: "payload", fileName: payload.key, mimeType: payload.contentType)
           } else {
@@ -150,7 +158,7 @@ extension DriveFileUploadProvider {
         return BadRequestUploadResult(errorCode:errorCode)
       }
     case .failure(_):
-      throw NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Transfer IV is required"])
+      throw NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Upload failed"])
     }
 
     throw NSError(domain: "DriveFileUploadProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Transfer IV is required"])
@@ -229,18 +237,21 @@ struct TargetDrive  :Codable {
 }
 
 struct AccessControlList : Codable {
-  let type: SecurityGroupType
+  let requiredSecurityGroup: SecurityGroupType
 }
 
-enum SecurityGroupType :Codable {
-  case owner
+enum SecurityGroupType: String, Codable {
+    case anonymous = "anonymous"
+    case authenticated = "authenticated"
+    case connected = "connected"
+    case owner = "owner"
 }
 
 struct DriveFileUploadProvider {
 }
 
 
-struct StorageOptions  :Codable {
+struct StorageOptions : Codable {
   let drive: TargetDrive
 }
 
@@ -254,12 +265,14 @@ struct UploadPayloadDescriptor  :Codable {
   let thumbnails: [UploadThumbnailDescriptor]
   let previewThumbnail: EmbeddedThumb?
   let iv: Data?
+  let contentType: String
 }
 
 struct UploadThumbnailDescriptor  :Codable {
   let thumbnailKey: String
   let pixelHeight: Int
   let pixelWidth: Int
+  let contentType: String
 }
 
 
@@ -307,7 +320,7 @@ struct UploadAppFileMetaData<T: Codable> :Codable {
 struct UploadFileMetadata<T: Codable>: Codable {
   let allowDistribution: Bool
   var isEncrypted: Bool
-  let acl: AccessControlList
+  let accessControlList: AccessControlList
   var appData: UploadAppFileMetaData<T>
   let referencedFile: String?
 
