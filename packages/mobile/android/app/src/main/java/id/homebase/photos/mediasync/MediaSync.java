@@ -70,7 +70,7 @@ public class MediaSync {
 
         double lastSyncTimeSeconds = lastSyncTime / 1000 - (60 * 30); // 30 minutes buffer
         String lastSyncTimeString = String.valueOf(lastSyncTimeSeconds);
-        int maxBatchSize = 700;
+        int maxBatchSize = 100;
 
         // Find all photos that have been added since the last sync
         Uri uri = MediaStore.Files.getContentUri("external");
