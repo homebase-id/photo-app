@@ -78,18 +78,6 @@ class VideoProvider {
     return try await DriveFileUploadProvider.uploadFile(dotYouClient: dotYouClient, instructions: instructions, metadata: metadata, payloads: payloads, thumbnails: thumbnails, aesKey: keyHeader?.aesKey)
   }
 
-  static func toGuidId(input: String) throws -> String {
-    var digest = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
-    if let data = input.data(using: .utf8) {
-      _ = data.withUnsafeBytes {
-        CC_MD5($0.baseAddress, CC_LONG(data.count), &digest)
-      }
-    }
-
-    let uuid = UUID(digest: digest)
-    return uuid.uuidString
-  }
-
   static func grabVideoThumbnail(filePath: String) async throws -> CGImageSource? {
     // Use AVFoundation to extract a thumbnail from the video
     let asset = AVAsset(url: URL(fileURLWithPath: filePath))
@@ -210,6 +198,19 @@ class VideoProvider {
     try keyInfo.write(to: keyInfoFileUrl, atomically: true, encoding: .utf8)
 
     return keyInfoFileUrl
+  }
+
+  // TODO: move this to a common helper class
+  static func toGuidId(input: String) throws -> String {
+    var digest = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
+    if let data = input.data(using: .utf8) {
+      _ = data.withUnsafeBytes {
+        CC_MD5($0.baseAddress, CC_LONG(data.count), &digest)
+      }
+    }
+
+    let uuid = UUID(digest: digest)
+    return uuid.uuidString
   }
 
   // Helper Structures

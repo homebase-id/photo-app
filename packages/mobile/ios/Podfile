@@ -74,3 +74,5 @@ target 'HomebasePhotos' do
     )
   end
 end
+
+pod 'ffmpeg-kit-ios-min-gpl'

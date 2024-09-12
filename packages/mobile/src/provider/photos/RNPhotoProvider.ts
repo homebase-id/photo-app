@@ -10,8 +10,6 @@ import { toGuidId } from '@homebase-id/js-lib/helpers';
 import { ImageSource, uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
-import { uploadVideo } from '../Image/RNVideoProvider';
-import { grabThumbnail, processVideo } from '../Image/RNVideoProviderSegmenter';
 import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { Platform } from 'react-native';
 import { createResizedImage } from '../Image/RNThumbnailProvider';
@@ -85,18 +83,18 @@ const getPhotoExifMeta = async (
                       altitude: exifData['{GPS}'].altitude,
                     }
                   : exifData?.GPSLatitude && exifData?.GPSLongitude
-                  ? {
-                      latitude: exifData.GPSLatitude,
-                      longitude: exifData.GPSLongitude,
-                      altitude: exifData.GPSAltitude,
-                    }
-                  : photo.node.location?.latitude && photo.node.location?.longitude
-                  ? {
-                      ...photo.node.location,
-                      latitude: photo.node.location.latitude as number,
-                      longitude: photo.node.location.longitude as number,
-                    }
-                  : undefined,
+                    ? {
+                        latitude: exifData.GPSLatitude,
+                        longitude: exifData.GPSLongitude,
+                        altitude: exifData.GPSAltitude,
+                      }
+                    : photo.node.location?.latitude && photo.node.location?.longitude
+                      ? {
+                          ...photo.node.location,
+                          latitude: photo.node.location.latitude as number,
+                          longitude: photo.node.location.longitude as number,
+                        }
+                      : undefined,
             },
           }
         : undefined;
@@ -199,70 +197,6 @@ const uploadNewPhoto = async (
   };
 };
 
-const uploadNewVideo = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  albumKey: string | undefined,
-  newVideo: PhotoIdentifier,
-  lowerQuality?: boolean
-) => {
-  const imageUniqueId = getUniqueId(newVideo);
-  const userDate =
-    (newVideo.node.timestamp ? newVideo.node.timestamp * 1000 : undefined) || new Date().getTime();
-
-  const existingImage = imageUniqueId
-    ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
-    : null;
-
-  // Image already exists, we skip it
-  if (existingImage) {
-    return {
-      fileId: existingImage.fileId,
-      userDate: new Date(userDate),
-      type: 'video',
-      imageUniqueId,
-    };
-  }
-
-  // Segment video file
-  const { video: processedMedia, metadata } = await processVideo(newVideo.node.image, lowerQuality);
-
-  const thumbnail = await grabThumbnail(newVideo.node.image);
-  const thumbSource: ImageSource | null = thumbnail
-    ? {
-        uri: thumbnail.uri,
-        width: 1920,
-        height: 1080,
-        type: thumbnail.type,
-      }
-    : null;
-
-  return {
-    ...(await uploadVideo(
-      dotYouClient,
-      targetDrive,
-      { requiredSecurityGroup: SecurityGroupType.Owner },
-      processedMedia,
-      metadata,
-      {
-        type: 'video/mp4' as VideoContentType,
-        tag: albumKey ? [albumKey] : undefined,
-        userDate: userDate,
-        uniqueId: imageUniqueId,
-        thumb:
-          thumbSource && thumbnail
-            ? {
-                payload: thumbSource,
-                type: thumbnail.type as ImageContentType,
-              }
-            : undefined,
-      }
-    )),
-    userDate: new Date(userDate),
-    imageUniqueId,
-  };
-};
-
 export const uploadNew = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
@@ -290,9 +224,11 @@ export const uploadNew = async (
     },
   };
 
-  return toUpload.node.type?.includes('video')
-    ? uploadNewVideo(dotYouClient, targetDrive, albumKey, toUpload, lowerQuality)
-    : uploadNewPhoto(dotYouClient, targetDrive, albumKey, toUpload, lowerQuality);
+  if (toUpload.node.type?.includes('video')) {
+    throw new Error('Video upload not supported');
+  }
+
+  return uploadNewPhoto(dotYouClient, targetDrive, albumKey, toUpload, lowerQuality);
 };
 
 export type PageParam = {

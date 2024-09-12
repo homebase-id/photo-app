@@ -15,6 +15,10 @@ public class KeyHeaderGenerator {
         return new KeyHeader(getRandom16ByteArray(), getRandom16ByteArray());
     }
 
+    public static KeyHeader generateKeyHeader(byte[] aesKey) {
+        return new KeyHeader(getRandom16ByteArray(), aesKey);
+    }
+
     public static void main(String[] args) {
         KeyHeader keyHeader = generateKeyHeader();
     }

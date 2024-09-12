@@ -7,5 +7,6 @@ public record UploadPayloadDescriptor(
         String descriptorContent,
         List<UploadThumbnailDescriptor> thumbnails,
         EmbeddedThumb previewThumbnail,
-        byte[] iv
+        byte[] iv,
+        String contentType
 ) {}

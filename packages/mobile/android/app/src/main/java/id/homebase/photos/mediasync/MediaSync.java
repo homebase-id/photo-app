@@ -1,7 +1,6 @@
 package id.homebase.photos.mediasync;
 
 import static id.homebase.lib.core.file.DriveFileUploadProvider.isDebug;
-import static id.homebase.photos.mediasync.MediaProvider.uploadMedia;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -57,7 +56,7 @@ public class MediaSync {
             Log.v(null, "[SyncWorker] CAT: " + CAT);
             Log.v(null, "[SyncWorker] sharedSecret: " + sharedSecret);
             Log.v(null, "[SyncWorker] lastSyncTime: " + BigDecimal.valueOf(lastSyncTime).toPlainString());
-//        lastSyncTime = 1717664076909L;
+            //lastSyncTime = 1726131813610L;
         }
 
         if (!syncEnabled) {
@@ -69,15 +68,16 @@ public class MediaSync {
 
         DotYouClient dotYouClient = new DotYouClient(ApiType.App, CryptoUtil.base64ToByteArray(sharedSecret), identity, headers);
 
-        // Find all photos that have been added since the last sync
-        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED, MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media._ID, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT};
-        String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
         double lastSyncTimeSeconds = lastSyncTime / 1000 - (60 * 30); // 30 minutes buffer
         String lastSyncTimeString = String.valueOf(lastSyncTimeSeconds);
+        int maxBatchSize = 700;
+
+        // Find all photos that have been added since the last sync
+        Uri uri = MediaStore.Files.getContentUri("external");
+        String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED, MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media._ID, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT};
+        String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
         String[] selectionArgs = {lastSyncTimeString};
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-        int maxBatchSize = 700;
         String limit = " LIMIT " + maxBatchSize;
 
         Cursor cursor = this.context.getContentResolver().query(
@@ -110,18 +110,17 @@ public class MediaSync {
                     String width = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH));
                     String height = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT));
 
-
-                    if (mimeType.startsWith("video/")) {
-                        // Skip videos for now
-                        Log.v(null, "[SyncWorker] Skipping video: " + filePath);
-                        continue;
-                    }
-
                     if (isDebug()) {
                         Log.v(null, "[SyncWorker] MediaItem filePath: " + filePath);
                     }
 
-                    UploadResult result = uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, forceLowerQuality);
+                    UploadResult result;
+                    if (mimeType.startsWith("video/")) {
+                        VideoProvider videoProvider = new VideoProvider(context);
+                        result = videoProvider.uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, forceLowerQuality);
+                    } else {
+                        result = ImageProvider.uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, forceLowerQuality);
+                    }
 
                     if (result instanceof SuccessfullUploadResult) {
                         Log.v(null, "[SyncWorker] MediaItem uploaded: " + result.toString());
