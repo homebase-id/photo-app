@@ -26,7 +26,7 @@ import id.homebase.lib.core.file.types.payloadorthumbnailbase.PayloadStream;
 import id.homebase.lib.core.file.types.payloadorthumbnailbase.ThumbnailBase;
 import id.homebase.lib.core.file.types.payloadorthumbnailbase.ThumbnailStream;
 
-public class MediaProvider {
+public class ImageProvider {
     private static final String DEFAULT_PAYLOAD_KEY = "dflt_key";
     private static final boolean ENCRYPT_MEDIA = true;
     private static final TargetDrive PHOTO_DRIVE = new TargetDrive("6483b7b1f71bd43eb6896c86148668cc", "2af68fe72fb84896f39f97c59d60813a");

@@ -7,4 +7,8 @@ public interface PayloadBase extends PayloadOrThumbnailBase {
     public String getDescriptorContent();
 
     public EmbeddedThumb getPreviewThumbnail();
+
+    public byte[] getIv();
+
+    public boolean getSkipEncryption();
 }

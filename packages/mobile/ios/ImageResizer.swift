@@ -17,6 +17,10 @@ extension ImageResizer {
       return nil;
     }
 
+    return try resizeImage(imageSource: imageSource, instruction: instruction, key: key, keepDimensions: keepDimensions)
+  }
+
+  static func resizeImage(imageSource: CGImageSource, instruction: ResizeInstruction, key: String, keepDimensions: Bool) throws -> ThumbnailStream? {
     guard let resizedImage = resizeImageWithInstruction(imageSource: imageSource, instruction: instruction) else {
       return nil;
     }
@@ -39,6 +43,12 @@ extension ImageResizer {
       print("Failed to create image source.")
       return streams
     }
+
+    return try resizeImage(imageSource: imageSource, instructions: instructions, key: key)
+  }
+
+  static func resizeImage(imageSource: CGImageSource, instructions: [ResizeInstruction], key: String) throws -> [ThumbnailBase] {
+    var streams: [ThumbnailBase] = []
 
     for instruction in instructions {
       guard let resizedImage = resizeImageWithInstruction(imageSource: imageSource, instruction: instruction) else {
@@ -191,9 +201,12 @@ protocol PayloadBase {
   var descriptorContent: String? {get}
   var previewThumbnail: EmbeddedThumb? {get}
   var key: String { get }
+  var skipEncryption: Bool { get }
+  var iv: Data? { get }
 }
 
 struct PayloadStream: PayloadBase {
+  
   let descriptorContent: String?
   let previewThumbnail: EmbeddedThumb?
 
@@ -201,6 +214,8 @@ struct PayloadStream: PayloadBase {
   let key: String
 
   let inputStream: (stream: InputStream, count: UInt64)
+  var skipEncryption: Bool
+  var iv: Data?
 }
 
 struct PayloadFile: PayloadBase {
@@ -211,6 +226,8 @@ struct PayloadFile: PayloadBase {
   let key: String
 
   let filePath: String
+  var skipEncryption: Bool
+  var iv: Data?
 }
 
 struct EmbeddedThumb :Codable {

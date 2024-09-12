@@ -90,7 +90,6 @@ public class CryptoUtil {
         }
     }
 
-
     // Method to convert a string to a byte array
     public static byte[] stringToByteArray(String input) {
         return input.getBytes(StandardCharsets.UTF_8);
@@ -166,5 +165,3 @@ public class CryptoUtil {
         return new EncryptedKeyHeader(1, 11, transferIv, encryptedAesKey);
     }
 }
-
-

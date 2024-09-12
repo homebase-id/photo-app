@@ -151,6 +151,8 @@ dependencies {
     implementation("androidx.work:work-runtime:$work_version")
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+    implementation 'com.arthenica:ffmpeg-kit-full-gpl:6.0-2'
+
 }
 
 apply from: file("../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

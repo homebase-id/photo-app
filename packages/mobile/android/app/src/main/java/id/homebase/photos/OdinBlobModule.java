@@ -1,4 +1,4 @@
-package id.homebase.feed;
+package id.homebase.photos;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;

@@ -9,22 +9,17 @@ import {
   DEFAULT_PAYLOAD_KEY,
   UploadFileMetadata,
   uploadFile,
+  KeyHeader,
 } from '@homebase-id/js-lib/core';
-import { getRandom16ByteArray, getNewId, jsonStringify64 } from '@homebase-id/js-lib/helpers';
-import {
-  PlainVideoMetadata,
-  SegmentedVideoMetadata,
-  VideoContentType,
-  VideoUploadResult,
-  createThumbnails,
-} from '@homebase-id/js-lib/media';
+import { getRandom16ByteArray, getNewId } from '@homebase-id/js-lib/helpers';
+import { processVideoFile, VideoContentType, VideoUploadResult } from '@homebase-id/js-lib/media';
 
 export const uploadVideo = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   acl: AccessControlList,
   file: Blob | File,
-  fileMetadata?: PlainVideoMetadata | SegmentedVideoMetadata,
+  thumb: ThumbnailFile | undefined,
   uploadMeta?: {
     tag?: string | undefined | string[];
     uniqueId?: string;
@@ -34,7 +29,6 @@ export const uploadVideo = async (
     transitOptions?: TransitOptions;
     allowDistribution?: boolean;
     userDate?: number;
-    thumb?: ThumbnailFile;
   }
 ): Promise<VideoUploadResult | undefined> => {
   if (!targetDrive) throw 'Missing target drive';
@@ -43,6 +37,8 @@ export const uploadVideo = async (
     acl.requiredSecurityGroup === SecurityGroupType.Anonymous ||
     acl.requiredSecurityGroup === SecurityGroupType.Authenticated
   );
+
+  const aesKey: Uint8Array | undefined = encrypt ? getRandom16ByteArray() : undefined;
 
   const instructionSet: UploadInstructionSet = {
     transferIv: getRandom16ByteArray(),
@@ -53,11 +49,13 @@ export const uploadVideo = async (
     transitOptions: uploadMeta?.transitOptions,
   };
 
-  const { tinyThumb, additionalThumbnails } = uploadMeta?.thumb
-    ? await createThumbnails(uploadMeta.thumb.payload, DEFAULT_PAYLOAD_KEY, [
-        { quality: 100, width: 250, height: 250 },
-      ])
-    : { tinyThumb: undefined, additionalThumbnails: undefined };
+  // Segment video file
+  // const processVideoFile = (await import('@homebase-id/js-lib/media')).processVideoFile;
+  const {
+    tinyThumb,
+    thumbnails: thumbnailsFromVideo,
+    payloads: payloadsFromVideo,
+  } = await processVideoFile({ file: file, thumbnail: thumb }, DEFAULT_PAYLOAD_KEY, aesKey, true);
 
   const metadata: UploadFileMetadata = {
     versionTag: uploadMeta?.versionTag,
@@ -79,15 +77,13 @@ export const uploadVideo = async (
     dotYouClient,
     instructionSet,
     metadata,
-    [
-      {
-        payload: file,
-        key: DEFAULT_PAYLOAD_KEY,
-        descriptorContent: fileMetadata ? jsonStringify64(fileMetadata) : undefined,
-      },
-    ],
-    additionalThumbnails,
-    encrypt
+    payloadsFromVideo,
+    thumbnailsFromVideo,
+    encrypt,
+    undefined,
+    {
+      aesKey,
+    }
   );
   if (!result) throw new Error(`Upload failed`);
 

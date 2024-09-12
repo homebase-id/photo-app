@@ -58,6 +58,18 @@ public class DriveFileUploadProvider {
             List<ThumbnailBase> thumbnails,
             boolean encrypt
     ) throws Exception {
+        byte[] aesKey = encrypt ? getRandom16ByteArray() : null;
+        return uploadFile(dotYouClient, instructions, metadata, payloads, thumbnails, aesKey);
+    }
+
+    public static UploadResult uploadFile(
+            DotYouClient dotYouClient,
+            UploadInstructionSet instructions,
+            UploadFileMetadata<String> metadata,
+            List<PayloadBase> payloads,
+            List<ThumbnailBase> thumbnails,
+            byte[] aesKey
+    ) throws Exception {
         // Debug information
         if (isDebug()) {
             Log.v(null, "request: " + dotYouClient.getEndpoint() + "/drive/files/upload" +
@@ -67,10 +79,12 @@ public class DriveFileUploadProvider {
                     " thumbnails: " + thumbnails);
         }
 
+        boolean encrypt = aesKey != null;
+
         // Force isEncrypted on the metadata to match the encrypt flag
         metadata.setIsEncrypted(encrypt);
 
-        KeyHeader keyHeader = encrypt ? generateKeyHeader() : null;
+        KeyHeader keyHeader = encrypt ? generateKeyHeader(aesKey) : null;
 
         UploadManifest manifest = buildManifest(payloads, thumbnails, encrypt);
         instructions.setManifest(manifest);
@@ -107,7 +121,8 @@ public class DriveFileUploadProvider {
                             .map(thumb -> new UploadThumbnailDescriptor(
                                     thumb.getKey() + thumb.getPixelWidth(),
                                     thumb.getPixelHeight(),
-                                    thumb.getPixelWidth()))
+                                    thumb.getPixelWidth(),
+                                    thumb.getContentType()))
                             .collect(Collectors.toList());
 
                     return new UploadPayloadDescriptor(
@@ -115,7 +130,8 @@ public class DriveFileUploadProvider {
                             payload.getDescriptorContent(),
                             relatedThumbnails,
                             payload.getPreviewThumbnail(),
-                            generateIv ? getRandom16ByteArray() : null
+                            payload.getIv() != null ? payload.getIv() : generateIv ? getRandom16ByteArray() : null,
+                            payload.getContentType()
                     );
                 })
                 .collect(Collectors.toList());
@@ -176,7 +192,8 @@ public class DriveFileUploadProvider {
             for (PayloadBase payload : payloads) {
                 RequestBody payloadBody;
 
-                if (keyHeader == null) {
+                if (keyHeader == null || payload.getSkipEncryption()) {
+                    Log.v(null, "Skipping encryption for payload: " + payload.getKey());
                     payloadBody = getFileOrStreamRequestBody(payload);
                 } else {
                     java.io.File payloadFile = payload instanceof PayloadOrThumbnailFile ? ((PayloadOrThumbnailFile) payload).getPayload() : null;
@@ -186,6 +203,7 @@ public class DriveFileUploadProvider {
                     payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(payload.getContentType()));
                 }
 
+                assert payloadBody != null;
                 builder.addFormDataPart("payload", payload.getKey(), payloadBody);
             }
         }
@@ -204,6 +222,7 @@ public class DriveFileUploadProvider {
                     payloadBody = new StreamRequestBody(encryptedPayload, MediaType.parse(thumb.getContentType()));
                 }
 
+                assert payloadBody != null;
                 builder.addFormDataPart("thumbnail", thumb.getKey() + thumb.getPixelWidth(), payloadBody);
             }
         }
@@ -237,7 +256,7 @@ public class DriveFileUploadProvider {
     private static UploadResult pureUpload(
             DotYouClient dotYouClient,
             MultipartBody data
-    ) {
+    ) throws Exception {
         Request request = new Request.Builder()
                 .url(dotYouClient.getEndpoint() + "/drive/files/upload")
                 .post(data)
@@ -259,16 +278,19 @@ public class DriveFileUploadProvider {
 
                 // TODO
                 Log.e(null, "Error: " + jsonData);
+            } else {
+                Log.e(null, "Body is null" + response.code() + " " + response.message());
+                throw new IllegalStateException("Body is null");
+                // Do something if the body is `null`
             }
-
-            // Do something if the body is `null`
 
         } catch (Exception e) {
             // TODO
             Log.e(null, "Error: " + e.getMessage() + Arrays.toString(e.getStackTrace()));
         }
 
-        throw new NotImplementedError();
+        Log.e(null, "Error: " + "Unknown error");
+        throw new Exception("Unknown error");
     }
 
     private static class DescriptorData {

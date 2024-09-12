@@ -111,26 +111,21 @@ const uploadNewVideo = async (
 ) => {
   const userDate = (newVideo as File).lastModified || new Date().getTime();
 
-  // Segment video file
-  const segmentVideoFileWithFfmpeg = (await import('@homebase-id/js-lib/media'))
-    .segmentVideoFileWithFfmpeg;
-  const { data: segmentedVideoData, metadata } = await segmentVideoFileWithFfmpeg(
-    'bytes' in newVideo ? new Blob([newVideo.bytes], { type: newVideo.type }) : newVideo
-  );
+  const normalizedFile =
+    'bytes' in newVideo ? new Blob([newVideo.bytes], { type: newVideo.type }) : newVideo;
 
   return {
     ...(await uploadVideo(
       dotYouClient,
       targetDrive,
       { requiredSecurityGroup: SecurityGroupType.Owner },
-      segmentedVideoData,
-      metadata,
+      normalizedFile,
+      thumb,
       {
         ...meta,
         type: newVideo.type as VideoContentType,
         tag: albumKey ? [albumKey] : undefined,
         userDate,
-        thumb: thumb,
       }
     )),
     userDate: new Date(userDate),
