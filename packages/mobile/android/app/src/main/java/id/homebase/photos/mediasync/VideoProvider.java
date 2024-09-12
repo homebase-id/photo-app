@@ -247,10 +247,6 @@ public class VideoProvider {
         File keyInfoFile = new File(directory, "hls-key-info-" + id + ".txt");
 
         // Write AES key to the key file in raw format
-        String keyAsbase64 = CryptoUtil.byteArrayToBase64(keyHeader.aesKey());
-        Log.v(null, "[SyncWorker] base64key: " + keyAsbase64);
-        String ivAsbase64 = CryptoUtil.byteArrayToBase64(keyHeader.iv());
-        Log.v(null, "[SyncWorker] base64iv: " + ivAsbase64);
         java.nio.file.Files.write(keyFile.toPath(), keyHeader.aesKey());
 
         // Write the key info (URL, file path, and IV) to the key info file
