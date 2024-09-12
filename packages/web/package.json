@@ -29,7 +29,8 @@
     "mp4box": "^0.5.2",
     "@homebase-id/ffmpeg": "0.12.10",
     "@ffmpeg/util": "^0.12.1",
-    "hls.js": "^1.5.15"
+    "hls.js": "^1.5.15",
+    "idb-keyval": "^6.2.1"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.7",
