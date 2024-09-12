@@ -1,10 +1,6 @@
 import { lazy, ReactNode, Suspense } from 'react';
 import { QueryClient } from '@tanstack/react-query';
-import {
-  PersistQueryClientOptions,
-  PersistQueryClientProvider,
-  removeOldestQuery,
-} from '@tanstack/react-query-persist-client';
+import { PersistQueryClientOptions, removeOldestQuery } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 
 import { HelmetProvider, Helmet } from 'react-helmet-async';
@@ -21,6 +17,7 @@ import { ErrorBoundary } from '../components/ui/Layout/ErrorBoundary/ErrorBounda
 import Layout from '../components/ui/Layout/Layout';
 import LoadingDetailPage from '../components/ui/Layout/Loaders/LoadingDetailPage/LoadingDetailPage';
 import useAuth from '../hooks/auth/useAuth';
+import { OdinQueryClient } from './OdinQueryClient';
 
 const About = lazy(() => import('../templates/About/About'));
 const Photos = lazy(() => import('../templates/Photos/Photos'));
@@ -41,20 +38,7 @@ import './App.css';
 import { DotYouClientProvider } from '../components/Auth/DotYouClientProvider';
 import Debug from '../templates/Debug/debug';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours
-    },
-  },
-});
-
 export const REACT_QUERY_CACHE_KEY = 'PHOTO_REACT_QUERY_OFFLINE_CACHE';
-const localStoragePersister = createSyncStoragePersister({
-  storage: window.localStorage,
-  retry: removeOldestQuery,
-  key: 'PHOTO_REACT_QUERY_OFFLINE_CACHE',
-});
 
 // Explicit includes to avoid persisting media items, or large data in general
 const INCLUDED_QUERY_KEYS = [
@@ -67,25 +51,6 @@ const INCLUDED_QUERY_KEYS = [
   'photos',
   'photos-infinite',
 ];
-const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
-  maxAge: Infinity,
-  persister: localStoragePersister,
-  dehydrateOptions: {
-    shouldDehydrateQuery: (query) => {
-      if (
-        query.state.status === 'pending' ||
-        query.state.status === 'error' ||
-        (query.state.data &&
-          typeof query.state.data === 'object' &&
-          !Array.isArray(query.state.data) &&
-          Object.keys(query.state.data).length === 0)
-      )
-        return false;
-      const { queryKey } = query;
-      return INCLUDED_QUERY_KEYS.some((key) => queryKey.includes(key));
-    },
-  },
-};
 
 function App() {
   const router = createBrowserRouter(
@@ -147,9 +112,13 @@ function App() {
       <Helmet>
         <meta name="v" content={import.meta.env.VITE_VERSION} />
       </Helmet>
-      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+      <OdinQueryClient
+        cacheKey={REACT_QUERY_CACHE_KEY}
+        cachedQueryKeys={INCLUDED_QUERY_KEYS}
+        type={'indexeddb'}
+      >
         <RouterProvider router={router} fallbackElement={<></>} />
-      </PersistQueryClientProvider>
+      </OdinQueryClient>
     </HelmetProvider>
   );
 }
