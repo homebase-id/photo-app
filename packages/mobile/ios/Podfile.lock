@@ -16,13 +16,7 @@ PODS:
     - React-Core (= 0.73.4)
     - React-jsi (= 0.73.4)
     - ReactCommon/turbomodule/core (= 0.73.4)
-  - ffmpeg-kit-ios-https (6.0)
-  - ffmpeg-kit-react-native (6.0.2):
-    - ffmpeg-kit-react-native/https (= 6.0.2)
-    - React-Core
-  - ffmpeg-kit-react-native/https (6.0.2):
-    - ffmpeg-kit-ios-https (= 6.0)
-    - React-Core
+  - ffmpeg-kit-ios-min-gpl (6.0)
   - fmt (6.2.1)
   - glog (0.3.5)
   - hermes-engine (0.73.4):
@@ -1168,7 +1162,7 @@ DEPENDENCIES:
   - DoubleConversion (from `../../../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../../../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../../../node_modules/react-native/React/FBReactNativeSpec`)
-  - ffmpeg-kit-react-native (from `../../../node_modules/ffmpeg-kit-react-native`)
+  - ffmpeg-kit-ios-min-gpl
   - glog (from `../../../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../../../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
@@ -1245,7 +1239,7 @@ SPEC REPOS:
   trunk:
     - Base64
     - BEMCheckBox
-    - ffmpeg-kit-ios-https
+    - ffmpeg-kit-ios-min-gpl
     - fmt
     - JWT
     - libevent
@@ -1268,8 +1262,6 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
     :path: "../../../node_modules/react-native/React/FBReactNativeSpec"
-  ffmpeg-kit-react-native:
-    :path: "../../../node_modules/ffmpeg-kit-react-native"
   glog:
     :podspec: "../../../node_modules/react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
@@ -1414,8 +1406,7 @@ SPEC CHECKSUMS:
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: 84f6edbe225f38aebd9deaf1540a4160b1f087d7
   FBReactNativeSpec: 7ae20995abbb02e53594eb924fdef9f78497361b
-  ffmpeg-kit-ios-https: f9c838aa5400a6c5ba12324c6b798f52197ba354
-  ffmpeg-kit-react-native: 3cea88c9c5cfad62e1465279ea7d800dfbba3b00
+  ffmpeg-kit-ios-min-gpl: 5b5c007503509e3e4c0ab68852468ccd3c768230
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   hermes-engine: b2669ce35fc4ac14f523b307aff8896799829fe2
@@ -1494,6 +1485,6 @@ SPEC CHECKSUMS:
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Yoga: 64cd2a583ead952b0315d5135bf39e053ae9be70
 
-PODFILE CHECKSUM: 71ca21563cfff87cb4e2af603ed099b93fd741b1
+PODFILE CHECKSUM: 9b86ed87881324850f469bcd8d07c6860050a8d6
 
 COCOAPODS: 1.15.2

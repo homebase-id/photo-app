@@ -144,6 +144,43 @@ class VideoProvider {
       }
     }
   }
+  
+  static func getVideoCodec(filePath: String) -> String {
+      // Create an AVAsset from the video file URL
+      let fileUrl = URL(fileURLWithPath: filePath)
+      let asset = AVAsset(url: fileUrl)
+
+      // Get the video track
+      if let videoTrack = asset.tracks(withMediaType: .video).first {
+          // Get the format descriptions of the video track
+          let formatDescriptions = videoTrack.formatDescriptions as! [CMFormatDescription]
+          
+          if let formatDescription = formatDescriptions.first {
+              // Extract codec information
+              let codecType = CMFormatDescriptionGetMediaSubType(formatDescription)
+              
+              // Convert codecType to a readable string
+              let codecString = FourCharCodeToString(fourCharCode: codecType)
+            return codecString;
+          }
+      } else {
+          print("No video track found.")
+      }
+    
+    return "Unknown"
+  }
+
+  // Helper function to convert FourCharCode to String
+  static func FourCharCodeToString(fourCharCode: FourCharCode) -> String {
+      let bytes: [CChar] = [
+          CChar((fourCharCode >> 24) & 0xFF),
+          CChar((fourCharCode >> 16) & 0xFF),
+          CChar((fourCharCode >> 8) & 0xFF),
+          CChar(fourCharCode & 0xFF),
+          0
+      ]
+      return String(cString: bytes)
+  }
 
   static func segmentVideoToHLS(inputUrl: URL, outputDirectory: URL, keyHeader: KeyHeader?) async throws -> (playlistUrl: URL, segmentsUrl: URL) {
     let id = UUID().uuidString
@@ -159,9 +196,13 @@ class VideoProvider {
       let keyInfoFile = try await createKeyInfoFile(directory: outputDirectory, keyHeader: keyHeader)
       encryptionCommand = "-hls_key_info_file \(keyInfoFile.path)"
     }
-
-    // ffmpeg command to segment the video into HLS
-    let command = "-i \(inputUrl.path) -codec copy \(encryptionCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
+    
+    let command: String;
+    if(getVideoCodec(filePath: inputUrl.path) == "avc1") {
+      command = "-i \(inputUrl.path) -codec copy \(encryptionCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
+    } else {
+      command = "-i \(inputUrl.path) -c:v libx264 -preset fast -crf 23 -c:a aac \(encryptionCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
+    }
     print("ffmpeg command: \(command)")
 
     return try await withCheckedThrowingContinuation { continuation in
