@@ -1,4 +1,4 @@
-import { OdinImage, OdinVideo } from '@homebase-id/ui-lib';
+import { OdinImage, OdinVideo, OdinVideoProps, useImage } from '@homebase-id/ui-lib';
 import {
   DEFAULT_PAYLOAD_KEY,
   EmbeddedThumb,
@@ -49,17 +49,38 @@ export const VideoWithLoader = ({
           <div className="relative h-full w-full min-w-[20rem] bg-slate-200 dark:bg-indigo-950"></div> // No preview available
         )
       ) : (
-        <OdinVideo
-          dotYouClient={dotYouClient}
+        <OdinVideoWrapper
           targetDrive={targetDrive}
           fileId={fileId}
           fileKey={DEFAULT_PAYLOAD_KEY}
           lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
           probablyEncrypted={true}
-          className="max-h-[inherit]"
+          className="max-h-[inherit] w-full h-full"
         />
       )}
     </div>
+  );
+};
+
+type OdinVideoWrapperProps = Omit<OdinVideoProps, 'dotYouClient'>;
+export const OdinVideoWrapper = ({ ...props }: OdinVideoWrapperProps) => {
+  const dotYouClient = useDotYouClientContext();
+
+  const { data: image } = useImage({
+    dotYouClient,
+    probablyEncrypted: props.probablyEncrypted,
+    imageDrive: props.targetDrive,
+    imageFileId: props.fileId,
+    imageFileKey: props.fileKey,
+    imageGlobalTransitId: props.globalTransitId,
+    lastModified: props.lastModified,
+    odinId: props.odinId,
+    preferObjectUrl: true,
+    size: { pixelWidth: 100, pixelHeight: 100 },
+  }).fetch;
+
+  return (
+    <OdinVideo dotYouClient={dotYouClient} {...props} poster={image ? image.url : props.poster} />
   );
 };

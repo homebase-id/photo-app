@@ -67,7 +67,7 @@ export const usePhotoLibrary = ({
 
     if (photoLibOnServer && photoLibOnServer.lastUpdated) {
       const newFilesSinceLastUpdate = await queryFilesSince(photoLibOnServer.lastUpdated, type);
-
+      console.log('newFilesSinceLastUpdate', newFilesSinceLastUpdate);
       let runningServerLib = photoLibOnServer;
       newFilesSinceLastUpdate.forEach((file) => {
         if (file.fileMetadata.appData.userDate)
@@ -129,7 +129,9 @@ export const usePhotoLibrary = ({
       queryFn: () => fetch(type),
       gcTime: Infinity, // Never => react query will never remove the data from the cache
       enabled: !!targetDrive,
-      staleTime: 1000 * 60 * 5, // 5min
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 1, // 1min
     }),
   };
 };
