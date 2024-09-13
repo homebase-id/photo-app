@@ -90,14 +90,22 @@ export const OdinImage = memo(
     if (enableZoom) {
       return (
         <ZoomableImage
+          onLoad={() => setThumbLoaded(true)}
           uri={imageData?.url || embeddedThumbUrl}
           imageSize={imageSize}
           onPress={onPress}
           onLongPress={onLongPress}
         />
       );
-    } else {
-      return (
+    }
+
+    return (
+      <View
+        style={{
+          position: 'relative',
+          ...imageSize,
+        }}
+      >
         <InnerImage
           onLoad={() => setThumbLoaded(true)}
           uri={imageData?.url || embeddedThumbUrl || ''}
@@ -109,7 +117,6 @@ export const OdinImage = memo(
             right: 0,
             bottom: 0,
             resizeMode: fit,
-            zIndex: 5, // Displayed underneath the actual image
             ...style,
           }}
           alt={alt || title}
@@ -125,8 +132,8 @@ export const OdinImage = memo(
           onPress={onPress}
           onLongPress={onLongPress}
         />
-      );
-    }
+      </View>
+    );
   }
 );
 
@@ -222,6 +229,10 @@ const ZoomableImage = memo(
     onPress,
     onLongPress,
     imageMeta,
+
+    alt,
+    style,
+    onLoad,
   }: {
     uri: string | undefined;
     imageSize?: { width: number; height: number };
@@ -235,7 +246,9 @@ const ZoomableImage = memo(
       size?: ImageSize;
     };
 
-    contentType?: ImageContentType;
+    alt?: string;
+    style?: ImageStyle;
+    onLoad?: () => void;
   }) => {
     const { invalidateCache } = useImage();
     return (
@@ -247,6 +260,7 @@ const ZoomableImage = memo(
         >
           <ImageZoom
             uri={uri}
+            onLoadEnd={onLoad}
             minScale={1}
             maxScale={3}
             isDoubleTapEnabled={true}
@@ -254,7 +268,9 @@ const ZoomableImage = memo(
             resizeMode="contain"
             style={{
               ...imageSize,
+              ...style,
             }}
+            alt={alt}
             onError={
               imageMeta
                 ? () =>
