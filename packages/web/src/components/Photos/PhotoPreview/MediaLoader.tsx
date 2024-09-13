@@ -1,5 +1,5 @@
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
-import { VideoWithLoader } from './VideoWithLoader';
+import { OdinVideoWrapper, VideoWithLoader } from './VideoWithLoader';
 import { PhotoConfig, t, useDotYouClientContext } from 'photo-app-common';
 import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@homebase-id/ui-lib';
 import { useState } from 'react';
@@ -22,17 +22,18 @@ const MediaWithLoader = ({
   return media?.fileMetadata.payloads
     .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
     ?.contentType.startsWith('video/') ? (
-    <VideoWithLoader
+    <OdinVideoWrapper
       fileId={fileId}
+      fileKey={DEFAULT_PAYLOAD_KEY}
       targetDrive={targetDrive}
       lastModified={lastModified}
-      fit="contain"
-      className={`m-auto h-auto max-h-[100vh] w-auto max-w-full object-contain flex`}
+      className={`relative h-full w-full`}
       skipChunkedPlayback={original}
     />
   ) : (
     <CustomOdinImage
       fileId={fileId}
+      fileKey={DEFAULT_PAYLOAD_KEY}
       lastModified={lastModified}
       original={original}
       media={media}
@@ -44,12 +45,14 @@ const MediaWithLoader = ({
 const CustomOdinImage = ({
   media,
   fileId,
+  fileKey,
   lastModified,
 
   original,
 }: {
   media: HomebaseFile;
   fileId: string;
+  fileKey: string;
   lastModified: number | undefined;
 
   original?: boolean;
@@ -60,8 +63,8 @@ const CustomOdinImage = ({
 
   if (
     original &&
-    media.fileMetadata.payloads.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
-      ?.contentType === 'image/heic'
+    media.fileMetadata.payloads.find((payload) => payload.key === fileKey)?.contentType ===
+      'image/heic'
   ) {
     return (
       <div className="relative h-full w-full flex flex-row items-center justify-center">
@@ -79,7 +82,7 @@ const CustomOdinImage = ({
         targetDrive={targetDrive}
         lastModified={lastModified}
         previewThumbnail={media.fileMetadata.appData.previewThumbnail}
-        fileKey={DEFAULT_PAYLOAD_KEY}
+        fileKey={fileKey}
         blur="auto"
         onLoad={() => setTinyLoaded(true)}
         key={'preview'}
@@ -91,7 +94,7 @@ const CustomOdinImage = ({
             dotYouClient={dotYouClient}
             fileId={fileId}
             targetDrive={targetDrive}
-            fileKey={DEFAULT_PAYLOAD_KEY}
+            fileKey={fileKey}
             onLoad={() => setFinalLoaded(true)}
             key={'original'}
           />
@@ -102,7 +105,7 @@ const CustomOdinImage = ({
             fileId={fileId}
             targetDrive={targetDrive}
             lastModified={lastModified}
-            fileKey={DEFAULT_PAYLOAD_KEY}
+            fileKey={fileKey}
             loadSize={{ pixelHeight: 1200, pixelWidth: 1200 }}
             onLoad={() => setFinalLoaded(true)}
             key={'thumbnail'}

@@ -1,6 +1,6 @@
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile, TargetDrive } from '@homebase-id/js-lib/core';
 import { memo, useCallback, useMemo } from 'react';
-import { View, Dimensions, TouchableHighlight } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import { Text } from '../../ui/Text/Text';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -170,6 +170,7 @@ export const PhotoItem = memo(
                 }}
                 fit="cover"
                 preview={true}
+                onPress={doPress}
               />
             ) : (
               <PhotoWithLoader

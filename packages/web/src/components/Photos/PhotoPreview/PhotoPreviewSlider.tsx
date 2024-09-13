@@ -46,27 +46,41 @@ const PhotoPreviewSlider = ({
   // Get the current, next and previous photos;
   const currentPhoto = flatPhotos[fileIndex];
   const nextPhoto = flatPhotos[fileIndex + 1];
+  const prevPhoto = flatPhotos[fileIndex - 1];
+
+  // We use PhotosToShow to avoid loading every photo in the library
   const [photosToShow, setPhotosToShow] = useState<HomebaseFile[]>(
     Array.from(new Set([...flatPhotos.slice(0, fileIndex), currentPhoto, nextPhoto])).filter(
       (photo) => photo
     )
   );
+
+  // Scroll to the current photo when the photosToShow change
+  const currentPhotoIndex = useMemo(
+    () => photosToShow.findIndex((photo) => stringGuidsEqual(photo.fileId, fileId)),
+    [photosToShow, fileId]
+  );
+
   useEffect(() => {
-    const indexInPhotosToshow = photosToShow.findIndex((photo) =>
-      stringGuidsEqual(photo.fileId, fileId)
-    );
-    if (indexInPhotosToshow === photosToShow.length - 1) {
+    if (currentPhotoIndex === photosToShow.length - 1) {
       // We're last, we need to append the next photo
-      const nextPhoto = flatPhotos[fileIndex + 1];
       if (nextPhoto) setPhotosToShow([...photosToShow, nextPhoto]);
-    } else if (indexInPhotosToshow === 0) {
+    } else if (currentPhotoIndex === 0) {
       // We're first, we need to prepend the previous photo
-      const prevPhoto = flatPhotos[fileIndex - 1];
       if (prevPhoto) setPhotosToShow([prevPhoto, ...photosToShow]);
-    } else if (indexInPhotosToshow === -1) {
-      console.log('Photo not found in photosToShow');
+    } else if (currentPhotoIndex === -1) {
+      if (fileIndex !== -1) {
+        console.log('Photo not found in photosToShow, but is in flatPhotos');
+        setPhotosToShow(
+          Array.from(new Set([...flatPhotos.slice(0, fileIndex), currentPhoto, nextPhoto])).filter(
+            (photo) => photo
+          )
+        );
+      } else {
+        console.log('Photo not found in photosToShow');
+      }
     }
-  }, [fileIndex]);
+  }, [flatPhotos, currentPhotoIndex, fileIndex]);
 
   // Fetch older/newer pages when reaching the end of the current page
   const isFetching = isFetchingOlderPage || isFetchingNewerPage;
@@ -105,15 +119,12 @@ const PhotoPreviewSlider = ({
     return () => scrollContainer.current?.removeEventListener('scroll', scrollListener);
   }, [flatPhotos, scrollListener]);
 
-  // Scroll to the current photo when the photosToShow change
-  const currentPhotoIndex = photosToShow.findIndex((photo) =>
-    stringGuidsEqual(photo.fileId, fileId)
-  );
   useEffect(() => {
     if (!scrollContainer.current) return;
     const newScrollLeft = currentPhotoIndex * slideWidth;
     if (scrollContainer.current.scrollLeft !== newScrollLeft) {
-      scrollContainer.current.scrollLeft = currentPhotoIndex * slideWidth;
+      if (!scrollContainer.current) return;
+      scrollContainer.current.scrollLeft = newScrollLeft;
     }
   }, [photosToShow, currentPhotoIndex]);
 
@@ -122,26 +133,30 @@ const PhotoPreviewSlider = ({
       className="no-scrollbar flex h-full snap-x snap-mandatory flex-row overflow-y-hidden overflow-x-scroll"
       ref={scrollContainer}
     >
-      {photosToShow.map((photo, index) => {
-        return (
-          <div
-            className="h-full w-screen relative"
-            key={photo.fileId}
-            data-fileid={photo.fileId}
-            data-index={index}
-          >
-            <div className="relative flex overflow-hidden h-screen w-screen snap-start">
-              <MediaWithLoader
-                media={photo}
-                fileId={photo.fileId}
-                lastModified={photo.fileMetadata.updated}
-                original={original}
-                key={`${photo.fileId}-${original}`}
-              />
+      <>
+        {photosToShow.map((photo, index) => {
+          return (
+            <div
+              className={`h-full flex-shrink-0 w-screen relative ${currentPhotoIndex === -1 ? 'opacity-0' : 'opacity-100'}`}
+              key={photo.fileId}
+              data-fileid={photo.fileId}
+              data-index={index}
+            >
+              {Math.abs(currentPhotoIndex - index) < 2 ? (
+                <div className="relative flex overflow-hidden h-screen w-screen snap-start">
+                  <MediaWithLoader
+                    media={photo}
+                    fileId={photo.fileId}
+                    lastModified={photo.fileMetadata.updated}
+                    original={original}
+                    key={`${photo.fileId}-${original}`}
+                  />
+                </div>
+              ) : null}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </>
     </div>
   );
 };
