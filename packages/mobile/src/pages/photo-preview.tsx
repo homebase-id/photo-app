@@ -108,7 +108,6 @@ const PhotoPreview = memo(
     );
 
     const doGoBack = useCallback(() => {
-      console.log('goBack');
       if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
