@@ -1,6 +1,11 @@
-import { DEFAULT_PAYLOAD_KEY, EmbeddedThumb, TargetDrive } from '@homebase-id/js-lib/core';
+import {
+  DEFAULT_PAYLOAD_KEY,
+  EmbeddedThumb,
+  PayloadDescriptor,
+  TargetDrive,
+} from '@homebase-id/js-lib/core';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Pressable, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../../app/Colors';
 import WebView from 'react-native-webview';
 import { TouchableWithoutFeedback } from 'react-native';
@@ -8,6 +13,10 @@ import { Play } from '../../ui/Icons/icons';
 import { useAuth, corsHost } from '../../../hooks/auth/useAuth';
 import { uint8ArrayToBase64 } from '@homebase-id/js-lib/helpers';
 import { OdinImage } from '../../ui/OdinImage/OdinImage';
+import { useVideoMetadata } from '../../../hooks/video/useVideoMetadata';
+import { useHlsManifest } from '../../../hooks/video/useHlsManifest';
+import { useDotYouClientContext } from 'photo-app-common';
+import Video from 'react-native-video';
 
 // Memo to performance optimize the FlatList
 export const VideoWithLoader = memo(
@@ -28,8 +37,22 @@ export const VideoWithLoader = memo(
     imageSize?: { width: number; height: number };
     onPress?: () => void;
   }) => {
+    const dotYouClient = useDotYouClientContext();
+    const identity = dotYouClient.getIdentity();
     const [loadVideo, setLoadVideo] = useState(false);
     const doLoadVideo = useCallback(() => setLoadVideo(true), []);
+
+    const { data: videoData } = useVideoMetadata(
+      identity,
+      fileId,
+      undefined,
+      DEFAULT_PAYLOAD_KEY,
+      targetDrive
+    ).fetchMetadata;
+
+    const payload = videoData?.fileHeader.fileMetadata.payloads.find(
+      (pyld) => pyld.key === DEFAULT_PAYLOAD_KEY
+    );
 
     return (
       <View
@@ -39,92 +62,149 @@ export const VideoWithLoader = memo(
           position: 'relative',
         }}
       >
-        {preview ? (
-          <>
-            <OdinImage
-              targetDrive={targetDrive}
-              fileId={fileId}
-              fileKey={DEFAULT_PAYLOAD_KEY}
-              previewThumbnail={previewThumbnail}
-              fit={fit}
-              imageSize={imageSize}
-              onPress={onPress}
-              avoidPayload={true}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-                zIndex: 20,
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.4)',
-              }}
-            >
+        <Pressable onPress={onPress} style={{ flex: 1 }}>
+          {preview ? (
+            <>
+              <OdinImage
+                targetDrive={targetDrive}
+                fileId={fileId}
+                fileKey={DEFAULT_PAYLOAD_KEY}
+                previewThumbnail={previewThumbnail}
+                fit={fit}
+                imageSize={imageSize}
+                onPress={onPress}
+                avoidPayload={true}
+              />
               <View
                 style={{
-                  padding: 10,
-                  borderRadius: 50,
-                  borderWidth: 1,
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  zIndex: 20,
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.4)',
                 }}
               >
-                <Play size={'xl'} color={Colors.white} />
+                <View
+                  style={{
+                    padding: 10,
+                    borderRadius: 50,
+                    borderWidth: 1,
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                  }}
+                >
+                  <Play size={'xl'} color={Colors.white} />
+                </View>
               </View>
-            </View>
-          </>
-        ) : loadVideo ? (
-          <OdinVideo targetDrive={targetDrive} fileId={fileId} />
-        ) : (
-          <>
-            <OdinImage
-              targetDrive={targetDrive}
-              fileId={fileId}
-              fileKey={DEFAULT_PAYLOAD_KEY}
-              previewThumbnail={previewThumbnail}
-              fit={fit}
-              imageSize={imageSize}
-              onPress={doLoadVideo}
-              avoidPayload={true}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-                zIndex: 20,
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.4)',
-              }}
-            >
-              <TouchableOpacity
+            </>
+          ) : loadVideo ? (
+            videoData?.metadata.mimeType === 'application/vnd.apple.mpegurl' && payload ? (
+              <HlsVideo
+                odinId={identity}
+                fileId={fileId}
+                targetDrive={targetDrive}
+                payload={payload}
+                probablyEncrypted={true}
+                lastModified={payload.lastModified}
+              />
+            ) : (
+              <OdinVideo targetDrive={targetDrive} fileId={fileId} />
+            )
+          ) : (
+            <>
+              <OdinImage
+                targetDrive={targetDrive}
+                fileId={fileId}
+                fileKey={DEFAULT_PAYLOAD_KEY}
+                previewThumbnail={previewThumbnail}
+                fit={fit}
+                imageSize={imageSize}
                 onPress={doLoadVideo}
+                avoidPayload={true}
+              />
+              <View
                 style={{
-                  padding: 20,
-                  borderRadius: 50,
-                  borderWidth: 1,
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  zIndex: 20,
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.4)',
                 }}
               >
-                <Play size={'xl'} color={Colors.white} />
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+                <TouchableOpacity
+                  onPress={doLoadVideo}
+                  style={{
+                    padding: 20,
+                    borderRadius: 50,
+                    borderWidth: 1,
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                  }}
+                >
+                  <Play size={'xl'} color={Colors.white} />
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </Pressable>
       </View>
     );
   }
 );
+
+interface LocalVideoProps {
+  odinId?: string;
+  fileId: string;
+  targetDrive: TargetDrive;
+  globalTransitId?: string;
+  payload: PayloadDescriptor;
+  probablyEncrypted?: boolean;
+  lastModified?: number;
+}
+
+const HlsVideo = ({ odinId, fileId, targetDrive, globalTransitId, payload }: LocalVideoProps) => {
+  const dotYouClient = useDotYouClientContext();
+  const { data: hlsManifest } = useHlsManifest(
+    odinId,
+    fileId,
+    globalTransitId,
+    payload.key,
+    targetDrive
+  ).fetch;
+
+  if (!hlsManifest) return null;
+
+  return (
+    <Video
+      source={{
+        uri: hlsManifest,
+        headers: dotYouClient.getHeaders(),
+        type: 'm3u8',
+      }}
+      paused={false}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      }}
+      controls={true}
+      resizeMode={'contain'}
+      onError={(e) => console.log('error', e)}
+    />
+  );
+};
 
 const OdinVideo = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
   const { authToken, getIdentity, getSharedSecret } = useAuth();

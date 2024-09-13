@@ -18,6 +18,9 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.73.4)
   - ffmpeg-kit-ios-min-gpl (6.0)
   - fmt (6.2.1)
+  - GCDWebServer (3.5.4):
+    - GCDWebServer/Core (= 3.5.4)
+  - GCDWebServer/Core (3.5.4)
   - glog (0.3.5)
   - hermes-engine (0.73.4):
     - hermes-engine/Pre-built (= 0.73.4)
@@ -29,9 +32,6 @@ PODS:
     - MMKVCore (~> 1.2.13)
   - MMKVCore (1.2.16)
   - OpenSSL-Universal (1.1.1100)
-  - PromisesObjC (2.4.0)
-  - PromisesSwift (2.4.0):
-    - PromisesObjC (= 2.4.0)
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
@@ -915,6 +915,9 @@ PODS:
     - React-Core
   - react-native-exif (0.5.0):
     - React
+  - react-native-http-bridge-refurbished (1.2.9):
+    - GCDWebServer
+    - React
   - react-native-image-resizer (3.0.10):
     - React-Core
   - react-native-mmkv-storage (0.9.1):
@@ -930,11 +933,14 @@ PODS:
     - ReactCommon
   - react-native-safe-area-context (4.11.0):
     - React-Core
-  - react-native-video (6.0.0-beta.0):
+  - react-native-video (6.5.0):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
-    - react-native-video/Video (= 6.0.0-beta.0)
-  - react-native-video/Video (6.0.0-beta.0):
-    - PromisesSwift
+    - react-native-video/Video (= 6.5.0)
+  - react-native-video/Video (6.5.0):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
   - react-native-webview (13.12.2):
     - glog
@@ -1194,12 +1200,13 @@ DEPENDENCIES:
   - "react-native-cameraroll (from `../../../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-compressor (from `../../../node_modules/react-native-compressor`)
   - react-native-exif (from `../../../node_modules/react-native-exif`)
+  - react-native-http-bridge-refurbished (from `../../../node_modules/react-native-http-bridge-refurbished`)
   - "react-native-image-resizer (from `../../../node_modules/@bam.tech/react-native-image-resizer`)"
   - react-native-mmkv-storage (from `../../../node_modules/react-native-mmkv-storage`)
   - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
   - react-native-quick-crypto (from `../../../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
-  - react-native-video (from `../../../node_modules/react-native-video`)
+  - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../../../node_modules/react-native-webview`)
   - React-nativeconfig (from `../../../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1241,13 +1248,12 @@ SPEC REPOS:
     - BEMCheckBox
     - ffmpeg-kit-ios-min-gpl
     - fmt
+    - GCDWebServer
     - JWT
     - libevent
     - MMKV
     - MMKVCore
     - OpenSSL-Universal
-    - PromisesObjC
-    - PromisesSwift
     - SocketRocket
     - SSZipArchive
 
@@ -1317,6 +1323,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-compressor"
   react-native-exif:
     :path: "../../../node_modules/react-native-exif"
+  react-native-http-bridge-refurbished:
+    :path: "../../../node_modules/react-native-http-bridge-refurbished"
   react-native-image-resizer:
     :path: "../../../node_modules/@bam.tech/react-native-image-resizer"
   react-native-mmkv-storage:
@@ -1328,7 +1336,7 @@ EXTERNAL SOURCES:
   react-native-safe-area-context:
     :path: "../../../node_modules/react-native-safe-area-context"
   react-native-video:
-    :path: "../../../node_modules/react-native-video"
+    :path: "../node_modules/react-native-video"
   react-native-webview:
     :path: "../../../node_modules/react-native-webview"
   React-nativeconfig:
@@ -1408,6 +1416,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: 7ae20995abbb02e53594eb924fdef9f78497361b
   ffmpeg-kit-ios-min-gpl: 5b5c007503509e3e4c0ab68852468ccd3c768230
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
+  GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   hermes-engine: b2669ce35fc4ac14f523b307aff8896799829fe2
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
@@ -1415,8 +1424,6 @@ SPEC CHECKSUMS:
   MMKV: aac95d817a100479445633f2b3ed8961b4ac5043
   MMKVCore: 9cfef4c48c6c46f66226fc2e4634d78490206a48
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
-  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
   RCTRequired: ab7f915c15569f04a49669e573e6e319a53f9faa
   RCTTypeSafety: 63b97ced7b766865057e7154db0e81ce4ee6cf1e
@@ -1442,12 +1449,13 @@ SPEC CHECKSUMS:
   react-native-cameraroll: 69001b89b62dee286727c3dcc1a4c28890463c18
   react-native-compressor: 6b21a82999abf3c3ab5a8203211bc19c6f6fa625
   react-native-exif: c43e7c18af8bfa133c79145671a0f036e413468e
+  react-native-http-bridge-refurbished: e2e45508ec1573999ace69a0b880eee8f0e5bab2
   react-native-image-resizer: fd0c333eca55147bd55c5e054cac95dcd0da6814
   react-native-mmkv-storage: cfb6854594cfdc5f7383a9e464bb025417d1721c
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-quick-crypto: 82eedfdbd352c8fa861512f80f07d069c411c9b8
   react-native-safe-area-context: 851c62c48dce80ccaa5637b6aa5991a1bc36eca9
-  react-native-video: e9e6fe3ab11d515bd79abd5d81e07db538943c56
+  react-native-video: 139a3587c42ced7776022d178431331924eae7a6
   react-native-webview: 47a17bff5f505305c7be48eeff898d75cdb79c3f
   React-nativeconfig: d7af5bae6da70fa15ce44f045621cf99ed24087c
   React-NativeModulesApple: 0123905d5699853ac68519607555a9a4f5c7b3ac

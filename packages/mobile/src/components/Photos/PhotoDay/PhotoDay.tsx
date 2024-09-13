@@ -170,6 +170,7 @@ export const PhotoItem = memo(
                 }}
                 fit="cover"
                 preview={true}
+                onPress={doPress}
               />
             ) : (
               <PhotoWithLoader
