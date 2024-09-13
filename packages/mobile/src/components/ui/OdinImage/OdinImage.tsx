@@ -1,5 +1,5 @@
 import { EmbeddedThumb, ImageSize, TargetDrive } from '@homebase-id/js-lib/core';
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import {
   GestureResponderEvent,
   Image,
@@ -73,13 +73,11 @@ export const OdinImage = memo(
       return `data:${previewThumbnail.contentType};base64,${previewThumbnail.content}`;
     }, [previewThumbnail]);
 
-    const [thumbLoaded, setThumbLoaded] = useState(false);
-    const loadFinal = !embeddedThumbUrl || (!!embeddedThumbUrl && thumbLoaded);
     const {
       fetch: { data: imageData },
     } = useImage({
       odinId,
-      imageFileId: loadFinal ? fileId : undefined,
+      imageFileId: fileId,
       imageFileKey: fileKey,
       imageDrive: targetDrive,
       size: loadSize,
@@ -90,7 +88,6 @@ export const OdinImage = memo(
     if (enableZoom) {
       return (
         <ZoomableImage
-          onLoad={() => setThumbLoaded(true)}
           uri={imageData?.url || embeddedThumbUrl}
           imageSize={imageSize}
           onPress={onPress}
@@ -110,8 +107,7 @@ export const OdinImage = memo(
 
     return (
       <InnerImage
-        onLoad={() => setThumbLoaded(true)}
-        uri={imageData?.url || embeddedThumbUrl || ''}
+        uri={imageData?.url || embeddedThumbUrl}
         contentType={imageData?.type || previewThumbnail?.contentType}
         style={style}
         fit={fit}
@@ -146,7 +142,7 @@ const InnerImage = memo(
     contentType,
     imageMeta,
   }: {
-    uri: string;
+    uri: string | undefined;
     imageSize?: { width: number; height: number };
     blurRadius?: number;
     alt?: string;
@@ -182,7 +178,7 @@ const InnerImage = memo(
             <SvgUri
               width={imageSize?.width}
               height={imageSize?.height}
-              uri={uri}
+              uri={uri || null}
               style={{ overflow: 'hidden', ...style }}
               onLoad={onLoad}
             />
