@@ -1,5 +1,5 @@
-import { EmbeddedThumb, ImageContentType, ImageSize, TargetDrive } from '@homebase-id/js-lib/core';
-import { memo, useMemo, useState } from 'react';
+import { EmbeddedThumb, ImageSize, TargetDrive } from '@homebase-id/js-lib/core';
+import { memo, useMemo } from 'react';
 import {
   GestureResponderEvent,
   Image,
@@ -73,13 +73,11 @@ export const OdinImage = memo(
       return `data:${previewThumbnail.contentType};base64,${previewThumbnail.content}`;
     }, [previewThumbnail]);
 
-    const [thumbLoaded, setThumbLoaded] = useState(false);
-    const loadFinal = !embeddedThumbUrl || (!!embeddedThumbUrl && thumbLoaded);
     const {
       fetch: { data: imageData },
     } = useImage({
       odinId,
-      imageFileId: loadFinal ? fileId : undefined,
+      imageFileId: fileId,
       imageFileKey: fileKey,
       imageDrive: targetDrive,
       size: loadSize,
@@ -94,25 +92,7 @@ export const OdinImage = memo(
           imageSize={imageSize}
           onPress={onPress}
           onLongPress={onLongPress}
-        />
-      );
-    } else {
-      return (
-        <InnerImage
-          onLoad={() => setThumbLoaded(true)}
-          uri={imageData?.url || embeddedThumbUrl || ''}
-          contentType={imageData?.type || previewThumbnail?.contentType}
-          style={{
-            position: 'absolute', // Absolute so it takes up the full imageSize defined by the wrapper view
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            resizeMode: fit,
-            zIndex: 5, // Displayed underneath the actual image
-            ...style,
-          }}
-          alt={alt || title}
+          blurRadius={!imageData ? 2 : 0}
           imageMeta={{
             odinId,
             imageFileId: fileId,
@@ -120,13 +100,31 @@ export const OdinImage = memo(
             imageDrive: targetDrive,
             size: loadSize,
           }}
-          imageSize={imageSize}
-          blurRadius={!imageData ? 2 : 0}
-          onPress={onPress}
-          onLongPress={onLongPress}
+          style={style}
         />
       );
     }
+
+    return (
+      <InnerImage
+        uri={imageData?.url || embeddedThumbUrl}
+        contentType={imageData?.type || previewThumbnail?.contentType}
+        style={style}
+        fit={fit}
+        alt={alt || title}
+        imageMeta={{
+          odinId,
+          imageFileId: fileId,
+          imageFileKey: fileKey,
+          imageDrive: targetDrive,
+          size: loadSize,
+        }}
+        imageSize={imageSize}
+        blurRadius={!imageData ? 2 : 0}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      />
+    );
   }
 );
 
@@ -144,7 +142,7 @@ const InnerImage = memo(
     contentType,
     imageMeta,
   }: {
-    uri: string;
+    uri: string | undefined;
     imageSize?: { width: number; height: number };
     blurRadius?: number;
     alt?: string;
@@ -180,7 +178,7 @@ const InnerImage = memo(
             <SvgUri
               width={imageSize?.width}
               height={imageSize?.height}
-              uri={uri}
+              uri={uri || null}
               style={{ overflow: 'hidden', ...style }}
               onLoad={onLoad}
             />
@@ -222,6 +220,11 @@ const ZoomableImage = memo(
     onPress,
     onLongPress,
     imageMeta,
+
+    alt,
+    style,
+    onLoad,
+    blurRadius,
   }: {
     uri: string | undefined;
     imageSize?: { width: number; height: number };
@@ -235,7 +238,10 @@ const ZoomableImage = memo(
       size?: ImageSize;
     };
 
-    contentType?: ImageContentType;
+    alt?: string;
+    style?: ImageStyle;
+    onLoad?: () => void;
+    blurRadius?: number;
   }) => {
     const { invalidateCache } = useImage();
     return (
@@ -247,6 +253,7 @@ const ZoomableImage = memo(
         >
           <ImageZoom
             uri={uri}
+            onLoadEnd={onLoad}
             minScale={1}
             maxScale={3}
             isDoubleTapEnabled={true}
@@ -254,7 +261,9 @@ const ZoomableImage = memo(
             resizeMode="contain"
             style={{
               ...imageSize,
+              ...style,
             }}
+            alt={alt}
             onError={
               imageMeta
                 ? () =>
@@ -267,6 +276,7 @@ const ZoomableImage = memo(
                     )
                 : undefined
             }
+            blurRadius={blurRadius}
           />
         </View>
       </TouchableWithoutFeedback>
