@@ -1,12 +1,14 @@
 import {
   PhotoConfig,
   rebuildLibrary,
+  t,
   useDotYouClientContext,
   usePhotoLibrary,
 } from 'photo-app-common';
 import ActionButton from '../../components/ui/Buttons/ActionButton';
 import { useQueryClient } from '@tanstack/react-query';
 import Refresh from '../../components/ui/Icons/Refresh/Refresh';
+import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
 
 const Debug = () => {
   const { data: lib, refetch: refetchLib } = usePhotoLibrary({
@@ -19,6 +21,7 @@ const Debug = () => {
 
   return (
     <>
+      <PageMeta title={t('Diagnostics')} />
       <div className="flex flex-row gap-4">
         <ActionButton onClick={() => refetchLib()} type="primary" icon={Refresh}>
           Refresh
