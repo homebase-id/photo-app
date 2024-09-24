@@ -76,7 +76,7 @@ const CustomOdinImage = ({
   return (
     <div className="relative h-full w-full">
       <OdinPreviewImage
-        className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity delay-500 bg-orange-500 ${finalLoaded ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity delay-500 ${finalLoaded ? 'opacity-0' : 'opacity-100'}`}
         dotYouClient={dotYouClient}
         fileId={fileId}
         targetDrive={targetDrive}
@@ -100,7 +100,7 @@ const CustomOdinImage = ({
           />
         ) : (
           <OdinThumbnailImage
-            className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity duration-300 bg-pink-500 ${finalLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 object-contain object-center max-w-none h-full w-full transition-opacity duration-300 ${finalLoaded ? 'opacity-100' : 'opacity-0'}`}
             dotYouClient={dotYouClient}
             fileId={fileId}
             targetDrive={targetDrive}
