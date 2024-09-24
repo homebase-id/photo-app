@@ -28,6 +28,7 @@ const useImage = (props?: {
   const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
+  const roundToNearest25 = (num: number) => Math.round(num / 25) * 25;
   function queryKeyBuilder(
     odinId: string | undefined,
     imageFileId: string | undefined,
@@ -44,11 +45,8 @@ const useImage = (props?: {
       imageFileKey,
     ];
 
-    if (size) {
-      queryKey.push(
-        `${Math.round(size.pixelHeight / 25) * 25}x${Math.round(size?.pixelWidth / 25) * 25}`
-      );
-    }
+    if (size)
+      queryKey.push(`${roundToNearest25(size.pixelHeight)}x${roundToNearest25(size?.pixelWidth)}`);
 
     if (lastModified) {
       queryKey.push(lastModified + '');
@@ -199,7 +197,12 @@ const useImage = (props?: {
           imageFileId,
           imageFileKey,
           imageDrive,
-          size,
+          size
+            ? {
+                pixelHeight: roundToNearest25(size.pixelHeight),
+                pixelWidth: roundToNearest25(size.pixelWidth),
+              }
+            : undefined,
           naturalSize,
           lastModified
         ),
@@ -207,6 +210,8 @@ const useImage = (props?: {
       //   while the fetch checks if we have anything in cache from before and confirms it on disk
       staleTime: 0,
       enabled: !!imageFileId && imageFileId !== '',
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
     }),
     invalidateCache: (
       odinId: string | undefined,

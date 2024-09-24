@@ -193,8 +193,8 @@ export const useFlatPhotosByMonth = ({
           pageParam instanceof Date
             ? pageParam
             : typeof pageParam === 'string'
-            ? (!isNaN(new Date(pageParam) as any) && new Date(pageParam)) || undefined
-            : undefined;
+              ? (!isNaN(new Date(pageParam) as any) && new Date(pageParam)) || undefined
+              : undefined;
 
         const pageDateParam = pageParamAsDate instanceof Date ? pageParamAsDate : undefined;
         const cursorState = pageParamAsDate instanceof Date ? undefined : (pageParam as string);
@@ -257,7 +257,8 @@ export const useFlatPhotosByMonth = ({
         return undefined;
       },
       gcTime: Infinity,
-      staleTime: 1000 * 60 * 60 * 1, // 1h
+      // We don't cache as the source data has a 10min stale time already
+      staleTime: 0,
     }),
   };
 };

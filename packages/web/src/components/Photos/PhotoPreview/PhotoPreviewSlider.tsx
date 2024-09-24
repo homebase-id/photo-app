@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import useDebounce from '../../../hooks/debounce/useDebounce';
 import MediaWithLoader from './MediaLoader';
 import { useNavigate } from 'react-router-dom';
+import { t } from 'photo-app-common';
 
 const PhotoPreviewSlider = ({
   fileId,
@@ -137,12 +138,16 @@ const PhotoPreviewSlider = ({
         {photosToShow.map((photo, index) => {
           return (
             <div
-              className={`h-full flex-shrink-0 w-screen relative ${currentPhotoIndex === -1 ? 'opacity-0' : 'opacity-100'}`}
+              className={`h-full flex-shrink-0 w-screen relative`}
               key={photo.fileId}
               data-fileid={photo.fileId}
               data-index={index}
             >
-              {Math.abs(currentPhotoIndex - index) < 2 ? (
+              {currentPhotoIndex === -1 ? (
+                <div className="flex flex-col justify-center items-center h-full w-full">
+                  <p className="text-white ">{`${t('Loading')}...`}</p>
+                </div>
+              ) : Math.abs(currentPhotoIndex - index) < 2 ? (
                 <div className="relative flex overflow-hidden h-screen w-screen snap-start">
                   <MediaWithLoader
                     media={photo}

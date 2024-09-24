@@ -113,7 +113,7 @@ export const VideoWithLoader = memo(
                 lastModified={payload.lastModified}
               />
             ) : (
-              <OdinVideo targetDrive={targetDrive} fileId={fileId} />
+              <WebVideo targetDrive={targetDrive} fileId={fileId} />
             )
           ) : (
             <>
@@ -206,7 +206,7 @@ const HlsVideo = ({ odinId, fileId, targetDrive, globalTransitId, payload }: Loc
   );
 };
 
-const OdinVideo = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
+const WebVideo = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
   const { authToken, getIdentity, getSharedSecret } = useAuth();
   const identity = getIdentity();
 
