@@ -2,6 +2,12 @@
 
 ##### Open Decentralized Identity Network
 
+## Disclaimer
+
+This project is currently in pre-alpha stage and is under active development. It serves as an exploratory example of how to build a feature-rich photo management app. The code and features are still evolving, and bugs, performance issues, and incomplete functionality are expected.
+
+Please note, this project is not intended for production use at this time, and contributions or feedback are welcome to help improve and expand its capabilities.
+
 ## Running Locally
 
 If you wanna run the identities locally you'll need the back-end web server, see the [Odin](https://github.com/YouFoundation/dotyoucore) repository to get started.
