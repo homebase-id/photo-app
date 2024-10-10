@@ -29,6 +29,7 @@ import { CloudIcon, Cog } from '../components/ui/Icons/icons';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { Modal } from '../components/ui/Modal/Modal';
 import { NativeModules } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 const { SyncTrigger } = NativeModules;
 
 type SettingsProps = NativeStackScreenProps<SettingsStackParamList, 'SyncDetails'>;
@@ -319,10 +320,17 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
   const {
     syncFromCameraRoll,
     setSyncFromCameraRoll,
+
     setForceLowerQuality,
     forceLowerQuality,
+
     setLastCameraRollSyncTime,
+
+    earlierSyncEnabled,
+    setEarlierSyncEnabled,
   } = useKeyValueStorage();
+
+  console;
 
   return (
     <Modal onClose={onClose} title="Sync settings">
@@ -371,7 +379,10 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
               [
                 {
                   text: 'Continue',
-                  onPress: () => setLastCameraRollSyncTime(946684800000), // 1 Jan 2000 GMT
+                  onPress: () => {
+                    setLastCameraRollSyncTime(946684800000); // 1 Jan 2000 GMT
+                    setEarlierSyncEnabled(true);
+                  },
                   style: 'default',
                 },
                 {
@@ -381,11 +392,32 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
               ]
             );
           }}
+          style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}
         >
-          <Text>Sync all</Text>
-          <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
-            Reset the sync from time to include all your media
-          </Text>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              width: 'auto',
+              flexShrink: 1,
+            }}
+          >
+            <Text>Sync all</Text>
+            <Text style={{ color: Colors.slate[400], marginTop: 3 }}>
+              Reset the sync from time to include all your media
+            </Text>
+          </View>
+          {earlierSyncEnabled ? (
+            <View style={{ marginLeft: 'auto' }}>
+              <CheckBox
+                value={earlierSyncEnabled}
+                style={{ marginLeft: 'auto' }}
+                aria-label="Sync with your camera roll"
+                disabled={true}
+              />
+            </View>
+          ) : null}
         </TouchableOpacity>
 
         {syncFromCameraRoll ? (

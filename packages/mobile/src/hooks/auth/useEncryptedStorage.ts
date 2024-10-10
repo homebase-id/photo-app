@@ -9,6 +9,7 @@ const PRIVATE_KEY = 'ecc-pk';
 export const IDENTITY = 'identity';
 export const LAST_SYNC_TIME = 'lastSyncTimeAsNumber';
 export const SYNC_FROM_CAMERA_ROLL = 'syncFromCameraRollAsBoolean';
+export const EARLIER_SYNC_ENABLED = 'earlierSyncEnabled';
 export const FORCE_LOWER_QUALITY = 'forceLowerQualityAsBoolean';
 export const MIN_CONNECTION_TYPE = 'minConnectionType';
 const LAST_LOGGED_OUT_IDENTITY = 'lastLoggedOutIdentity';
@@ -97,6 +98,12 @@ export const useKeyValueStorage = () => {
     false
   );
 
+  const [earlierSyncEnabled, setEarlierSyncEnabled] = useMMKVStorage<boolean>(
+    EARLIER_SYNC_ENABLED,
+    storage,
+    false
+  );
+
   return {
     lastCameraRollSyncTime: lastCameraRollSyncTime || androidLastCameraRollSyncTime,
     setLastCameraRollSyncTime,
@@ -106,5 +113,8 @@ export const useKeyValueStorage = () => {
 
     forceLowerQuality,
     setForceLowerQuality,
+
+    earlierSyncEnabled,
+    setEarlierSyncEnabled,
   };
 };
