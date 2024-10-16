@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { ImageSize, TargetDrive, ImageContentType } from '@homebase-id/js-lib/core';
+import { ImageSize, TargetDrive, ImageContentType, SystemFileType } from '@homebase-id/js-lib/core';
 import { exists } from 'react-native-fs';
 import { useAuth } from '../../../../hooks/auth/useAuth';
 
 import { useDotYouClientContext } from 'photo-app-common';
 import { getDecryptedImageData } from '../../../../provider/Image/RNImageProvider';
+import { getDecryptedMediaUrlOverPeer } from '@homebase-id/js-lib/peer';
 
 interface ImageData {
   url: string;
@@ -22,10 +23,14 @@ const useImage = (props?: {
   naturalSize?: ImageSize;
   lastModified?: number;
 }) => {
+  const dotYouClient = useDotYouClientContext();
+
+  const probablyEncrypted = true;
+  const localHost = dotYouClient.getIdentity(); // This is the identity of the user
+
   const { odinId, imageFileId, imageFileKey, imageDrive, size, naturalSize, lastModified } =
     props || {};
   const { authToken } = useAuth();
-  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const roundToNearest25 = (num: number) => Math.round(num / 25) * 25;
@@ -40,7 +45,7 @@ const useImage = (props?: {
     const queryKey = [
       'image',
       odinId || '',
-      imageDrive?.alias,
+      imageDrive?.alias?.replaceAll('-', ''),
       imageFileId?.replaceAll('-', ''),
       imageFileKey,
     ];
@@ -95,17 +100,32 @@ const useImage = (props?: {
     imageDrive?: TargetDrive,
     size?: ImageSize,
     naturalSize?: ImageSize,
-    lastModified?: number
+    lastModified?: number,
+    systemFileType?: SystemFileType
   ): Promise<ImageData | null> => {
-    if (
-      imageFileId === undefined ||
-      imageFileId === '' ||
-      !imageDrive ||
-      !imageFileKey ||
-      !authToken
-    ) {
+    if (imageFileId === undefined || imageFileId === '' || !imageDrive || !imageFileKey) {
       return null;
     }
+
+    const fetchImageFromServer = async (): Promise<ImageData | null> => {
+      const imageBlob = await getDecryptedImageData(
+        dotYouClient,
+        imageDrive,
+        imageFileId,
+        imageFileKey,
+        size,
+        systemFileType,
+        lastModified
+      );
+
+      if (!imageBlob) return null;
+
+      return {
+        url: imageBlob.uri,
+        naturalSize: naturalSize,
+        type: imageBlob.type as ImageContentType,
+      };
+    };
 
     // Find any cached version, the bigger the better and if we have it return it;
     const cachedImages = getCachedImages(odinId, imageFileId, imageFileKey, imageDrive);
@@ -139,54 +159,21 @@ const useImage = (props?: {
           size.pixelHeight > largestCachedImage.size.pixelHeight
         ) {
           setTimeout(async () => {
-            const imageBlob = await getDecryptedImageData(
-              dotYouClient,
-              imageDrive,
-              imageFileId,
-              imageFileKey,
-              authToken,
-              size,
-              undefined,
-              lastModified
-            );
+            const imageData = await fetchImageFromServer();
+            if (!imageData) return;
 
-            if (!imageBlob) return null;
-            const imageData = {
-              url: imageBlob.uri,
-              naturalSize: naturalSize,
-              type: imageBlob.type as ImageContentType,
-            };
-
-            console.log('Fetched a bigger image and updating cache', imageData);
             queryClient.setQueryData<ImageData | undefined>(
               queryKeyBuilder(odinId, imageFileId, imageFileKey, imageDrive, size, lastModified),
               imageData
             );
           }, 0);
         }
-
         return cachedData;
       }
     }
 
-    const imageBlob = await getDecryptedImageData(
-      dotYouClient,
-      imageDrive,
-      imageFileId,
-      imageFileKey,
-      authToken,
-      size,
-      undefined,
-      lastModified
-    );
-
-    if (!imageBlob) return null;
-
-    return {
-      url: imageBlob.uri,
-      naturalSize: naturalSize,
-      type: imageBlob.type as ImageContentType,
-    };
+    const serverImage = await fetchImageFromServer();
+    return serverImage;
   };
 
   return {

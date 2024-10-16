@@ -172,7 +172,7 @@ export const PhotoItem = ({
   const longPress = useLongPress(
     (e) => {
       if (!e) return;
-      doSelection(e);
+      if (isSelecting) doSelection(e);
 
       e.stopPropagation();
       return false;

@@ -1,30 +1,14 @@
 import {
   DotYouClient,
   TargetDrive,
-  AccessControlList,
-  SecurityGroupType,
-  UploadInstructionSet,
-  getFileHeader,
-  UploadFileMetadata,
-  uploadFile,
   ImageContentType,
-  DEFAULT_PAYLOAD_KEY,
   ImageSize,
   SystemFileType,
   decryptKeyHeader,
 } from '@homebase-id/js-lib/core';
+import { MediaUploadMeta } from '@homebase-id/js-lib/media';
 import {
-  ImageMetadata,
-  MediaUploadMeta,
-  ThumbnailInstruction,
-  ImageUploadResult,
-  MediaConfig,
-} from '@homebase-id/js-lib/media';
-import {
-  getRandom16ByteArray,
-  getNewId,
   jsonStringify64,
-  base64ToUint8Array,
   assertIfDefined,
   stringifyToQueryParams,
   stringToUint8Array,
@@ -32,10 +16,8 @@ import {
   uint8ArrayToBase64,
   splitSharedSecretEncryptedKeyHeader,
 } from '@homebase-id/js-lib/helpers';
-import { createThumbnails } from './RNThumbnailProvider';
 import { OdinBlob } from '../../../polyfills/OdinBlob';
 import { AxiosRequestConfig } from 'axios';
-import RNFS from 'react-native-fs';
 
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
@@ -51,105 +33,18 @@ export interface ImageSource {
   type?: string | null;
   date?: number | null;
   playableDuration?: number | null;
+  key?: string | null;
 }
 
 export interface RNMediaUploadMeta extends MediaUploadMeta {
   type: ImageContentType;
 }
 
-export const uploadImage = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  acl: AccessControlList,
-  photo: ImageSource,
-  fileMetadata?: ImageMetadata,
-  uploadMeta?: RNMediaUploadMeta,
-  thumbsToGenerate?: ThumbnailInstruction[]
-): Promise<ImageUploadResult | undefined> => {
-  if (!targetDrive) throw 'Missing target drive';
-  if (!photo.filepath && !photo.uri) throw 'Missing filepath';
-
-  const encrypt = !(
-    acl.requiredSecurityGroup === SecurityGroupType.Anonymous ||
-    acl.requiredSecurityGroup === SecurityGroupType.Authenticated
-  );
-
-  const instructionSet: UploadInstructionSet = {
-    transferIv: getRandom16ByteArray(),
-    storageOptions: {
-      overwriteFileId: uploadMeta?.fileId,
-      drive: targetDrive,
-    },
-    transitOptions: uploadMeta?.transitOptions,
-  };
-
-  const { tinyThumb, additionalThumbnails } = await createThumbnails(
-    photo,
-    DEFAULT_PAYLOAD_KEY,
-    uploadMeta?.type,
-    thumbsToGenerate
-  );
-
-  // Updating images in place is a rare thing, but if it happens there is often no versionTag, so we need to fetch it first
-  let versionTag = uploadMeta?.versionTag;
-  if (!versionTag && uploadMeta?.fileId) {
-    versionTag = await getFileHeader(dotYouClient, targetDrive, uploadMeta.fileId).then(
-      (header) => header?.fileMetadata.versionTag
-    );
-  }
-
-  const metadata: UploadFileMetadata = {
-    versionTag: versionTag,
-    allowDistribution: uploadMeta?.allowDistribution || false,
-    appData: {
-      tags: uploadMeta?.tag
-        ? [...(Array.isArray(uploadMeta.tag) ? uploadMeta.tag : [uploadMeta.tag])]
-        : [],
-      uniqueId: uploadMeta?.uniqueId ?? getNewId(),
-      fileType: MediaConfig.MediaFileType,
-      content: fileMetadata ? jsonStringify64(fileMetadata) : undefined,
-      previewThumbnail: tinyThumb,
-      userDate: uploadMeta?.userDate,
-      archivalStatus: uploadMeta?.archivalStatus,
-    },
-    isEncrypted: encrypt,
-    accessControlList: acl,
-  };
-
-  // Read payload
-  const imageData = await RNFS.readFile((photo.filepath || photo.uri) as string, 'base64');
-  const result = await uploadFile(
-    dotYouClient,
-    instructionSet,
-    metadata,
-    [
-      {
-        payload: new OdinBlob([base64ToUint8Array(imageData)], {
-          type: uploadMeta?.type,
-        }) as unknown as Blob,
-        key: DEFAULT_PAYLOAD_KEY,
-      },
-    ],
-    additionalThumbnails,
-    encrypt
-  );
-
-  if (!result) return undefined;
-
-  return {
-    fileId: result.file.fileId,
-    fileKey: DEFAULT_PAYLOAD_KEY,
-    previewThumbnail: tinyThumb,
-    type: 'image',
-  };
-};
-
 export const getThumbBytes = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   fileId: string,
   payloadKey: string,
-  authToken: string,
   width: number,
   height: number,
   options: {
@@ -192,13 +87,14 @@ export const getThumbBytes = async (
     fileCache: true,
   })
     .fetch('GET', url, {
-      bx0900: authToken,
+      ...dotYouClient.getHeaders(),
       'X-ODIN-FILE-SYSTEM-TYPE': options?.systemFileType || 'Standard',
     })
     .then(async (res) => {
       if (res.info().status !== 200) throw new Error(`Failed to fetch thumb ${res.info().status}`);
 
-      const imageBlob = new OdinBlob(res.path(), {
+      // Android filePaths need to start with file://
+      const imageBlob = new OdinBlob(`file://${res.path()}`, {
         type: res.info().headers.decryptedcontenttype,
       });
 
@@ -216,7 +112,7 @@ export const getThumbBytes = async (
       } else if (res.info().headers.payloadencrypted === 'True') {
         throw new Error("Can't decrypt; missing keyheader");
       } else {
-        return imageBlob.fixExtension();
+        return await imageBlob.fixExtension();
       }
     })
     .catch((err) => {
@@ -230,7 +126,6 @@ export const getPayloadBytes = async (
   targetDrive: TargetDrive,
   fileId: string,
   key: string,
-  authToken: string,
   options?: {
     systemFileType?: SystemFileType;
     lastModified?: number;
@@ -243,7 +138,6 @@ export const getPayloadBytes = async (
 
   const { lastModified } = options || {};
 
-  // const client = getAxiosClient(dotYouClient, systemFileType);
   const request = {
     ...targetDrive,
     fileId,
@@ -267,7 +161,7 @@ export const getPayloadBytes = async (
     fileCache: true,
   })
     .fetch('GET', url, {
-      bx0900: authToken,
+      ...dotYouClient.getHeaders(),
       'X-ODIN-FILE-SYSTEM-TYPE': options?.systemFileType || 'Standard',
     })
     .then(async (res) => {
@@ -275,7 +169,8 @@ export const getPayloadBytes = async (
         throw new Error(`Failed to fetch payload ${res.info().status}`);
       }
 
-      const imageBlob = new OdinBlob(res.path(), {
+      // Android filePaths need to start with file://
+      const imageBlob = new OdinBlob(`file://${res.path()}`, {
         type: res.info().headers.decryptedcontenttype,
       });
 
@@ -293,7 +188,7 @@ export const getPayloadBytes = async (
       } else if (res.info().headers.payloadencrypted === 'True') {
         throw new Error("Can't decrypt; missing keyheader");
       } else {
-        return imageBlob.fixExtension();
+        return await imageBlob.fixExtension();
       }
     })
     .catch((err) => {
@@ -307,7 +202,6 @@ export const getDecryptedImageData = async (
   targetDrive: TargetDrive,
   fileId: string,
   key: string,
-  authToken: string,
   size?: ImageSize,
   systemFileType?: SystemFileType,
   lastModified?: number
@@ -319,7 +213,6 @@ export const getDecryptedImageData = async (
         targetDrive,
         fileId,
         key,
-        authToken,
         size.pixelWidth,
         size.pixelHeight,
         { systemFileType, lastModified }
@@ -330,7 +223,7 @@ export const getDecryptedImageData = async (
     }
   }
 
-  return await getPayloadBytes(dotYouClient, targetDrive, fileId, key, authToken, {
+  return await getPayloadBytes(dotYouClient, targetDrive, fileId, key, {
     systemFileType,
     lastModified,
   });
@@ -386,7 +279,7 @@ const buildIvFromQueryString = async (querystring: string) => {
   return returnBytes;
 };
 
-const encryptUrl = async (url: string, ss: Uint8Array) => {
+export const encryptUrl = async (url: string, ss: Uint8Array) => {
   const parts = (url ?? '').split('?');
   const querystring = parts.length === 2 ? parts[1] : '';
   if (!querystring.length) return url;

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import NewAlbumDialog from '../../components/Dialog/NewAlbumDialog/NewAlbumDialog';
-import PhotoLibrary from '../../components/Photos/PhotoLibrary/PhotoLibrary';
+import { PhotoLibrary } from '../../components/Photos/PhotoLibrary/PhotoLibrary';
 import Uploader from '../../components/Photos/PhotoUploader/PhotoUploader';
 import ActionButton from '../../components/ui/Buttons/ActionButton';
 import Image from '../../components/ui/Icons/Image/Image';

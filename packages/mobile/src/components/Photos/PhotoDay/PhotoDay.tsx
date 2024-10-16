@@ -1,5 +1,5 @@
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile, TargetDrive } from '@homebase-id/js-lib/core';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Dimensions } from 'react-native';
 import { Text } from '../../ui/Text/Text';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
@@ -33,7 +33,8 @@ export const PhotoDay = memo(
     targetDrive,
     type,
     toggleSelection,
-    isSelected,
+    clearingSelection,
+
     isSelecting,
   }: {
     date: Date;
@@ -41,8 +42,9 @@ export const PhotoDay = memo(
 
     targetDrive: TargetDrive;
     type: LibraryType;
-    toggleSelection: (fileId: string) => void;
-    isSelected: (fileId: string) => boolean;
+    toggleSelection: (fileId: string) => Promise<boolean>;
+    clearingSelection?: number;
+
     isSelecting?: boolean;
   }) => {
     const title = useMemo(() => {
@@ -85,8 +87,8 @@ export const PhotoDay = memo(
                       photoDsr={photoDsr}
                       type={type}
                       toggleSelection={toggleSelection}
-                      isSelected={isSelected}
                       isSelecting={isSelecting}
+                      clearingSelection={clearingSelection}
                       size={size - 2} // -2 for the gap
                     />
                   </View>
@@ -100,43 +102,48 @@ export const PhotoDay = memo(
 );
 
 export const PhotoItem = memo(
-  ({
-    targetDrive,
-    photoDsr,
-    album,
-    type,
-    toggleSelection,
-    isSelected,
-    isSelecting,
-    size,
-  }: {
+  (props: {
     targetDrive: TargetDrive;
     photoDsr: HomebaseFile;
     album?: string;
     type: LibraryType;
-    toggleSelection: (fileId: string) => void;
-    isSelected: (fileId: string) => boolean;
+    toggleSelection: (fileId: string) => Promise<boolean>;
     isSelecting?: boolean;
+    clearingSelection?: number;
     size: number;
   }) => {
+    const {
+      targetDrive,
+      photoDsr,
+      album,
+      type,
+      toggleSelection,
+      isSelecting,
+      size,
+      clearingSelection,
+    } = props;
+
+    const [isChecked, setIsChecked] = useState(false);
+    useEffect(() => {
+      setIsChecked(false);
+    }, [clearingSelection]);
+
     const { isDarkMode } = useDarkMode();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const isChecked = photoDsr?.fileId && isSelected(photoDsr?.fileId);
 
-    const doPress = useCallback(() => {
+    const doPress = useCallback(async () => {
       if (!isSelecting) {
         navigation.navigate('PhotoPreview', {
           photoId: photoDsr.fileId,
           typeId: type,
           albumId: album,
         });
-      } else toggleSelection(photoDsr.fileId);
+      } else setIsChecked(await toggleSelection(photoDsr.fileId));
     }, [album, isSelecting, navigation, photoDsr.fileId, toggleSelection, type]);
 
-    const doLongPress = useCallback(
-      () => toggleSelection(photoDsr.fileId),
-      [toggleSelection, photoDsr]
-    );
+    const doLongPress = useCallback(async () => {
+      setIsChecked(await toggleSelection(photoDsr.fileId));
+    }, [toggleSelection, photoDsr]);
 
     if (!photoDsr) return null;
 

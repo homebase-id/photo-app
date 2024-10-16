@@ -1,21 +1,38 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 export const usePhotoSelection = () => {
+  const [clearingSelection, setPendingClear] = useState<number>(0);
+
   const [selection, setSelection] = useState<string[]>([]);
+  const isSelected = useCallback((fileId: string) => selection.indexOf(fileId) !== -1, [selection]);
+  const clearSelection = useCallback(() => {
+    setSelection([]);
+    setPendingClear((old) => old + 1);
+  }, []);
+  const isSelecting = useMemo(() => selection.length > 0, [selection]);
 
-  const isSelected = (fileId: string) => selection.indexOf(fileId) !== -1;
-  const clearSelection = () => setSelection([]);
-  const isSelecting = selection.length > 0;
+  const toggleSelection = useCallback(
+    (fileId: string) => {
+      return new Promise<boolean>((resolve) => {
+        setSelection((oldSelection) => {
+          const becomesSelected = oldSelection.indexOf(fileId) === -1;
 
-  const toggleSelection = (fileId: string) =>
-    setSelection(
-      selection.indexOf(fileId) !== -1
-        ? selection.filter((selection) => selection !== fileId)
-        : [...selection, fileId]
-    );
+          resolve(becomesSelected);
 
-  const selectRange = (fileIds: string[]) =>
-    setSelection((prevSelection) => Array.from(new Set([...prevSelection, ...fileIds])));
+          return !becomesSelected
+            ? oldSelection.filter((selection) => selection !== fileId)
+            : [...oldSelection, fileId];
+        });
+      });
+    },
+    [setSelection]
+  );
+
+  const selectRange = useCallback(
+    (fileIds: string[]) =>
+      setSelection((prevSelection) => Array.from(new Set([...prevSelection, ...fileIds]))),
+    [setSelection]
+  );
 
   return {
     isSelected,
@@ -23,6 +40,7 @@ export const usePhotoSelection = () => {
     selectRange,
     selection,
     clearSelection,
+    clearingSelection,
     isSelecting,
   };
 };
