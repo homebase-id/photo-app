@@ -1,6 +1,6 @@
 import { HeaderBackButton, Header } from '@react-navigation/elements';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { ReactElement, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactElement, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Button,
@@ -169,7 +169,7 @@ const GalleryView = memo(({ children }: { children: ReactElement }) => {
   const size = Math.round(windowSize.width / numColums);
 
   // Upload queue
-  const [uploadIndex, setUploadIndex] = useState(0);
+  // const [uploadIndex, setUploadIndex] = useState(0);
   // const [uploadQueue, setUploadQueue] = useState<PhotoIdentifier[]>([]);
 
   // const {
@@ -192,19 +192,22 @@ const GalleryView = memo(({ children }: { children: ReactElement }) => {
   //   }
   // }, [uploadStatus, resetUpload, setUploadIndex]);
 
-  const renderItem = useCallback(({ item }: ListRenderItemInfo<PhotoIdentifier>) => {
-    return (
-      <GalleryItem
-        size={size}
-        item={item}
-        key={item.node.id}
-        // addToUpload={(item: PhotoIdentifier) =>
-        //   setUploadQueue((currentUploadQueue) => [...currentUploadQueue, item])
-        // }
-        fromTime={fromTime}
-      />
-    );
-  }, []);
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<PhotoIdentifier>) => {
+      return (
+        <GalleryItem
+          size={size}
+          item={item}
+          key={item.node.id}
+          // addToUpload={(item: PhotoIdentifier) =>
+          //   setUploadQueue((currentUploadQueue) => [...currentUploadQueue, item])
+          // }
+          fromTime={fromTime}
+        />
+      );
+    },
+    [fromTime, size]
+  );
 
   return (
     <View
@@ -330,8 +333,6 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
     setEarlierSyncEnabled,
   } = useKeyValueStorage();
 
-  console;
-
   return (
     <Modal onClose={onClose} title="Sync settings">
       <View
@@ -375,7 +376,7 @@ const SettingsModal = memo(({ onClose }: { onClose: () => void }) => {
           onPress={() => {
             Alert.alert(
               'Sync all',
-              `This will include all your media since the year 2000, it may take a while (hours/days/weeks) before everything it synced.`,
+              'This will include all your media since the year 2000, it may take a while (hours/days/weeks) before everything it synced.',
               [
                 {
                   text: 'Continue',

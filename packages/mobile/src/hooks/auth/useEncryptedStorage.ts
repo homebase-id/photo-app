@@ -84,7 +84,7 @@ export const useKeyValueStorage = () => {
 
   useEffect(() => {
     clearMemoryCache();
-  }, []);
+  }, [clearMemoryCache]);
 
   const [syncFromCameraRoll, setSyncFromCameraRoll] = useMMKVStorage<boolean>(
     SYNC_FROM_CAMERA_ROLL,

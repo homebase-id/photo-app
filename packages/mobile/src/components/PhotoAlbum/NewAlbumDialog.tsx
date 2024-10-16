@@ -5,9 +5,11 @@ import { getNewId } from '@homebase-id/js-lib/helpers';
 import { Input } from '../ui/Form/Input';
 import { Modal } from '../ui/Modal/Modal';
 import { useAlbum } from 'photo-app-common';
-import { useErrors } from '../../hooks/errors/useErrors';
+import { addError } from '../../hooks/errors/useErrors';
+import { useQueryClient } from '@tanstack/react-query';
 
 const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -19,7 +21,7 @@ const NewAlbumDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       await saveAlbum({ tag: newTag, name, description });
       onClose();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 

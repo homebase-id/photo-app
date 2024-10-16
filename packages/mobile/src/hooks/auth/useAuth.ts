@@ -105,6 +105,7 @@ export const useAuth = () => {
     setIdentity('');
 
     queryClient.clear();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getDotYouClient, queryClient, setAuthToken, setIdentity, setPrivateKey, setSharedSecret]);
 
   return {

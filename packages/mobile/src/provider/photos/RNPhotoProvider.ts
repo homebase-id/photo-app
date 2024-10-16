@@ -5,9 +5,9 @@ import {
   TargetDrive,
   getFileHeaderByUniqueId,
 } from '@homebase-id/js-lib/core';
-import { ImageMetadata, VideoContentType } from '@homebase-id/js-lib/media';
+import { ImageMetadata } from '@homebase-id/js-lib/media';
 import { toGuidId } from '@homebase-id/js-lib/helpers';
-import { ImageSource, uploadImage } from '../Image/RNImageProvider';
+import { uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
 import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
@@ -30,7 +30,7 @@ const elaborateDateParser = (dateString: string) => {
 
       return returnDate;
     }
-  } catch (ex) {
+  } catch {
     return undefined;
   }
 };
@@ -48,66 +48,69 @@ const getPhotoExifMeta = async (
     };
   }
 
-  return Exif.getExif(photo.node.image.filepath || photo.node.image.uri)
-    .then((metadata: any) => {
-      const exifData = metadata.exif;
-      if (!exifData) {
+  return (
+    Exif.getExif(photo.node.image.filepath || photo.node.image.uri)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((metadata: { exif: any }) => {
+        const exifData = metadata.exif;
+        if (!exifData) {
+          return {
+            imageMetadata: undefined,
+            dateTimeOriginal: undefined,
+          };
+        }
+
+        const dateTimeOriginal = elaborateDateParser(
+          exifData['{Exif}']?.DateTimeOriginal || exifData.DateTimeDigitized || exifData.DateTime
+        );
+        const imageMetadata: ImageMetadata | undefined = metadata
+          ? {
+              camera: {
+                make: exifData['{TIFF}']?.Make || exifData.Make,
+                model: exifData['{TIFF}']?.Model || exifData.Model,
+                lens: exifData['{ExifAux}']?.LensModel || exifData.LensModel,
+              },
+              captureDetails: {
+                exposureTime: exifData['{Exif}']?.ExposureTime || exifData.ExposureTime,
+                fNumber: exifData['{Exif}']?.FNumber || exifData.FNumber,
+                iso: (exifData['{Exif}']?.ISOSpeedRatings || [exifData.ISOSpeedRatings] || [
+                    undefined,
+                  ])[0],
+                focalLength: exifData['{Exif}']?.FocalLength || exifData.FocalLength,
+                geolocation:
+                  exifData['{GPS}']?.latitude && exifData['{GPS}']?.longitude
+                    ? {
+                        latitude: exifData['{GPS}'].latitude,
+                        longitude: exifData['{GPS}'].longitude,
+                        altitude: exifData['{GPS}'].altitude,
+                      }
+                    : exifData?.GPSLatitude && exifData?.GPSLongitude
+                      ? {
+                          latitude: exifData.GPSLatitude,
+                          longitude: exifData.GPSLongitude,
+                          altitude: exifData.GPSAltitude,
+                        }
+                      : photo.node.location?.latitude && photo.node.location?.longitude
+                        ? {
+                            ...photo.node.location,
+                            latitude: photo.node.location.latitude as number,
+                            longitude: photo.node.location.longitude as number,
+                          }
+                        : undefined,
+              },
+            }
+          : undefined;
+
+        return { imageMetadata, dateTimeOriginal } as const;
+      })
+      .catch((ex: Error) => {
+        console.warn('Error getting exif data:', ex);
         return {
           imageMetadata: undefined,
           dateTimeOriginal: undefined,
         };
-      }
-
-      const dateTimeOriginal = elaborateDateParser(
-        exifData['{Exif}']?.DateTimeOriginal || exifData.DateTimeDigitized || exifData.DateTime
-      );
-      const imageMetadata: ImageMetadata | undefined = metadata
-        ? {
-            camera: {
-              make: exifData['{TIFF}']?.Make || exifData.Make,
-              model: exifData['{TIFF}']?.Model || exifData.Model,
-              lens: exifData['{ExifAux}']?.LensModel || exifData.LensModel,
-            },
-            captureDetails: {
-              exposureTime: exifData['{Exif}']?.ExposureTime || exifData.ExposureTime,
-              fNumber: exifData['{Exif}']?.FNumber || exifData.FNumber,
-              iso: (exifData['{Exif}']?.ISOSpeedRatings || [exifData.ISOSpeedRatings] || [
-                  undefined,
-                ])[0],
-              focalLength: exifData['{Exif}']?.FocalLength || exifData.FocalLength,
-              geolocation:
-                exifData['{GPS}']?.latitude && exifData['{GPS}']?.longitude
-                  ? {
-                      latitude: exifData['{GPS}'].latitude,
-                      longitude: exifData['{GPS}'].longitude,
-                      altitude: exifData['{GPS}'].altitude,
-                    }
-                  : exifData?.GPSLatitude && exifData?.GPSLongitude
-                    ? {
-                        latitude: exifData.GPSLatitude,
-                        longitude: exifData.GPSLongitude,
-                        altitude: exifData.GPSAltitude,
-                      }
-                    : photo.node.location?.latitude && photo.node.location?.longitude
-                      ? {
-                          ...photo.node.location,
-                          latitude: photo.node.location.latitude as number,
-                          longitude: photo.node.location.longitude as number,
-                        }
-                      : undefined,
-            },
-          }
-        : undefined;
-
-      return { imageMetadata, dateTimeOriginal } as const;
-    })
-    .catch((ex: any) => {
-      console.warn('Error getting exif data:', ex);
-      return {
-        imageMetadata: undefined,
-        dateTimeOriginal: undefined,
-      };
-    });
+      })
+  );
 };
 
 const mimeTypes = [

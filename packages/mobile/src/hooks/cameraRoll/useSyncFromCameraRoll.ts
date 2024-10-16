@@ -1,8 +1,8 @@
 import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 import { useKeyValueStorage } from '../auth/useEncryptedStorage';
 
-const ONE_MINUTE = 60000;
-const TEN_MINUTES = ONE_MINUTE * 10;
+// const ONE_MINUTE = 60000;
+// const TEN_MINUTES = ONE_MINUTE * 10;
 // const BATCH_SIZE = 50;
 
 export const useSyncFrom = () => {

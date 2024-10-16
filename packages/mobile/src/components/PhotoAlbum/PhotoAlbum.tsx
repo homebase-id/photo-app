@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from '../ui/Modal/Modal';
 import { Input } from '../ui/Form/Input';
 import { Colors } from '../../app/Colors';
-import { useErrors } from '../../hooks/errors/useErrors';
+import { addError } from '../../hooks/errors/useErrors';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -146,6 +146,7 @@ export const PhotoAlbumEditDialog = ({
   albumId: string;
   onClose: () => void;
 }) => {
+  const queryClient = useQueryClient();
   const navigation = useNavigation();
 
   const {
@@ -180,9 +181,9 @@ export const PhotoAlbumEditDialog = ({
         ]
       );
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
-  }, [album, navigation, removeAlbum]);
+  }, [album, navigation, queryClient, removeAlbum]);
 
   const doSaveAlbum = useCallback(async () => {
     try {
@@ -194,9 +195,9 @@ export const PhotoAlbumEditDialog = ({
       });
       onClose();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
-  }, [album, description, name, onClose, saveAlbum]);
+  }, [album, description, name, onClose, queryClient, saveAlbum]);
 
   return (
     <Modal onClose={onClose} title={`Edit ${album?.name}`}>

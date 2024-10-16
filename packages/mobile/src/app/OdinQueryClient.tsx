@@ -55,8 +55,9 @@ const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
           typeof query.state.data === 'object' &&
           !Array.isArray(query.state.data) &&
           Object.keys(query.state.data).length === 0)
-      )
+      ) {
         return false;
+      }
       const { queryKey } = query;
       return INCLUDED_QUERY_KEYS.some((key) => queryKey.includes(key));
     },
