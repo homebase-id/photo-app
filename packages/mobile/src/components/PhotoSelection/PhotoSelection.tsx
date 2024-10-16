@@ -6,7 +6,8 @@ import { Colors } from '../../app/Colors';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { ActionSheet, ActionSheetItem } from '../ui/Modal/ActionSheet';
 import { useAlbums, usePhoto, PhotoConfig, LibraryType } from 'photo-app-common';
-import { useErrors } from '../../hooks/errors/useErrors';
+import { addError } from '../../hooks/errors/useErrors';
+import { useQueryClient } from '@tanstack/react-query';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 
@@ -23,6 +24,7 @@ const PhotoSelection = ({
   albumKey?: string;
   type: LibraryType;
 }) => {
+  const queryClient = useQueryClient();
   const [isAlbumSelectionOpen, setIsAlbumSelectionOpen] = useState(false);
 
   const {
@@ -47,7 +49,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 
@@ -61,7 +63,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 
@@ -75,7 +77,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 
@@ -89,7 +91,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 
@@ -107,7 +109,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 
@@ -127,7 +129,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 
@@ -147,7 +149,7 @@ const PhotoSelection = ({
 
       clearSelection();
     } catch (err) {
-      useErrors().add(err);
+      addError(queryClient, err);
     }
   };
 

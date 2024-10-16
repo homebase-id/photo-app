@@ -216,10 +216,10 @@ const PreviewSlider = memo(
     setActiveDate: (date: Date) => void;
   }) => {
     const [isGoingLeft, setIsGoingLeft] = useState(true);
-    const windowSize = useMemo(() => Dimensions.get('window'), [Dimensions]);
+    const windowSize = useMemo(() => Dimensions.get('window'), []);
 
-    const newerFlatListRef = useRef<FlatListComponent<HomebaseFile, any>>();
-    const olderFlatListRef = useRef<FlatListComponent<HomebaseFile, any>>();
+    const newerFlatListRef = useRef<FlatListComponent<HomebaseFile, unknown>>();
+    const olderFlatListRef = useRef<FlatListComponent<HomebaseFile, unknown>>();
 
     const baseFlatListProps = {
       onStartReachedThreshold: 0,
@@ -249,7 +249,7 @@ const PreviewSlider = memo(
           viewableItems[0]?.item?.fileMetadata?.created;
         if (timestamp) setActiveDate(new Date(timestamp));
       },
-      []
+      [setActiveDate]
     );
 
     const renderItem = useCallback(
@@ -319,6 +319,7 @@ const PreviewSlider = memo(
               {...baseFlatListProps}
               renderItem={renderItem}
               initialScrollIndex={hasOlder ? 1 : 0}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ref={newerFlatListRef as any}
               style={{
                 // backgroundColor: 'blue',
@@ -356,6 +357,7 @@ const PreviewSlider = memo(
               {...baseFlatListProps}
               renderItem={renderItem}
               initialScrollIndex={hasNewer ? 1 : 0}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ref={olderFlatListRef as any}
               style={{
                 // backgroundColor: 'red',

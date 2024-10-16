@@ -1,9 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Dimensions, FlatList, RefreshControl, View } from 'react-native';
+import { FlatList, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoDay } from '../Photos/PhotoDay/PhotoDay';
 import { Container } from '../ui/Container/Container';
-import { useDarkMode } from '../../hooks/useDarkMode';
 import {
   useSiblingsRange,
   usePhotoLibrary,
@@ -16,7 +15,6 @@ import {
 } from 'photo-app-common';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorNotification } from '../ui/Alert/ErrorNotification';
-import React from 'react';
 
 const targetDrive = PhotoConfig.PhotoDrive;
 

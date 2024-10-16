@@ -45,8 +45,9 @@ const useImage = (props?: {
       imageFileKey,
     ];
 
-    if (size)
+    if (size) {
       queryKey.push(`${roundToNearest25(size.pixelHeight)}x${roundToNearest25(size?.pixelWidth)}`);
+    }
 
     if (lastModified) {
       queryKey.push(lastModified + '');

@@ -126,7 +126,7 @@ export const uploadImage = async (
       {
         payload: new OdinBlob([base64ToUint8Array(imageData)], {
           type: uploadMeta?.type,
-        }) as any as Blob,
+        }) as unknown as Blob,
         key: DEFAULT_PAYLOAD_KEY,
       },
     ],
@@ -325,7 +325,7 @@ export const getDecryptedImageData = async (
         { systemFileType, lastModified }
       );
       if (thumbBytes) return thumbBytes;
-    } catch (ex) {
+    } catch {
       // Failed to get thumb data, try to get payload data
     }
   }

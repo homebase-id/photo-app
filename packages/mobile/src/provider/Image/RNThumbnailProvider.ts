@@ -129,7 +129,7 @@ const createVectorThumbnail = async (
     thumb: {
       pixelWidth: 50,
       pixelHeight: 50,
-      payload: new OdinBlob([imageBytes], { type: svgType }) as any as Blob,
+      payload: new OdinBlob([imageBytes], { type: svgType }) as unknown as Blob,
       key,
     },
   };
@@ -154,7 +154,7 @@ const createImageThumbnail = async (
         pixelHeight: resizedData.height,
         payload: new OdinBlob(resizedData.path, {
           type: `image/${instruction.type || format}`,
-        }) as any as Blob,
+        }) as unknown as Blob,
         key,
       },
     };

@@ -268,7 +268,7 @@ export const CheckForUpdates = ({
         display: 'flex',
         flexDirection: 'row',
         gap: 5,
-        ...(style as any),
+        ...(style as unknown as ViewStyle),
       }}
     >
       {hideIcon ? null : <Download size={'lg'} />}
@@ -286,10 +286,10 @@ export const CheckForUpdates = ({
           {codePushResult === codePush.SyncStatus.UP_TO_DATE
             ? 'Up to date'
             : codePushResult === codePush.SyncStatus.UPDATE_INSTALLED
-            ? 'Installed'
-            : codePushResult === codePush.SyncStatus.SYNC_IN_PROGRESS
-            ? 'Unknown'
-            : null}
+              ? 'Installed'
+              : codePushResult === codePush.SyncStatus.SYNC_IN_PROGRESS
+                ? 'Unknown'
+                : null}
         </Text>
       ) : null}
     </TouchableOpacity>

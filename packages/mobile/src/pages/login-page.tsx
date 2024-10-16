@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Button,
   View,
@@ -134,7 +134,7 @@ const useFinalize = () => {
           const success = await finalizeAuthentication(identity, public_key, salt);
           setState(success ? 'success' : 'error');
         }
-      } catch (e) {
+      } catch {
         setState('error');
         setUrl(null);
       }
@@ -193,7 +193,7 @@ const LoginComponent = () => {
 
     const url = `https://${
       odinId || lastIdentity
-    }/api/owner/v1/youauth/authorize?${stringifyToQueryParams(authParams as any)}`;
+    }/api/owner/v1/youauth/authorize?${stringifyToQueryParams(authParams as unknown)}`;
     if (await InAppBrowser.isAvailable()) {
       const result = await InAppBrowser.openAuth(url, '', {
         enableUrlBarHiding: false,

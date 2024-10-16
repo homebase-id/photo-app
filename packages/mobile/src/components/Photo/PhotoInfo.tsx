@@ -1,4 +1,4 @@
-import { debounce, set } from 'lodash-es';
+import { debounce } from 'lodash-es';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';

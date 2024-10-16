@@ -8,7 +8,7 @@ const OurText = (props: TextProps) => {
 
   return (
     <Text
-      style={{ color: isDarkMode ? Colors.white : Colors.black, ...((style as any) || {}) }}
+      style={{ color: isDarkMode ? Colors.white : Colors.black, ...((style as unknown) || {}) }}
       {...rest}
     />
   );

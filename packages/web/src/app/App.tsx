@@ -1,8 +1,4 @@
 import { lazy, ReactNode, Suspense } from 'react';
-import { QueryClient } from '@tanstack/react-query';
-import { PersistQueryClientOptions, removeOldestQuery } from '@tanstack/react-query-persist-client';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import {
   Route,
