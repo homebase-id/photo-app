@@ -134,9 +134,6 @@ const SyncDetailsPage = (_props: SettingsProps) => {
                 Back-up your cameraroll into your identity. Your photos will remain secure and only
                 acessible by you.
               </Text>
-              <Text style={{ opacity: 0.4 }}>
-                During alpha, we only support auto synchronizing recent media
-              </Text>
               <View style={Platform.OS === 'android' ? { paddingVertical: 16 } : undefined}>
                 <Button title="Enable" onPress={() => setSyncFromCameraRoll(true)} />
               </View>

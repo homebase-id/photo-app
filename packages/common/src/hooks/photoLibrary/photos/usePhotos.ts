@@ -7,7 +7,7 @@ import { LibraryType, PhotoConfig } from '../../../provider';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 
 export type useInfintePhotosReturn = CursoredResult<HomebaseFile[]>;
-const PAGE_SIZE = 1000;
+const PAGE_SIZE = 100;
 
 export const sortDsrFunction = (a: HomebaseFile, b: HomebaseFile) => {
   const aDate = a.fileMetadata.appData.userDate || a.fileMetadata.created;

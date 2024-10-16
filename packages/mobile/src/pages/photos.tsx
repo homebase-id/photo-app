@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { memo, useEffect } from 'react';
 import { TabStackParamList } from '../app/App';
-import PhotoLibrary from '../components/PhotoLibrary/PhotoLibrary';
+import { PhotoLibrary } from '../components/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { usePhotoSelection } from 'photo-app-common';
@@ -9,8 +9,14 @@ import { usePhotoSelection } from 'photo-app-common';
 type PhotosProps = NativeStackScreenProps<TabStackParamList, 'Photos'>;
 
 const PhotosPage = memo((_props: PhotosProps) => {
-  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
-    usePhotoSelection();
+  const {
+    toggleSelection,
+    selectRange,
+    clearingSelection,
+    selection,
+    clearSelection,
+    isSelecting,
+  } = usePhotoSelection();
 
   useEffect(() => {
     const unsubscribe = _props.navigation.addListener('blur', () => {
@@ -25,8 +31,8 @@ const PhotosPage = memo((_props: PhotosProps) => {
       <PhotoLibrary
         toggleSelection={toggleSelection}
         selectRange={selectRange}
-        isSelected={isSelected}
         isSelecting={isSelecting}
+        clearingSelection={clearingSelection}
         type="photos"
       />
       <PhotoSelection

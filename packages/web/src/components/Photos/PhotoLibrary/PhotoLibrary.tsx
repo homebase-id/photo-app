@@ -23,7 +23,7 @@ const thisYearMonthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
 };
 
-const PhotoLibrary = ({
+export const PhotoLibrary = ({
   type,
   toggleSelection,
   selectRange,
@@ -343,5 +343,3 @@ const PhotoMonthLoading = ({ photosCount }: { photosCount: number }) => {
     </div>
   );
 };
-
-export default PhotoLibrary;
