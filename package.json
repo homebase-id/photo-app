@@ -25,10 +25,7 @@
         "patch-package": "^7.0.2",
         "@eslint/eslintrc": "3.1.0",
         "@eslint/js": "^8.56.0",
-        "@react-native/eslint-config": "0.75.2",
-        "@react-native/eslint-plugin": "0.75.2",
         "typescript-eslint": "8.3.0",
-        "@typescript-eslint/parser": "8.3.0",
         "eslint": "8.57.0",
         "eslint-plugin-jest": "^28.8.1"
     }
