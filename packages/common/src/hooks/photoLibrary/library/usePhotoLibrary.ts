@@ -69,8 +69,10 @@ export const usePhotoLibrary = ({
       const newFilesSinceLastUpdate = await queryFilesSince(photoLibOnServer.lastUpdated, type);
       let runningServerLib = photoLibOnServer;
       newFilesSinceLastUpdate.forEach((file) => {
-        if (file.fileMetadata.appData.userDate)
-          runningServerLib = addDay(photoLibOnServer, new Date(file.fileMetadata.appData.userDate));
+        runningServerLib = addDay(
+          photoLibOnServer,
+          new Date(file.fileMetadata.appData.userDate || file.fileMetadata.created)
+        );
       });
 
       isDebug && console.debug('[Metadata] get lib from server', runningServerLib, { type });

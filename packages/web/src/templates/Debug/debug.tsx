@@ -42,7 +42,8 @@ const Debug = () => {
               targetDrive: PhotoConfig.PhotoDrive,
               type: 'photos',
             });
-            refetchLib();
+            await refetchLib();
+            alert('Rebuild finished');
           }}
         >
           Full rebuild
