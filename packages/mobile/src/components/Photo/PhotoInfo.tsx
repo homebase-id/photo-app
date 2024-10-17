@@ -218,12 +218,13 @@ const PhotoDate = ({
 
   return (
     <View
-      style={{
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      }}
+    // style={{
+    //   display: 'flex',
+    //   flexDirection: 'row',
+    //   justifyContent: 'flex-start',
+    //   alignItems: 'flex-start',
+    //   flex: 1,
+    // }}
     >
       {photoDsr?.fileId ? (
         <>
