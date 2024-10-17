@@ -11,6 +11,7 @@
 		1205763D2B6A34D30029FB57 /* RCTOdinBlobModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */; };
 		121C38422C2B0EDC0020F8CE /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */; };
 		124F3A5C2C918CCA002815B7 /* VideoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124F3A5B2C918CCA002815B7 /* VideoProvider.swift */; };
+		1298E0672CC005BC00A563AB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1298E0662CC005BC00A563AB /* PrivacyInfo.xcprivacy */; };
 		12D851D52C2305E400236484 /* SyncTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D42C2305E400236484 /* SyncTrigger.swift */; };
 		12D851D72C2306F700236484 /* Bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D62C2306F700236484 /* Bridge.m */; };
 		12D851DA2C23096100236484 /* MediaSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D851D92C23096100236484 /* MediaSync.swift */; };
@@ -23,9 +24,9 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		5807F09D3A62122DCEC642A8 /* libPods-HomebasePhotos-HomebasePhotosTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31C16126578260B539F02DB6 /* libPods-HomebasePhotos-HomebasePhotosTests.a */; };
+		477EA35F793AB70E8977AF1A /* Pods_HomebasePhotos_HomebasePhotosTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7A2AD49802FCFDF98C72D85 /* Pods_HomebasePhotos_HomebasePhotosTests.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		F98D1801233E0B43BC818328 /* libPods-HomebasePhotos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0404990F6F069703266226B6 /* libPods-HomebasePhotos.a */; };
+		BE905C978B760BC68B21B0B7 /* Pods_HomebasePhotos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 030FD1D93580972D0A18BCEA /* Pods_HomebasePhotos.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,11 +56,12 @@
 		00E356EE1AD99517003FC87E /* HomebasePhotosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomebasePhotosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* HomebasePhotosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomebasePhotosTests.m; sourceTree = "<group>"; };
-		0404990F6F069703266226B6 /* libPods-HomebasePhotos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HomebasePhotos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		030FD1D93580972D0A18BCEA /* Pods_HomebasePhotos.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HomebasePhotos.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1205763A2B6A342C0029FB57 /* RCTOdinBlobModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTOdinBlobModule.h; sourceTree = "<group>"; };
 		1205763C2B6A34D30029FB57 /* RCTOdinBlobModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RCTOdinBlobModule.m; path = OdinBlob/RCTOdinBlobModule.m; sourceTree = "<group>"; };
 		121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
 		124F3A5B2C918CCA002815B7 /* VideoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoProvider.swift; sourceTree = "<group>"; };
+		1298E0662CC005BC00A563AB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = HomebasePhotos/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		12D851D32C2305E400236484 /* HomebasePhotos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HomebasePhotos-Bridging-Header.h"; sourceTree = "<group>"; };
 		12D851D42C2305E400236484 /* SyncTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTrigger.swift; sourceTree = "<group>"; };
 		12D851D62C2306F700236484 /* Bridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Bridge.m; path = SyncTrigger/Bridge.m; sourceTree = "<group>"; };
@@ -77,10 +79,10 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = HomebasePhotos/main.m; sourceTree = "<group>"; };
 		18E6CCC90D9F77CAABCFA659 /* Pods-HomebasePhotos.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomebasePhotos.release.xcconfig"; path = "Target Support Files/Pods-HomebasePhotos/Pods-HomebasePhotos.release.xcconfig"; sourceTree = "<group>"; };
 		23AC5A94C54ABB8A0E6ABF4C /* Pods-HomebasePhotos-HomebasePhotosTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomebasePhotos-HomebasePhotosTests.release.xcconfig"; path = "Target Support Files/Pods-HomebasePhotos-HomebasePhotosTests/Pods-HomebasePhotos-HomebasePhotosTests.release.xcconfig"; sourceTree = "<group>"; };
-		31C16126578260B539F02DB6 /* libPods-HomebasePhotos-HomebasePhotosTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HomebasePhotos-HomebasePhotosTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BFC0DF1283E4737040AD76A /* Pods-HomebasePhotos-HomebasePhotosTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomebasePhotos-HomebasePhotosTests.debug.xcconfig"; path = "Target Support Files/Pods-HomebasePhotos-HomebasePhotosTests/Pods-HomebasePhotos-HomebasePhotosTests.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = HomebasePhotos/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9E9D6624939BC636C3388E40 /* Pods-HomebasePhotos.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomebasePhotos.debug.xcconfig"; path = "Target Support Files/Pods-HomebasePhotos/Pods-HomebasePhotos.debug.xcconfig"; sourceTree = "<group>"; };
+		A7A2AD49802FCFDF98C72D85 /* Pods_HomebasePhotos_HomebasePhotosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HomebasePhotos_HomebasePhotosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -89,7 +91,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5807F09D3A62122DCEC642A8 /* libPods-HomebasePhotos-HomebasePhotosTests.a in Frameworks */,
+				477EA35F793AB70E8977AF1A /* Pods_HomebasePhotos_HomebasePhotosTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,9 +99,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F98D1801233E0B43BC818328 /* libPods-HomebasePhotos.a in Frameworks */,
 				12D851E82C25C0F500236484 /* Alamofire in Frameworks */,
 				121C38422C2B0EDC0020F8CE /* BackgroundTasks.framework in Frameworks */,
+				BE905C978B760BC68B21B0B7 /* Pods_HomebasePhotos.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +174,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				1298E0662CC005BC00A563AB /* PrivacyInfo.xcprivacy */,
 			);
 			name = HomebasePhotos;
 			sourceTree = "<group>";
@@ -181,8 +184,8 @@
 			children = (
 				121C38412C2B0EDC0020F8CE /* BackgroundTasks.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				0404990F6F069703266226B6 /* libPods-HomebasePhotos.a */,
-				31C16126578260B539F02DB6 /* libPods-HomebasePhotos-HomebasePhotosTests.a */,
+				030FD1D93580972D0A18BCEA /* Pods_HomebasePhotos.framework */,
+				A7A2AD49802FCFDF98C72D85 /* Pods_HomebasePhotos_HomebasePhotosTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -333,6 +336,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1298E0672CC005BC00A563AB /* PrivacyInfo.xcprivacy in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
@@ -760,6 +764,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -787,6 +792,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CXX = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -805,7 +811,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -824,6 +843,7 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
+					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -831,6 +851,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
 			};
 			name = Debug;
@@ -839,6 +860,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -866,6 +888,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				CXX = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -877,7 +900,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -895,6 +931,7 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
+					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
