@@ -25,7 +25,7 @@ setup_permissions([
   'Camera',
   # 'Contacts',
   # 'FaceID',
-  'MediaLibrary',
+  # 'MediaLibrary',
   'PhotoLibrary',
   # 'PhotoLibraryAddOnly',
 
