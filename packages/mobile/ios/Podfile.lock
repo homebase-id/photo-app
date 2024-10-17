@@ -1669,7 +1669,7 @@ PODS:
     - React-Core
   - RNDateTimePicker (8.2.0):
     - React-Core
-  - RNDeviceInfo (10.14.0):
+  - RNDeviceInfo (13.1.0):
     - React-Core
   - RNFS (2.20.0):
     - React-Core
@@ -1696,7 +1696,7 @@ PODS:
     - Yoga
   - RNInAppBrowser (3.7.0):
     - React-Core
-  - RNPermissions (4.1.5):
+  - RNPermissions (5.0.0):
     - React-Core
   - RNReanimated (3.15.5):
     - DoubleConversion
@@ -2160,11 +2160,11 @@ SPEC CHECKSUMS:
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
   RNCClipboard: 5e503962f0719ace8f7fdfe9c60282b526305c85
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
-  RNDeviceInfo: 59344c19152c4b2b32283005f9737c5c64b42fba
+  RNDeviceInfo: e13b7d68878fba693c9fbb13ca4d56ad57d95917
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: b1bde7ef45d1472a8145a143efc097df8a9173a4
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
-  RNPermissions: 294531ede5a64d1528463e88fffef05675842042
+  RNPermissions: d6b630aeb20d688a5973c66ff64d2a38d800c12a
   RNReanimated: 2f8142da39e7cab6a62b044b6c242f7a7cc214ac
   RNScreens: de55b9d7de8a017d1588dcb70415492d0b0597c2
   RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
