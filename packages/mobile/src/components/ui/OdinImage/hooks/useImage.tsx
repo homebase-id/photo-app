@@ -6,7 +6,6 @@ import { useAuth } from '../../../../hooks/auth/useAuth';
 
 import { useDotYouClientContext } from 'photo-app-common';
 import { getDecryptedImageData } from '../../../../provider/Image/RNImageProvider';
-import { getDecryptedMediaUrlOverPeer } from '@homebase-id/js-lib/peer';
 
 interface ImageData {
   url: string;
@@ -24,9 +23,6 @@ const useImage = (props?: {
   lastModified?: number;
 }) => {
   const dotYouClient = useDotYouClientContext();
-
-  const probablyEncrypted = true;
-  const localHost = dotYouClient.getIdentity(); // This is the identity of the user
 
   const { odinId, imageFileId, imageFileKey, imageDrive, size, naturalSize, lastModified } =
     props || {};
@@ -73,7 +69,7 @@ const useImage = (props?: {
         queryKey: queryKeyBuilder(odinId, imageFileId, imageFileKey, imageDrive),
         exact: false,
       })
-      .filter((query) => query.state.status !== 'error');
+      .filter((query) => query.state.status === 'success');
 
     const cachedEntriesWithSize = cachedEntries.map((entry) => {
       const sizeParts = (entry.queryKey[5] as string)?.split('x');

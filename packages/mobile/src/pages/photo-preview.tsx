@@ -5,7 +5,6 @@ import { RootStackParamList } from '../app/App';
 import {
   Dimensions,
   FlatList,
-  FlatListComponent,
   ListRenderItemInfo,
   Platform,
   Pressable,
@@ -14,7 +13,7 @@ import {
 } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
 import { PhotoWithLoader } from '../components/Photos/PhotoPreview/PhotoWithLoader';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Colors } from '../app/Colors';
 import PhotoInfo from '../components/Photo/PhotoInfo';
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
@@ -24,6 +23,7 @@ import { VideoWithLoader } from '../components/Photos/PhotoPreview/VideoWithLoad
 import { useDarkMode } from '../hooks/useDarkMode';
 import { InfoIcon } from '../components/ui/Icons/icons';
 import { PhotoConfig, useAlbum, useFileHeader, usePhotosInfinte } from 'photo-app-common';
+import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 
 type PhotoProps = NativeStackScreenProps<RootStackParamList, 'PhotoPreview'>;
 const targetDrive = PhotoConfig.PhotoDrive;
@@ -71,41 +71,25 @@ const PhotoPreview = memo(
     const { data: album } = useAlbum(albumId).fetch;
 
     const {
-      data: olderPhotos,
-      fetchNextPage: fetchOlderPage,
-      hasNextPage: hasOlderPage,
-      isFetched: hasFetchedOlderPhotos,
+      data: photos,
+      fetchNextPage: fetchPage,
+      hasNextPage: hasPage,
+      isFetched: hasFetchedPhotos,
     } = usePhotosInfinte({
       type: 'photos',
       targetDrive,
       album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
-      startFromDate: currentDate,
-      disabled: !currentDate && !isAlbumView && !album,
-      direction: 'older',
+      disabled: !!isAlbumView && !album,
     }).fetchPhotos;
 
-    const {
-      data: newerPhotos,
-      fetchNextPage: fetchNewerPage,
-      hasNextPage: hasNewerPage,
-      isFetched: hasFetchedNewerPhotos,
-    } = usePhotosInfinte({
-      targetDrive,
-      album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
-      startFromDate: currentDate,
-      disabled: !currentDate && !isAlbumView && !album,
-      direction: 'newer',
-      type: 'photos',
-    }).fetchPhotos;
+    const flatPhotos = useMemo(
+      () => photos?.pages.flatMap((page) => page.results) || [],
+      [photos?.pages]
+    );
 
-    const flatNewerPhotos = useMemo(
-      () => newerPhotos?.pages.flatMap((page) => page.results) || [],
-      [newerPhotos?.pages]
-    );
-    const flatOlderPhotos = useMemo(
-      () => olderPhotos?.pages.flatMap((page) => page.results) || [],
-      [olderPhotos?.pages]
-    );
+    const initialIndex = useMemo(() => {
+      return flatPhotos.findIndex((photo) => stringGuidsEqual(fileHeader.fileId, photo.fileId));
+    }, [fileHeader, flatPhotos]);
 
     const doGoBack = useCallback(() => {
       if (navigation.canGoBack()) {
@@ -115,14 +99,8 @@ const PhotoPreview = memo(
       }
     }, [navigation]);
 
-    // The Flatlists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
-    if (
-      (isAlbumView && !album) ||
-      !hasFetchedOlderPhotos ||
-      !olderPhotos ||
-      !hasFetchedNewerPhotos ||
-      !newerPhotos
-    ) {
+    // The Flatlist need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
+    if ((!!isAlbumView && !album) || !hasFetchedPhotos || !flatPhotos) {
       return null;
     }
 
@@ -130,14 +108,12 @@ const PhotoPreview = memo(
       <InnerPhotoPreview
         backTitle={isAlbumView ? album?.name || '' : 'Library'}
         goBack={doGoBack}
-        currentDate={currentDate}
         fileHeader={fileHeader}
-        olderPhotos={flatOlderPhotos}
-        newerPhotos={flatNewerPhotos}
-        fetchOlderPage={fetchOlderPage}
-        hasOlderPage={hasOlderPage}
-        fetchNewerPage={fetchNewerPage}
-        hasNewerPage={hasNewerPage}
+        photos={flatPhotos}
+        fetchNextPage={fetchPage}
+        hasNextPage={hasPage}
+        initialDate={currentDate}
+        initialIndex={initialIndex}
       />
     );
   }
@@ -148,24 +124,23 @@ const InnerPhotoPreview = memo(
     backTitle,
     goBack,
     fileHeader,
-    currentDate,
+    initialDate,
+
     ...props
   }: {
     backTitle: string;
-    currentDate: Date;
     goBack: () => void;
     fileHeader: HomebaseFile;
 
-    olderPhotos: HomebaseFile[];
-    newerPhotos: HomebaseFile[];
-    hasOlderPage: boolean | undefined;
-    fetchOlderPage: () => void;
+    photos: HomebaseFile[];
 
-    hasNewerPage: boolean | undefined;
-    fetchNewerPage: () => void;
+    hasNextPage: boolean | undefined;
+    fetchNextPage: () => void;
+    initialDate: Date;
+    initialIndex: number;
   }) => {
     const [isInfoOpen, setIsInfoOpen] = useState(false);
-    const [activeDate, setActiveDate] = useState(currentDate);
+    const [activeDate, setActiveDate] = useState(initialDate);
     const [showHeader, setShowHeader] = useState(true);
 
     const doToggleHeader = useCallback(() => setShowHeader((oldVal) => !oldVal), [setShowHeader]);
@@ -174,7 +149,7 @@ const InnerPhotoPreview = memo(
       <View style={{ backgroundColor: Colors.black }}>
         {showHeader ? (
           <PreviewHeader
-            currentDate={activeDate || currentDate}
+            currentDate={activeDate || initialDate}
             goBack={goBack}
             backTitle={backTitle}
             setIsInfoOpen={setIsInfoOpen}
@@ -182,7 +157,11 @@ const InnerPhotoPreview = memo(
           />
         ) : null}
 
-        <PreviewSlider {...props} doToggleHeader={doToggleHeader} setActiveDate={setActiveDate} />
+        <InnerFlatListSlider
+          {...props}
+          doToggleHeader={doToggleHeader}
+          setActiveDate={setActiveDate}
+        />
         {isInfoOpen ? (
           <PhotoInfo current={fileHeader} onClose={() => setIsInfoOpen(false)} />
         ) : null}
@@ -191,56 +170,25 @@ const InnerPhotoPreview = memo(
   }
 );
 
-const PreviewSlider = memo(
+const InnerFlatListSlider = memo(
   ({
-    olderPhotos,
-    newerPhotos,
-    hasOlderPage,
-    fetchOlderPage,
-
-    hasNewerPage,
-    fetchNewerPage,
+    photos,
+    hasNextPage,
+    fetchNextPage,
 
     doToggleHeader,
     setActiveDate,
+    initialIndex,
   }: {
-    olderPhotos: HomebaseFile[];
-    newerPhotos: HomebaseFile[];
-    hasOlderPage: boolean | undefined;
-    fetchOlderPage: () => void;
-
-    hasNewerPage: boolean | undefined;
-    fetchNewerPage: () => void;
+    photos: HomebaseFile[];
+    hasNextPage: boolean | undefined;
+    fetchNextPage: () => void;
 
     doToggleHeader: () => void;
     setActiveDate: (date: Date) => void;
+    initialIndex: number;
   }) => {
-    const [isGoingLeft, setIsGoingLeft] = useState(true);
     const windowSize = useMemo(() => Dimensions.get('window'), []);
-
-    const newerFlatListRef = useRef<FlatListComponent<HomebaseFile, unknown>>();
-    const olderFlatListRef = useRef<FlatListComponent<HomebaseFile, unknown>>();
-
-    const baseFlatListProps = {
-      onStartReachedThreshold: 0,
-      showsHorizontalScrollIndicator: false,
-      getItemLayout: (data: ArrayLike<HomebaseFile> | null | undefined, index: number) => ({
-        length: windowSize.width,
-        offset: windowSize.width * index,
-        index,
-      }),
-      horizontal: true,
-      pagingEnabled: true,
-      keyExtractor: (item: HomebaseFile) => item.fileId,
-      pinchGestureEnabled: true,
-      mimimumZoomScale: 1,
-      maximumZoomScale: 3,
-      bouncesZoom: false,
-      initialNumToRender: 2,
-    } as const;
-
-    const hasOlder = olderPhotos && olderPhotos.length >= 1;
-    const hasNewer = newerPhotos && newerPhotos.length >= 1;
 
     const onViewableItemsChanged = useCallback(
       ({ viewableItems }: { viewableItems: { item: HomebaseFile }[] }) => {
@@ -275,6 +223,7 @@ const PreviewSlider = memo(
                   height: windowSize.height,
                 }}
                 onPress={doToggleHeader}
+                previewThumbnail={item.item.fileMetadata.appData.previewThumbnail}
               />
             ) : (
               <PhotoWithLoader
@@ -287,6 +236,7 @@ const PreviewSlider = memo(
                 }}
                 enableZoom={Platform.OS === 'android'}
                 onPress={doToggleHeader}
+                previewThumbnail={item.item.fileMetadata.appData.previewThumbnail}
               />
             )}
           </Pressable>
@@ -295,94 +245,44 @@ const PreviewSlider = memo(
       [windowSize.height, windowSize.width, doToggleHeader]
     );
 
-    const dataForLeft = useMemo(() => {
-      return [...(hasOlder ? [olderPhotos[0]] : []), ...newerPhotos];
-    }, [hasOlder, olderPhotos, newerPhotos]);
-
-    const dataForRight = useMemo(() => {
-      return [...(hasNewer ? [newerPhotos[0]] : []), ...olderPhotos];
-    }, [hasNewer, newerPhotos, olderPhotos]);
-
     // Both the FlatLists need data before they can render, otherwise the intialOffset is set and only afterwards the data is rendered
-    if (!dataForLeft || !newerPhotos) return null;
+    if (!photos) return null;
 
     return (
       <View>
-        <View
-          key="left"
-          style={{
-            display: isGoingLeft && hasNewer ? 'flex' : 'none',
-          }}
-        >
-          {newerPhotos && newerPhotos.length ? (
-            <FlatList
-              {...baseFlatListProps}
-              renderItem={renderItem}
-              initialScrollIndex={hasOlder ? 1 : 0}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ref={newerFlatListRef as any}
-              style={{
-                // backgroundColor: 'blue',
-                height: windowSize.height,
-                width: windowSize.width,
-              }}
-              onStartReached={() => {
-                hasOlder && isGoingLeft && setIsGoingLeft(false);
-                // Reset this flatList to the first real item; Not the overlap
-                setTimeout(() => {
-                  newerFlatListRef.current?.scrollToIndex({
-                    index: hasOlder ? 1 : 0,
-                    animated: false,
-                  });
-                }, 100);
-              }}
-              data={dataForLeft}
-              inverted={true}
-              onViewableItemsChanged={onViewableItemsChanged}
-              viewabilityConfig={{
-                itemVisiblePercentThreshold: 50,
-              }}
-              onEndReached={() => hasNewerPage && fetchNewerPage()}
-            />
-          ) : null}
-        </View>
-        <View
-          key="right"
-          style={{
-            display: isGoingLeft && hasNewer ? 'none' : 'flex',
-          }}
-        >
-          {olderPhotos && olderPhotos.length ? (
-            <FlatList
-              {...baseFlatListProps}
-              renderItem={renderItem}
-              initialScrollIndex={hasNewer ? 1 : 0}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ref={olderFlatListRef as any}
-              style={{
-                // backgroundColor: 'red',
-                height: windowSize.height,
-                width: windowSize.width,
-              }}
-              onStartReached={() => {
-                hasNewer && setIsGoingLeft(true);
-                // Reset this flatList to the first real item; Not the overlap
-                setTimeout(() => {
-                  olderFlatListRef.current?.scrollToIndex({
-                    index: hasNewer ? 1 : 0,
-                    animated: false,
-                  });
-                }, 100);
-              }}
-              onViewableItemsChanged={onViewableItemsChanged}
-              viewabilityConfig={{
-                itemVisiblePercentThreshold: 50,
-              }}
-              data={dataForRight}
-              onEndReached={() => hasOlderPage && fetchOlderPage()}
-            />
-          ) : null}
-        </View>
+        {photos && photos.length ? (
+          <FlatList
+            showsHorizontalScrollIndicator={false}
+            getItemLayout={(_data, index) => ({
+              length: windowSize.width,
+              offset: windowSize.width * index,
+              index,
+            })}
+            horizontal={true}
+            pagingEnabled={true}
+            keyExtractor={(item) => item.fileId}
+            pinchGestureEnabled={true}
+            minimumZoomScale={1}
+            maximumZoomScale={3}
+            bouncesZoom={false}
+            initialNumToRender={2}
+            maxToRenderPerBatch={1}
+            windowSize={3}
+            initialScrollIndex={initialIndex}
+            renderItem={renderItem}
+            style={{
+              height: windowSize.height,
+              width: windowSize.width,
+            }}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={{
+              itemVisiblePercentThreshold: 50,
+            }}
+            data={photos}
+            onEndReached={() => hasNextPage && fetchNextPage()}
+            onEndReachedThreshold={0.5}
+          />
+        ) : null}
       </View>
     );
   }

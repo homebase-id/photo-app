@@ -9,14 +9,8 @@ import { usePhotoSelection } from 'photo-app-common';
 type PhotosProps = NativeStackScreenProps<TabStackParamList, 'Photos'>;
 
 const PhotosPage = memo((_props: PhotosProps) => {
-  const {
-    toggleSelection,
-    selectRange,
-    clearingSelection,
-    selection,
-    clearSelection,
-    isSelecting,
-  } = usePhotoSelection();
+  const { toggleSelection, clearingSelection, selection, clearSelection, isSelecting } =
+    usePhotoSelection();
 
   useEffect(() => {
     const unsubscribe = _props.navigation.addListener('blur', () => {
@@ -30,7 +24,6 @@ const PhotosPage = memo((_props: PhotosProps) => {
     <SafeAreaView>
       <PhotoLibrary
         toggleSelection={toggleSelection}
-        selectRange={selectRange}
         isSelecting={isSelecting}
         clearingSelection={clearingSelection}
         type="photos"

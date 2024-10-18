@@ -41,7 +41,7 @@ const INCLUDED_QUERY_KEYS = [
 ];
 
 const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
-  buster: '20240917',
+  buster: '20240918',
   maxAge: Infinity,
   persister: asyncPersister,
   dehydrateOptions: {

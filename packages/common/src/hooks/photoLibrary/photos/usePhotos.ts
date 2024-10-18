@@ -112,14 +112,12 @@ export const usePhotosInfinte = ({
   album,
   type,
   startFromDate,
-  direction,
   disabled,
 }: {
   targetDrive?: TargetDrive;
   album?: string;
   type: LibraryType;
   startFromDate?: Date;
-  direction?: 'older' | 'newer';
   disabled?: boolean;
 }) => {
   const dotYouClient = useDotYouClientContext();
@@ -135,9 +133,8 @@ export const usePhotosInfinte = ({
         'photos-infinite',
         targetDrive?.alias,
         type,
-        album,
+        album || '',
         startFromDate?.getTime(),
-        direction,
       ],
       queryFn: ({ pageParam }) =>
         fetchPhotosByCursor({
@@ -146,7 +143,6 @@ export const usePhotosInfinte = ({
           type,
           album,
           cursorState: pageParam || startFromDateCursor,
-          direction: direction,
         }),
 
       initialPageParam: undefined as string | undefined,
