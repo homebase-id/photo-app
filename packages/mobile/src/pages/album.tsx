@@ -27,7 +27,7 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
   const [isEditDialog, setIsEditDialog] = useState(false);
   const { isDarkMode } = useDarkMode();
 
-  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
+  const { toggleSelection, clearingSelection, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
   const toggleEditDialog = useCallback(
@@ -67,11 +67,10 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
       />
       <SafeAreaView>
         <PhotoAlbum
-          toggleSelection={toggleSelection}
-          selectRange={selectRange}
           albumKey={albumId}
-          isSelected={isSelected}
+          toggleSelection={toggleSelection}
           isSelecting={isSelecting}
+          clearingSelection={clearingSelection}
         />
         <PhotoSelection
           type="photos"

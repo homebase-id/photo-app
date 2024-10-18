@@ -90,12 +90,12 @@ const PhotoPreview = memo(
       hasNextPage: hasNewerPage,
       isFetched: hasFetchedNewerPhotos,
     } = usePhotosInfinte({
+      type: 'photos',
       targetDrive,
       album: albumId || (typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined),
       startFromDate: currentDate,
       disabled: !currentDate && !isAlbumView && !album,
       direction: 'newer',
-      type: 'photos',
     }).fetchPhotos;
 
     const flatNewerPhotos = useMemo(

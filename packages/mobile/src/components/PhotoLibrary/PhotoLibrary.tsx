@@ -14,7 +14,6 @@ export const PhotoLibrary = memo(
   (props: {
     type: LibraryType;
     toggleSelection: (fileId: string) => Promise<boolean>;
-    selectRange: (fileIds: string[]) => void;
     isSelecting?: boolean;
     clearingSelection?: number;
   }) => {
@@ -80,7 +79,6 @@ const InnerList = memo(
     isFetchingNextPage: boolean;
     fetchNextPage: () => void;
     toggleSelection: (fileId: string) => Promise<boolean>;
-    selectRange: (fileIds: string[]) => void;
     isSelecting?: boolean;
     clearingSelection?: number;
   }) => {

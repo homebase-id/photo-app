@@ -137,7 +137,7 @@ export const usePhotosInfinte = ({
         type,
         album,
         startFromDate?.getTime(),
-        direction,
+        direction || 'older',
       ],
       queryFn: ({ pageParam }) =>
         fetchPhotosByCursor({
