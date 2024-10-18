@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react';
-import { Dimensions, FlatList, RefreshControl, View } from 'react-native';
+import { Dimensions, FlatList, ListRenderItemInfo, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoItem } from '../Photos/PhotoDay/PhotoDay';
 import { usePhotosByMonth, PhotoConfig, LibraryType, usePhotosInfinte } from 'photo-app-common';
@@ -134,11 +134,12 @@ const InnerList = memo(
     const size = Math.round(windowSize.width / numColums);
 
     const renderItem = useCallback(
-      ({ item }: { item: HomebaseFile<string>; index: number }) => (
+      ({ item }: ListRenderItemInfo<HomebaseFile<string>>) => (
         <View
           key={item.fileId}
           style={{
             width: size,
+            height: size,
             padding: 1,
           }}
         >
@@ -166,11 +167,18 @@ const InnerList = memo(
         <FlatList
           data={flatPhotos}
           keyExtractor={(item) => item.fileId}
-          initialNumToRender={1}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={doRefresh} />}
           renderItem={renderItem}
           numColumns={numColums}
           onEndReached={() => hasMorePhotos && !isFetchingNextPage && fetchNextPage()}
+          onEndReachedThreshold={0.1}
+          getItemLayout={(_data, index) => ({ length: size, offset: size * index, index })}
+          // CellRendererComponent={({ children }) => (
+          //   <View style={{ backgroundColor: 'red' }}>{children}</View>
+          // )}
+          // onViewableItemsChanged={({ viewableItems }) => {
+          //   console.log('viewableItems', viewableItems.length);
+          // }}
         />
       </View>
     );
