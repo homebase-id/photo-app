@@ -7,7 +7,6 @@ import {
 } from '@homebase-id/js-lib/core';
 import { ImageMetadata } from '@homebase-id/js-lib/media';
 import { toGuidId } from '@homebase-id/js-lib/helpers';
-import { uploadImage } from '../Image/RNImageProvider';
 
 import Exif from 'react-native-exif';
 import { CameraRoll, PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
@@ -140,98 +139,6 @@ export const getUniqueId = (item: PhotoIdentifier) => {
   return item.node.id
     ? toGuidId(item.node.id as string)
     : toGuidId(`${item.node.image.filename}_${item.node.image.width}x${item.node.image.height}`);
-};
-
-const uploadNewPhoto = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  albumKey: string | undefined,
-  newPhoto: PhotoIdentifier,
-  lowerQuality?: boolean
-) => {
-  const exif = await getPhotoExifMeta(newPhoto);
-
-  const { imageMetadata, dateTimeOriginal } = exif;
-  const imageUniqueId = getUniqueId(newPhoto);
-
-  const userDate =
-    dateTimeOriginal?.getTime() ||
-    (newPhoto.node.timestamp ? newPhoto.node.timestamp * 1000 : undefined) ||
-    new Date().getTime();
-
-  const existingImage = imageUniqueId
-    ? await getFileHeaderByUniqueId(dotYouClient, targetDrive, imageUniqueId)
-    : null;
-
-  // Image already exists, we skip it
-  if (existingImage) {
-    return {
-      fileId: existingImage.fileId,
-      userDate: new Date(userDate),
-      type: 'image',
-      imageUniqueId,
-    };
-  }
-
-  const imageData = lowerQuality
-    ? await createResizedImage(newPhoto.node.image, { quality: 95, width: 3000, height: 3000 })
-    : newPhoto.node.image;
-
-  return {
-    ...(await uploadImage(
-      dotYouClient,
-      targetDrive,
-      { requiredSecurityGroup: SecurityGroupType.Owner },
-      imageData,
-      { ...imageMetadata, originalFileName: newPhoto.node.image.filename || undefined },
-      {
-        type: getMimeType(newPhoto.node.image.filename || undefined) as ImageContentType,
-        userDate: userDate,
-        tag: albumKey ? [albumKey] : undefined,
-        uniqueId: imageUniqueId,
-      },
-      [
-        { quality: 95, width: 300, height: 300 },
-        { quality: 95, width: 1200, height: 1200 },
-      ]
-    )),
-    userDate: new Date(userDate),
-    imageUniqueId,
-  };
-};
-
-export const uploadNew = async (
-  dotYouClient: DotYouClient,
-  targetDrive: TargetDrive,
-  albumKey: string | undefined,
-  newFile: PhotoIdentifier,
-  lowerQuality?: boolean
-): Promise<{ fileId?: string; userDate: Date; imageUniqueId: string }> => {
-  const fileData =
-    Platform.OS === 'ios'
-      ? await CameraRoll.iosGetImageDataById(newFile.node.image.uri, {
-          convertHeicImages: true,
-        })
-      : undefined;
-
-  const toUpload: PhotoIdentifier = {
-    ...newFile,
-    ...fileData,
-    node: {
-      ...newFile.node,
-      ...fileData?.node,
-      image: {
-        ...newFile.node.image,
-        ...fileData?.node?.image,
-      },
-    },
-  };
-
-  if (toUpload.node.type?.includes('video')) {
-    throw new Error('Video upload not supported');
-  }
-
-  return uploadNewPhoto(dotYouClient, targetDrive, albumKey, toUpload, lowerQuality);
 };
 
 export type PageParam = {

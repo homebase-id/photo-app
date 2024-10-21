@@ -63,6 +63,7 @@
     "react-native-url-polyfill": "^2.0.0",
     "react-native-video": "^6.6.4",
     "react-native-webview": "^13.12.0",
+    "react-native-image-picker": "^7.1.2",
     "stream": "^0.0.3",
     "text-encoding-polyfill": "^0.6.7",
     "tslib": "2.7.0",
