@@ -50,7 +50,6 @@ export const useUploadPhoto = () => {
         });
       },
       onError: (error) => {
-        console.log(error.message === 'File already exists');
         addError(queryClient, error, t('Failed to upload photo'));
       },
     }),
