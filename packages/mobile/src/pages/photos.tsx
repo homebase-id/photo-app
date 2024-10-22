@@ -60,15 +60,6 @@ const AddPhotoButton = () => {
     }
   }, [status]);
 
-  useEffect(() => {
-    Toast.show({
-      text1: 'Test',
-      type: 'success',
-      visibilityTime: 2000,
-      position: 'bottom',
-    });
-  }, []);
-
   return (
     <TouchableHighlight
       style={{
@@ -90,20 +81,6 @@ const AddPhotoButton = () => {
         result.assets?.forEach((asset) => {
           uploadPhoto(asset);
         });
-
-        // if (result?.assets?.[0]) {
-        //   upload({
-        //     targetDrive: PhotoConfig.PhotoDrive,
-        //     newPhoto: {
-        //       ...result.assets[0],
-        //       height: result.assets[0].height || 0,
-        //       width: result.assets[0].width || 0,
-        //     },
-        //   });
-        // }
-
-        // // TODO: Handle errors to the user
-        // if (result.errorCode) console.error(result.errorCode);
       }}
     >
       <Camera color="white" size="md" />

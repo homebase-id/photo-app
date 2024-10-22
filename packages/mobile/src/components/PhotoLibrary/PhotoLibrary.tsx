@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { Dimensions, FlatList, ListRenderItemInfo, RefreshControl, View } from 'react-native';
 import { Text } from '../ui/Text/Text';
 import { PhotoItem } from '../Photos/PhotoDay/PhotoDay';
-import { usePhotosByMonth, PhotoConfig, LibraryType, usePhotosInfinte } from 'photo-app-common';
+import { PhotoConfig, LibraryType, usePhotosInfinte } from 'photo-app-common';
 import { useQueryClient } from '@tanstack/react-query';
 import { HomebaseFile } from '@homebase-id/js-lib/core';
 
@@ -29,7 +29,7 @@ export const PhotoLibrary = memo(
       refetch: refetchPhotos,
     } = usePhotosInfinte({
       targetDrive: PhotoConfig.PhotoDrive,
-      type: 'photos',
+      type: type || 'photos',
     }).fetchPhotos;
 
     const flatPhotos = useMemo(
@@ -37,16 +37,16 @@ export const PhotoLibrary = memo(
       [rawPhotos]
     );
 
-    const invalidatePhotos = usePhotosByMonth({
-      type: 'photos',
-    }).invalidateQueries;
+    const invalidatePhotos = usePhotosInfinte({
+      type: type || 'photos',
+    }).invalidatePhotosInfinite;
 
     const [refreshing, setRefreshing] = useState(false);
     const doRefresh = useCallback(async () => {
       setRefreshing(true);
       queryClient.invalidateQueries();
       await refetchPhotos();
-      await invalidatePhotos(type);
+      await invalidatePhotos(undefined, type);
       setRefreshing(false);
     }, [invalidatePhotos, queryClient, refetchPhotos, type]);
 

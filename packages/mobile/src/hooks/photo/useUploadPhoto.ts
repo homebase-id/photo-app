@@ -18,24 +18,31 @@ export const useUploadPhoto = () => {
     upload: useMutation({
       mutationFn: async (newPhoto: Asset) => {
         const uniqueId = getUniqueId(newPhoto);
-
-        await SyncTrigger.runSingleSync(
-          newPhoto.uri?.replaceAll('file://', '') || '',
-          parseInt(newPhoto.timestamp || '0'),
-          newPhoto.type,
-          uniqueId,
-          newPhoto.width,
-          newPhoto.height
-        );
-
         try {
-          invalidateLibrary('photos');
+          await SyncTrigger.runSingleSync(
+            newPhoto.uri?.replaceAll('file://', '') || '',
+            parseInt(newPhoto.timestamp || '0'),
+            newPhoto.type,
+            uniqueId,
+            newPhoto.width,
+            newPhoto.height
+          );
         } catch (err) {
-          addError(queryClient, err, t('Failed to update library index'));
+          if (
+            err &&
+            typeof err === 'object' &&
+            'message' in err &&
+            err.message === 'File already exists'
+          ) {
+            return;
+          }
+          throw err;
         }
       },
       onSuccess: () => {
         // Invalidate all the things...
+        invalidateLibrary('photos');
+
         queryClient.invalidateQueries({ queryKey: ['photos', targetDrive.alias] });
         queryClient.invalidateQueries({
           queryKey: ['photos-infinite', targetDrive.alias],
@@ -43,6 +50,7 @@ export const useUploadPhoto = () => {
         });
       },
       onError: (error) => {
+        console.log(error.message === 'File already exists');
         addError(queryClient, error, t('Failed to upload photo'));
       },
     }),
