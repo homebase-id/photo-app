@@ -165,43 +165,9 @@ const GalleryView = memo(({ children }: { children: ReactElement }) => {
   const numColums = Math.round(windowSize.width / PREFFERED_IMAGE_SIZE);
   const size = Math.round(windowSize.width / numColums);
 
-  // Upload queue
-  // const [uploadIndex, setUploadIndex] = useState(0);
-  // const [uploadQueue, setUploadQueue] = useState<PhotoIdentifier[]>([]);
-
-  // const {
-  //   mutate: uploadPhoto,
-  //   status: uploadStatus,
-  //   reset: resetUpload,
-  //   error: uploadError,
-  // } = useUploadPhoto().upload;
-
-  // const currentFile = uploadQueue[uploadIndex];
-  // useEffect(() => {
-  //   if (!currentFile) return;
-  //   uploadPhoto(currentFile);
-  // }, [currentFile, uploadPhoto]);
-
-  // useEffect(() => {
-  //   if (uploadStatus === 'success' || uploadStatus === 'error') {
-  //     resetUpload();
-  //     setUploadIndex((currentIndex) => currentIndex + 1);
-  //   }
-  // }, [uploadStatus, resetUpload, setUploadIndex]);
-
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<PhotoIdentifier>) => {
-      return (
-        <GalleryItem
-          size={size}
-          item={item}
-          key={item.node.id}
-          // addToUpload={(item: PhotoIdentifier) =>
-          //   setUploadQueue((currentUploadQueue) => [...currentUploadQueue, item])
-          // }
-          fromTime={fromTime}
-        />
-      );
+      return <GalleryItem size={size} item={item} key={item.node.id} fromTime={fromTime} />;
     },
     [fromTime, size]
   );

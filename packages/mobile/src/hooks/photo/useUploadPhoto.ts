@@ -1,49 +1,56 @@
+import { toGuidId } from '@homebase-id/js-lib/helpers';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { uploadNew } from '../../provider/photos/RNPhotoProvider';
-import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
-import { PhotoConfig, t, useDotYouClientContext, useManagePhotoLibrary } from 'photo-app-common';
-import { useKeyValueStorage } from '../auth/useEncryptedStorage';
+import { PhotoConfig, t, useManagePhotoLibrary } from 'photo-app-common';
+import { NativeModules } from 'react-native';
+import { Asset } from 'react-native-image-picker';
 import { addError } from '../errors/useErrors';
+const { SyncTrigger } = NativeModules;
 
 export const useUploadPhoto = () => {
   const targetDrive = PhotoConfig.PhotoDrive;
-  const dotYouClient = useDotYouClientContext();
   const queryClient = useQueryClient();
 
   const invalidateLibrary = useManagePhotoLibrary({
     targetDrive: PhotoConfig.PhotoDrive,
   }).invalidateLibrary;
 
-  const { forceLowerQuality } = useKeyValueStorage();
-
   return {
     upload: useMutation({
-      mutationFn: async (newPhoto: PhotoIdentifier) => {
-        const uploadResult = await uploadNew(
-          dotYouClient,
-          targetDrive,
-          undefined,
-          newPhoto,
-          forceLowerQuality
+      mutationFn: async (newPhoto: Asset) => {
+        const uniqueId = getUniqueId(newPhoto);
+
+        await SyncTrigger.runSingleSync(
+          newPhoto.uri?.replaceAll('file://', '') || '',
+          parseInt(newPhoto.timestamp || '0'),
+          newPhoto.type,
+          uniqueId,
+          newPhoto.width,
+          newPhoto.height
         );
+
         try {
           invalidateLibrary('photos');
         } catch (err) {
           addError(queryClient, err, t('Failed to update library index'));
         }
-
-        return uploadResult;
       },
-      onSuccess: (data) => {
+      onSuccess: () => {
         // Invalidate all the things...
         queryClient.invalidateQueries({ queryKey: ['photos', targetDrive.alias] });
         queryClient.invalidateQueries({
-          queryKey: ['photo-header', targetDrive.alias, data?.imageUniqueId],
+          queryKey: ['photos-infinite', targetDrive.alias],
+          exact: false,
         });
       },
       onError: (error) => {
-        console.log('error', error);
+        addError(queryClient, error, t('Failed to upload photo'));
       },
     }),
   };
+};
+
+const getUniqueId = (item: Asset) => {
+  return item.id
+    ? toGuidId(item.id as string)
+    : toGuidId(`${item.fileSize}_${item.width}x${item.height}`);
 };

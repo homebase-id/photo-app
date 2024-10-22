@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { t } from 'photo-app-common';
 
-// TODO: Create a PositiveToaster component
 export const ErrorToaster = () => {
   const {
     fetch: { data: errors },
@@ -21,7 +20,7 @@ export const ErrorToaster = () => {
         onHide: () => dismissError(error),
         type: 'error',
         position: 'bottom',
-        visibilityTime: 2500,
+        visibilityTime: 10000,
         swipeable: true,
         onPress: () => {
           Alert.alert(

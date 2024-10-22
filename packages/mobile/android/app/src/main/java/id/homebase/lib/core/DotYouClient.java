@@ -2,12 +2,17 @@ package id.homebase.lib.core;
 
 import androidx.annotation.NonNull;
 
+import com.ammarahmed.mmkv.MMKV;
+import com.facebook.react.bridge.ReactApplicationContext;
+
+import id.homebase.lib.core.crypto.CryptoUtil;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -106,5 +111,25 @@ public class DotYouClient {
 
     public void handleErrorResponse(IOException error) {
         throw new RuntimeException(error);
+    }
+
+    public static DotYouClient getDotYouClient(ReactApplicationContext context) {
+        System.loadLibrary("rnmmkv");
+        MMKV.initialize(context);
+        MMKV mmkv = MMKV.mmkvWithID("default");
+        assert mmkv != null;
+
+        String identity = mmkv.decodeString("identity", "");
+        String CAT = mmkv.decodeString("bx0900", "");
+        String sharedSecret = mmkv.decodeString("APSS", "");
+
+        assert sharedSecret != null;
+        assert identity != null;
+        assert CAT != null;
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("bx0900", CAT);
+
+        return new DotYouClient(ApiType.App, CryptoUtil.base64ToByteArray(sharedSecret), identity, headers);
     }
 }

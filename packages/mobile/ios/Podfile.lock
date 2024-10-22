@@ -1303,6 +1303,27 @@ PODS:
   - react-native-http-bridge-refurbished (1.2.9):
     - GCDWebServer
     - React
+  - react-native-image-picker (7.1.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-image-resizer (3.0.10):
     - React-Core
   - react-native-mmkv-storage (0.10.3):
@@ -1836,6 +1857,7 @@ DEPENDENCIES:
   - react-native-compressor (from `../../../node_modules/react-native-compressor`)
   - react-native-exif (from `../../../node_modules/react-native-exif`)
   - react-native-http-bridge-refurbished (from `../../../node_modules/react-native-http-bridge-refurbished`)
+  - react-native-image-picker (from `../../../node_modules/react-native-image-picker`)
   - "react-native-image-resizer (from `../../../node_modules/@bam.tech/react-native-image-resizer`)"
   - react-native-mmkv-storage (from `../../../node_modules/react-native-mmkv-storage`)
   - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
@@ -1980,6 +2002,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-exif"
   react-native-http-bridge-refurbished:
     :path: "../../../node_modules/react-native-http-bridge-refurbished"
+  react-native-image-picker:
+    :path: "../../../node_modules/react-native-image-picker"
   react-native-image-resizer:
     :path: "../../../node_modules/@bam.tech/react-native-image-resizer"
   react-native-mmkv-storage:
@@ -2123,6 +2147,7 @@ SPEC CHECKSUMS:
   react-native-compressor: cd814c512cfbadc66cd927743645c927f5531986
   react-native-exif: c43e7c18af8bfa133c79145671a0f036e413468e
   react-native-http-bridge-refurbished: e2e45508ec1573999ace69a0b880eee8f0e5bab2
+  react-native-image-picker: 5bd900eec966c8f9fe32c5ec844afcd71d052030
   react-native-image-resizer: fd0c333eca55147bd55c5e054cac95dcd0da6814
   react-native-mmkv-storage: 36fcafe92a2c4cf19bce96be0b5d587f7a62a2c6
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac

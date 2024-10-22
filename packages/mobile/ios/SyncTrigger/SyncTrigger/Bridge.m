@@ -11,5 +11,13 @@
 @interface RCT_EXTERN_MODULE(SyncTrigger, NSObject)
 
 RCT_EXTERN_METHOD(runSync)
+RCT_EXTERN_METHOD(runSingleSync:(NSString *)filePath
+                  timestampInMs:(nonnull NSNumber *)timestampInMs
+                  mimeType:(NSString *)mimeType
+                  identifier:(NSString *)identifier
+                  width:(nonnull NSNumber *)width
+                  height:(nonnull NSNumber *)height
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 @end
