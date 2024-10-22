@@ -144,7 +144,7 @@ class VideoProvider {
       }
     }
   }
-  
+
   static func getVideoCodec(filePath: String) -> String {
       // Create an AVAsset from the video file URL
       let fileUrl = URL(fileURLWithPath: filePath)
@@ -154,11 +154,11 @@ class VideoProvider {
       if let videoTrack = asset.tracks(withMediaType: .video).first {
           // Get the format descriptions of the video track
           let formatDescriptions = videoTrack.formatDescriptions as! [CMFormatDescription]
-          
+
           if let formatDescription = formatDescriptions.first {
               // Extract codec information
               let codecType = CMFormatDescriptionGetMediaSubType(formatDescription)
-              
+
               // Convert codecType to a readable string
               let codecString = FourCharCodeToString(fourCharCode: codecType)
             return codecString;
@@ -166,7 +166,7 @@ class VideoProvider {
       } else {
           print("No video track found.")
       }
-    
+
     return "Unknown"
   }
 
@@ -196,12 +196,29 @@ class VideoProvider {
       let keyInfoFile = try await createKeyInfoFile(directory: outputDirectory, keyHeader: keyHeader)
       encryptionCommand = "-hls_key_info_file \(keyInfoFile.path)"
     }
-    
+
+    let rotation = try extractRotationMetadata(inputUrl: inputUrl)
+
+    // Add transpose filter based on the rotation metadata
+    var rotationCommand = ""
+    if let rotation = rotation {
+        switch rotation {
+        case "90":
+            rotationCommand = "-vf \"transpose=1\"" // Rotate 90 degrees clockwise
+        case "180":
+            rotationCommand = "-vf \"transpose=2,transpose=2\"" // Rotate 180 degrees
+        case "270":
+            rotationCommand = "-vf \"transpose=2\"" // Rotate 270 degrees clockwise
+        default:
+            break // No rotation needed for 0 or unknown rotation values
+        }
+    }
+
     let command: String;
     if(getVideoCodec(filePath: inputUrl.path) == "avc1") {
-      command = "-i \(inputUrl.path) -codec copy \(encryptionCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
+      command = "-i \(inputUrl.path) -codec copy \(encryptionCommand) \(rotationCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
     } else {
-      command = "-i \(inputUrl.path) -c:v libx264 -preset fast -crf 23 -c:a aac \(encryptionCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
+      command = "-i \(inputUrl.path) -c:v libx264 -preset fast -crf 23 -c:a aac \(encryptionCommand) \(rotationCommand) -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file \(playlistUrl.path)"
     }
     print("ffmpeg command: \(command)")
 
@@ -218,6 +235,24 @@ class VideoProvider {
         }
       }
     }
+  }
+
+  // Example function to extract rotation metadata using FFmpeg
+  private static func extractRotationMetadata(inputUrl: URL) throws -> String? {
+      var rotation: String? = nil
+      let command = "-i \(inputUrl.path) -select_streams v:0 -show_entries stream_tags=rotate -of csv=p=0"
+
+      let session = FFmpegKit.execute(command)
+      let returnCode = session?.getReturnCode()
+
+      if returnCode?.isValueSuccess() == true {
+          let output = session?.getAllLogsAsString()?.trimmingCharacters(in: .whitespacesAndNewlines)
+          if let output = output, !output.isEmpty {
+              rotation = output
+          }
+      }
+
+      return rotation
   }
 
   // Helper function to create a key info file for encryption (if required)

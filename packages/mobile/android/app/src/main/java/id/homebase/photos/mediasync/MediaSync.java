@@ -117,7 +117,7 @@ public class MediaSync {
                     UploadResult result;
                     if (mimeType.startsWith("video/")) {
                         VideoProvider videoProvider = new VideoProvider(context);
-                        result = videoProvider.uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, forceLowerQuality);
+                        result = videoProvider.uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, true);
                     } else {
                         result = ImageProvider.uploadMedia(dotYouClient, filePath, timestampInMillis, mimeType, identifier, width, height, forceLowerQuality);
                     }

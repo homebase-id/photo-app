@@ -117,7 +117,7 @@ class MediaSync {
             let result: UploadResult
             if asset.mediaType == .video {
               // Upload video
-              result = try await VideoProvider.uploadMedia(dotYouClient: dotYouClient, filePath: validFilePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality)
+              result = try await VideoProvider.uploadMedia(dotYouClient: dotYouClient, filePath: validFilePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: true)
             } else {
               // Upload image
               result = try await ImageProvider.uploadMedia(dotYouClient: dotYouClient, filePath: validFilePath, timestampInMs: Int64(timestampInMillis), mimeType: mimeType, identifier: identifier, width: width, height: height, forceLowerQuality: forceLowerQuality)

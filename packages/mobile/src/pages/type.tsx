@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { RootStackParamList } from '../app/App';
-import PhotoLibrary from '../components/PhotoLibrary/PhotoLibrary';
+import { PhotoLibrary } from '../components/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 
@@ -11,7 +11,7 @@ type TypeProps = NativeStackScreenProps<RootStackParamList, 'Type'>;
 
 const TypePage = ({ navigation, route }: TypeProps) => {
   const { typeId } = route.params;
-  const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
+  const { toggleSelection, clearingSelection, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
   useEffect(() => {
@@ -27,9 +27,8 @@ const TypePage = ({ navigation, route }: TypeProps) => {
       <PhotoLibrary
         type={typeId}
         toggleSelection={toggleSelection}
-        selectRange={selectRange}
-        isSelected={isSelected}
         isSelecting={isSelecting}
+        clearingSelection={clearingSelection}
       />
 
       <PhotoSelection
@@ -37,7 +36,7 @@ const TypePage = ({ navigation, route }: TypeProps) => {
         selection={selection}
         clearSelection={clearSelection}
         albumKey={typeId === 'favorites' ? PhotoConfig.FavoriteTag : undefined}
-        type={typeId === 'favorites' ? undefined : typeId}
+        type={typeId === 'favorites' ? 'photos' : typeId}
       />
     </SafeAreaView>
   );

@@ -204,15 +204,36 @@ public class VideoProvider {
                     encryptionCommand = "-hls_key_info_file " + keyInfoFile.getAbsolutePath();
                 }
 
+                 // Extract video rotation metadata
+                String rotation = extractRotationMetadata(inputFile); // Implement this method to extract rotation metadata
+
+                // Define the transpose filter based on the rotation metadata
+                String rotationCommand = "";
+                if (rotation != null) {
+                    switch (rotation) {
+                        case "90":
+                            rotationCommand = "-vf \"transpose=1\""; // Rotate 90 degrees clockwise
+                            break;
+                        case "180":
+                            rotationCommand = "-vf \"transpose=2,transpose=2\""; // Rotate 180 degrees
+                            break;
+                        case "270":
+                            rotationCommand = "-vf \"transpose=2\""; // Rotate 270 degrees clockwise (or 90 degrees counter-clockwise)
+                            break;
+                        default:
+                            break; // No rotation needed for 0 or unknown rotation values
+                    }
+                }
+
                 String command;
                 if(getVideoCodec(inputFile.getAbsolutePath()).get().equals("h264")) {
                     // Command to segment the video to HLS using FFmpeg
-                    command = String.format("-i %s -codec copy %s -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file %s",
-                            inputFile.getAbsolutePath(), encryptionCommand, playlistFile.getAbsolutePath());
+                    command = String.format("-i %s -codec copy %s %s -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file %s",
+                            inputFile.getAbsolutePath(), encryptionCommand, rotationCommand, playlistFile.getAbsolutePath());
                 } else {
                     // Command to segment the video to HLS using FFmpeg
-                    command = String.format("-i %s -c:v libx264 -preset fast -crf 23 -c:a aac %s -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file %s",
-                            inputFile.getAbsolutePath(), encryptionCommand, playlistFile.getAbsolutePath());
+                    command = String.format("-i %s -c:v libx264 -preset fast -crf 23 -c:a aac %s %s -hls_time 6 -hls_list_size 0 -f hls -hls_flags single_file %s",
+                            inputFile.getAbsolutePath(), encryptionCommand, rotationCommand, playlistFile.getAbsolutePath());
                 }
 
                 // Execute the FFmpeg command using FFmpegKit
@@ -229,6 +250,23 @@ public class VideoProvider {
                 throw new RuntimeException("Error during HLS segmentation", e);
             }
         });
+    }
+
+    // Example method to extract rotation metadata
+    private String extractRotationMetadata(File inputFile) throws IOException {
+        // Use FFmpeg or MediaMetadataRetriever to extract the rotation metadata
+        String rotation = null;
+        String command = String.format("-i %s -select_streams v:0 -show_entries stream_tags=rotate -of csv=p=0", inputFile.getAbsolutePath());
+
+        // Execute FFmpeg command to get the rotation metadata
+        var session = FFmpegKit.execute(command);
+        if (session.getReturnCode().isValueSuccess()) {
+            String output = session.getAllLogsAsString().trim();
+            if (!output.isEmpty()) {
+                rotation = output;
+            }
+        }
+        return rotation;
     }
 
     private String bytesToHex(byte[] bytes) {
