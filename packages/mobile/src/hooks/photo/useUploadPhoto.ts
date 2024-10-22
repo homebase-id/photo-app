@@ -37,6 +37,10 @@ export const useUploadPhoto = () => {
       onSuccess: () => {
         // Invalidate all the things...
         queryClient.invalidateQueries({ queryKey: ['photos', targetDrive.alias] });
+        queryClient.invalidateQueries({
+          queryKey: ['photos-infinite', targetDrive.alias],
+          exact: false,
+        });
       },
       onError: (error) => {
         console.log('error', error);
