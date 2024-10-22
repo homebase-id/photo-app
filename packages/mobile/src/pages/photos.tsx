@@ -4,7 +4,7 @@ import { TabStackParamList } from '../app/App';
 import { PhotoLibrary } from '../components/PhotoLibrary/PhotoLibrary';
 import PhotoSelection from '../components/PhotoSelection/PhotoSelection';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
-import { PhotoConfig, usePhoto, usePhotoSelection } from 'photo-app-common';
+import { usePhotoSelection } from 'photo-app-common';
 
 type PhotosProps = NativeStackScreenProps<TabStackParamList, 'Photos'>;
 
