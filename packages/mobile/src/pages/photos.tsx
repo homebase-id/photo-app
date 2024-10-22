@@ -41,17 +41,33 @@ const PhotosPage = memo((_props: PhotosProps) => {
 
 import { Camera } from '../components/ui/Icons/icons';
 import { Colors } from '../app/Colors';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { TouchableHighlight } from 'react-native';
 import { useUploadPhoto } from '../hooks/photo/useUploadPhoto';
-// import usePhoto from '../hooks/photoLibrary/usePhoto';
-// import { PhotoConfig } from '../provider/photos/PhotoTypes';
+import Toast from 'react-native-toast-message';
 
 const AddPhotoButton = () => {
-  // {"assets": [{"fileName": "75E224D4-3B9C-48E6-ADBD-3CF1D473A180.jpg", "fileSize": 2498351, "height": 4032, "type": "image/jpg", "uri": "file:///var/mobile/Containers/Data/Application/5824F99E-FCBF-4BAB-B3C9-E92205F50482/tmp/75E224D4-3B9C-48E6-ADBD-3CF1D473A180.jpg", "width": 3024}]}
-  // const { mutate: upload } = usePhoto(PhotoConfig.PhotoDrive);
+  const { mutate: uploadPhoto, status } = useUploadPhoto().upload;
 
-  const { mutateAsync: uploadPhoto } = useUploadPhoto().upload;
+  useEffect(() => {
+    if (status === 'success') {
+      Toast.show({
+        text1: 'Uploaded to Library',
+        type: 'success',
+        visibilityTime: 2000,
+        position: 'bottom',
+      });
+    }
+  }, [status]);
+
+  useEffect(() => {
+    Toast.show({
+      text1: 'Test',
+      type: 'success',
+      visibilityTime: 2000,
+      position: 'bottom',
+    });
+  }, []);
 
   return (
     <TouchableHighlight

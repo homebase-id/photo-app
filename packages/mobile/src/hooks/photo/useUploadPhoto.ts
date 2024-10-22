@@ -43,7 +43,6 @@ export const useUploadPhoto = () => {
         });
       },
       onError: (error) => {
-        console.log('error', error);
         addError(queryClient, error, t('Failed to upload photo'));
       },
     }),

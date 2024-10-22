@@ -26,6 +26,7 @@ import { OdinQueryClient } from './OdinQueryClient';
 import { useRefetchOnFocus } from '../hooks/platform/useRefetchOnFocus';
 import { useOnlineManager } from '../hooks/platform/useOnlineManager';
 import { ErrorToaster } from '../components/ui/Alert/ErrorToaster';
+import { Toast } from '../components/ui/Toast/Toast';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -54,6 +55,7 @@ let App = () => {
     <OdinQueryClient>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <RootStack />
+        <Toast />
       </GestureHandlerRootView>
     </OdinQueryClient>
   );

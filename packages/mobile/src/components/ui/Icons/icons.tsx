@@ -235,7 +235,6 @@ export const Logout = (props: IconProps) => {
   );
 };
 
-
 export const Times = (props: IconProps) => {
   const { isDarkMode } = useDarkMode();
   return (
@@ -405,6 +404,60 @@ export const CloudIcon = (props: IconProps) => {
         <Path
           fill="currentColor"
           d="M0 336c0 79.5 64.5 144 144 144H512c70.7 0 128-57.3 128-128c0-61.9-44-113.6-102.4-125.4c4.1-10.7 6.4-22.4 6.4-34.6c0-53-43-96-96-96c-19.7 0-38.1 6-53.3 16.2C367 64.2 315.3 32 256 32C167.6 32 96 103.6 96 192c0 2.7 .1 5.4 .2 8.1C40.2 219.8 0 273.2 0 336z"
+        />
+      </Svg>
+    </Center>
+  );
+};
+
+export const CircleExclamation = (props: IconProps) => {
+  const { isDarkMode } = useDarkMode();
+  return (
+    <Center>
+      <Svg
+        {...getSize(props.size || 'md')}
+        color={props.color || (isDarkMode ? 'white' : 'black')}
+        viewBox="0 0 512 512"
+      >
+        <Path
+          fill="currentColor"
+          d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"
+        />
+      </Svg>
+    </Center>
+  );
+};
+
+export const CheckCircle = (props: IconProps) => {
+  const { isDarkMode } = useDarkMode();
+  return (
+    <Center>
+      <Svg
+        {...getSize(props.size || 'md')}
+        color={props.color || (isDarkMode ? 'white' : 'black')}
+        viewBox="0 0 512 512"
+      >
+        <Path
+          fill="currentColor"
+          d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
+        />
+      </Svg>
+    </Center>
+  );
+};
+
+export const Info = (props: IconProps) => {
+  const { isDarkMode } = useDarkMode();
+  return (
+    <Center>
+      <Svg
+        {...getSize(props.size || 'md')}
+        color={props.color || (isDarkMode ? 'white' : 'black')}
+        viewBox="0 0 512 512"
+      >
+        <Path
+          fill="currentColor"
+          d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"
         />
       </Svg>
     </Center>
