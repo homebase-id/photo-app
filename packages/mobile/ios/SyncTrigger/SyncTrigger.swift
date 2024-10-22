@@ -34,7 +34,12 @@ class SyncTrigger: NSObject {
 
         let dotYouClient = try DotYouClient.getDotYouClient()
 
-        let result = try await ImageProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(truncating: timestampInMs), mimeType: mimeType, identifier: identifier, width: Int(truncating: width), height: Int(truncating: height), forceLowerQuality: false)
+        let result: UploadResult
+        if (mimeType == "video/mp4") {
+          result = try await VideoProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(truncating: timestampInMs), mimeType: mimeType, identifier: identifier, width: Int(truncating: width), height: Int(truncating: height), forceLowerQuality: true)
+        } else {
+          result = try await ImageProvider.uploadMedia(dotYouClient: dotYouClient, filePath: filePath, timestampInMs: Int64(truncating: timestampInMs), mimeType: mimeType, identifier: identifier, width: Int(truncating: width), height: Int(truncating: height), forceLowerQuality: false)
+        }
 
         if(result is SuccessfulUploadResult) {
           // Resolve promise on success

@@ -76,6 +76,8 @@ const AddPhotoButton = () => {
       onPress={async () => {
         const result = await launchImageLibrary({
           mediaType: 'photo',
+          formatAsMp4: true,
+          includeExtra: true,
         });
 
         result.assets?.forEach((asset) => {

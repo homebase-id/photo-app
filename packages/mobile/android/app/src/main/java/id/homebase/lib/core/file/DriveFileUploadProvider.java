@@ -193,7 +193,6 @@ public class DriveFileUploadProvider {
                 RequestBody payloadBody;
 
                 if (keyHeader == null || payload.getSkipEncryption()) {
-                    Log.v(null, "Skipping encryption for payload: " + payload.getKey());
                     payloadBody = getFileOrStreamRequestBody(payload);
                 } else {
                     java.io.File payloadFile = payload instanceof PayloadOrThumbnailFile ? ((PayloadOrThumbnailFile) payload).getPayload() : null;
@@ -310,4 +309,3 @@ public class DriveFileUploadProvider {
         }
     }
 }
-
