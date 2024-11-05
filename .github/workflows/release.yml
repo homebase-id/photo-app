@@ -62,11 +62,11 @@ jobs:
         uses: yukiarrr/ios-build-action@v1.11.0
         with:
           project-path: packages/mobile/ios/HomebasePhotos.xcodeproj
-          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+          p12-base64: ${{ secrets.IOS_PHOTO_P12_BASE64 }}
           mobileprovision-base64: ${{ secrets.PHOTOS_IOS_MOBILE_PROVISION_BASE64 }}
           code-signing-identity: 'iPhone Distribution'
           team-id: ${{ secrets.IOS_TEAM_ID }}
-          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          certificate-password: ${{ secrets.IOS_PHOTO_CERTIFICATE_PASSWORD }}
           workspace-path: packages/mobile/ios/HomebasePhotos.xcworkspace
           scheme: HomebasePhotos
 
