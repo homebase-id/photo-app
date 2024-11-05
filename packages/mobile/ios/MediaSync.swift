@@ -48,9 +48,9 @@ class MediaSync {
     // Find all photos that have been added since the last sync
     let fetchOptions = PHFetchOptions()
     let lastSyncTimeSeconds = lastSyncTimeInMiliseconds / 1000 - (60 * 30) // 30 minutes buffer
-    let maxBatchSize = 100
+    let maxBatchSize = 50
     fetchOptions.predicate = NSPredicate(format: "creationDate > %@", NSDate(timeIntervalSince1970: lastSyncTimeSeconds))
-    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
     fetchOptions.fetchLimit = maxBatchSize
 
     let fetchResult = PHAsset.fetchAssets(with: fetchOptions)

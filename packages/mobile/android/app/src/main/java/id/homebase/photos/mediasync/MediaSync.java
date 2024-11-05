@@ -70,14 +70,14 @@ public class MediaSync {
 
         double lastSyncTimeSeconds = lastSyncTime / 1000 - (60 * 30); // 30 minutes buffer
         String lastSyncTimeString = String.valueOf(lastSyncTimeSeconds);
-        int maxBatchSize = 100;
+        int maxBatchSize = 50;
 
         // Find all photos that have been added since the last sync
         Uri uri = MediaStore.Files.getContentUri("external");
         String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED, MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media._ID, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT};
         String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
         String[] selectionArgs = {lastSyncTimeString};
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
+        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
         String limit = " LIMIT " + maxBatchSize;
 
         Cursor cursor = this.context.getContentResolver().query(
