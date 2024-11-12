@@ -11,6 +11,9 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 import com.microsoft.codepush.react.CodePush;
 
+import java.lang.reflect.Field;
+import android.database.CursorWindow;
+
 public class MainApplication extends Application implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
@@ -67,6 +70,15 @@ public class MainApplication extends Application implements ReactApplication {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       DefaultNewArchitectureEntryPoint.load();
     }
-    // ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+
+    try {
+      Field field = CursorWindow.class.getDeclaredField("sCursorWindowSize");
+      field.setAccessible(true);
+      field.set(null, 256 * 1024 * 1024); //500MB
+    } catch (Exception e) {
+      if (BuildConfig.DEBUG) {
+        e.printStackTrace();
+      }
+    }
   }
 }
