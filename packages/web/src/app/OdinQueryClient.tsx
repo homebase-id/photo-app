@@ -43,16 +43,20 @@ export const OdinQueryClient = ({
       persister: persister,
       dehydrateOptions: {
         shouldDehydrateQuery: (query) => {
-          if (
-            query.state.status === 'pending' ||
-            query.state.status === 'error' ||
-            (query.state.data &&
-              typeof query.state.data === 'object' &&
-              !Array.isArray(query.state.data) &&
-              Object.keys(query.state.data).length === 0)
-          )
+          const isPendingOrFailedQuery =
+            query.state.status === 'pending' || query.state.status === 'error';
+
+          const queryDataIsEmptyObject =
+            query.state.data &&
+            typeof query.state.data === 'object' &&
+            !Array.isArray(query.state.data) &&
+            Object.keys(query.state.data).length === 0;
+
+          if (isPendingOrFailedQuery || queryDataIsEmptyObject) {
             return false;
-          const { queryKey } = query;
+          }
+
+          const queryKey = query.queryKey;
           return cachedQueryKeys.some((key) => queryKey.includes(key));
         },
       },
@@ -62,7 +66,11 @@ export const OdinQueryClient = ({
   }, [cacheKey, cachedQueryKeys]);
 
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={persistOptions}
+      onSuccess={() => queryClient.resumePausedMutations()}
+    >
       {children}
     </PersistQueryClientProvider>
   );
