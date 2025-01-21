@@ -73,12 +73,13 @@ const useImage = (props?: {
 
     const cachedEntriesWithSize = cachedEntries.map((entry) => {
       const sizeParts = (entry.queryKey[5] as string)?.split('x');
-      const size = sizeParts
-        ? {
-            pixelHeight: parseInt(sizeParts[0]),
-            pixelWidth: parseInt(sizeParts[1]),
-          }
-        : undefined;
+      const size =
+        sizeParts?.length === 2
+          ? {
+              pixelHeight: parseInt(sizeParts[0]),
+              pixelWidth: parseInt(sizeParts[1]),
+            }
+          : undefined;
 
       return {
         ...entry,
