@@ -40,7 +40,7 @@ export const PhotoInfo = ({
   } = usePhotoMetadata(targetDrive, current?.fileId);
 
   const isVideo = current?.fileMetadata.payloads
-    .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+    ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
     ?.contentType.startsWith('video/');
 
   const date = useMemo(() => {

@@ -52,52 +52,59 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        <Route path="about" element={<About />}></Route>
-        <Route path="auth" element={<Auth />}></Route>
-        <Route path="auth/finalize" element={<FinalizeAuth />}></Route>
         <Route
           path=""
           element={
-            <RootRoute>
-              <DotYouClientProvider>
-                <Outlet />
-              </DotYouClientProvider>
-            </RootRoute>
+            <DotYouClientProvider>
+              <Outlet />
+            </DotYouClientProvider>
           }
         >
-          <Route path="/player/:photoKey" element={<VideoPlayer />}></Route>
-
+          <Route path="about" element={<About />}></Route>
+          <Route path="auth" element={<Auth />}></Route>
+          <Route path="auth/finalize" element={<FinalizeAuth />}></Route>
           <Route
             path=""
             element={
-              <Layout>
-                <Suspense fallback={<LoadingDetailPage />}>
-                  <ErrorBoundary>
-                    <Outlet />
-                  </ErrorBoundary>
-                </Suspense>
-              </Layout>
+              <RootRoute>
+                <Outlet />
+              </RootRoute>
             }
           >
-            <Route path="" element={<Photos />}></Route>
-            <Route path="/albums" element={<Albums />}></Route>
-            <Route path="/album/:albumKey" element={<Photos />}></Route>
-            <Route path="/album/:albumKey/photo/:photoKey" element={<Photos />}></Route>
-            <Route path="/photo/:photoKey" element={<Photos />}></Route>
+            <Route path="/player/:photoKey" element={<VideoPlayer />}></Route>
 
-            <Route path="/favorites" element={<PhotosFavorites />}></Route>
-            <Route path="/favorites/photo/:photoKey" element={<PhotosFavorites />}></Route>
-            <Route path="/archive" element={<PhotosArchive />}></Route>
-            <Route path="/archive/photo/:photoKey" element={<PhotosArchive />}></Route>
-            <Route path="/apps" element={<PhotosFromApps />}></Route>
-            <Route path="/apps/photo/:photoKey" element={<PhotosFromApps />}></Route>
-            <Route path="/bin" element={<PhotosBin />}></Route>
-            <Route path="/bin/photo/:photoKey" element={<PhotosBin />}></Route>
+            <Route
+              path=""
+              element={
+                <Layout>
+                  <Suspense fallback={<LoadingDetailPage />}>
+                    <ErrorBoundary>
+                      <Outlet />
+                    </ErrorBoundary>
+                  </Suspense>
+                </Layout>
+              }
+            >
+              <Route path="" element={<Photos />}></Route>
+              <Route path="/albums" element={<Albums />}></Route>
+              <Route path="/album/:albumKey" element={<Photos />}></Route>
+              <Route path="/album/:albumKey/photo/:photoKey" element={<Photos />}></Route>
+              <Route path="/photo/:photoKey" element={<Photos />}></Route>
 
-            <Route path="/import" element={<GoogleTakeoutImport />}></Route>
-            <Route path="/debug" element={<Debug />}></Route>
+              <Route path="/favorites" element={<PhotosFavorites />}></Route>
+              <Route path="/favorites/photo/:photoKey" element={<PhotosFavorites />}></Route>
+              <Route path="/archive" element={<PhotosArchive />}></Route>
+              <Route path="/archive/photo/:photoKey" element={<PhotosArchive />}></Route>
+              <Route path="/apps" element={<PhotosFromApps />}></Route>
+              <Route path="/apps/photo/:photoKey" element={<PhotosFromApps />}></Route>
+              <Route path="/bin" element={<PhotosBin />}></Route>
+              <Route path="/bin/photo/:photoKey" element={<PhotosBin />}></Route>
+
+              <Route path="/import" element={<GoogleTakeoutImport />}></Route>
+              <Route path="/debug" element={<Debug />}></Route>
+            </Route>
+            <Route path="*" element={<NotFound />} />
           </Route>
-          <Route path="*" element={<NotFound />} />
         </Route>
       </>
     )

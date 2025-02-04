@@ -53,10 +53,12 @@ export type RootStackParamList = {
 let App = () => {
   return (
     <OdinQueryClient>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <RootStack />
-        <Toast />
-      </GestureHandlerRootView>
+      <DotYouClientProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <RootStack />
+          <Toast />
+        </GestureHandlerRootView>
+      </DotYouClientProvider>
     </OdinQueryClient>
   );
 };
@@ -83,11 +85,7 @@ const RootStack = () => {
 };
 
 const AuthenticatedRoot = memo(() => {
-  return (
-    <DotYouClientProvider>
-      <AppStackScreen />
-    </DotYouClientProvider>
-  );
+  return <AppStackScreen />;
 });
 
 const AppStackScreen = memo(() => {
@@ -103,50 +101,48 @@ const AuthenticatedStack = memo(() => {
   const { isDarkMode } = useDarkMode();
 
   return (
-    <DotYouClientProvider>
-      <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}>
-        <StackAuthenticated.Navigator
-          screenOptions={{
-            gestureEnabled: false,
-            headerStyle: {
-              backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
-            },
-            headerTitleStyle: {
-              color: isDarkMode ? Colors.white : Colors.black,
-            },
-            headerTintColor: isDarkMode ? Colors.white : Colors.black,
-            headerShadowVisible: false,
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50] }}>
+      <StackAuthenticated.Navigator
+        screenOptions={{
+          gestureEnabled: false,
+          headerStyle: {
+            backgroundColor: isDarkMode ? Colors.gray[900] : Colors.slate[50],
+          },
+          headerTitleStyle: {
+            color: isDarkMode ? Colors.white : Colors.black,
+          },
+          headerTintColor: isDarkMode ? Colors.white : Colors.black,
+          headerShadowVisible: false,
+        }}
+      >
+        <StackAuthenticated.Screen
+          name="Home"
+          component={TabStack}
+          options={{ headerShown: false }}
+        />
+        <StackAuthenticated.Screen
+          name="PhotoPreview"
+          component={PhotoPreview}
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
+        <StackAuthenticated.Screen
+          name="Album"
+          component={AlbumPage}
+          options={{
+            headerShown: false,
           }}
-        >
-          <StackAuthenticated.Screen
-            name="Home"
-            component={TabStack}
-            options={{ headerShown: false }}
-          />
-          <StackAuthenticated.Screen
-            name="PhotoPreview"
-            component={PhotoPreview}
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-          <StackAuthenticated.Screen
-            name="Album"
-            component={AlbumPage}
-            options={{
-              headerShown: false,
-            }}
-          />
-          <StackAuthenticated.Screen
-            name="Type"
-            component={TypePage}
-            options={({ route }) => ({
-              headerTitleAlign: 'center',
-              headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
-              headerBackTitle: 'Library',
-            })}
-          />
-        </StackAuthenticated.Navigator>
-      </View>
-    </DotYouClientProvider>
+        />
+        <StackAuthenticated.Screen
+          name="Type"
+          component={TypePage}
+          options={({ route }) => ({
+            headerTitleAlign: 'center',
+            headerTitle: route.params.typeId[0].toUpperCase() + route.params.typeId.slice(1),
+            headerBackTitle: 'Library',
+          })}
+        />
+      </StackAuthenticated.Navigator>
+    </View>
   );
 });
 

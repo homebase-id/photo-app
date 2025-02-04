@@ -44,6 +44,7 @@ export const VideoWithLoader = ({
             className={`absolute inset-0 h-full w-full`}
             avoidPayload={true}
             preferObjectUrl={true}
+            probablyEncrypted={true}
           />
         ) : (
           <div className="relative h-full w-full min-w-[20rem] bg-slate-200 dark:bg-indigo-950"></div> // No preview available

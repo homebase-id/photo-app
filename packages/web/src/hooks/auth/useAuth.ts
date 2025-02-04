@@ -49,7 +49,9 @@ const useAuth = () => {
   const navigate = useNavigate();
 
   const logout = async (): Promise<void> => {
-    await logoutYouauth(getDotYouClient());
+    const dotYouClient = getDotYouClient();
+    if (!dotYouClient) throw Error("Can't logout without a client");
+    await logoutYouauth(dotYouClient);
 
     localStorage.removeItem(APP_SHARED_SECRET);
     localStorage.removeItem(APP_AUTH_TOKEN);
@@ -63,7 +65,9 @@ const useAuth = () => {
   };
 
   const preauth = async (): Promise<void> => {
-    await preauthApps(getDotYouClient());
+    const dotYouClient = getDotYouClient();
+    if (!dotYouClient) throw Error("Can't preauth without a client");
+    await preauthApps(dotYouClient);
   };
 
   const getAppAuthToken = () => window.localStorage.getItem(APP_AUTH_TOKEN);
@@ -80,10 +84,13 @@ const useAuth = () => {
       headers['bx0900'] = authToken;
     }
 
+    const identity = retrieveIdentity();
+    if (!identity) return null;
+
     return new DotYouClient({
       sharedSecret: getSharedSecret(),
       api: ApiType.App,
-      identity: retrieveIdentity(),
+      hostIdentity: identity,
       headers: headers,
     });
   };

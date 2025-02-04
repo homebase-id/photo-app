@@ -10,9 +10,9 @@ const hasSharedSecret = () => {
   return !!raw;
 };
 
-const useVerifyToken = (dotYouClient: DotYouClient) => {
+const useVerifyToken = (dotYouClient: DotYouClient | null) => {
   const fetchData = async () => {
-    if (!hasSharedSecret()) {
+    if (!hasSharedSecret() || !dotYouClient) {
       return false;
     }
 

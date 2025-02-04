@@ -98,7 +98,7 @@ export const usePhotoLibrary = ({
       },
       {
         maxRecords: BATCH_SIZE,
-        cursorState: batchCursor,
+        cursorState: batchCursor + '',
         includeMetadataHeader: true,
       }
     );
@@ -111,7 +111,7 @@ export const usePhotoLibrary = ({
       },
       {
         maxRecords: BATCH_SIZE,
-        cursor: modifiedCursor,
+        cursor: modifiedCursor + '',
         excludePreviewThumbnail: false,
         includeHeaderContent: true,
       }
