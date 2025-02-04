@@ -25,10 +25,16 @@ jobs:
 
       - run: npm run build -w packages/web
 
-      - name: Publish to Netlify
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --dir=packages/web/dist --prod --filter photo-app-web
+      - run: 'npm install --global netlify-cli@17.36.1'
+      - run: "netlify deploy --dir=packages/web/dist --prod --filter 'photo-app-web' --build false "
         env:
-          NETLIFY_SITE_ID: 5e581e51-e8be-4871-8e5f-156eef719f6c
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 5e581e51-e8be-4871-8e5f-156eef719f6c
+
+      # - name: Publish to Netlify
+      #   uses: netlify/actions/cli@master
+      #   with:
+      #     args: deploy --dir=packages/web/dist --prod --filter photo-app-web
+      #   env:
+      #     NETLIFY_SITE_ID: 5e581e51-e8be-4871-8e5f-156eef719f6c
+      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

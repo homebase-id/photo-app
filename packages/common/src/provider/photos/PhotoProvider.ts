@@ -5,6 +5,7 @@ import {
   HomebaseFile,
   ImageSize,
   TargetDrive,
+  UpdateHeaderInstructionSet,
   UploadFileMetadata,
   UploadInstructionSet,
   getFileHeader,
@@ -26,12 +27,12 @@ export const getArchivalStatusFromType = (type: LibraryType, album?: string): Ar
   type === 'bin'
     ? [2]
     : type === 'archive'
-    ? [1]
-    : type === 'apps'
-    ? [3]
-    : album || type === 'favorites'
-    ? [0, 1, 3]
-    : [0];
+      ? [1]
+      : type === 'apps'
+        ? [3]
+        : album || type === 'favorites'
+          ? [0, 1, 3]
+          : [0];
 
 export const getPhotos = async (
   dotYouClient: DotYouClient,
@@ -76,13 +77,14 @@ export const updatePhoto = async (
   const header = await getFileHeader<ImageMetadata>(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
-    const instructionSet: UploadInstructionSet = {
+    const instructionSet: UpdateHeaderInstructionSet = {
       transferIv: getRandom16ByteArray(),
       storageOptions: {
         overwriteFileId: photoFileId ?? null,
         drive: targetDrive,
         storageIntent: 'metadataOnly',
       },
+      storageIntent: 'header',
     };
 
     const metadata: UploadFileMetadata = {
@@ -127,13 +129,14 @@ export const updatePhotoMetadata = async (
   const header = await getFileHeader<ImageMetadata>(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
-    const instructionSet: UploadInstructionSet = {
+    const instructionSet: UpdateHeaderInstructionSet = {
       transferIv: getRandom16ByteArray(),
       storageOptions: {
         overwriteFileId: photoFileId ?? null,
         drive: targetDrive,
         storageIntent: 'metadataOnly',
       },
+      storageIntent: 'header',
     };
 
     const metadata: UploadFileMetadata = {
@@ -221,12 +224,12 @@ export const getAlbumThumbnail = async (
     albumTag === 'bin'
       ? [2]
       : albumTag === 'archive'
-      ? [1]
-      : albumTag === 'apps'
-      ? [3]
-      : albumTag
-      ? [0, 1, 3]
-      : [0];
+        ? [1]
+        : albumTag === 'apps'
+          ? [3]
+          : albumTag
+            ? [0, 1, 3]
+            : [0];
 
   const reponse = await queryBatch(
     dotYouClient,

@@ -55,7 +55,7 @@ const PhotoInfo = ({
 
   const originalSize = current?.fileMetadata.appData.previewThumbnail;
   const maxThumb = getLargestThumbOfPayload(
-    current?.fileMetadata.payloads.find((p) => p.key === DEFAULT_PAYLOAD_KEY)
+    current?.fileMetadata.payloads?.find((p) => p.key === DEFAULT_PAYLOAD_KEY)
   );
 
   const { isDarkMode } = useDarkMode();

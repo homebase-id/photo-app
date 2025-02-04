@@ -75,7 +75,7 @@ export const useWebPhoto = (targetDrive?: TargetDrive) => {
     const photoMeta = await getPhotoMetadata(dotYouClient, targetDrive, dsr.fileId);
 
     const imageData = await (async () => {
-      const defaultPayload = dsr.fileMetadata.payloads.find(
+      const defaultPayload = dsr.fileMetadata.payloads?.find(
         (payload) => payload.key === DEFAULT_PAYLOAD_KEY
       );
       if (defaultPayload?.contentType === 'image/heic') {

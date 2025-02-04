@@ -1,5 +1,5 @@
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
-import { OdinVideoWrapper, VideoWithLoader } from './VideoWithLoader';
+import { OdinVideoWrapper } from './VideoWithLoader';
 import { PhotoConfig, t, useDotYouClientContext } from 'photo-app-common';
 import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@homebase-id/ui-lib';
 import { useState } from 'react';
@@ -20,7 +20,7 @@ const MediaWithLoader = ({
   if (!media || !fileId) return <div className="relative h-full w-[100vw]"></div>;
 
   return media?.fileMetadata.payloads
-    .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+    ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
     ?.contentType.startsWith('video/') ? (
     <OdinVideoWrapper
       fileId={fileId}
@@ -63,7 +63,7 @@ const CustomOdinImage = ({
 
   if (
     original &&
-    media.fileMetadata.payloads.find((payload) => payload.key === fileKey)?.contentType ===
+    media.fileMetadata.payloads?.find((payload) => payload.key === fileKey)?.contentType ===
       'image/heic'
   ) {
     return (

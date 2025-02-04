@@ -30,6 +30,7 @@ export const PhotoWithLoader = ({
       fit={fit}
       className={className}
       preferObjectUrl={true}
+      probablyEncrypted={true}
       // => Prefer image urls over base64
     />
   );

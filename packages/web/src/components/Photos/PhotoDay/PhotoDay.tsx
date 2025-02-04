@@ -66,8 +66,12 @@ export const PhotoDay = ({
   isSelected: (fileId: string) => boolean;
   isSelecting?: boolean;
 }) => {
+  const [canLoad, setCanLoad] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useIntersection(wrapperRef, () => setIsInView && setIsInView());
+  useIntersection(wrapperRef, () => {
+    setIsInView && setIsInView();
+    setTimeout(() => setCanLoad(true), 500);
+  });
 
   const title = useMemo(() => {
     const isDesktop = document.documentElement.clientWidth >= 1024;
@@ -94,7 +98,7 @@ export const PhotoDay = ({
     <section className="pb-5" ref={wrapperRef}>
       <h2 className="text-md mb-2 text-slate-600 dark:text-slate-400">{title}</h2>
       <div className={gridClasses}>
-        {!photos && photosCount ? (
+        {(!photos && photosCount) || !canLoad ? (
           photoLoaders
         ) : (
           <>
@@ -143,10 +147,6 @@ export const PhotoItem = ({
   });
 
   const isDesktop = document.documentElement.clientWidth >= 1024;
-
-  if (!photoDsr) {
-    return null;
-  }
 
   // Always square previews for video's
   const payload = photoDsr.fileMetadata.payloads?.find(
@@ -207,6 +207,8 @@ export const PhotoItem = ({
       : `scale3d(1, 1, 1)`,
   };
 
+  if (!photoDsr) return null;
+
   return (
     <div
       className={`${divClasses} relative ${isChecked ? 'bg-indigo-200' : ''}`}
@@ -233,7 +235,7 @@ export const PhotoItem = ({
         >
           {isInView ? (
             photoDsr.fileMetadata.payloads
-              .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+              ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
               ?.contentType.startsWith('video/') ? (
               <>
                 <VideoWithLoader

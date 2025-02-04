@@ -18,18 +18,18 @@ const encryptPhotoLibrary = true;
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
   type: LibraryType,
-  lastCursor?: number
+  lastCursor?: string
 ): Promise<PhotoLibraryMetadata | null> => {
   const archivalStatus: ArchivalStatus[] =
     type === 'bin'
       ? [2]
       : type === 'archive'
-      ? [1]
-      : type === 'apps'
-      ? [3]
-      : type === 'favorites'
-      ? [0, 1, 3]
-      : [0];
+        ? [1]
+        : type === 'apps'
+          ? [3]
+          : type === 'favorites'
+            ? [0, 1, 3]
+            : [0];
 
   const batch = lastCursor
     ? await queryModified(
