@@ -5,12 +5,11 @@ import {
   HomebaseFile,
   ImageSize,
   TargetDrive,
-  UpdateHeaderInstructionSet,
+  UpdateLocalInstructionSet,
   UploadFileMetadata,
-  UploadInstructionSet,
   getFileHeader,
+  patchFile,
   queryBatch,
-  uploadHeader,
 } from '@homebase-id/js-lib/core';
 import {
   ImageMetadata,
@@ -19,7 +18,7 @@ import {
   getDecryptedImageMetadata,
   getDecryptedImageUrl,
 } from '@homebase-id/js-lib/media';
-import { jsonStringify64, getRandom16ByteArray } from '@homebase-id/js-lib/helpers';
+import { jsonStringify64 } from '@homebase-id/js-lib/helpers';
 
 import { LibraryType, PhotoConfig, PhotoFile } from './PhotoTypes';
 
@@ -77,14 +76,13 @@ export const updatePhoto = async (
   const header = await getFileHeader<ImageMetadata>(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
-    const instructionSet: UpdateHeaderInstructionSet = {
-      transferIv: getRandom16ByteArray(),
-      storageOptions: {
-        overwriteFileId: photoFileId ?? null,
-        drive: targetDrive,
-        storageIntent: 'metadataOnly',
+    const instructionSet: UpdateLocalInstructionSet = {
+      file: {
+        fileId: photoFileId,
+        targetDrive: targetDrive,
       },
-      storageIntent: 'header',
+      locale: 'local',
+      versionTag: header.fileMetadata.versionTag,
     };
 
     const metadata: UploadFileMetadata = {
@@ -102,7 +100,7 @@ export const updatePhoto = async (
       },
     };
 
-    const uploadResult = await uploadHeader(
+    const uploadResult = await patchFile(
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
@@ -111,7 +109,7 @@ export const updatePhoto = async (
 
     if (!uploadResult) return;
     return {
-      fileId: uploadResult.file.fileId,
+      fileId: header.fileId,
       date: new Date(
         newMetaData.userDate || header.fileMetadata.appData.userDate || header.fileMetadata.created
       ),
@@ -129,14 +127,13 @@ export const updatePhotoMetadata = async (
   const header = await getFileHeader<ImageMetadata>(dotYouClient, targetDrive, photoFileId);
 
   if (header) {
-    const instructionSet: UpdateHeaderInstructionSet = {
-      transferIv: getRandom16ByteArray(),
-      storageOptions: {
-        overwriteFileId: photoFileId ?? null,
-        drive: targetDrive,
-        storageIntent: 'metadataOnly',
+    const instructionSet: UpdateLocalInstructionSet = {
+      file: {
+        fileId: photoFileId,
+        targetDrive: targetDrive,
       },
-      storageIntent: 'header',
+      locale: 'local',
+      versionTag: header.fileMetadata.versionTag,
     };
 
     const metadata: UploadFileMetadata = {
@@ -151,9 +148,7 @@ export const updatePhotoMetadata = async (
       },
     };
 
-    console.log({ oldHeader: header, newHeader: metadata });
-
-    return await uploadHeader(
+    return await patchFile(
       dotYouClient,
       header.sharedSecretEncryptedKeyHeader,
       instructionSet,
