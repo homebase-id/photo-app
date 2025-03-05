@@ -58,7 +58,7 @@ const uploadNewPhoto = async (
   meta?: MediaUploadMeta
 ) => {
   const imageBlob =
-    'bytes' in newPhoto ? new Blob([newPhoto.bytes], { type: newPhoto.type }) : newPhoto;
+    newPhoto instanceof Blob ? newPhoto : new Blob([newPhoto.bytes], { type: newPhoto.type });
   const { imageMetadata, imageUniqueId, dateTimeOriginal } = await getPhotoExifMeta(imageBlob);
   const userDate =
     dateTimeOriginal?.getTime() || (newPhoto as File).lastModified || new Date().getTime();
@@ -112,7 +112,7 @@ const uploadNewVideo = async (
   const userDate = (newVideo as File).lastModified || new Date().getTime();
 
   const normalizedFile =
-    'bytes' in newVideo ? new Blob([newVideo.bytes], { type: newVideo.type }) : newVideo;
+    newVideo instanceof Blob ? newVideo : new Blob([newVideo.bytes], { type: newVideo.type });
 
   return {
     ...(await uploadVideo(

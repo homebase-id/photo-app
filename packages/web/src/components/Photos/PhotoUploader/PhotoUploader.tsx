@@ -115,7 +115,7 @@ const Uploader = ({
   useEffect(() => {
     if (!currentFile) return;
 
-    const isPin = 'bytes' in currentFile;
+    const isPin = !(currentFile instanceof Blob);
     if (currentFile.type === 'video/mp4') {
       // We need a thumb, so we wait till it's grabbed; Unless the file is too big, then we just upload it
       if (!currentVideoThumb && currentFile?.size < 512 * megaBytes) return;
@@ -227,13 +227,13 @@ const CurrentFile = ({
   setThumb: (thumb: ThumbnailFile) => void;
 }) => {
   const isVideo = file.type === 'video/mp4';
-  const url = useMemo(
-    () =>
-      window.URL.createObjectURL(
-        'bytes' in file ? new Blob([file.bytes], { type: file.type }) : file
-      ),
-    [file]
-  );
+  const url = useMemo(() => {
+    if (file instanceof File) {
+      return URL.createObjectURL(file as File);
+    } else {
+      return URL.createObjectURL(new Blob([file.bytes], { type: file.type }));
+    }
+  }, [file]);
 
   const grabThumb = async (video: HTMLVideoElement) => {
     const canvas = document.createElement('canvas');
