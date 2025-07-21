@@ -4,8 +4,8 @@ buildscript {
     ext {
         buildToolsVersion = "34.0.0"
         minSdkVersion = 26
-        compileSdkVersion = 34
-        targetSdkVersion = 34
+        compileSdkVersion = 36
+        targetSdkVersion = 36
 
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.24"
@@ -15,7 +15,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:8.9.1")
         classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
@@ -28,6 +28,18 @@ allprojects {
     configurations.all {
         resolutionStrategy {
             force "com.facebook.react:react-native:" + REACT_NATIVE_VERSION
+        }
+    }
+     repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://maven.pkg.github.com/homebase-id/ffmpeg-kit"
+            credentials {
+                username = "2002Bishwajeet" // Replace with your GitHub username
+                password = "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"
+                // password = project.properties['GITHUB_TOKEN']
+            }
         }
     }
 }
