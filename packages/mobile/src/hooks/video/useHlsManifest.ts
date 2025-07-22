@@ -100,7 +100,7 @@ export const useHlsManifest = (
         videoGlobalTransitId || videoFileId,
       ],
       queryFn: () =>
-        fetchManifest(odinId || identity, videoFileData?.fileHeader, videoDrive, videoFileKey),
+        fetchManifest(odinId || identity || '', videoFileData?.fileHeader, videoDrive, videoFileKey),
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       enabled: !!videoFileId && videoFileId !== '' && videoFileDataFetched,
