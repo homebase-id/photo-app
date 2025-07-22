@@ -17,21 +17,15 @@ import { useEncrtypedStorage } from './useEncryptedStorage';
 import { Platform } from 'react-native';
 import { DrivePermissionType } from '@homebase-id/js-lib/core';
 import { useQueryClient } from '@tanstack/react-query';
+import { PhotoConfig } from 'photo-app-common';
 
-export const PhotoConfig = {
-  PhotoDrive: {
-    alias: '6483b7b1f71bd43eb6896c86148668cc',
-    type: '2af68fe72fb84896f39f97c59d60813a',
-  },
-  name: 'Photo Library',
-  description: 'Place for your memories',
-};
+
 
 export const drives: TargetDriveAccessRequest[] = [
   {
     ...PhotoConfig.PhotoDrive,
-    name: PhotoConfig.name,
-    description: PhotoConfig.description,
+    name: 'Photo Library',
+    description: 'Place for your memories',
     permissions: [DrivePermissionType.Read + DrivePermissionType.Write],
   },
 ];

@@ -20,6 +20,16 @@ buildscript {
     }
 }
 
+subprojects { subProj ->
+    subProj.afterEvaluate {
+        if (subProj.name == 'react-native-clipboard_clipboard' && subProj.hasProperty('android')) {
+            subProj.android {
+                compileSdkVersion rootProject.ext.compileSdkVersion
+            }
+        }
+    }
+}
+
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
@@ -30,7 +40,7 @@ allprojects {
             force "com.facebook.react:react-native:" + REACT_NATIVE_VERSION
         }
     }
-     repositories {
+    repositories {
         google()
         mavenCentral()
         maven {

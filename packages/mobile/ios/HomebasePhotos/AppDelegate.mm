@@ -3,7 +3,6 @@
 #import <React/RCTBundleURLProvider.h>
 // iOS 9.x or newer
 #import <React/RCTLinkingManager.h>
-#import <CodePush/CodePush.h>
 #import <BackgroundTasks/BackgroundTasks.h>
 #import "HomebasePhotos-Swift.h"
 
@@ -36,8 +35,7 @@
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
-  // return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-  return [CodePush bundleURL];
+  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
 

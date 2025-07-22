@@ -1,4 +1,3 @@
-
 import { memo } from 'react';
 import { useDotYouClientContext } from 'photo-app-common';
 import { useExternalOdinId } from '../../../hooks/profile/useExternalOdinId';
@@ -17,7 +16,7 @@ export const ConnectionName = memo(({ odinId }: { odinId: string | undefined }) 
 });
 
 export const AuthorName = memo(({ odinId, showYou }: { odinId?: string; showYou?: boolean }) => {
-  const identity = useDotYouClientContext().getIdentity();
+  const identity = useDotYouClientContext().getHostIdentity();
 
   if (!odinId || odinId === identity) return <OwnerName showYou={showYou} />;
   return <ConnectionName odinId={odinId} />;
