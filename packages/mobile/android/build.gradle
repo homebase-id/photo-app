@@ -2,13 +2,13 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "34.0.0"
+        buildToolsVersion = "35.0.0"
         minSdkVersion = 26
         compileSdkVersion = 36
         targetSdkVersion = 36
 
-        ndkVersion = "26.1.10909125"
-        kotlinVersion = "1.9.24"
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.1.20"
     }
     repositories {
         google()
@@ -49,6 +49,16 @@ allprojects {
                 username = "2002Bishwajeet" // Replace with your GitHub username
                 password = "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"
                 // password = project.properties['GITHUB_TOKEN']
+            }
+        }
+    }
+}
+
+subprojects {
+    project.configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'androidx.browser') {
+                details.useVersion '1.8.0'
             }
         }
     }

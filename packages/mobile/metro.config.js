@@ -1,5 +1,6 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
+const { wrapWithReanimatedMetroConfig } = require('react-native-reanimated/metro-config');
 // console.log('metro.config.js', path.resolve(__dirname, '../../node_modules'));
 const config = {
   // projectRoot: path.resolve(__dirname, '../../'),
@@ -18,10 +19,9 @@ const config = {
       ),
     },
     resetCache: true,
-    // unstable_enableSymlinks: true,
-    // unstable_enablePackageExports: true,
-    // enableSymlinks: true,
+    unstable_enableSymlinks: true, // Enable for monorepo symlink issues
+    unstable_enablePackageExports: true, // Helps with package.json exports
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = wrapWithReanimatedMetroConfig(mergeConfig(getDefaultConfig(__dirname), config));

@@ -18,7 +18,7 @@ import { Colors } from '../app/Colors';
 import { stringifyToQueryParams } from '@homebase-id/js-lib/helpers';
 import { useAuth, useYouAuthAuthorization } from '../hooks/auth/useAuth';
 import { doCheckIdentity } from '../hooks/checkIdentity/useCheckIdentity';
-import { CheckForUpdates, VersionInfo } from './settings-page';
+import { VersionInfo } from './settings-page';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 import logo from '../assets/homebase-photos.png';
@@ -70,13 +70,6 @@ export const LoginPage = (_props: LoginProps) => {
           }}
         >
           <VersionInfo />
-          <CheckForUpdates
-            hideIcon={true}
-            style={{
-              alignItems: 'center',
-              paddingBottom: 12,
-            }}
-          />
         </View>
       </Container>
     </SafeAreaView>
