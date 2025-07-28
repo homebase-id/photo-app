@@ -1,6 +1,7 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 // iOS 9.x or newer
 #import <React/RCTLinkingManager.h>
 #import <BackgroundTasks/BackgroundTasks.h>
@@ -11,6 +12,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"HomebasePhoto";
+   // => https://reactnative.dev/blog/2025/01/21/version-0.77#rctappdependencyprovider
+  self.dependencyProvider = [RCTAppDependencyProvider new];
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
