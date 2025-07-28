@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   build-ios:
@@ -64,7 +64,7 @@ jobs:
           project-path: packages/mobile/ios/HomebasePhotos.xcodeproj
           p12-base64: ${{ secrets.IOS_PHOTO_P12_BASE64 }}
           mobileprovision-base64: ${{ secrets.PHOTOS_IOS_MOBILE_PROVISION_BASE64 }}
-          code-signing-identity: 'iPhone Distribution'
+          code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_PHOTO_CERTIFICATE_PASSWORD }}
           workspace-path: packages/mobile/ios/HomebasePhotos.xcworkspace
@@ -92,6 +92,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up local.properties
+        run: |
+          echo "GITHUB_USERNAME=${{ secrets.GITHUB_USERNAME }}" >> packages/mobile/android/local.properties
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> packages/mobile/android/local.properties
+
       - name: get-npm-version
         id: package-version
         uses: Saionaro/extract-package-version@v1.2.1
@@ -101,8 +106,8 @@ jobs:
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: "zulu"
+          java-version: "17"
 
       - name: Bump version
         uses: chkfung/android-version-actions@v1.2.1

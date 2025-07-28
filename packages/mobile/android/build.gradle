@@ -46,9 +46,13 @@ allprojects {
         maven {
             url "https://maven.pkg.github.com/homebase-id/ffmpeg-kit"
             credentials {
-                username = "2002Bishwajeet" // Replace with your GitHub username
-                password = "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"
-                // password = project.properties['GITHUB_TOKEN']
+                def localProperties = new Properties()
+                def localPropertiesFile = rootProject.file('local.properties')
+                if (localPropertiesFile.exists()) {
+                    localProperties.load(localPropertiesFile.newDataInputStream())
+                }
+                username = localProperties.getProperty('GITHUB_USERNAME') ?: ''
+                password = localProperties.getProperty('GITHUB_TOKEN') ?: ''
             }
         }
     }
