@@ -73,7 +73,7 @@ jobs:
       - name: Rename output
         run: mv output.ipa homebase-photo.ipa
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: homebase-photo-app-ios
           path: homebase-photo.ipa
