@@ -122,7 +122,7 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install npm dependencies
-        run: npm ci
+        run: npm i --legacy-peer-deps
 
       # - name: Build libs
       #   run: npm run build:libs
