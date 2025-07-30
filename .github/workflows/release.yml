@@ -60,12 +60,12 @@ jobs:
       # https://toyboy2.medium.com/package-resolved-file-is-corrupted-or-malformed-fix-or-delete-the-file-baeb572863fc
       # https://github.com/2sem/patch-package-resolved
 
-      - name: Patch Xcode 15.3
-        uses: 2sem/patch-package-resolved@v2
+      # - name: Patch Xcode 15.3
+      #   uses: 2sem/patch-package-resolved@v2
 
-      # Add this new step to explicitly select Xcode
-      - name: Select Xcode Version
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      # # Add this new step to explicitly select Xcode
+      # - name: Select Xcode Version
+      #   run: sudo xcode-select -s /Applications/Xcode_15.4.app
 
       - name: Build IOS App
         uses: yukiarrr/ios-build-action@v1.12.0
