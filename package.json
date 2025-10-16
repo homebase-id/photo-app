@@ -1,32 +1,32 @@
 {
-    "name": "photo-app-root",
-    "private": true,
-    "workspaces": {
-        "packages": [
-            "packages/*"
-        ]
-    },
-    "scripts": {
-        "postinstall": "patch-package",
-        "start:mobile": "npm run start --w packages/mobile",
-        "start:web": "npm run start --w packages/web",
-        "build": "npm run build -workspaces --if-present",
-        "test": "npm run test -workspaces --if-present",
-        "lint": "npm run lint -workspaces --if-present"
-    },
-    "dependencies": {
-        "@homebase-id/js-lib": "0.0.7-alpha.38"
-    },
-    "overrides": {
-        "browserify-sign": "4.2.2",
-        "readable-stream": "^3.6.2"
-    },
-    "devDependencies": {
-        "patch-package": "^7.0.2",
-        "@eslint/eslintrc": "3.1.0",
-        "@eslint/js": "^8.56.0",
-        "typescript-eslint": "8.3.0",
-        "eslint": "8.57.0",
-        "eslint-plugin-jest": "^28.8.1"
-    }
+  "name": "photo-app-root",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "scripts": {
+    "postinstall": "patch-package",
+    "start:mobile": "npm run start --w packages/mobile",
+    "start:web": "npm run start --w packages/web",
+    "build": "npm run build -workspaces --if-present",
+    "test": "npm run test -workspaces --if-present",
+    "lint": "npm run lint -workspaces --if-present"
+  },
+  "dependencies": {
+    "@homebase-id/js-lib": "0.0.7-alpha.67"
+  },
+  "overrides": {
+    "browserify-sign": "4.2.2",
+    "readable-stream": "^3.6.2"
+  },
+  "devDependencies": {
+    "patch-package": "^7.0.2",
+    "@eslint/eslintrc": "3.1.0",
+    "@eslint/js": "^8.56.0",
+    "typescript-eslint": "8.3.0",
+    "eslint": "8.57.0",
+    "eslint-plugin-jest": "^28.8.1"
+  }
 }

@@ -15,18 +15,19 @@ import {
   saveEccKey,
   retrieveEccKey,
   throwAwayTheECCKey,
+  TargetDriveAccessRequest,
 } from '@homebase-id/js-lib/auth';
 import { DrivePermissionType } from '@homebase-id/js-lib/core';
 import { REACT_QUERY_CACHE_KEY } from '../../app/App';
 import { clear } from 'idb-keyval';
 
-export const drives = [
+export const drives: TargetDriveAccessRequest[] = [
   {
-    a: '6483b7b1f71bd43eb6896c86148668cc',
-    t: '2af68fe72fb84896f39f97c59d60813a',
-    n: 'Photo Library',
-    d: 'Place for your memories',
-    p: DrivePermissionType.Read + DrivePermissionType.Write,
+    alias: '6483b7b1f71bd43eb6896c86148668cc',
+    type: '2af68fe72fb84896f39f97c59d60813a',
+    name: 'Photo Library',
+    description: 'Place for your memories',
+    permissions: [DrivePermissionType.Read, DrivePermissionType.Write],
   },
 ];
 export const appName = `Homebase - Photos${import.meta.env.PROD ? '' : ' (Local Dev)'}`;
