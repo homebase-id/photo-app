@@ -9,6 +9,7 @@ import {
   DEFAULT_PAYLOAD_KEY,
   UploadFileMetadata,
   uploadFile,
+  DEFAULT_PAYLOAD_DESCRIPTOR_KEY,
 } from '@homebase-id/js-lib/core';
 import { getRandom16ByteArray, getNewId } from '@homebase-id/js-lib/helpers';
 import { processVideoFile, VideoContentType, VideoUploadResult } from '@homebase-id/js-lib/media';
@@ -54,7 +55,7 @@ export const uploadVideo = async (
     tinyThumb,
     thumbnails: thumbnailsFromVideo,
     payloads: payloadsFromVideo,
-  } = await processVideoFile({ file: file, thumbnail: thumb }, DEFAULT_PAYLOAD_KEY, aesKey);
+  } = await processVideoFile({ file: file, thumbnail: thumb }, DEFAULT_PAYLOAD_KEY, DEFAULT_PAYLOAD_DESCRIPTOR_KEY, aesKey);
 
   const metadata: UploadFileMetadata = {
     versionTag: uploadMeta?.versionTag,
