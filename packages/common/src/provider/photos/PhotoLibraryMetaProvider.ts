@@ -7,7 +7,6 @@ import {
   UploadInstructionSet,
   getContentFromHeaderOrPayload,
   queryBatch,
-  queryModified,
   uploadFile,
 } from '@homebase-id/js-lib/core';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear, LibraryType } from './PhotoTypes';
@@ -31,36 +30,23 @@ export const getPhotoLibrary = async (
             ? [0, 1, 3]
             : [0];
 
-  const batch = lastCursor
-    ? await queryModified(
-        dotYouClient,
-        {
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-          tagsMatchAtLeastOne:
-            type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
-          archivalStatus,
-        },
-        {
-          maxRecords: 2,
-          includeHeaderContent: true,
-          cursor: lastCursor,
-        }
-      )
-    : await queryBatch(
-        dotYouClient,
-        {
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-          tagsMatchAtLeastOne:
-            type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
-          archivalStatus,
-        },
-        {
-          maxRecords: 2,
-          includeMetadataHeader: true,
-        }
-      );
+  const batch =
+    await queryBatch(
+      dotYouClient,
+      {
+        targetDrive: PhotoConfig.PhotoDrive,
+        fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
+        tagsMatchAtLeastOne:
+          type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
+        archivalStatus,
+      },
+      {
+        maxRecords: 2,
+        includeMetadataHeader: true,
+        cursorState: lastCursor,
+        sorting: 'anyChangeDate',
+      }
+    );
 
   if (batch.searchResults.length === 0) return null;
   if (batch.searchResults.length > 1)

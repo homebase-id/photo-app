@@ -79,6 +79,8 @@ export const PhotoLibrary = ({
     type,
   }).fetchLibrary;
 
+  console.info('PhotoLibrary render', photoLibrary);
+
   const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
     year.months.map((month) => ({ year: year.year, ...month }))
   );
@@ -233,6 +235,8 @@ export const PhotoMonth = ({
     () => photosInfinte?.pages?.flatMap((page) => page.results),
     [photosInfinte, photosInfinte?.pages]
   );
+
+  console.info('PhotoMonth render', { year, month, photos, photosInfinte });
 
   useEffect(() => {
     if (!hasNextPage && photosFetched) {

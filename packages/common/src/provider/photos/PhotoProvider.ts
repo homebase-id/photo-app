@@ -60,6 +60,7 @@ export const getPhotos = async (
       ordering: ordering === 'newer' ? 'oldestFirst' : 'newestFirst',
     }
   );
+  console.info('getPhotos response', reponse);
 
   return {
     results: reponse.searchResults,

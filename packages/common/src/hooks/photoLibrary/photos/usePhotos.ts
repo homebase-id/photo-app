@@ -32,6 +32,7 @@ export const fetchPhotosByMonth = async ({
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
   const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
+  console.info('Fetching photos for month', dateCursor);
   return await getPhotos(
     dotYouClient,
     targetDrive,
@@ -94,7 +95,8 @@ export const usePhotosByMonth = ({
         lastPage?.results?.length >= PAGE_SIZE ? lastPage?.cursorState : undefined,
       // refetchOnMount: false,
       enabled: !!targetDrive && !!date,
-      staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      // staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      staleTime: 0, // No cache, always fresh data
     }),
     invalidateQueries: (type: LibraryType) => {
       queryClient.invalidateQueries({

@@ -85,7 +85,7 @@ export const usePhotoLibrary = ({
 
   const BATCH_SIZE = 2000;
   const queryFilesSince = async (sinceInIms: number, type: LibraryType) => {
-    const modifiedCursor = getQueryModifiedCursorFromTime(sinceInIms); // Friday, 31 May 2024 09:38:54.678
+    // const modifiedCursor = getQueryModifiedCursorFromTime(sinceInIms); // Friday, 31 May 2024 09:38:54.678
     const batchCursor = getQueryBatchCursorFromTime(new Date().getTime(), sinceInIms);
 
     const archivalStatus = getArchivalStatusFromType(type);
@@ -98,30 +98,35 @@ export const usePhotoLibrary = ({
       },
       {
         maxRecords: BATCH_SIZE,
-        cursorState: batchCursor + '',
+        cursorState: batchCursor,
         includeMetadataHeader: true,
+        sorting: 'anyChangeDate',
       }
     );
 
-    const modifieData = await queryModified(
-      dotYouClient,
-      {
-        targetDrive: PhotoConfig.PhotoDrive,
-        archivalStatus: archivalStatus,
-      },
-      {
-        maxRecords: BATCH_SIZE,
-        cursor: modifiedCursor + '',
-        excludePreviewThumbnail: false,
-        includeHeaderContent: true,
-      }
-    );
+    // const modifieData = await queryModified(
+    //   dotYouClient,
+    //   {
+    //     targetDrive: PhotoConfig.PhotoDrive,
+    //     archivalStatus: archivalStatus,
+    //   },
+    //   {
+    //     maxRecords: BATCH_SIZE,
+    //     cursor: modifiedCursor + '',
+    //     excludePreviewThumbnail: false,
+    //     includeHeaderContent: true,
+    //   }
+    // );
 
-    return [...newData.searchResults, ...modifieData.searchResults].filter(
+    return newData.searchResults.filter(
       (dsr) =>
-        dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType &&
-        dsr.fileState !== 'deleted'
+        dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType
     ) as HomebaseFile<string>[];
+    // return [...newData.searchResults, ...modifieData.searchResults].filter(
+    //   (dsr) =>
+    //     dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType &&
+    //     dsr.fileState !== 'deleted'
+    // ) as HomebaseFile<string>[];
   };
 
   return {
@@ -172,7 +177,7 @@ export const useManagePhotoLibrary = ({ targetDrive }: { targetDrive?: TargetDri
             const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>({
               queryKey: ['photo-library', targetDrive?.alias, type],
             });
-
+            console.log('Fetched and merged library for type', newlyMergedLib);
             // TODO Should we avoid endless loops here? (Shouldn't happen, but...)
             const uploadResult = await savePhotoLibraryMetadata(
               dotYouClient,
