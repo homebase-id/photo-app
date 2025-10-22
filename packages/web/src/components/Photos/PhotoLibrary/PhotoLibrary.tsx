@@ -80,7 +80,7 @@ export const PhotoLibrary = ({
   }).fetchLibrary;
 
   const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
-    year.months.map((month) => ({ year: year.year, ...month }))
+    year.months.map((month) => ({ year: year.year, ...month })).sort((a, b) => b.month - a.month)
   );
 
   /// Virtual scrolling
@@ -250,23 +250,25 @@ export const PhotoMonth = ({
   // Build daily meta from photos for this month
   const days: PhotoMetaDay[] = useMemo(
     () =>
-      photos?.reduce((days, photo) => {
-        const dateNumber = new Date(
-          photo.fileMetadata.appData.userDate || photo.fileMetadata.created
-        ).getDate();
+      photos
+        ?.reduce((days, photo) => {
+          const dateNumber = new Date(
+            photo.fileMetadata.appData.userDate || photo.fileMetadata.created
+          ).getDate();
 
-        const dayIndex = days.findIndex((metaDay) => metaDay.day === dateNumber);
-        if (dayIndex === -1) {
-          days.push({
-            day: dateNumber,
-            photosThisDay: 1,
-          });
-        } else {
-          days[dayIndex].photosThisDay++;
-        }
+          const dayIndex = days.findIndex((metaDay) => metaDay.day === dateNumber);
+          if (dayIndex === -1) {
+            days.push({
+              day: dateNumber,
+              photosThisDay: 1,
+            });
+          } else {
+            days[dayIndex].photosThisDay++;
+          }
 
-        return days;
-      }, [] as PhotoMetaDay[]) || [],
+          return days;
+        }, [] as PhotoMetaDay[])
+        .sort((a, b) => b.day - a.day) || [],
     [photos]
   );
 
