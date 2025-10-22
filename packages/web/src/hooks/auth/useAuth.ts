@@ -1,5 +1,5 @@
 import { ApiType, DotYouClient } from '@homebase-id/js-lib/core';
-import { base64ToUint8Array } from '@homebase-id/js-lib/helpers';
+import { base64ToUint8Array, toGuidId } from '@homebase-id/js-lib/helpers';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useVerifyToken from './useVerifyToken';
@@ -29,6 +29,13 @@ export const drives: TargetDriveAccessRequest[] = [
     description: 'Place for your memories',
     permissions: [DrivePermissionType.Read, DrivePermissionType.Write],
   },
+  {
+    alias: toGuidId('Facebook Backup'),
+    type: '4b69b85e2e3241c5862e40b533a0a3b9',
+    name: 'Facebook Backup',
+    description: 'Backup of your Facebook photos',
+    permissions: [DrivePermissionType.Read, DrivePermissionType.Write],
+  }
 ];
 export const appName = `Homebase - Photos${import.meta.env.PROD ? '' : ' (Local Dev)'}`;
 export const appId = import.meta.env.PROD
