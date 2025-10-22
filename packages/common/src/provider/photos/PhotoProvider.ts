@@ -5,6 +5,7 @@ import {
   HomebaseFile,
   ImageSize,
   TargetDrive,
+  TimeRange,
   UpdateLocalInstructionSet,
   UploadFileMetadata,
   getFileHeader,
@@ -40,7 +41,8 @@ export const getPhotos = async (
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
-  ordering?: 'older' | 'newer'
+  ordering?: 'older' | 'newer',
+  userDate?: TimeRange
 ) => {
   const archivalStatus = getArchivalStatusFromType(type, album);
 
@@ -51,6 +53,7 @@ export const getPhotos = async (
       tagsMatchAll: album ? [album] : type === 'favorites' ? [PhotoConfig.FavoriteTag] : undefined,
       fileType: [MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
+      userDate: userDate,
     },
     {
       cursorState: cursorState,

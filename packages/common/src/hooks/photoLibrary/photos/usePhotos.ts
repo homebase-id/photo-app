@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, HomebaseFile, DotYouClient, CursoredResult } from '@homebase-id/js-lib/core';
+import { TargetDrive, HomebaseFile, DotYouClient, CursoredResult, TimeRange } from '@homebase-id/js-lib/core';
 import { createDateObject, getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useFlatMonthsFromMeta } from '../library/usePhotoLibraryRange';
 import { getQueryBatchCursorFromTime } from '@homebase-id/js-lib/helpers';
@@ -32,6 +32,10 @@ export const fetchPhotosByMonth = async ({
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
   const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
+  const timeRange: TimeRange = {
+    start: beginOfMonth.getTime(),
+    end: endOfMonth.getTime()
+  }
   console.info('Fetching photos for month', dateCursor);
   return await getPhotos(
     dotYouClient,
@@ -39,7 +43,9 @@ export const fetchPhotosByMonth = async ({
     type,
     undefined, // album
     PAGE_SIZE,
-    cursorState || dateCursor
+    cursorState,
+    undefined,
+    timeRange
   );
 };
 
