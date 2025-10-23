@@ -25,7 +25,7 @@ export const useHlsManifest = (
   useLocalWebServer(Platform.OS === 'ios');
 
   const dotYouClient = useDotYouClientContext();
-  const identity = dotYouClient.getIdentity();
+  const identity = dotYouClient.getLoggedInIdentity();
   const { data: videoFileData, isFetched: videoFileDataFetched } = useVideoMetadata(
     odinId,
     videoFileId,
@@ -100,7 +100,7 @@ export const useHlsManifest = (
         videoGlobalTransitId || videoFileId,
       ],
       queryFn: () =>
-        fetchManifest(odinId || identity, videoFileData?.fileHeader, videoDrive, videoFileKey),
+        fetchManifest(odinId || identity || '', videoFileData?.fileHeader, videoDrive, videoFileKey),
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       enabled: !!videoFileId && videoFileId !== '' && videoFileDataFetched,
@@ -159,7 +159,7 @@ const getSegmentUrl = async (
   isEncrypted: boolean,
   systemFileType?: SystemFileType
 ) => {
-  const identity = dotYouClient.getIdentity();
+  const identity = dotYouClient.getHostIdentity();
   if (!isEncrypted) {
     return await getAnonymousDirectImageUrl(
       odinId || identity,

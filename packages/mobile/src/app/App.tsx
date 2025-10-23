@@ -15,7 +15,6 @@ import AlbumPage from '../pages/album';
 import SettingsPage from '../pages/settings-page';
 import SyncDetailsPage from '../pages/sync-details-page';
 import TypePage from '../pages/type';
-import CodePush from 'react-native-code-push';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useAuth, useValidTokenCheck } from '../hooks/auth/useAuth';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -50,7 +49,7 @@ export type RootStackParamList = {
   Type: { typeId: LibraryType };
 };
 
-let App = () => {
+const App = () => {
   return (
     <OdinQueryClient>
       <DotYouClientProvider>
@@ -62,9 +61,6 @@ let App = () => {
     </OdinQueryClient>
   );
 };
-
-const codePushOptions = { checkFrequency: CodePush.CheckFrequency.MANUAL };
-App = CodePush(codePushOptions)(App);
 
 const StackedRoot = createNativeStackNavigator<AuthStackParamList>();
 const RootStack = () => {

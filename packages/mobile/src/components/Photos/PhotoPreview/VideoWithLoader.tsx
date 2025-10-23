@@ -38,7 +38,7 @@ export const VideoWithLoader = memo(
     onPress?: () => void;
   }) => {
     const dotYouClient = useDotYouClientContext();
-    const identity = dotYouClient.getIdentity();
+    const identity = dotYouClient.getHostIdentity();
     const [loadVideo, setLoadVideo] = useState(false);
     const doLoadVideo = useCallback(() => setLoadVideo(true), []);
 
@@ -50,7 +50,7 @@ export const VideoWithLoader = memo(
       targetDrive
     ).fetchMetadata;
 
-    const payload = videoData?.fileHeader.fileMetadata.payloads.find(
+    const payload = videoData?.fileHeader.fileMetadata.payloads?.find(
       (pyld) => pyld.key === DEFAULT_PAYLOAD_KEY
     );
 

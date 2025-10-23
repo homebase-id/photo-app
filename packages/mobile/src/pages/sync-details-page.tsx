@@ -63,10 +63,8 @@ const SyncDetailsPage = (_props: SettingsProps) => {
   const headerLeft = () => (
     <HeaderBackButton
       style={{ position: 'absolute', left: 0 }}
-      canGoBack={true}
       onPress={() => navigation.goBack()}
       label={'Settings'}
-      labelVisible={true}
       tintColor={isDarkMode ? Colors.white : Colors.black}
     />
   );

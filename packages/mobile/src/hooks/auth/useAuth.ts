@@ -12,19 +12,21 @@ import {
   getRegistrationParams as getRegistrationParamsYouAuth,
   finalizeAuthentication as finalizeAuthenticationYouAuth,
 } from '../../provider/auth/RNAuthenticationProvider';
-import { logout as logoutYouauth } from '@homebase-id/js-lib/auth';
+import { logout as logoutYouauth, TargetDriveAccessRequest } from '@homebase-id/js-lib/auth';
 import { useEncrtypedStorage } from './useEncryptedStorage';
 import { Platform } from 'react-native';
 import { DrivePermissionType } from '@homebase-id/js-lib/core';
 import { useQueryClient } from '@tanstack/react-query';
+import { PhotoConfig } from 'photo-app-common';
 
-export const drives = [
+
+
+export const drives: TargetDriveAccessRequest[] = [
   {
-    a: '6483b7b1f71bd43eb6896c86148668cc',
-    t: '2af68fe72fb84896f39f97c59d60813a',
-    n: 'Photo Library',
-    d: 'Place for your memories',
-    p: DrivePermissionType.Read + DrivePermissionType.Write,
+    ...PhotoConfig.PhotoDrive,
+    name: 'Photo Library',
+    description: 'Place for your memories',
+    permissions: [DrivePermissionType.Read + DrivePermissionType.Write],
   },
 ];
 export const permissionKeys = undefined;
@@ -74,6 +76,7 @@ export const useAuth = () => {
     if (!sharedSecret || !identity || !authToken) {
       return new DotYouClient({
         api: ApiType.App,
+        hostIdentity: identity || '',
       });
     }
 
@@ -83,7 +86,8 @@ export const useAuth = () => {
     return new DotYouClient({
       sharedSecret: base64ToUint8Array(sharedSecret),
       api: ApiType.App,
-      identity: identity,
+      hostIdentity: identity,
+      loggedInIdentity: identity,
       headers: headers,
     });
   }, [authToken, identity, sharedSecret]);
@@ -140,10 +144,10 @@ export const useYouAuthAuthorization = () => {
       undefined,
       drives,
       undefined,
+      undefined,
       uint8ArrayToBase64(stringToUint8Array(JSON.stringify(publicKeyJwk))),
       corsHost,
-      `${Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : Platform.OS} | ${
-        Platform.Version
+      `${Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : Platform.OS} | ${Platform.Version
       }`
     );
   }, [setPrivateKey]);

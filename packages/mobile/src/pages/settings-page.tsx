@@ -1,24 +1,14 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  StyleProp,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, Alert, Linking, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/ui/Text/Text';
-import { getVersion, getBuildNumber } from 'react-native-device-info';
 import { version } from '../../package.json';
 
 import { SettingsStackParamList } from '../app/App';
-import { CloudIcon, Download, Logout, RecycleBin, Times } from '../components/ui/Icons/icons';
+import { CloudIcon, Logout, RecycleBin, Times } from '../components/ui/Icons/icons';
 import CheckBox from '@react-native-community/checkbox';
 import { SafeAreaView } from '../components/ui/SafeAreaView/SafeAreaView';
 import { Container } from '../components/ui/Container/Container';
-import codePush from 'react-native-code-push';
 import { useAuth } from '../hooks/auth/useAuth';
 import { useKeyValueStorage } from '../hooks/auth/useEncryptedStorage';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
@@ -197,14 +187,7 @@ const SettingsPage = (_props: SettingsProps) => {
               Delete my account
             </Text>
           </TouchableOpacity>
-          <CheckForUpdates
-            style={{
-              alignItems: 'center',
-              paddingVertical: 12,
 
-              width: '100%',
-            }}
-          />
           <VersionInfo />
         </View>
       </Container>
@@ -212,88 +195,7 @@ const SettingsPage = (_props: SettingsProps) => {
   );
 };
 
-const getVersionInfo = async () => {
-  const appVersion = `${getVersion()} (${getBuildNumber()})`;
-  const update = await codePush.getUpdateMetadata();
-
-  if (!update) return `${appVersion}`;
-
-  const label = update.label.substring(1);
-  return `${appVersion} rev.${label}`;
-};
-
 export const VersionInfo = () => {
-  const [fullVersion, setFullVersion] = useState<string | undefined>(undefined);
-
-  const doLoadFullVersion = async () => {
-    const fullVersion = await getVersionInfo();
-    setFullVersion(fullVersion);
-  };
-
-  return (
-    <TouchableOpacity onPress={doLoadFullVersion}>
-      <Text style={{ paddingTop: 10 }}>{fullVersion || version}</Text>
-    </TouchableOpacity>
-  );
+  return <Text style={{ paddingTop: 10 }}>{version}</Text>;
 };
-
-export const CheckForUpdates = ({
-  style,
-  hideIcon,
-}: {
-  style: StyleProp<ViewStyle>;
-  hideIcon?: boolean;
-}) => {
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [codePushResult, setCodePushResult] = useState<codePush.SyncStatus>();
-  const doCheckForUpdate = async () => {
-    setIsSyncing(true);
-    const state = await codePush.sync({
-      updateDialog: {
-        title: 'You have an update',
-        optionalUpdateMessage: 'There is an update available. Do you want to install?',
-        optionalIgnoreButtonLabel: 'No',
-        optionalInstallButtonLabel: 'Yes',
-      },
-      installMode: codePush.InstallMode.IMMEDIATE,
-    });
-    setCodePushResult(state);
-    setIsSyncing(false);
-  };
-
-  return (
-    <TouchableOpacity
-      onPress={() => doCheckForUpdate()}
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 5,
-        ...(style as unknown as ViewStyle),
-      }}
-    >
-      {hideIcon ? null : <Download size={'lg'} />}
-      <Text
-        style={{
-          marginLeft: hideIcon ? 0 : 11,
-        }}
-      >
-        Check for app updates
-      </Text>
-      {isSyncing ? (
-        <ActivityIndicator size="small" color="#000" style={{ marginLeft: 'auto' }} />
-      ) : codePushResult !== undefined ? (
-        <Text style={{ marginLeft: 'auto', fontStyle: 'italic' }}>
-          {codePushResult === codePush.SyncStatus.UP_TO_DATE
-            ? 'Up to date'
-            : codePushResult === codePush.SyncStatus.UPDATE_INSTALLED
-              ? 'Installed'
-              : codePushResult === codePush.SyncStatus.SYNC_IN_PROGRESS
-                ? 'Unknown'
-                : null}
-        </Text>
-      ) : null}
-    </TouchableOpacity>
-  );
-};
-
 export default SettingsPage;

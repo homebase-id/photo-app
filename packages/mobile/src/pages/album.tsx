@@ -38,10 +38,8 @@ const AlbumPage = ({ navigation, route }: AlbumProps) => {
   const headerLeft = () => (
     <HeaderBackButton
       style={{ position: 'absolute', left: 0 }}
-      canGoBack={true}
       onPress={() => navigation.goBack()}
       label={'Library'}
-      labelVisible={true}
       tintColor={isDarkMode ? Colors.white : Colors.black}
     />
   );

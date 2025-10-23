@@ -28,7 +28,7 @@ export const useVideoMetadata = (
   >;
 } => {
   const dotYouClient = useDotYouClientContext();
-  const identity = dotYouClient.getIdentity();
+  const identity = dotYouClient.getHostIdentity();
 
   const fetchVideoData = async (
     odinId: string,
@@ -54,16 +54,16 @@ export const useVideoMetadata = (
         odinId !== identity
           ? videoGlobalTransitId
             ? await getFileHeaderBytesOverPeerByGlobalTransitId(
-                dotYouClient,
-                odinId,
-                videoDrive,
-                videoGlobalTransitId
-              )
+              dotYouClient,
+              odinId,
+              videoDrive,
+              videoGlobalTransitId
+            )
             : await getFileHeaderOverPeer(dotYouClient, odinId, videoDrive, videoFileId)
           : await getFileHeader(dotYouClient, videoDrive, videoFileId);
 
       if (!fileHeader) return undefined;
-      const payloadData = fileHeader.fileMetadata.payloads.find((p) => p.key === videoFileKey);
+      const payloadData = fileHeader.fileMetadata.payloads?.find((p) => p.key === videoFileKey);
       const descriptor = payloadData?.descriptorContent;
       if (!descriptor) return undefined;
 

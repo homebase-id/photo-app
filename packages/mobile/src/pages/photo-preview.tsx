@@ -212,7 +212,7 @@ const InnerFlatListSlider = memo(
             }}
           >
             {item.item.fileMetadata.payloads
-              .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+              ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
               ?.contentType.startsWith('video/') ? (
               <VideoWithLoader
                 fileId={item.item.fileId}
@@ -336,10 +336,8 @@ const PreviewHeader = memo(
     const headerLeft = () => (
       <HeaderBackButton
         style={{ position: 'absolute', left: 0 }}
-        canGoBack={true}
         onPress={goBack}
         label={backTitle}
-        labelVisible={false}
         tintColor={isDarkMode ? Colors.white : Colors.black}
       />
     );

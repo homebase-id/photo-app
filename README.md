@@ -19,9 +19,23 @@ Once you have the back-end and front-end web apps running, you can start the mob
 
 ### Install dependencies
 
-```bash
+```
 npm install
 ```
+
+### Setup for Android Builds
+
+To access private dependencies (e.g., ffmpeg-kit from GitHub Packages), create a `local.properties` file in `packages/mobile/android/` with your GitHub credentials. This file is ignored by Git.
+
+Example `local.properties`:
+
+```
+GITHUB_USERNAME=your-github-username
+GITHUB_TOKEN=your-github-personal-access-token
+```
+
+- Generate a Personal Access Token (PAT) in GitHub settings with `read:packages` scope.
+- For CI builds, these are handled via GitHub Secrets (see `.github/workflows/release.yml`).
 
 ### Start Metro for Native (React Native)
 
