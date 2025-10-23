@@ -15,7 +15,7 @@
     "lint": "npm run lint -workspaces --if-present"
   },
   "dependencies": {
-    "@homebase-id/js-lib": "0.0.7-alpha.67"
+    "@homebase-id/js-lib": "0.0.7-alpha.69"
   },
   "overrides": {
     "browserify-sign": "4.2.2",
