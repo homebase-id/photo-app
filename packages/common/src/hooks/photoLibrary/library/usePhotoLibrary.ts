@@ -56,12 +56,12 @@ export const usePhotoLibrary = ({
   type: LibraryType;
 }) => {
   const dotYouClient = useDotYouClientContext();
-
+  console.log('usePhotoLibrary called', { targetDrive, type });
   const fetch = async (type: LibraryType): Promise<PhotoLibraryMetadata | null> => {
     if (!dotYouClient || !targetDrive) return null;
 
     // Get meta file from server
-    const photoLibOnServer = await getPhotoLibrary(dotYouClient, type);
+    const photoLibOnServer = await getPhotoLibrary(dotYouClient, type, undefined, targetDrive);
 
     if (photoLibOnServer && photoLibOnServer.lastUpdated) {
       const newFilesSinceLastUpdate = await queryFilesSince(photoLibOnServer.lastUpdated, type);
@@ -91,7 +91,7 @@ export const usePhotoLibrary = ({
     const newData = await queryBatch(
       dotYouClient,
       {
-        targetDrive: PhotoConfig.PhotoDrive,
+        targetDrive: targetDrive || PhotoConfig.PhotoDrive,
         archivalStatus: archivalStatus,
       },
       {
@@ -181,6 +181,7 @@ export const useManagePhotoLibrary = ({ targetDrive }: { targetDrive?: TargetDri
               dotYouClient,
               newlyMergedLib,
               type,
+              targetDrive,
               () => setTimeout(fetchAndMerge, 1000)
             );
             if (!uploadResult) return;
@@ -192,6 +193,7 @@ export const useManagePhotoLibrary = ({ targetDrive }: { targetDrive?: TargetDri
               dotYouClient,
               libToSave,
               type,
+              targetDrive,
               fetchAndMerge
             );
             if (!uploadResult) return;

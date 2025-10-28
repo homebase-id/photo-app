@@ -8,17 +8,18 @@ import {
   uploadFile,
   UploadFileMetadata,
   UploadInstructionSet,
+  TargetDrive,
 } from '@homebase-id/js-lib/core';
 import { AlbumDefinition, PhotoConfig } from './PhotoTypes';
 import { getRandom16ByteArray, jsonStringify64 } from '@homebase-id/js-lib/helpers';
 
 const encryptAlbums = true;
 
-export const getAllAlbums = async (dotYouClient: DotYouClient): Promise<AlbumDefinition[]> => {
+export const getAllAlbums = async (dotYouClient: DotYouClient, targetDrive?: TargetDrive): Promise<AlbumDefinition[]> => {
   const batch = await queryBatch(
     dotYouClient,
     {
-      targetDrive: PhotoConfig.PhotoDrive,
+      targetDrive: targetDrive || PhotoConfig.PhotoDrive,
       fileType: [PhotoConfig.AlbumDefinitionFileType],
     },
     { maxRecords: 1000, includeMetadataHeader: true }
@@ -27,7 +28,7 @@ export const getAllAlbums = async (dotYouClient: DotYouClient): Promise<AlbumDef
   return (
     await Promise.all(
       batch.searchResults.map(async (dsr) => {
-        return await dsrToAlbumDefinition(dotYouClient, dsr);
+        return await dsrToAlbumDefinition(dotYouClient, dsr, targetDrive);
       })
     )
   ).filter(Boolean) as AlbumDefinition[];
@@ -35,11 +36,12 @@ export const getAllAlbums = async (dotYouClient: DotYouClient): Promise<AlbumDef
 
 const dsrToAlbumDefinition = async (
   dotYouClient: DotYouClient,
-  dsr: HomebaseFile
+  dsr: HomebaseFile,
+  targetDrive?: TargetDrive
 ): Promise<AlbumDefinition | null> => {
   const payload = await getContentFromHeaderOrPayload<AlbumDefinition>(
     dotYouClient,
-    PhotoConfig.PhotoDrive,
+    targetDrive || PhotoConfig.PhotoDrive,
     dsr,
     true
   );
@@ -51,7 +53,7 @@ const dsrToAlbumDefinition = async (
   };
 };
 
-export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition) => {
+export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition, targetDrive?: TargetDrive) => {
   const payloadJson: string = jsonStringify64({
     ...def,
     acl: undefined,
@@ -62,7 +64,7 @@ export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition
     transferIv: getRandom16ByteArray(),
     storageOptions: {
       overwriteFileId: def.fileId || undefined,
-      drive: PhotoConfig.PhotoDrive,
+      drive: targetDrive || PhotoConfig.PhotoDrive,
     },
   };
 
@@ -84,8 +86,9 @@ export const saveAlbum = async (dotYouClient: DotYouClient, def: AlbumDefinition
 
 export const removeAlbumDefintion = async (
   dotYouClient: DotYouClient,
-  albumDef: AlbumDefinition
+  albumDef: AlbumDefinition,
+  targetDrive?: TargetDrive,
 ) => {
   if (albumDef.fileId)
-    return await deleteFile(dotYouClient, PhotoConfig.PhotoDrive, albumDef.fileId);
+    return await deleteFile(dotYouClient, targetDrive || PhotoConfig.PhotoDrive, albumDef.fileId);
 };

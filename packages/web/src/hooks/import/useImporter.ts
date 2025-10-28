@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
 import useAuth from '../auth/useAuth';
 import { useWebPhoto } from '../photoLibrary/useWebPhoto';
+import useTargetDrive from '../drive/useTargetDrive';
 
 const DB_NAME = 'OdinPhotosDatabase';
 const UPLOADED_FILES_STORE = 'uploadedFiles';
@@ -34,12 +35,12 @@ let db: IDBDatabase;
 const useImporter = () => {
   const [status, setStatus] = useState('idle');
   const [log, setLog] = useState('');
-
-  const { mutateAsync: doUploadToServer } = useWebPhoto(PhotoConfig.PhotoDrive).upload;
+  const { targetDrive } = useTargetDrive();
+  const { mutateAsync: doUploadToServer } = useWebPhoto(targetDrive || PhotoConfig.PhotoDrive).upload;
   const {
     updateDate: { mutateAsync: updateDate },
     updateMeta: { mutateAsync: updateMeta },
-  } = usePhotoMetadata(PhotoConfig.PhotoDrive);
+  } = usePhotoMetadata(targetDrive || PhotoConfig.PhotoDrive);
 
   const queryClient = useQueryClient();
 
@@ -173,8 +174,7 @@ const useImporter = () => {
   ) {
     try {
       const dateAsNumber = parseInt(
-        `${jsonData.photoTakenTime.timestamp}${
-          jsonData.photoTakenTime.timestamp.length === 10 ? '000' : ''
+        `${jsonData.photoTakenTime.timestamp}${jsonData.photoTakenTime.timestamp.length === 10 ? '000' : ''
         }`
       );
       await updateDate({

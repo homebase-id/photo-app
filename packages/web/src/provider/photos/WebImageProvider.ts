@@ -19,6 +19,7 @@ import {
   MediaConfig,
 } from '@homebase-id/js-lib/media';
 
+
 export const uploadImage = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
@@ -70,6 +71,7 @@ export const uploadImage = async (
         : [],
       uniqueId: uploadMeta?.uniqueId ?? getNewId(),
       fileType: MediaConfig.MediaFileType,
+
       content: fileMetadata ? jsonStringify64(fileMetadata) : undefined,
       previewThumbnail: tinyThumb,
       userDate: uploadMeta?.userDate,

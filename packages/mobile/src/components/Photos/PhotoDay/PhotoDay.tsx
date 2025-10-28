@@ -165,7 +165,7 @@ export const PhotoItem = memo(
         >
           <View>
             {photoDsr.fileMetadata.payloads
-              .find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
+              ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
               ?.contentType.startsWith('video/') ? (
               <VideoWithLoader
                 fileId={photoDsr.fileId}

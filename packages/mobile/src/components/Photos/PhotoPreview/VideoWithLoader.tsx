@@ -38,7 +38,7 @@ export const VideoWithLoader = memo(
     onPress?: () => void;
   }) => {
     const dotYouClient = useDotYouClientContext();
-    const identity = dotYouClient.getIdentity();
+    const identity = dotYouClient.getHostIdentity();
     const [loadVideo, setLoadVideo] = useState(false);
     const doLoadVideo = useCallback(() => setLoadVideo(true), []);
 
@@ -50,7 +50,7 @@ export const VideoWithLoader = memo(
       targetDrive
     ).fetchMetadata;
 
-    const payload = videoData?.fileHeader.fileMetadata.payloads.find(
+    const payload = videoData?.fileHeader.fileMetadata.payloads?.find(
       (pyld) => pyld.key === DEFAULT_PAYLOAD_KEY
     );
 
@@ -113,7 +113,11 @@ export const VideoWithLoader = memo(
                 lastModified={payload.lastModified}
               />
             ) : (
-              <WebVideo targetDrive={targetDrive} fileId={fileId} />
+              <WebVideo
+                targetDrive={targetDrive}
+                fileId={fileId}
+                fileKey={payload?.key || DEFAULT_PAYLOAD_KEY}
+              />
             )
           ) : (
             <>
@@ -206,11 +210,18 @@ const HlsVideo = ({ odinId, fileId, targetDrive, globalTransitId, payload }: Loc
   );
 };
 
-const WebVideo = ({ fileId }: { targetDrive: TargetDrive; fileId: string }) => {
+const WebVideo = ({
+  fileId,
+  fileKey,
+}: {
+  targetDrive: TargetDrive;
+  fileId: string;
+  fileKey: string;
+}) => {
   const { authToken, getIdentity, getSharedSecret } = useAuth();
   const identity = getIdentity();
 
-  const uri = useMemo(() => `https://${corsHost}/player/${fileId}`, [fileId]);
+  const uri = useMemo(() => `https://${corsHost}/player/${fileId}/${fileKey}`, [fileId, fileKey]);
 
   const sharedSecret = getSharedSecret();
   const base64SharedSecret = sharedSecret ? uint8ArrayToBase64(sharedSecret) : '';

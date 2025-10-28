@@ -11,6 +11,7 @@ import Check from '../../ui/Icons/Check/Check';
 import Loader from '../../ui/Icons/Loader/Loader';
 import { FileLike, LibraryType, PhotoConfig } from 'photo-app-common';
 import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 
 const kiloBytes = 1024;
 const megaBytes = kiloBytes * 1024;
@@ -30,7 +31,7 @@ const Uploader = ({
   const [uploadQueue, setUploadQueue] = useState<(File | FileLike)[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentVideoThumb, setCurrentVideoThumb] = useState<ThumbnailFile | undefined>();
-
+  const { targetDrive } = useTargetDrive();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const doCancelQueue = () => {
@@ -59,7 +60,7 @@ const Uploader = ({
     status: uploadStatus,
     reset: resetUpload,
     error: uploadError,
-  } = useWebPhoto(PhotoConfig.PhotoDrive).upload;
+  } = useWebPhoto(targetDrive || PhotoConfig.PhotoDrive).upload;
 
   // Window level paste handler
   useEffect(() => {

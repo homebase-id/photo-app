@@ -31,12 +31,11 @@ export const fetchPhotosByMonth = async ({
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
-  const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
+  // const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
   const timeRange: TimeRange = {
     start: beginOfMonth.getTime(),
     end: endOfMonth.getTime()
   }
-  console.info('Fetching photos for month', dateCursor);
   return await getPhotos(
     dotYouClient,
     targetDrive,

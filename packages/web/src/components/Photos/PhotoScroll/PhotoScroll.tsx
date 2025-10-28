@@ -1,5 +1,6 @@
 import { createDateObject, usePhotoLibrary, PhotoConfig, LibraryType } from 'photo-app-common';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -20,6 +21,7 @@ const PhotoScroll = ({
   const [overlayData, setOverlayData] = useState<{ year: number; month: number } | undefined>(
     undefined
   );
+  const { targetDrive } = useTargetDrive();
   const overlayText = useMemo(() => {
     if (!overlayData) return null;
     return createDateObject(overlayData.year, overlayData.month).toLocaleDateString(
@@ -33,7 +35,7 @@ const PhotoScroll = ({
   const [mouseDown, setMouseDown] = useState(false);
 
   const { data: photoLib } = usePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     type: type,
   }).fetchLibrary;
 

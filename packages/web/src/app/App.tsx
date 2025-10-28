@@ -71,7 +71,7 @@ function App() {
               </RootRoute>
             }
           >
-            <Route path="/player/:photoKey" element={<VideoPlayer />}></Route>
+            <Route path="/player/:photoFileId/:photoKey" element={<VideoPlayer />}></Route>
 
             <Route
               path=""

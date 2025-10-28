@@ -5,19 +5,20 @@ import { HomebaseFile } from '@homebase-id/js-lib/core';
 import PhotoPreviewSlider from './PhotoPreviewSlider';
 import {
   LibraryType,
-  PhotoConfig,
   useFileHeader,
   useFlatPhotosByMonth,
   usePhotosInfinte,
 } from 'photo-app-common';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 
-const targetDrive = PhotoConfig.PhotoDrive;
+// const targetDrive = PhotoConfig.PhotoDrive;
 const PhotoPreview = (props: {
   fileId: string;
   albumKey?: string;
   type: LibraryType;
   urlPrefix?: string;
 }) => {
+  const { targetDrive } = useTargetDrive();
   const { data: fileHeader } = useFileHeader({
     targetDrive,
     photoFileId: props.fileId,
@@ -41,7 +42,7 @@ const PhotoLibPreview = ({
   urlPrefix?: string;
 }) => {
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
-
+  const { targetDrive } = useTargetDrive();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [loadOriginal, setLoadOriginal] = useState(localStorage.getItem('original') === '1');
 
@@ -139,7 +140,7 @@ const PhotoAlbumPreview = ({
   urlPrefix?: string;
 }) => {
   const urlPrefix = urlPrefixProp || (albumKey ? `/album/${albumKey}` : '');
-
+  const { targetDrive } = useTargetDrive();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [loadOriginal, setLoadOriginal] = useState(false);
 

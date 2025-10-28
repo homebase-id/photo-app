@@ -3,6 +3,7 @@ import {
   DotYouClient,
   HomebaseFile,
   SecurityGroupType,
+  TargetDrive,
   UploadFileMetadata,
   UploadInstructionSet,
   getContentFromHeaderOrPayload,
@@ -17,7 +18,8 @@ const encryptPhotoLibrary = true;
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
   type: LibraryType,
-  lastCursor?: string
+  lastCursor?: string,
+  targetDrive?: TargetDrive
 ): Promise<PhotoLibraryMetadata | null> => {
   const archivalStatus: ArchivalStatus[] =
     type === 'bin'
@@ -34,7 +36,7 @@ export const getPhotoLibrary = async (
     await queryBatch(
       dotYouClient,
       {
-        targetDrive: PhotoConfig.PhotoDrive,
+        targetDrive: targetDrive || PhotoConfig.PhotoDrive,
         fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
         tagsMatchAtLeastOne:
           type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
@@ -65,11 +67,12 @@ export const getPhotoLibrary = async (
 
 const dsrToPhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
-  dsr: HomebaseFile
+  dsr: HomebaseFile,
+  targetDrive?: TargetDrive
 ): Promise<PhotoLibraryMetadata | null> => {
   const payload = await getContentFromHeaderOrPayload<PhotoLibraryMetadata>(
     dotYouClient,
-    PhotoConfig.PhotoDrive,
+    targetDrive || PhotoConfig.PhotoDrive,
     dsr,
     true
   );
@@ -87,12 +90,13 @@ export const savePhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   def: PhotoLibraryMetadata,
   type: LibraryType,
+  targetDrive?: TargetDrive,
   onVersionConflict?: () => void
 ) => {
   const archivalStatus: ArchivalStatus =
     type === 'bin' ? 2 : type === 'archive' ? 1 : type === 'apps' ? 3 : 0;
 
-  const existingPhotoLib = await getPhotoLibrary(dotYouClient, type);
+  const existingPhotoLib = await getPhotoLibrary(dotYouClient, type, undefined, targetDrive);
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)
     def.fileId = existingPhotoLib.fileId;
 
@@ -108,7 +112,7 @@ export const savePhotoLibraryMetadata = async (
     transferIv: getRandom16ByteArray(),
     storageOptions: {
       overwriteFileId: def.fileId || undefined,
-      drive: PhotoConfig.PhotoDrive,
+      drive: targetDrive || PhotoConfig.PhotoDrive,
     },
   };
 

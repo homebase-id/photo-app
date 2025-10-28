@@ -12,6 +12,7 @@ import { VideoWithLoader } from '../PhotoPreview/VideoWithLoader';
 import { PhotoWithLoader } from '../PhotoPreview/PhotoWithLoader';
 import Triangle from '../../ui/Icons/Triangle/Triangle';
 import { useLongPress } from '../../../hooks/longPress/useLongPress';
+import TemplateImage from './TemplateImageComponent';
 
 // Input on the "scaled" layout: https://github.com/xieranmaya/blog/issues/6
 const gridClasses = `grid grid-cols-4 gap-[0.1rem] md:gap-1 md:grid-cols-6 lg:flex lg:flex-row lg:flex-wrap`;
@@ -149,9 +150,10 @@ export const PhotoItem = ({
   const isDesktop = document.documentElement.clientWidth >= 1024;
 
   // Always square previews for video's
-  const payload = photoDsr.fileMetadata.payloads?.find(
-    (payload) => payload.key === DEFAULT_PAYLOAD_KEY
-  );
+  const payload =
+    photoDsr.fileMetadata.payloads?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY) ||
+    photoDsr.fileMetadata.payloads?.[0] ||
+    undefined;
   const aspect =
     photoDsr.fileMetadata.appData && payload?.thumbnails?.length
       ? getAspectRatioFromThumbnails(payload?.thumbnails || [])
@@ -234,12 +236,13 @@ export const PhotoItem = ({
           ref={wrapperRef}
         >
           {isInView ? (
-            photoDsr.fileMetadata.payloads
-              ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
-              ?.contentType.startsWith('video/') ? (
+            !payload ? (
+              <TemplateImage />
+            ) : payload?.contentType.startsWith('video/') ? (
               <>
                 <VideoWithLoader
                   fileId={photoDsr.fileId}
+                  fileKey={payload.key}
                   targetDrive={targetDrive}
                   lastModified={photoDsr.fileMetadata.updated}
                   previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}
@@ -253,6 +256,7 @@ export const PhotoItem = ({
             ) : (
               <PhotoWithLoader
                 fileId={photoDsr.fileId}
+                fileKey={payload?.key}
                 targetDrive={targetDrive}
                 lastModified={photoDsr.fileMetadata.updated}
                 previewThumbnail={photoDsr?.fileMetadata.appData.previewThumbnail}

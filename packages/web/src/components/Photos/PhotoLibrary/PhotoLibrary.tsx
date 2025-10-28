@@ -14,6 +14,7 @@ import {
   LibraryType,
   useManagePhotoLibrary,
 } from 'photo-app-common';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 const monthFormat: Intl.DateTimeFormatOptions = {
   month: 'long',
   year: 'numeric',
@@ -40,9 +41,9 @@ export const PhotoLibrary = ({
 }) => {
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
-
+  const { targetDrive } = useTargetDrive();
   const { data: selection } = useSiblingsRange({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     type,
     fromFileId: selectionRangeFrom,
     toFileId: selectionRangeTo,
@@ -75,11 +76,9 @@ export const PhotoLibrary = ({
   }, [isSelecting]);
 
   const { data: photoLibrary } = usePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     type,
   }).fetchLibrary;
-
-  console.info('PhotoLibrary render', photoLibrary);
 
   const monthsToShow = photoLibrary?.yearsWithMonths?.flatMap((year) =>
     year.months.map((month) => ({ year: year.year, ...month })).sort((a, b) => b.month - a.month)
@@ -214,6 +213,7 @@ export const PhotoMonth = ({
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { year, month } = monthMeta;
+  const { targetDrive } = useTargetDrive();
 
   const monthInDateObj = createDateObject(year, month, 1);
   const {
@@ -222,21 +222,19 @@ export const PhotoMonth = ({
     hasNextPage,
     fetchNextPage,
   } = usePhotosByMonth({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     type,
     date: monthInDateObj,
   }).fetchPhotos;
 
   const { mutate: updateCount } = useManagePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
   }).updateCount;
 
   const photos = useMemo(
     () => photosInfinte?.pages?.flatMap((page) => page.results),
     [photosInfinte, photosInfinte?.pages]
   );
-
-  console.info('PhotoMonth render', { year, month, photos, photosInfinte });
 
   useEffect(() => {
     if (!hasNextPage && photosFetched) {
@@ -303,7 +301,7 @@ export const PhotoMonth = ({
                   return photoDate.getDate() === day.day;
                 }) || []
               }
-              targetDrive={PhotoConfig.PhotoDrive}
+              targetDrive={targetDrive || PhotoConfig.PhotoDrive}
               key={`${year}-${month}-${day.day}`}
               toggleSelection={toggleSelection}
               rangeSelection={rangeSelection}
