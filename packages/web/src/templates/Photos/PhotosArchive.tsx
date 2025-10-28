@@ -15,7 +15,7 @@ const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/Pho
 
 const PhotosArchive = () => {
   const [isFileSelectorOpen, setFileSelectorOpen] = useState(false);
-  const { photoFileId, photoKey } = useParams();
+  const { photoKey } = useParams();
   const { toggleSelection, selectRange, isSelected, selection, clearSelection, isSelecting } =
     usePhotoSelection();
 
@@ -56,14 +56,9 @@ const PhotosArchive = () => {
         isSelected={isSelected}
         isSelecting={isSelecting}
       />
-      {photoFileId ? (
+      {photoKey ? (
         <Suspense>
-          <PhotoPreview
-            fileId={photoFileId}
-            photoKey={photoKey}
-            type={'archive'}
-            urlPrefix={'/archive'}
-          />
+          <PhotoPreview fileId={photoKey} type={'archive'} urlPrefix={'/archive'} />
         </Suspense>
       ) : null}
     </>
