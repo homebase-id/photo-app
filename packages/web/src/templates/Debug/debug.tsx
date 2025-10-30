@@ -9,12 +9,15 @@ import ActionButton from '../../components/ui/Buttons/ActionButton';
 import { useQueryClient } from '@tanstack/react-query';
 import Refresh from '../../components/ui/Icons/Refresh/Refresh';
 import { PageMeta } from '../../components/ui/Layout/PageMeta/PageMeta';
+import useTargetDrive from '../../hooks/drive/useTargetDrive';
 
 const Debug = () => {
+  const { targetDrive } = useTargetDrive();
   const { data: lib, refetch: refetchLib } = usePhotoLibrary({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     type: 'photos',
   }).fetchLibrary;
+  console.log('Debug render', { lib });
 
   const queryClient = useQueryClient();
   const dotYouClient = useDotYouClientContext();
@@ -39,7 +42,7 @@ const Debug = () => {
           onClick={async () => {
             await rebuildLibrary({
               dotYouClient,
-              targetDrive: PhotoConfig.PhotoDrive,
+              targetDrive: targetDrive || PhotoConfig.PhotoDrive,
               type: 'photos',
             });
             await refetchLib();

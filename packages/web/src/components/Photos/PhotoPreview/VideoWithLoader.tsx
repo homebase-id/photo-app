@@ -9,6 +9,7 @@ import { useDotYouClientContext } from 'photo-app-common';
 
 export const VideoWithLoader = ({
   fileId,
+  fileKey,
   targetDrive,
   previewThumbnail,
   lastModified,
@@ -18,6 +19,7 @@ export const VideoWithLoader = ({
   className,
 }: {
   fileId: string;
+  fileKey?: string;
   targetDrive: TargetDrive;
   previewThumbnail?: EmbeddedThumb;
   lastModified: number | undefined;
@@ -37,7 +39,7 @@ export const VideoWithLoader = ({
             dotYouClient={dotYouClient}
             targetDrive={targetDrive}
             previewThumbnail={previewThumbnail}
-            fileKey={DEFAULT_PAYLOAD_KEY}
+            fileKey={fileKey || DEFAULT_PAYLOAD_KEY}
             lastModified={lastModified}
             fileId={fileId}
             fit={fit}
@@ -53,7 +55,7 @@ export const VideoWithLoader = ({
         <OdinVideoWrapper
           targetDrive={targetDrive}
           fileId={fileId}
-          fileKey={DEFAULT_PAYLOAD_KEY}
+          fileKey={fileKey || DEFAULT_PAYLOAD_KEY}
           lastModified={lastModified}
           skipChunkedPlayback={skipChunkedPlayback}
           probablyEncrypted={true}

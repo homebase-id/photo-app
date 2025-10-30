@@ -1,10 +1,10 @@
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
 import { OdinVideoWrapper } from './VideoWithLoader';
-import { PhotoConfig, t, useDotYouClientContext } from 'photo-app-common';
+import { t, useDotYouClientContext } from 'photo-app-common';
 import { OdinPayloadImage, OdinPreviewImage, OdinThumbnailImage } from '@homebase-id/ui-lib';
 import { useState } from 'react';
-
-const targetDrive = PhotoConfig.PhotoDrive;
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
+import TemplateImage from '../PhotoDay/TemplateImageComponent';
 
 const MediaWithLoader = ({
   media,
@@ -17,14 +17,22 @@ const MediaWithLoader = ({
   lastModified: number | undefined;
   original?: boolean;
 }) => {
+  const { targetDrive } = useTargetDrive();
   if (!media || !fileId) return <div className="relative h-full w-[100vw]"></div>;
 
-  return media?.fileMetadata.payloads
-    ?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY)
-    ?.contentType.startsWith('video/') ? (
+  const payload =
+    media.fileMetadata.payloads?.find((payload) => payload.key === DEFAULT_PAYLOAD_KEY) ||
+    media.fileMetadata.payloads?.[0] ||
+    undefined;
+
+  if (!payload) {
+    return <TemplateImage className="relative h-full w/full" title={t('No media available')} />;
+  }
+
+  return payload?.contentType.startsWith('video/') ? (
     <OdinVideoWrapper
       fileId={fileId}
-      fileKey={DEFAULT_PAYLOAD_KEY}
+      fileKey={payload?.key || DEFAULT_PAYLOAD_KEY}
       targetDrive={targetDrive}
       lastModified={lastModified}
       className={`relative h-full w-full`}
@@ -33,7 +41,7 @@ const MediaWithLoader = ({
   ) : (
     <CustomOdinImage
       fileId={fileId}
-      fileKey={DEFAULT_PAYLOAD_KEY}
+      fileKey={payload?.key || DEFAULT_PAYLOAD_KEY}
       lastModified={lastModified}
       original={original}
       media={media}
@@ -60,7 +68,7 @@ const CustomOdinImage = ({
   const dotYouClient = useDotYouClientContext();
   const [tinyLoaded, setTinyLoaded] = useState(false);
   const [finalLoaded, setFinalLoaded] = useState(false);
-
+  const { targetDrive } = useTargetDrive();
   if (
     original &&
     media.fileMetadata.payloads?.find((payload) => payload.key === fileKey)?.contentType ===

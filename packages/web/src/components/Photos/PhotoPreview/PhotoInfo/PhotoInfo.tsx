@@ -6,9 +6,10 @@ import ActionButton from '../../../ui/Buttons/ActionButton';
 import EditDateDialog from '../../../Dialog/EditDateDialog/EditDateDialog';
 import { DEFAULT_PAYLOAD_KEY, HomebaseFile } from '@homebase-id/js-lib/core';
 import { ImageMetadata } from '@homebase-id/js-lib/media';
-import { PhotoConfig, usePhotoMetadata } from 'photo-app-common';
+import { usePhotoMetadata } from 'photo-app-common';
+import useTargetDrive from '../../../../hooks/drive/useTargetDrive';
 
-const targetDrive = PhotoConfig.PhotoDrive;
+// const targetDrive = PhotoConfig.PhotoDrive;
 
 const dateFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -34,6 +35,7 @@ export const PhotoInfo = ({
   loadOriginal: boolean;
 }) => {
   const [isEditUserDate, setIsEditUserDate] = useState(false);
+  const { targetDrive } = useTargetDrive();
   const {
     fetchMeta: { data: photoMetadata },
     updateMeta: { mutate: updatePhotoMeta },

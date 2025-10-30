@@ -1,5 +1,5 @@
-import { ApiType, DotYouClient } from '@homebase-id/js-lib/core';
-import { base64ToUint8Array } from '@homebase-id/js-lib/helpers';
+import { ApiType, DotYouClient, TargetDrive } from '@homebase-id/js-lib/core';
+import { base64ToUint8Array, toGuidId } from '@homebase-id/js-lib/helpers';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useVerifyToken from './useVerifyToken';
@@ -15,19 +15,34 @@ import {
   saveEccKey,
   retrieveEccKey,
   throwAwayTheECCKey,
+  TargetDriveAccessRequest,
 } from '@homebase-id/js-lib/auth';
 import { DrivePermissionType } from '@homebase-id/js-lib/core';
 import { REACT_QUERY_CACHE_KEY } from '../../app/App';
 import { clear } from 'idb-keyval';
 
-export const drives = [
+export const facebookDrive: TargetDrive = {
+  alias: toGuidId('Facebook Backup'),
+  type: '4b69b85e2e3241c5862e40b533a0a3b9',
+}
+
+export const drives: TargetDriveAccessRequest[] = [
   {
-    a: '6483b7b1f71bd43eb6896c86148668cc',
-    t: '2af68fe72fb84896f39f97c59d60813a',
-    n: 'Photo Library',
-    d: 'Place for your memories',
-    p: DrivePermissionType.Read + DrivePermissionType.Write,
+    alias: '6483b7b1f71bd43eb6896c86148668cc',
+    type: '2af68fe72fb84896f39f97c59d60813a',
+    name: 'Photo Library',
+    description: 'Place for your memories',
+    permissions: [DrivePermissionType.Read, DrivePermissionType.Write],
   },
+  {
+    alias: facebookDrive.alias,
+    type: facebookDrive.type,
+    name: 'Facebook Backup',
+    description: 'Backup of your Facebook photos',
+    permissions: [DrivePermissionType.Read, DrivePermissionType.Write, DrivePermissionType.React, DrivePermissionType.Comment],
+    allowAnonymousRead: true,
+    allowSubscriptions: true,
+  }
 ];
 export const appName = `Homebase - Photos${import.meta.env.PROD ? '' : ' (Local Dev)'}`;
 export const appId = import.meta.env.PROD

@@ -5,6 +5,7 @@ import {
   HomebaseFile,
   ImageSize,
   TargetDrive,
+  TimeRange,
   UpdateLocalInstructionSet,
   UploadFileMetadata,
   getFileHeader,
@@ -21,6 +22,7 @@ import {
 import { jsonStringify64 } from '@homebase-id/js-lib/helpers';
 
 import { LibraryType, PhotoConfig, PhotoFile } from './PhotoTypes';
+import { BlogConfig } from '@homebase-id/js-lib/public';
 
 export const getArchivalStatusFromType = (type: LibraryType, album?: string): ArchivalStatus[] =>
   type === 'bin'
@@ -40,7 +42,8 @@ export const getPhotos = async (
   album: string | undefined,
   pageSize: number,
   cursorState?: string,
-  ordering?: 'older' | 'newer'
+  ordering?: 'older' | 'newer',
+  userDate?: TimeRange,
 ) => {
   const archivalStatus = getArchivalStatusFromType(type, album);
 
@@ -49,8 +52,9 @@ export const getPhotos = async (
     {
       targetDrive: targetDrive,
       tagsMatchAll: album ? [album] : type === 'favorites' ? [PhotoConfig.FavoriteTag] : undefined,
-      fileType: [MediaConfig.MediaFileType],
+      fileType: [BlogConfig.PostFileType, MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
+      userDate: userDate,
     },
     {
       cursorState: cursorState,
@@ -161,6 +165,7 @@ export const getPhoto = async (
   dotYouClient: DotYouClient,
   targetDrive: TargetDrive,
   fileId: string,
+  fileKey?: string,
   size?: ImageSize,
   isProbablyEncrypted?: boolean
 ): Promise<PhotoFile> => {
@@ -170,7 +175,7 @@ export const getPhoto = async (
       dotYouClient,
       targetDrive,
       fileId,
-      DEFAULT_PAYLOAD_KEY,
+      fileKey || DEFAULT_PAYLOAD_KEY,
       isProbablyEncrypted,
       undefined,
       {
@@ -193,7 +198,7 @@ const dsrToPhoto = async (
       dotYouClient,
       targetDrive,
       dsr.fileId,
-      DEFAULT_PAYLOAD_KEY,
+      dsr.fileMetadata.payloads?.[0]?.key || DEFAULT_PAYLOAD_KEY,
       isProbablyEncrypted,
       undefined,
       {
@@ -226,12 +231,13 @@ export const getAlbumThumbnail = async (
             ? [0, 1, 3]
             : [0];
 
+
   const reponse = await queryBatch(
     dotYouClient,
     {
       targetDrive: targetDrive,
       tagsMatchAll: [albumTag],
-      fileType: [MediaConfig.MediaFileType],
+      fileType: [BlogConfig.PostFileType, MediaConfig.MediaFileType],
       archivalStatus: archivalStatus,
     },
     { cursorState: undefined, maxRecords: 1, includeMetadataHeader: false }

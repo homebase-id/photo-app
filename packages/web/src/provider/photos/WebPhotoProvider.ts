@@ -25,26 +25,26 @@ const getPhotoExifMeta = async (imageBlob: Blob) => {
 
   const imageMetadata: ImageMetadata | undefined = exifData
     ? {
-        camera: {
-          make: exifData.Make,
-          model: exifData.Model,
-          lens: exifData.LensModel,
-        },
-        captureDetails: {
-          exposureTime: exifData.ExposureTime,
-          fNumber: exifData.FNumber,
-          iso: exifData.ISO,
-          focalLength: exifData.FocalLength,
-          geolocation:
-            exifData.latitude && exifData.longitude
-              ? {
-                  latitude: exifData.latitude,
-                  longitude: exifData.longitude,
-                  altitude: exifData.altitude,
-                }
-              : undefined,
-        },
-      }
+      camera: {
+        make: exifData.Make,
+        model: exifData.Model,
+        lens: exifData.LensModel,
+      },
+      captureDetails: {
+        exposureTime: exifData.ExposureTime,
+        fNumber: exifData.FNumber,
+        iso: exifData.ISO,
+        focalLength: exifData.FocalLength,
+        geolocation:
+          exifData.latitude && exifData.longitude
+            ? {
+              latitude: exifData.latitude,
+              longitude: exifData.longitude,
+              altitude: exifData.altitude,
+            }
+            : undefined,
+      },
+    }
     : undefined;
 
   return { imageMetadata, imageUniqueId, dateTimeOriginal };
@@ -80,8 +80,8 @@ const uploadNewPhoto = async (
         uniqueId: imageUniqueId ? toGuidId(imageUniqueId) : undefined,
       },
       [
-        { quality: 95, width: 300, height: 300 },
-        { quality: 95, width: 1200, height: 1200 },
+        { quality: 95, maxPixelDimension: 320, maxBytes: 32 * 1024 },
+        { quality: 95, maxPixelDimension: 1200, maxBytes: 128 * 1024 },
       ]
     )),
     userDate: new Date(userDate),

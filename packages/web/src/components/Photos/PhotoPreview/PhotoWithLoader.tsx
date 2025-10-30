@@ -9,8 +9,10 @@ export const PhotoWithLoader = ({
   lastModified,
   fit = 'cover',
   className,
+  fileKey,
 }: {
   fileId: string;
+  fileKey?: string;
   targetDrive: TargetDrive;
   previewThumbnail?: EmbeddedThumb;
   lastModified: number | undefined;
@@ -18,13 +20,12 @@ export const PhotoWithLoader = ({
   className?: string;
 }) => {
   const dotYouClient = useDotYouClientContext();
-
   return (
     <OdinImage
       dotYouClient={dotYouClient}
       targetDrive={targetDrive}
       fileId={fileId}
-      fileKey={DEFAULT_PAYLOAD_KEY}
+      fileKey={fileKey || DEFAULT_PAYLOAD_KEY}
       lastModified={lastModified}
       previewThumbnail={previewThumbnail}
       fit={fit}

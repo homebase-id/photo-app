@@ -5,6 +5,7 @@ import ActionButton from '../../ui/Buttons/ActionButton';
 import { PhotoItem } from '../PhotoDay/PhotoDay';
 import { HomebaseFile, TargetDrive } from '@homebase-id/js-lib/core';
 import { usePhotosInfinte, PhotoConfig, useSiblingsRangeInfinte } from 'photo-app-common';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 
 const gridClasses = `grid grid-cols-4 md:grid-cols-6 lg:flex lg:flex-row gap-[0.1rem] md:gap-1 `;
 const PhotoAlbum = ({
@@ -24,20 +25,21 @@ const PhotoAlbum = ({
 }) => {
   const [selectionRangeFrom, setSelectionRangeFrom] = useState<string | undefined>();
   const [selectionRangeTo, setSelectionRangeTo] = useState<string | undefined>();
+  const { targetDrive } = useTargetDrive();
   const {
     data: photos,
     hasNextPage: hasMorePhotos,
     fetchNextPage,
     isFetchingNextPage,
   } = usePhotosInfinte({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     album: albumKey,
     type: 'photos',
   }).fetchPhotos;
   const flatPhotos = photos?.pages.flatMap((page) => page.results) ?? [];
 
   const { data: selection } = useSiblingsRangeInfinte({
-    targetDrive: PhotoConfig.PhotoDrive,
+    targetDrive: targetDrive || PhotoConfig.PhotoDrive,
     album: albumKey,
     fromFileId: selectionRangeFrom,
     toFileId: selectionRangeTo,
@@ -180,7 +182,7 @@ const PhotoAlbum = ({
                   >
                     <PhotoGroup
                       photos={photos}
-                      targetDrive={PhotoConfig.PhotoDrive}
+                      targetDrive={targetDrive || PhotoConfig.PhotoDrive}
                       toggleSelection={doToggleSelection}
                       rangeSelection={doRangeSelection}
                       isSelected={isSelected}

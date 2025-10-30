@@ -21,6 +21,7 @@ import AlbumIcon from '../../Icons/Album/Album';
 import Upload from '../../Icons/Upload/Upload';
 import { AlbumDefinition, useAlbumThumbnail, useAlbums } from 'photo-app-common';
 import HeartBeat from '../../Icons/Heartbeat/Heartbeat';
+import useTargetDrive from '../../../../hooks/drive/useTargetDrive';
 
 const STORAGE_KEY = 'isOpen';
 
@@ -141,6 +142,7 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
   useOutsideTrigger(wrapperRef, () => setIsOpen(false));
   const { logout } = useAuth();
   const { toggleDarkMode, isDarkMode } = useDarkMode();
+  const { state: driveState, toggle: toggleDrive } = useTargetDrive();
 
   useEffect(() => {
     if (!isNavOpen && isOpen) {
@@ -184,6 +186,21 @@ const MoreItems = ({ isOpen: isNavOpen }: { isOpen: boolean }) => {
           <Upload className={`${iconClassName}`} />
           <span className={`my-auto ml-3`}>{t('Import')}</span>
         </Link>
+        <hr className="border-b dark:border-slate-500" />
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleDrive();
+            window.location.reload();
+          }}
+          className={`w-full ${navItemClassName}`}
+        >
+          <Arrow className={`${iconClassName}`} />
+          <span className={`my-auto ml-3`}>
+            {driveState === 'backup' ? t('Switch to main drive') : t('Switch to backup drive')}
+          </span>
+        </button>
         <hr className="border-b dark:border-slate-500" />
         <button className={navItemClassName} onClick={() => toggleDarkMode()}>
           <MiniDarkModeToggle className={`my-auto ${iconClassName}`} />

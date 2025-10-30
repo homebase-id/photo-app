@@ -12,8 +12,9 @@ import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 import { PhotoConfig, usePhoto } from 'photo-app-common';
 import { useWebPhoto } from '../../../hooks/photoLibrary/useWebPhoto';
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 
-const targetDrive = PhotoConfig.PhotoDrive;
+// const targetDrive = PhotoConfig.PhotoDrive;
 
 export const PhotoActions = ({
   fileId,
@@ -37,7 +38,7 @@ export const PhotoActions = ({
   setLoadOriginal: (loadOriginal: boolean) => void;
 }) => {
   const navigate = useNavigate();
-
+  const { targetDrive } = useTargetDrive();
   const {
     remove: {
       mutateAsync: removePhoto,

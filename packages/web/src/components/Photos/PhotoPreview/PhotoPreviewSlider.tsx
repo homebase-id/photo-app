@@ -22,6 +22,7 @@ const PhotoPreviewSlider = ({
   original,
 }: {
   fileId: string;
+  fileKey?: string;
   urlPrefix?: string;
 
   fetchOlderPage: () => void;

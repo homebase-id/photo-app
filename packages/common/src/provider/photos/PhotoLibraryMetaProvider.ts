@@ -3,11 +3,11 @@ import {
   DotYouClient,
   HomebaseFile,
   SecurityGroupType,
+  TargetDrive,
   UploadFileMetadata,
   UploadInstructionSet,
   getContentFromHeaderOrPayload,
   queryBatch,
-  queryModified,
   uploadFile,
 } from '@homebase-id/js-lib/core';
 import { PhotoLibraryMetadata, PhotoConfig, PhotoMetaYear, LibraryType } from './PhotoTypes';
@@ -18,7 +18,8 @@ const encryptPhotoLibrary = true;
 export const getPhotoLibrary = async (
   dotYouClient: DotYouClient,
   type: LibraryType,
-  lastCursor?: string
+  lastCursor?: string,
+  targetDrive?: TargetDrive
 ): Promise<PhotoLibraryMetadata | null> => {
   const archivalStatus: ArchivalStatus[] =
     type === 'bin'
@@ -31,36 +32,23 @@ export const getPhotoLibrary = async (
             ? [0, 1, 3]
             : [0];
 
-  const batch = lastCursor
-    ? await queryModified(
-        dotYouClient,
-        {
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-          tagsMatchAtLeastOne:
-            type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
-          archivalStatus,
-        },
-        {
-          maxRecords: 2,
-          includeHeaderContent: true,
-          cursor: lastCursor,
-        }
-      )
-    : await queryBatch(
-        dotYouClient,
-        {
-          targetDrive: PhotoConfig.PhotoDrive,
-          fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
-          tagsMatchAtLeastOne:
-            type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
-          archivalStatus,
-        },
-        {
-          maxRecords: 2,
-          includeMetadataHeader: true,
-        }
-      );
+  const batch =
+    await queryBatch(
+      dotYouClient,
+      {
+        targetDrive: targetDrive || PhotoConfig.PhotoDrive,
+        fileType: [PhotoConfig.PhotoLibraryMetadataFileType],
+        tagsMatchAtLeastOne:
+          type === 'favorites' ? [PhotoConfig.FavoriteTag] : [PhotoConfig.MainTag],
+        archivalStatus,
+      },
+      {
+        maxRecords: 2,
+        includeMetadataHeader: true,
+        cursorState: lastCursor,
+        sorting: 'anyChangeDate',
+      }
+    );
 
   if (batch.searchResults.length === 0) return null;
   if (batch.searchResults.length > 1)
@@ -79,11 +67,12 @@ export const getPhotoLibrary = async (
 
 const dsrToPhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
-  dsr: HomebaseFile
+  dsr: HomebaseFile,
+  targetDrive?: TargetDrive
 ): Promise<PhotoLibraryMetadata | null> => {
   const payload = await getContentFromHeaderOrPayload<PhotoLibraryMetadata>(
     dotYouClient,
-    PhotoConfig.PhotoDrive,
+    targetDrive || PhotoConfig.PhotoDrive,
     dsr,
     true
   );
@@ -101,12 +90,13 @@ export const savePhotoLibraryMetadata = async (
   dotYouClient: DotYouClient,
   def: PhotoLibraryMetadata,
   type: LibraryType,
+  targetDrive?: TargetDrive,
   onVersionConflict?: () => void
 ) => {
   const archivalStatus: ArchivalStatus =
     type === 'bin' ? 2 : type === 'archive' ? 1 : type === 'apps' ? 3 : 0;
 
-  const existingPhotoLib = await getPhotoLibrary(dotYouClient, type);
+  const existingPhotoLib = await getPhotoLibrary(dotYouClient, type, undefined, targetDrive);
   if (existingPhotoLib && existingPhotoLib.fileId !== def.fileId)
     def.fileId = existingPhotoLib.fileId;
 
@@ -122,7 +112,7 @@ export const savePhotoLibraryMetadata = async (
     transferIv: getRandom16ByteArray(),
     storageOptions: {
       overwriteFileId: def.fileId || undefined,
-      drive: PhotoConfig.PhotoDrive,
+      drive: targetDrive || PhotoConfig.PhotoDrive,
     },
   };
 

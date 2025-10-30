@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { t } from '../../../helpers/i18n/dictionary';
 import ActionButton from '../../ui/Buttons/ActionButton';
-import { ActionButtonWithOptions } from '../../ui/Buttons/ActionButtonWithOptions';
 import Archive from '../../ui/Icons/Archive/Archive';
 import Heart from '../../ui/Icons/Heart/Heart';
 import Times from '../../ui/Icons/Times/Times';
@@ -9,6 +8,7 @@ import { usePhoto, PhotoConfig, useAlbums, LibraryType } from 'photo-app-common'
 import ErrorNotification from '../../ui/Alerts/ErrorNotification/ErrorNotification';
 import { ActionGroup } from '../../ui/Buttons/ActionGroup';
 import { ArrowDown } from '../../ui/Icons/Arrow/Arrow';
+import useTargetDrive from '../../../hooks/drive/useTargetDrive';
 
 const PhotoSelection = ({
   selection,
@@ -23,6 +23,7 @@ const PhotoSelection = ({
   albumKey?: string;
   type: LibraryType;
 }) => {
+  const { targetDrive } = useTargetDrive();
   const {
     remove: { mutateAsync: removePhoto, error: removeError },
     deleteFile: { mutateAsync: deletePhoto, error: deleteError },
@@ -30,7 +31,7 @@ const PhotoSelection = ({
     restore: { mutateAsync: restorePhoto, error: restoreError },
     addTags: { mutateAsync: addTagsToPhoto, error: addTagsError },
     removeTags: { mutateAsync: removeTagsFromPhoto, error: removeTagsError },
-  } = usePhoto(PhotoConfig.PhotoDrive);
+  } = usePhoto(targetDrive || PhotoConfig.PhotoDrive);
   const { data: albums } = useAlbums().fetch;
 
   useEffect(() => {
@@ -96,7 +97,7 @@ const PhotoSelection = ({
     await Promise.all(
       selection.map(async (fileId) => {
         addTagsToPhoto({
-          targetDrive: PhotoConfig.PhotoDrive,
+          targetDrive: targetDrive || PhotoConfig.PhotoDrive,
           fileId: fileId,
           addTags: [PhotoConfig.FavoriteTag],
         });
@@ -112,7 +113,7 @@ const PhotoSelection = ({
     await Promise.all(
       selection.map(async (fileId) => {
         addTagsToPhoto({
-          targetDrive: PhotoConfig.PhotoDrive,
+          targetDrive: targetDrive || PhotoConfig.PhotoDrive,
           fileId: fileId,
           addTags: [albumTag],
         });
@@ -128,7 +129,7 @@ const PhotoSelection = ({
     await Promise.all(
       selection.map(async (fileId) => {
         removeTagsFromPhoto({
-          targetDrive: PhotoConfig.PhotoDrive,
+          targetDrive: targetDrive || PhotoConfig.PhotoDrive,
           fileId: fileId,
           removeTags: [albumTag],
         });

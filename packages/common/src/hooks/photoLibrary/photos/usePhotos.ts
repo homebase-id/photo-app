@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { TargetDrive, HomebaseFile, DotYouClient, CursoredResult } from '@homebase-id/js-lib/core';
+import { TargetDrive, HomebaseFile, DotYouClient, CursoredResult, TimeRange } from '@homebase-id/js-lib/core';
 import { createDateObject, getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useFlatMonthsFromMeta } from '../library/usePhotoLibraryRange';
 import { getQueryBatchCursorFromTime } from '@homebase-id/js-lib/helpers';
@@ -31,14 +31,20 @@ export const fetchPhotosByMonth = async ({
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   const beginOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 
-  const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
+  // const dateCursor = getQueryBatchCursorFromTime(endOfMonth.getTime(), beginOfMonth.getTime());
+  const timeRange: TimeRange = {
+    start: beginOfMonth.getTime(),
+    end: endOfMonth.getTime()
+  }
   return await getPhotos(
     dotYouClient,
     targetDrive,
     type,
     undefined, // album
     PAGE_SIZE,
-    cursorState || dateCursor
+    cursorState,
+    undefined,
+    timeRange
   );
 };
 
@@ -94,7 +100,8 @@ export const usePhotosByMonth = ({
         lastPage?.results?.length >= PAGE_SIZE ? lastPage?.cursorState : undefined,
       // refetchOnMount: false,
       enabled: !!targetDrive && !!date,
-      staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      // staleTime: 1000 * 60 * 10, // 10min => react query will fire a background refetch after this time; (Or if invalidated manually after an update)
+      staleTime: 0, // No cache, always fresh data
     }),
     invalidateQueries: (type: LibraryType) => {
       queryClient.invalidateQueries({

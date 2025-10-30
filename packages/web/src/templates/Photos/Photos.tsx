@@ -14,6 +14,8 @@ import ErrorNotification from '../../components/ui/Alerts/ErrorNotification/Erro
 import PhotoAlbum from '../../components/Photos/PhotoAlbum/PhotoAlbum';
 import AlbumIcon from '../../components/ui/Icons/Album/Album';
 import { useAlbum, usePhotoSelection } from 'photo-app-common';
+import { ExtendPermissionDialog } from '../../components/Permission/ExtendPermissionDialog';
+import { appId, appName, drives } from '../../hooks/auth/useAuth';
 
 const PhotoPreview = lazy(() => import('../../components/Photos/PhotoPreview/PhotoPreview'));
 
@@ -74,6 +76,7 @@ const Photos = () => {
           </>
         }
       />
+      <ExtendPermissionDialog appId={appId} appName={appName} drives={drives} permissions={[]} />
       <PhotoSelection
         isSelecting={isSelecting}
         selection={selection}

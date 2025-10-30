@@ -5,21 +5,23 @@ import { useAlbums } from './useAlbums';
 import { getAlbumThumbnail } from '../../../provider/photos/PhotoProvider';
 import { stringGuidsEqual } from '@homebase-id/js-lib/helpers';
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
+import useTargetDrive from '../../../../../web/src/hooks/drive/useTargetDrive';
 
 export const useAlbum = (albumKey?: string) => {
   const dotYouClient = useDotYouClientContext();
+  const { targetDrive } = useTargetDrive();
   const queryClient = useQueryClient();
 
   const fetchAlbums = useAlbums().fetch;
 
   const save = async (album: AlbumDefinition) => {
-    await saveAlbum(dotYouClient, album);
+    await saveAlbum(dotYouClient, album, targetDrive);
     return album;
   };
 
   const remove = async (album: AlbumDefinition) => {
     if (!album.fileId) throw new Error('Album has no fileId');
-    await removeAlbumDefintion(dotYouClient, album);
+    await removeAlbumDefintion(dotYouClient, album, targetDrive);
   };
 
   return {

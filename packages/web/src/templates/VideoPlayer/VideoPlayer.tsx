@@ -3,13 +3,15 @@ import useAuth from '../../hooks/auth/useAuth';
 import { OdinVideo } from '@homebase-id/ui-lib';
 import { ErrorBoundary } from '../../components/ui/Layout/ErrorBoundary/ErrorBoundary';
 import { DEFAULT_PAYLOAD_KEY } from '@homebase-id/js-lib/core';
-import { PhotoConfig, useDotYouClientContext } from 'photo-app-common';
+import { useDotYouClientContext } from 'photo-app-common';
+import useTargetDrive from '../../hooks/drive/useTargetDrive';
 
-const targetDrive = PhotoConfig.PhotoDrive;
+// const targetDrive = PhotoConfig.PhotoDrive;
 const VideoPlayer = () => {
   const { getIdentity } = useAuth();
   const dotYouClient = useDotYouClientContext();
-  const { photoKey } = useParams();
+  const { photoFileId, photoKey } = useParams();
+  const { targetDrive } = useTargetDrive();
 
   return (
     <>
@@ -17,8 +19,8 @@ const VideoPlayer = () => {
         <OdinVideo
           dotYouClient={dotYouClient}
           targetDrive={targetDrive}
-          fileId={photoKey}
-          fileKey={DEFAULT_PAYLOAD_KEY}
+          fileId={photoFileId}
+          fileKey={photoKey || DEFAULT_PAYLOAD_KEY}
           lastModified={undefined}
           className={`absolute inset-0 h-full w-full bg-black object-contain`}
           skipChunkedPlayback={false}

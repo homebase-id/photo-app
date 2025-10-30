@@ -4,7 +4,6 @@ import {
   TargetDrive,
   UploadResult,
   queryBatch,
-  queryModified,
 } from '@homebase-id/js-lib/core';
 import { getArchivalStatusFromType, getPhotos } from '../../../provider/photos/PhotoProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -23,7 +22,6 @@ import {
 import { useDotYouClientContext } from '../../auth/useDotYouClientContext';
 import {
   getQueryBatchCursorFromTime,
-  getQueryModifiedCursorFromTime,
 } from '@homebase-id/js-lib/helpers';
 
 let saveScheduled = false;
@@ -58,12 +56,12 @@ export const usePhotoLibrary = ({
   type: LibraryType;
 }) => {
   const dotYouClient = useDotYouClientContext();
-
+  console.log('usePhotoLibrary called', { targetDrive, type });
   const fetch = async (type: LibraryType): Promise<PhotoLibraryMetadata | null> => {
     if (!dotYouClient || !targetDrive) return null;
 
     // Get meta file from server
-    const photoLibOnServer = await getPhotoLibrary(dotYouClient, type);
+    const photoLibOnServer = await getPhotoLibrary(dotYouClient, type, undefined, targetDrive);
 
     if (photoLibOnServer && photoLibOnServer.lastUpdated) {
       const newFilesSinceLastUpdate = await queryFilesSince(photoLibOnServer.lastUpdated, type);
@@ -85,7 +83,7 @@ export const usePhotoLibrary = ({
 
   const BATCH_SIZE = 2000;
   const queryFilesSince = async (sinceInIms: number, type: LibraryType) => {
-    const modifiedCursor = getQueryModifiedCursorFromTime(sinceInIms); // Friday, 31 May 2024 09:38:54.678
+    // const modifiedCursor = getQueryModifiedCursorFromTime(sinceInIms); // Friday, 31 May 2024 09:38:54.678
     const batchCursor = getQueryBatchCursorFromTime(new Date().getTime(), sinceInIms);
 
     const archivalStatus = getArchivalStatusFromType(type);
@@ -93,35 +91,40 @@ export const usePhotoLibrary = ({
     const newData = await queryBatch(
       dotYouClient,
       {
-        targetDrive: PhotoConfig.PhotoDrive,
+        targetDrive: targetDrive || PhotoConfig.PhotoDrive,
         archivalStatus: archivalStatus,
       },
       {
         maxRecords: BATCH_SIZE,
-        cursorState: batchCursor + '',
+        cursorState: batchCursor,
         includeMetadataHeader: true,
+        sorting: 'anyChangeDate',
       }
     );
 
-    const modifieData = await queryModified(
-      dotYouClient,
-      {
-        targetDrive: PhotoConfig.PhotoDrive,
-        archivalStatus: archivalStatus,
-      },
-      {
-        maxRecords: BATCH_SIZE,
-        cursor: modifiedCursor + '',
-        excludePreviewThumbnail: false,
-        includeHeaderContent: true,
-      }
-    );
+    // const modifieData = await queryModified(
+    //   dotYouClient,
+    //   {
+    //     targetDrive: PhotoConfig.PhotoDrive,
+    //     archivalStatus: archivalStatus,
+    //   },
+    //   {
+    //     maxRecords: BATCH_SIZE,
+    //     cursor: modifiedCursor + '',
+    //     excludePreviewThumbnail: false,
+    //     includeHeaderContent: true,
+    //   }
+    // );
 
-    return [...newData.searchResults, ...modifieData.searchResults].filter(
+    return newData.searchResults.filter(
       (dsr) =>
-        dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType &&
-        dsr.fileState !== 'deleted'
+        dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType
     ) as HomebaseFile<string>[];
+    // return [...newData.searchResults, ...modifieData.searchResults].filter(
+    //   (dsr) =>
+    //     dsr.fileMetadata.appData.fileType !== PhotoConfig.PhotoLibraryMetadataFileType &&
+    //     dsr.fileState !== 'deleted'
+    // ) as HomebaseFile<string>[];
   };
 
   return {
@@ -172,12 +175,13 @@ export const useManagePhotoLibrary = ({ targetDrive }: { targetDrive?: TargetDri
             const newlyMergedLib = await queryClient.fetchQuery<PhotoLibraryMetadata>({
               queryKey: ['photo-library', targetDrive?.alias, type],
             });
-
+            console.log('Fetched and merged library for type', newlyMergedLib);
             // TODO Should we avoid endless loops here? (Shouldn't happen, but...)
             const uploadResult = await savePhotoLibraryMetadata(
               dotYouClient,
               newlyMergedLib,
               type,
+              targetDrive,
               () => setTimeout(fetchAndMerge, 1000)
             );
             if (!uploadResult) return;
@@ -189,6 +193,7 @@ export const useManagePhotoLibrary = ({ targetDrive }: { targetDrive?: TargetDri
               dotYouClient,
               libToSave,
               type,
+              targetDrive,
               fetchAndMerge
             );
             if (!uploadResult) return;
