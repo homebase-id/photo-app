@@ -56,7 +56,6 @@ export const usePhotoLibrary = ({
   type: LibraryType;
 }) => {
   const dotYouClient = useDotYouClientContext();
-  console.log('usePhotoLibrary called', { targetDrive, type });
   const fetch = async (type: LibraryType): Promise<PhotoLibraryMetadata | null> => {
     if (!dotYouClient || !targetDrive) return null;
 

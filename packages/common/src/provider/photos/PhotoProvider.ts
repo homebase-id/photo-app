@@ -106,7 +106,7 @@ export const updatePhoto = async (
 
     const uploadResult = await patchFile(
       dotYouClient,
-      header.sharedSecretEncryptedKeyHeader,
+      header.fileMetadata.isEncrypted ? header.sharedSecretEncryptedKeyHeader : undefined,
       instructionSet,
       metadata
     );
